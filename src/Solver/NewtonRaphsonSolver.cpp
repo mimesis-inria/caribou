@@ -36,6 +36,9 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
     MultiVecDeriv force( &vop, core::VecDerivId::force() );
     dx.realloc( &vop, true );
 
+    // MO vector dx is not allocated by default, it will seg fault if the CG is used (dx is taken by default) with an IdentityMapping
+    MultiVecDeriv tempdx(&vop, core::VecDerivId::dx() ); tempdx.realloc( &vop, true, true );
+
     //////////////////////////////////////////////////////////////////////////////////
 
     msg_info() << "======= Starting Newton in actual time step " << this->getTime();
@@ -84,7 +87,7 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
 
 
         {
-            msg_info() << "Iteration #" << n_it << ": |res| = " << f_norm << " |corr| = " << dx_norm;
+            msg_info() << "Iteration #" << n_it << ": |f - K(x0 + dx)| = " << f_norm << " |dx| = " << dx_norm;
             sofa::helper::AdvancedTimer::valSet("residual", f_norm);
             sofa::helper::AdvancedTimer::valSet("correction", dx_norm);
             sofa::caribou::event::IterativeSolverStepEndEvent ev;
@@ -94,12 +97,12 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
         }
 
         if (dx_norm <= this->f_corrTolerance.getValue()) {
-            msg_info() << "[CONVERGED] The correction's norm |du| is smaller than the threshold of " << f_corrTolerance;
+            msg_info() << "[CONVERGED] The correction's norm |dx| is smaller than the threshold of " << f_corrTolerance;
             break;
         }
 
         if (f_convergeOnResidual.getValue() && f_norm <= f_resTolerance.getValue()) {
-            msg_info() << "[CONVERGED] The residual's norm |f - K(u)| is smaller than the threshold of " << f_resTolerance;
+            msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of " << f_resTolerance;
             break;
         }
 
