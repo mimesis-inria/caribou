@@ -5,7 +5,10 @@ class SystemSolver(object):
 
 class LinearSolver(SystemSolver):
     def __init__(self, **kwargs):
-        None
+        SystemSolver.__init__(self, **kwargs)
+
+        # Parameters
+        self.printLog = kwargs.get('print_log', False)
 
 
 class CGLinearSolver(LinearSolver):
@@ -16,16 +19,21 @@ class CGLinearSolver(LinearSolver):
         self.iterations = kwargs.get('maximum_iterations', 2500)
         self.tolerance  = kwargs.get('tolerance', 1e-8)
         self.threshold  = kwargs.get('threshold', 1e-8)
-        self.printLog = kwargs.get('print_log', False)
 
 
-class SparsePARDISOSolver(LinearSolver):
+class PardisoSolver(LinearSolver):
+    NONSYMETRIC = 0
+    SYMETRIC = 1
+    SYMETRIC_STRUCTURALLY = -1
+    SYMETRIC_POSITIVE_DEFINITE = 2
+
     def __init__(self, **kwargs) :
         LinearSolver.__init__(self, **kwargs)
 
         # Parameters
-        self.symmetric                = kwargs.get('symmetric', 1)
-        self.iterativeSolverNumbering = kwargs.get('iterativeSolverNumbering', 1)
+        self.symmetric                = kwargs.get('symmetric', PardisoSolver.SYMETRIC)
+        self.iterativeSolverNumbering = kwargs.get('iterativeSolverNumbering', True)
+        self.verbose = kwargs.get('verbose', False)
 
 
 class NonLinearSolver(SystemSolver):

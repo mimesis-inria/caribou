@@ -204,6 +204,29 @@ class SofaSceneBuilder(object):
             node.createObject('HexahedronSetTopologyAlgorithms')
             node.createObject('HexahedronSetGeometryAlgorithms')
 
+    def add_linear_solver(self, node, solver):
+        if isinstance(solver, CGLinearSolver):
+            node.createObject(
+                'CGLinearSolver',
+                iterations=solver.iterations,
+                tolerance=solver.tolerance,
+                threshold=solver.threshold,
+                printLog=solver.printLog,
+            )
+        elif isinstance(solver, PardisoSolver):
+            node.createObject(
+                'PardisoSolver',
+                symmetric=solver.symmetric,
+                iterativeSolverNumbering=solver.iterativeSolverNumbering,
+                verbose=solver.verbose,
+                printLog=solver.printLog,
+            )
+        else:
+            raise NotImplementedError(
+                "The linear solver `{}` isn't compatible for the sofa scene builder.".format(
+                    solver.__class__.__name__)
+            )
+
     def add_pde_solver(self, node):
         if isinstance(self.simulation.pde_solver, StaticSolver):
             system_solver = self.simulation.pde_solver.solver
@@ -219,19 +242,7 @@ class SofaSceneBuilder(object):
                 )
 
                 linear_solver = system_solver.linearSolver
-                if isinstance(linear_solver, CGLinearSolver):
-                    node.createObject(
-                        'CGLinearSolver',
-                        iterations=linear_solver.iterations,
-                        tolerance=linear_solver.tolerance,
-                        threshold=linear_solver.threshold,
-                        printLog=linear_solver.printLog,
-                    )
-                else:
-                    raise NotImplementedError(
-                        "The linear solver `{}` isn't compatible for the sofa scene builder.".format(
-                            linear_solver.__class__.__name__)
-                    )
+                self.add_linear_solver(node, linear_solver)
             else:
                 raise NotImplementedError(
                     "The system solver `{}` isn't compatible for the sofa scene builder.".format(

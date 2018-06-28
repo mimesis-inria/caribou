@@ -4,3 +4,4 @@ out
 gen
 cmake-build*
 venv
+*.pyc
