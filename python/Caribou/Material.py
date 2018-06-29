@@ -13,11 +13,14 @@ class Material(object):
         assert self.poisson_ratio < 0.5
 
 
-class StVenantKirchhoff(Material):
+class LinearElastic(Material):
     def __init__(self, **kwargs):
         Material.__init__(self, **kwargs)
 
+        # Parameters
+        self.corotated = kwargs.get('corotated', False)
 
-class CorotatedStVenantKirchhoff(StVenantKirchhoff):
+
+class StVenantKirchhoff(Material):
     def __init__(self, **kwargs):
-        StVenantKirchhoff.__init__(self, **kwargs)
+        Material.__init__(self, **kwargs)

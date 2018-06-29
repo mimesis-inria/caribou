@@ -1,5 +1,5 @@
-from .Mapping import Mapping, BarycentricMapping, IdentityMapping
-from .Mesh import Part, SurfacePart
+from .Mapping import *
+from .Mesh import *
 
 
 class Boundary(object):
@@ -27,7 +27,7 @@ class Boundary(object):
                 else:
                     self.link_type = BarycentricMapping
             else:
-                assert isinstance(self.link_type, Mapping)
+                assert issubclass(self.link_type, Mapping)
 
             self.mapping = self.link_type(input=self.linked_to, output=self.part)
 

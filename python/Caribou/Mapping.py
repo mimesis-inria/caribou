@@ -29,3 +29,11 @@ class BarycentricMapping(Mapping):
 class SubsetMapping(Mapping):
     def __init__(self, **kwargs):
         Mapping.__init__(self, **kwargs)
+
+
+class ParticleMapping(Mapping):
+    def __init__(self, **kwargs):
+        Mapping.__init__(self, **kwargs)
+
+        # Parameters
+        self.numberOfNeighbors = kwargs.get('number_of_neighbors', 12)

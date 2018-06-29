@@ -6,6 +6,8 @@ from .Optimization import *
 from .Mapping import *
 from .Mesh import *
 
+import Utils
+
 import numpy as np
 from numpy import linalg as LA
 
@@ -84,7 +86,13 @@ class SofaSceneBuilder(object):
         for mesh in self.simulation.meshes:
             for part in mesh.parts:
                 if part not in dependent_parts:
-                    self.base_part.append(part)
+                    # only add the part if it is contains a behavior (volume) or boundary (surface)
+                    if isinstance(part, VolumePart):
+                        if len(self.get_part_behaviors(part)):
+                            self.base_part.append(part)
+                    else:
+                        if len(self.get_part_boundaries(part)):
+                            self.base_part.append(part)
 
         # Set up the base parts
         for part in self.base_part:
@@ -265,7 +273,11 @@ class SofaSceneBuilder(object):
         if dynamic:
             self.add_pde_solver(node)
 
-        node.createObject('MechanicalObject', src=self.get_mesh_object(part.mesh).getLinkPath())
+        node.createObject('MechanicalObject',
+                          src=self.get_mesh_object(part.mesh).getLinkPath(),
+                          showObject=True,
+                          showObjectScale=5,
+                          )
 
         # Topologies creation
         self.add_topology(part, node)
@@ -280,10 +292,8 @@ class SofaSceneBuilder(object):
                 assert len(materials) == 1, "FEM Forcefields can only deal with 1 material a the moment"
 
                 material = materials[0]
-                if isinstance(material, StVenantKirchhoff):
-                    method = 'small'
-                    if isinstance(materials, CorotatedStVenantKirchhoff):
-                        method = 'large'
+                if isinstance(material, LinearElastic):
+                    method = 'large' if material.corotated else 'small'
                     if part.tetrahedrons.size:
                         node.createObject(
                             'TetrahedronFEMForceField',
@@ -298,11 +308,60 @@ class SofaSceneBuilder(object):
                             youngModulus=material.young_modulus,
                             poissonRatio=material.poisson_ratio
                         )
+                elif isinstance(material, StVenantKirchhoff):
+                    if part.tetrahedrons.size:
+                        mu, l = Utils.lame(young_modulus=material.young_modulus, poisson_ratio=material.poisson_ratio)
+                        node.createObject(
+                            'TetrahedronHyperelasticityFEMForceField',
+                            materialName="StVenantKirchhoff",
+                            ParameterSet="{} {}".format(mu, l),
+                        )
+                    else:
+                        raise NotImplementedError("Nonlinear elastic is only supported with tetrahedons.")
                 else:
                     raise NotImplementedError(
                         "The material `{}` isn't compatible for the sofa scene builder.".format(
                             material.__class__.__name__)
                     )
+            elif isinstance(behavior, MeshlessGalerkin):
+                assert len(materials), "Meshless Forcefield need a material"
+                assert len(materials) == 1, "Meshless Forcefield can only deal with 1 material a the moment"
+
+                if behavior.surface is not None:
+                    assert isinstance(behavior.surface, SurfacePart)
+                    node.createObject('DisplacedMeshTopology',
+                                      points=part.points.tolist(),
+                                      edges=part.edges.tolist(),
+                                      triangles=part.triangles.tolist(),
+                                      quads=part.quads.tolist(),
+                                      )
+
+                material = materials[0]
+
+                (g_min_x, g_min_y, g_min_z), (g_max_x, g_max_y, g_max_z), (nx, ny, nz) = behavior.grid
+                grid = node.createObject('MeshlessGridTopology',
+                                         n=[nx, ny, nz],
+                                         min=[g_min_x, g_min_y, g_min_z],
+                                         max=[g_max_x, g_max_y, g_max_z],
+                                         grid_type=2,
+                                         poissonRatio=material.poisson_ratio,
+                                         youngModulus=material.young_modulus,
+                                         density=material.density
+                                         )
+
+                node.createObject('QuarticSplineKernel', dilatation=behavior.dilatation)
+
+                if isinstance(material, LinearElastic):
+                    node.createObject('GalerkinForcefield',
+                                      printLog=behavior.printLog,
+                                      number_of_neighbors=behavior.number_of_neighbors,
+                                      corotated=material.corotated,
+                                      gauss_positions=grid.getLinkPath() + '.gauss_positions',
+                                      gauss_weights=grid.getLinkPath() + '.gauss_weights',
+                                      poissonRatio=material.poisson_ratio,
+                                      youngModulus=material.young_modulus,
+                                      verbose=behavior.verbose,
+                                      )
 
             elif isinstance(behavior, GravityForceField):
                 assert part.tetrahedrons.size + part.hexahedrons.size, "Gravity need either a tetra or hexa topology"
@@ -407,6 +466,13 @@ class SofaSceneBuilder(object):
                 'BarycentricMapping',
                 input=input_node.getLinkPath(),
                 output=output_node.getLinkPath()
+            )
+        elif isinstance(mapping, ParticleMapping):
+            output_node.createObject(
+                'ParticleMapping',
+                input=input_node.getLinkPath(),
+                output=output_node.getLinkPath(),
+                number_of_neighbors=mapping.numberOfNeighbors,
             )
         else:
             raise NotImplementedError(
