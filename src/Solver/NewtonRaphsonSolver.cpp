@@ -50,7 +50,9 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
 
     sofa::helper::AdvancedTimer::stepBegin("NewtonRaphsonSolver::Solve");
 
-    while (n_it < f_maxit.getValue()) {
+    while (n_it < f_maxit.getValue())
+    {
+
         {
             sofa::helper::AdvancedTimer::stepBegin("step_"+std::to_string(n_it));
             sofa::caribou::event::IterativeSolverStepBeginEvent ev;
@@ -63,6 +65,11 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
         mop.computeForce(force);
         mop.projectResponse(force);
         f_norm = sqrt(force.dot(force));
+
+        if (f_convergeOnResidual.getValue() && f_norm <= f_resTolerance.getValue()) {
+            msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of " << f_resTolerance;
+            break;
+        }
 
 
         // assemble matrix, CG: does nothing
@@ -101,13 +108,9 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
             break;
         }
 
-        if (f_convergeOnResidual.getValue() && f_norm <= f_resTolerance.getValue()) {
-            msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of " << f_resTolerance;
-            break;
-        }
-
         n_it++;
-    }
+
+    } // End while (n_it < f_maxit.getValue())
 
     if (n_it >= f_maxit.getValue()) {
         msg_info() << "[DIVERGED] The number of iterations reached the threshold of " << f_maxit << " iterations";
