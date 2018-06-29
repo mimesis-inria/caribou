@@ -351,26 +351,13 @@ class SofaSceneBuilder(object):
                 # Topologies creation
                 self.add_topology(part, node)
 
-                pressure = LA.norm(boundary.pressure)
-                direction = np.array(boundary.pressure) / pressure
-                if boundary.slope is not None:
-                    node.createObject(
-                        'SurfacePressureForceField',
-                        pressure=pressure,
-                        pressureSpeed=boundary.slope,
-                        pulseMode=True,
-                        mainDirection=direction.tolist(),
-                        triangleIndices=range(part.triangles.size/3),
-                        quadIndices=range(part.quads.size/4),
-                    )
-                else:
-                    node.createObject(
-                        'SurfacePressureForceField',
-                        pressure=pressure,
-                        mainDirection=direction.tolist(),
-                        triangleIndices=range(part.triangles.size/3),
-                        quadIndices=range(part.quads.size/4),
-                    )
+                node.createObject(
+                    'PressureForcefield',
+                    pressure=boundary.pressure,
+                    slope=boundary.slope,
+                    printLog=boundary.printLog,
+                    triangles=part.triangles.tolist(),
+                )
 
                 if boundary.linked_to is not None:
                     self.set_mapping(parent_node, node, boundary.mapping)

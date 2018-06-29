@@ -6,6 +6,7 @@ class Boundary(object):
     def __init__(self, **kwargs):
         # Parameters
         self.part = kwargs.get('part', None)
+        self.printLog = kwargs.get('print_log', False)
 
         # Implicit mapping (automatically created)
         self.linked_to = kwargs.get('linked_to', None)
@@ -45,7 +46,7 @@ class PressureBoundary(Boundary):
 
         # Parameters
         self.pressure = kwargs.get('pressure', [0, -1, 0])
-        self.slope = kwargs.get('slope', None)
+        self.slope = kwargs.get('slope', 0)
 
         assert len(self.pressure) == 3
 
