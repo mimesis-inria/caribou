@@ -80,24 +80,20 @@ public:
     Data<double> d_trustRegionCoefficient;
     Data<bool> d_showTiming;
 
-    //SingleLink<MyType, MyType, BaseLink::FLAG_STOREPATH|BaseLink::FLAG_STRONGLINK> masterPardisoLink;
-    //MyType* masterPardiso;
-
     SparsePARDISOSolver();
-    ~SparsePARDISOSolver();
-    virtual void init();
+    void init() override;
 
-    void solve (Matrix& M, Vector& x, Vector& b);
-    void invert(Matrix& M);
-    virtual bool addJMInvJtLocal(Matrix * M,ResMatrixType * result,const JMatrixType * J, double fact);
+    void solve (Matrix& M, Vector& x, Vector& b) override;
+    void invert(Matrix& M) override;
+    bool addJMInvJtLocal(Matrix * M,ResMatrixType * result,const JMatrixType * J, double fact) override;
     void saveSparseMatrix(CompressedRowSparseMatrix<double>& M, std::string _name);
     void printSparseMatrix(CompressedRowSparseMatrix<double>& M, std::string _name = "");
 
-    void handleEvent(core::objectmodel::Event *event);
+    void handleEvent(core::objectmodel::Event *event) override;
 
-    MatrixInvertData * createInvertData()
+    MatrixInvertData * createInvertData() override
     {
-        return new SparsePARDISOSolverInvertData(d_symmetric.getValue(),std::cout,std::cerr);
+        return new SparsePARDISOSolverInvertData(d_symmetric.getValue());
     }
 
 private:
@@ -106,8 +102,6 @@ private:
 
     sofa::helper::system::thread::CTime *timer;
     double startTime, stopTime;
-
-    bool initialized;
 
     helper::vector<int> patJL;
     helper::vector<int> patJC;
@@ -131,7 +125,7 @@ protected:
         int pardiso_mtype;
         bool factorized;
 
-        SparsePARDISOSolverInvertData(int d_symmetric,std::ostream & sout,std::ostream & serr);
+        SparsePARDISOSolverInvertData(int d_symmetric);
 
         ~SparsePARDISOSolverInvertData()
         {

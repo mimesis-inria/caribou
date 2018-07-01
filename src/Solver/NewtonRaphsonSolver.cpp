@@ -113,6 +113,7 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
     } // End while (n_it < f_maxit.getValue())
 
     if (n_it >= f_maxit.getValue()) {
+        n_it--;
         msg_info() << "[DIVERGED] The number of iterations reached the threshold of " << f_maxit << " iterations";
     }
 

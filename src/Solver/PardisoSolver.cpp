@@ -33,7 +33,7 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/objectmodel/BaseContext.h>
 #include <sofa/core/behavior/LinearSolver.h>
-#include <math.h>
+#include <cmath>
 #include <sofa/helper/system/thread/CTime.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <SofaBaseLinearSolver/CompressedRowSparseMatrix.inl>
@@ -47,7 +47,7 @@
 #else
 #include <windows.h>
 #endif
-#include <stdlib.h>
+#include <cstdlib>
 #include "PardisoSolver.h"
 
 /* Change this if your Fortran compiler does not append underscores. */
@@ -85,8 +85,8 @@ namespace linearsolver
 {
 
 template<class TMatrix, class TVector>
-SparsePARDISOSolver<TMatrix,TVector>::SparsePARDISOSolverInvertData::SparsePARDISOSolverInvertData(int d_symmetric, std::ostream & sout, std::ostream & serr)
-    : solver(NULL)
+SparsePARDISOSolver<TMatrix,TVector>::SparsePARDISOSolverInvertData::SparsePARDISOSolverInvertData(int d_symmetric)
+    : solver(nullptr)
     , pardiso_initerr(1)
     , pardiso_mtype(0)
     , factorized(false)
@@ -94,7 +94,7 @@ SparsePARDISOSolver<TMatrix,TVector>::SparsePARDISOSolverInvertData::SparsePARDI
     factorized = false;
     pardiso_initerr = 0;
 
-    std::cout << "FSYM: " << d_symmetric << std::endl;
+    msg_info("SparsePARDISOSolverInvertData") << "FSYM: " << d_symmetric;
 
     switch(d_symmetric)
     {
@@ -113,7 +113,7 @@ SparsePARDISOSolver<TMatrix,TVector>::SparsePARDISOSolverInvertData::SparsePARDI
     pardiso_iparm[2-1] = 2;   // use METIS
     const char* var = getenv("OMP_NUM_THREADS");
     pardiso_iparm[3-1] = (var == NULL) ? 1 : atoi(var);
-    std::cout << "Using " << pardiso_iparm[2] << " thread(s), set OMP_NUM_THREADS environment variable to change." << std::endl;
+    msg_info("SparsePARDISOSolverInvertData") << "Using " << pardiso_iparm[2] << " thread(s), set OMP_NUM_THREADS environment variable to change.";
     pardiso_iparm[18-1] = -1;
     pardiso_iparm[24-1] = 1;
     pardiso_iparm[25-1] = 1;
@@ -126,11 +126,11 @@ SparsePARDISOSolver<TMatrix,TVector>::SparsePARDISOSolverInvertData::SparsePARDI
 
     switch(pardiso_initerr)
     {
-        case 0:   sout << "PARDISO: License check was successful" << std::endl; break;
-        case -10: serr << "PARDISO: No license file found" << std::endl; break;
-        case -11: serr << "PARDISO: License is expired" << std::endl; break;
-        case -12: serr << "PARDISO: Wrong username or hostname" << std::endl; break;
-        default:  serr << "PARDISO: Unknown error " << pardiso_initerr << std::endl; break;
+        case 0:   msg_info("SparsePARDISOSolverInvertData")  << "License check was successful"; break;
+        case -10: msg_error("SparsePARDISOSolverInvertData") << "No license file found"; break;
+        case -11: msg_error("SparsePARDISOSolverInvertData") << "License is expired"; break;
+        case -12: msg_error("SparsePARDISOSolverInvertData") << "Wrong username or hostname"; break;
+        default:  msg_error("SparsePARDISOSolverInvertData") << "Unknown error " << pardiso_initerr; break;
     }
 }
 
@@ -144,7 +144,6 @@ SparsePARDISOSolver<TMatrix,TVector>::SparsePARDISOSolver()
     , d_pardisoSchurComplement( initData(&d_pardisoSchurComplement,0,"pardisoSchurComplement","use Pardiso to compute Schur complement employing the partial factorization") )
     , d_trustRegionCoefficient( initData(&d_trustRegionCoefficient,0.0,"trustRegionCoefficient","add the value specified by the parameter on the diagonal of the matrix before inversion to perform the regularization") )
     , d_showTiming( initData(&d_showTiming,false,"showTiming","if true, show length of computation in microseconds") )
-//, masterPardisoLink(initLink("masterPardiso", "if this solver solves only Schur complement, then it requires a master solver to get the system matrix"))
 {
 }
 
@@ -166,7 +165,7 @@ void SparsePARDISOSolver<TMatrix,TVector>::init()
         if (status == 0 || errno == EEXIST)
             doExportData = true;
         else
-            std::cout << this->getName() << " WARNING: cannot create directory " << exportDir << " for exporting the solver data" << std::endl;
+            msg_error() << " Cannot create directory " << exportDir << " for exporting the solver data";
 
     }
     timeStep = -1;
@@ -174,19 +173,9 @@ void SparsePARDISOSolver<TMatrix,TVector>::init()
     defaulttype::BaseMatrix* dummyM = NULL;
     pardisoInvertData = (SparsePARDISOSolverInvertData*) this->getMatrixInvertData(dummyM);
 
-    //masterPardiso = masterPardisoLink.get();
-
-    //if (masterPardiso)
-    //    std::cout << "[" << this->getName() << "]: Master Pardiso " << masterPardiso->getName() << " found." << std::endl;
-
     patJL.clear();
     patJC.clear();
     solveNum=0;
-}
-
-template<class TMatrix, class TVector>
-SparsePARDISOSolver<TMatrix,TVector>::~SparsePARDISOSolver()
-{
 }
 
 template<class TMatrix, class TVector>
@@ -231,37 +220,38 @@ int SparsePARDISOSolver<TMatrix,TVector>::callPardiso(SparsePARDISOSolverInvertD
 template<class TMatrix, class TVector>
 void SparsePARDISOSolver<TMatrix,TVector>::invert(Matrix& M)
 {
+    SparsePARDISOSolverInvertData * data = pardisoInvertData;
+    if (data->pardiso_initerr)
+        return;
+
     sofa::helper::AdvancedTimer::stepBegin("PardisoInvert");
 
     M.compress();
 
-    SparsePARDISOSolverInvertData * data = pardisoInvertData;
-
-    if (data->pardiso_initerr) return;
     data->Mfiltered.clear();
     if (d_symmetric.getValue() > 0)
     {
         data->Mfiltered.copyUpperNonZeros(M);
         double coeff = d_trustRegionCoefficient.getValue();
         if (fabs(coeff) > 0.0) {
-            std::cout << "[" << this->getName() << "]: trust region coeff: " << coeff << std::endl;
+            msg_info() << "Trust region coeff: " << coeff;
             for (size_t i = 0; i < (size_t)data->Mfiltered.colSize(); i++)
                 data->Mfiltered.add(i,i,coeff);
         }
         data->Mfiltered.fullDiagonal();
-        sout << "Filtered upper part of M, nnz = " << data->Mfiltered.getRowBegin().back() << sendl;
+        msg_info() << "Filtered upper part of M, nnz = " << data->Mfiltered.getRowBegin().back();
     }
     else if (d_symmetric.getValue() < 0)
     {
         data->Mfiltered.copyNonZeros(M);
         data->Mfiltered.fullDiagonal();
-        sout << "Filtered M, nnz = " << data->Mfiltered.getRowBegin().back() << sendl;
+        msg_info() << "Filtered M, nnz = " << data->Mfiltered.getRowBegin().back();
     }
     else
     {
         data->Mfiltered.copyNonZeros(M);
         data->Mfiltered.fullRows();
-        sout << "Filtered M, nnz = " << data->Mfiltered.getRowBegin().back() << sendl;
+        msg_info() << "Filtered M, nnz = " << data->Mfiltered.getRowBegin().back();
     }
 
     CompressedRowSparseMatrix<double>& refM = data->Mfiltered;
@@ -272,17 +262,17 @@ void SparsePARDISOSolver<TMatrix,TVector>::invert(Matrix& M)
     //data->pardiso_iparm[37] = d_schurComplementSize.getValue();
     if (numPrevNZ != numActNZ) {
         if (this->f_printLog.getValue())
-            std::cout << "[" << this->getName() << "] analyze the matrix, nnz = " << numActNZ << std::endl;
+            msg_info() << "Analyze the matrix, nnz = " << numActNZ;
         TIC
         if (callPardiso(data, 11))
-            return;
+            goto END;
         data->factorized = true;
         TOC("Invert: analyze")
     }
     numPrevNZ = numActNZ;
 
     if (this->f_printLog.getValue())
-        std::cout << "[" << this->getName() << "] factorize the matrix" << std::endl;
+        msg_info() << "Factorize the matrix";
 
     if (doExportData) {
         char nm[100];
@@ -294,11 +284,15 @@ void SparsePARDISOSolver<TMatrix,TVector>::invert(Matrix& M)
     }
 
     TIC
-    if (callPardiso(data, 22)) { data->factorized = false; return; }
+    if (callPardiso(data, 22)) {
+        data->factorized = false;
+        goto END;
+    }
     TOC("Invert: factorize");
 
     refM.shiftIndices(-1);
 
+    END:
     sofa::helper::AdvancedTimer::stepEnd("PardisoInvert");
 
 
@@ -319,7 +313,6 @@ void SparsePARDISOSolver<TMatrix,TVector>::solve (Matrix& M, Vector& z, Vector& 
         f.close();
     }
 
-    sofa::helper::AdvancedTimer::stepBegin("PardisoSolve");
     SparsePARDISOSolverInvertData * data = (SparsePARDISOSolverInvertData *) this->getMatrixInvertData(&M);
 
     if (data->pardiso_initerr) return;
@@ -330,15 +323,17 @@ void SparsePARDISOSolver<TMatrix,TVector>::solve (Matrix& M, Vector& z, Vector& 
 
     data->pardiso_iparm[7] = 0;       /* Max numbers of iterative refinement steps. */
 
-    if (this->f_printLog.getValue())
-        std::cout << "[" << this->getName() << "] solve the system" << std::endl;
-
+    msg_info() << "Solve the system";
+    bool success = false;
+    sofa::helper::AdvancedTimer::stepBegin("PardisoSolve");
     refM.shiftIndices(1);
-    if (callPardiso(data, 33, &z, &r)) return;
+    if (!callPardiso(data, 33, &z, &r)) {
+        success = true;
+        refM.shiftIndices(-1);
+    }
     sofa::helper::AdvancedTimer::stepEnd("PardisoSolve");
-    refM.shiftIndices(-1);
 
-    if (doExportData){
+    if (success && doExportData){
         std::string exportDir=d_exportDataToDir.getValue();
         std::ofstream f;
         char name[100];
@@ -353,7 +348,7 @@ template<class TMatrix, class TVector>
 bool SparsePARDISOSolver<TMatrix,TVector>::addJMInvJtLocal(Matrix * M,ResMatrixType * result,const JMatrixType * J, double fact) {
     if (!d_pardisoSchurComplement.getValue()) {
         if (this->f_printLog.getValue())
-            std::cout << "[" << this->getName() << "] compute the Schur complement using iterated solve " << std::endl;
+            msg_info() << "Compute the Schur complement using iterated solve ";
         /*if (masterPardiso) {
             std::cerr << "[" << this->getName() << "] cannot use classical Schur computation in slave mode" << std::endl;
             return false;
@@ -365,8 +360,7 @@ bool SparsePARDISOSolver<TMatrix,TVector>::addJMInvJtLocal(Matrix * M,ResMatrixT
         return  res;
     }
 
-    if (this->f_printLog.getValue())
-        std::cout << "[" << this->getName() << "] compute the Schur complement using incomplete factorization" << std::endl;
+    msg_info() << "Compute the Schur complement using incomplete factorization";
 
     SparsePARDISOSolverInvertData * data = pardisoInvertData;
     CompressedRowSparseMatrix<double>* sysM;
@@ -382,10 +376,8 @@ bool SparsePARDISOSolver<TMatrix,TVector>::addJMInvJtLocal(Matrix * M,ResMatrixT
     size_t sizeSchur = J->rowSize();
     size_t sizeJMJ = sizeM + sizeSchur;
 
-    if (this->f_printLog.getValue()) {
-        std::cout << "[" << this->getName() << "]: size of the system matrix: " << sizeM << std::endl;
-        std::cout << "[" << this->getName() << "]: number of rows in J: " << sizeSchur << std::endl;
-    }
+    msg_info() << "Size of the system matrix: " << sizeM;
+    msg_info() << "Number of rows in J: " << sizeSchur;
 
     TIC;
     refJMJ.clear();
@@ -429,8 +421,7 @@ bool SparsePARDISOSolver<TMatrix,TVector>::addJMInvJtLocal(Matrix * M,ResMatrixT
     if (!patJremains) {
         patJL = patJLnew;
         patJC = patJCnew;
-        if (this->f_printLog.getValue())
-            std::cout << "[" << this->getName() << "]: pattern of J has changed!" << std::endl;
+        msg_info() << "Pattern of J has changed!";
     }
 
     TOC("J pattern check");
@@ -450,19 +441,17 @@ bool SparsePARDISOSolver<TMatrix,TVector>::addJMInvJtLocal(Matrix * M,ResMatrixT
     int error = 0;
     int phase;
 
-    sofa::helper::AdvancedTimer::stepBegin("PardisoPartialFactorization");
-
     if (doExportData) {
         saveSparseMatrix(refJMJ, "JMJ");
     }
 
 
+    sofa::helper::AdvancedTimer::stepBegin("PardisoPartialFactorization");
     phase=11;
     //if (!patJremains) {
     TIC;
     data->pardiso_iparm[38-1] = sizeSchur;
-    if (this->f_printLog.getValue())
-        std::cout << "Size schur: " << sizeSchur << std::endl;
+    msg_info() << "Size schur: " << sizeSchur;
     F77_FUNC(pardiso)(data->pardiso_pt, &maxfct, &mnum, &data->pardiso_mtype, &phase,
                       &n, a, ia, ja, perm, &nrhs,
                       data->pardiso_iparm, &msglvl, b, x, &error,  data->pardiso_dparm);
@@ -576,7 +565,7 @@ void SparsePARDISOSolver<TMatrix,TVector>::printError(const int error, const int
         default: msg="Unknown error"; break;
     }
     if (msg)
-        serr << "Solver phase " << phase << ": ERROR " << error << " : " << msg << sendl;
+        msg_error() << "Solver phase " << phase << ": ERROR " << error << " : " << msg;
 }
 
 template<class TMatrix, class TVector>
