@@ -251,6 +251,9 @@ class SofaSceneBuilder(object):
 
                 linear_solver = system_solver.linearSolver
                 self.add_linear_solver(node, linear_solver)
+            elif isinstance(system_solver, LinearSolver):
+                node.createObject('StaticSolver')
+                self.add_linear_solver(node, system_solver)
             else:
                 raise NotImplementedError(
                     "The system solver `{}` isn't compatible for the sofa scene builder.".format(
@@ -442,6 +445,17 @@ class SofaSceneBuilder(object):
 
                 if boundary.linked_to is not None:
                     self.set_mapping(parent_node, node, boundary.mapping)
+            elif isinstance(boundary, WatcherBoundary):
+                if boundary.linked_to is None:
+                    raise AttributeError("The Watcher boundary needs a linked part.")
+
+                node = parent_node.createChild(
+                    '{}_{}_{}'.format(parent_node.name, part.name, boundary.__class__.__name__))
+
+                mo = node.createObject('MechanicalObject', src=self.get_mesh_object(part.mesh).getLinkPath())
+                boundary.setState(mo)
+
+                self.set_mapping(parent_node, node, boundary.mapping)
             else:
                 raise NotImplementedError(
                     "The boundary `{}` isn't compatible for the sofa scene builder.".format(

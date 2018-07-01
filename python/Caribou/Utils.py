@@ -146,6 +146,24 @@ def mkdir(path):
             raise
 
 
+def memory_usage():
+    # return the memory usage in MB
+    import psutil
+    process = psutil.Process(os.getpid())
+    mem = process.memory_info().rss / float(2 ** 20)
+    return mem
+
+
+def escape(string):
+    s = ""
+    for c in string.lower():
+        if str.isalpha(c) or str.isdigit(c):
+            s = s + c
+        elif str.isspace(c):
+            s  = s + '_'
+    return s
+
+
 def generate_n_colors(n):
     """
     Generate N different color sets

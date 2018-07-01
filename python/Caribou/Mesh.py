@@ -1,6 +1,8 @@
 from .Utils import Struct as S
 from .Utils import bbox, translate, rotate
 
+from .Base import BaseObject
+
 import math
 import pygmsh
 import meshio
@@ -9,10 +11,11 @@ from numpy import linalg as LA
 from numpy import pi as PI
 
 
-class Part(object):
+class Part(BaseObject):
     __count = 0
 
     def __init__(self, **kwargs):
+        BaseObject.__init__(self, **kwargs)
         Part.__count += 1
 
         # Parameters
@@ -47,15 +50,21 @@ class VolumePart(SurfacePart):
         self.hexahedrons = kwargs.get('hexahedrons', np.array([]))
 
 
-class Mesh(object):
+class Mesh(BaseObject):
     __count = 0
 
     def __init__(self, **kwargs):
+        BaseObject.__init__(self, **kwargs)
         Mesh.__count += 1
         # Parameters
         self._params = kwargs.copy()
         self.name = kwargs.get('name', 'unnamed_mesh_{}'.format(Mesh.__count))
         self.vertices = kwargs.get('vertices', np.array([]))
+        self.gmsh = kwargs.get(
+            'gmsh',
+            {'points': None, 'cells': None, 'point_data': None, 'cell_data': None, 'field_data': None}
+        )
+
         self.bbox = S({
             'min': [0, 0, 0],
             'max': [0, 0, 0]
@@ -72,6 +81,9 @@ class Mesh(object):
                 'min': [xmin, ymin, zmin],
                 'max': [xmax, ymax, zmax]
             })
+
+    def serialize(self, keys=[], recursive=True):
+        return self.name
 
     @property
     def parts(self):
@@ -106,11 +118,17 @@ class Mesh(object):
                 return p
         return None
 
+    def write(self, filename):
+        cell_data = {}
+
 
 def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2):
     parts = []
 
-    mesh = Mesh(vertices=points)
+    mesh = Mesh(
+        vertices=points,
+        gmsh={'points': points, 'cells': cells, 'point_data': point_data, 'cell_data': cell_data, 'field_data': field_data}
+    )
 
     for field_name in field_data:
         id = field_data[field_name][0]
@@ -162,7 +180,23 @@ def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2):
 
 def fromGmshFile(filename):
     points, cells, point_data, cell_data, field_data = meshio.read(filename)
-    fromGmsh(points, cells, point_data, cell_data, field_data)
+    return fromGmsh(points, cells, point_data, cell_data, field_data)
+
+
+def fromStlFile(filename):
+    points, cells, point_data, cell_data, field_data = meshio.read(filename)
+    return fromGmsh(points, cells, point_data, cell_data, field_data)
+
+
+def toVtkFile(filename, mesh):
+    meshio.write(
+        filename,
+        mesh.vertices,
+        mesh.gmsh['cells'],
+        point_data=mesh.gmsh['point_data'],
+        cell_data=mesh.gmsh['cell_data'],
+        field_data=mesh.gmsh['field_data'],
+    )
 
 
 def cylinder(center1, center2, radius, size=10, dimension=2, quads=False):
@@ -204,3 +238,7 @@ def cylinder(center1, center2, radius, size=10, dimension=2, quads=False):
     points = translate(points, c1)
 
     return fromGmsh(points, cells, point_data, cell_data, field_data, dimension)
+
+
+def grid(corner, length, width, height, nx, ny, nz):
+    print "todo"

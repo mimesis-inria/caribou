@@ -15,6 +15,13 @@ class Material(BaseObject):
         assert isinstance(self.part, Part)
         assert self.poisson_ratio < 0.5
 
+    def printable_attributes(self):
+        return [
+                   ('Young modulus', self.young_modulus),
+                   ('Poisson ratio', self.poisson_ratio),
+                   ('Density', self.density),
+        ] + BaseObject.printable_attributes(self)
+
 
 class LinearElastic(Material):
     def __init__(self, **kwargs):
@@ -22,6 +29,11 @@ class LinearElastic(Material):
 
         # Parameters
         self.corotated = kwargs.get('corotated', False)
+
+    def printable_attributes(self):
+        return [
+                   ('Corotated', self.corotated),
+        ] + Material.printable_attributes(self)
 
 
 class StVenantKirchhoff(Material):
