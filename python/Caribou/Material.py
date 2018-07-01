@@ -1,8 +1,11 @@
 from .Mesh import Part
+from .Base import BaseObject
 
 
-class Material(object):
+class Material(BaseObject):
     def __init__(self, **kwargs):
+        BaseObject.__init__(self, **kwargs)
+
         # Parameters
         self.part = kwargs.get('part', None)
         self.young_modulus = kwargs.get('young_modulus', 5000)

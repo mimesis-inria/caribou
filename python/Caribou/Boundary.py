@@ -1,9 +1,12 @@
 from .Mapping import *
-from .Mesh import *
+from .Mesh import SurfacePart
+from .Base import BaseObject
 
 
-class Boundary(object):
+class Boundary(BaseObject):
     def __init__(self, **kwargs):
+        BaseObject.__init__(self, **kwargs)
+
         # Parameters
         self.part = kwargs.get('part', None)
         self.printLog = kwargs.get('print_log', False)
@@ -67,3 +70,18 @@ class VisualBoundary(Boundary):
 
         # Parameters
         self.pressure = kwargs.get('color', [1, 0, 0])
+
+
+class WatcherBoundary(Boundary):
+    def __init__(self, **kwargs):
+        Boundary.__init__(self, **kwargs)
+
+        # Private members
+        self.__mo = None
+
+    def setState(self, state):
+        self.__mo = state
+
+    @property
+    def state(self):
+        return self.__mo

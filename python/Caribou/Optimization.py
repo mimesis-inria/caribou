@@ -1,6 +1,9 @@
-class SystemSolver(object):
+from .Base import BaseObject
+
+
+class SystemSolver(BaseObject):
     def __init__(self, **kwargs):
-        None
+        BaseObject.__init__(self, **kwargs)
 
 
 class LinearSolver(SystemSolver):

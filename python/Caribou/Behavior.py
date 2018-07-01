@@ -1,8 +1,11 @@
 from .Mesh import Part
+from .Base import BaseObject
 
 
-class Behavior(object):
+class Behavior(BaseObject):
     def __init__(self, **kwargs):
+        BaseObject.__init__(self, **kwargs)
+
         # Parameters
         self.part = kwargs.get('part', None)
         self.printLog = kwargs.get('print_log', False)

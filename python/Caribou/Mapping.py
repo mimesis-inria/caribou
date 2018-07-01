@@ -1,8 +1,11 @@
 from .Mesh import Part
+from .Base import BaseObject
 
 
-class Mapping(object):
+class Mapping(BaseObject):
     def __init__(self, **kwargs):
+        BaseObject.__init__(self, **kwargs)
+
         # Parameters
         self.input = kwargs.get('input', None)
         self.output = kwargs.get('output', None)

@@ -1,8 +1,10 @@
 from .Optimization import SystemSolver
+from .Base import BaseObject
 
 
-class PDESolver(object):
+class PDESolver(BaseObject):
     def __init__(self, **kwargs):
+        BaseObject.__init__(self, **kwargs)
         # Parameters
         None
 
