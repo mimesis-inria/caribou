@@ -14,6 +14,7 @@ from ..View import ParaView
 import json
 import os, sys
 from math import pi as PI
+import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -53,6 +54,9 @@ class CylinderExperience(Experience):
                     Mesh.toVtkFile(initial_vtk_filepath, self.surface_mesh)
                     self.surface_mesh_filename = filename
 
+                    xmin, xmax, ymin, ymax, zmin, zmax = bbox(self.surface_mesh.vertices)
+                    ini_width, ini_height, ini_length = xmax - xmin, ymax - ymin, zmax - zmin
+
                     for case in self.cases:
                         if case.solution is not None:
                             n = self.surface_mesh.vertices.shape[0]
@@ -74,11 +78,21 @@ class CylinderExperience(Experience):
                                 case.solution_image_filename = filename
                                 solution_image_filepath = os.path.join(mesh_directory, filename)
                                 xmin, xmax, ymin, ymax, zmin, zmax = bbox(case.solution)
-                                width, height, length = xmax-xmin, ymax-ymin, zmax-zmin
+                                width, height, length = max(ini_width, xmax-xmin), max(ini_height, ymax-ymin), max(ini_length, zmax-zmin)
+
+                                image_width = 1000
+                                image_height = int(height / width * image_width)
+                                camera_angle = 20
+                                camera_x = xmax + (length / 2. / math.tan(math.radians(camera_angle/2.))) * 1.15
+                                camera_y = ymin + (height / 2.)
+                                camera_z = zmin + (length / 2.)
 
                                 ParaView(
+                                    size=(image_width, image_height),
                                     camera=ParaView.Camera(
-                                        angle=20
+                                        angle=camera_angle,
+                                        position=[-camera_x, camera_y, camera_z],
+                                        focal_point=[xmax, camera_y, camera_z],
                                     ),
                                     views=[
                                         ParaView.View(
