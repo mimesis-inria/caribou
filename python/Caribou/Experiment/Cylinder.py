@@ -1,4 +1,4 @@
-from .Experience import Experience
+from .Experiment import *
 from .. import Mesh
 from ..Simulation import Simulation
 from ..Boundary import *
@@ -20,16 +20,15 @@ import numpy as np
 import pandas as pd
 
 
-class CylinderExperience(Experience):
+class CylinderExperiment(Experiment):
     def __init__(self, **kwargs):
-        Experience.__init__(self, **kwargs)
+        Experiment.__init__(self, **kwargs)
 
         # Parameters
         self.radius = kwargs.get('radius', 7.5)
         self.length = kwargs.get('length', 80)
         self.pressure = kwargs.get('pressure', [0, -1e4, 0])
         self.surface_size = kwargs.get('surface_size')
-        self.export_directory = kwargs.get('export_directory')
 
         # Members
         self.surface_mesh = Mesh.cylinder(center1=[0, 0, 0], center2=[0, 0, self.length], radius=self.radius,
@@ -114,7 +113,7 @@ class CylinderExperience(Experience):
             self.surface = "The surface is empty"
 
         keys = keys + ['radius', 'length', 'pressure', 'surface_size', 'surface_mesh']
-        return Experience.serialize(self, keys)
+        return Experiment.serialize(self, keys)
 
     def create_report(self):
         pressure = np.linalg.norm(self.pressure)
@@ -148,7 +147,7 @@ class CylinderExperience(Experience):
             ntetra = case.behavior_mesh.volume.tetrahedrons.shape[0]
             nhexas = case.behavior_mesh.volume.hexahedrons.shape[0]
 
-            report.add_section('Experience {} : {}'.format(count, case.name))
+            report.add_section('Experiment {} : {}'.format(count, case.name))
             report.add_image(path=case.solution_image_filename)
             report.add_list(name='Mesh', attributes=[
                 ('Number of nodes', nnodes),
@@ -334,17 +333,17 @@ class CylinderExperience(Experience):
                         newton_steps = []
                         for ii in range(int(newton_nb_iterations)):
                             newton_step = mechanical['NewtonRaphsonSolver::Solve']['step_{}'.format(ii)]
-                            newton_steps.append(Experience.NewtonStep(
+                            newton_steps.append(NewtonStep(
                                 duration=newton_step['end_time'] - newton_step['start_time'],
                                 residual=newton_step['residual'],
                                 correction=newton_step['correction']
                             ))
-                        case.add_step(Experience.Step(
+                        case.add_step(Step(
                             duration=mechanical['end_time'] - mechanical['start_time'],
                             newtonsteps=newton_steps
                         ))
                     except KeyError:
-                        case.add_step(Experience.Step(
+                        case.add_step(Step(
                             duration=mechanical['end_time'] - mechanical['start_time'],
                         ))
 
