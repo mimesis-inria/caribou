@@ -50,67 +50,80 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
 
     sofa::helper::AdvancedTimer::stepBegin("NewtonRaphsonSolver::Solve");
 
-    while (n_it < f_maxit.getValue())
-    {
+    // compute addForce, in mapped: addForce + applyJT (vec)
+    // Initial computation
+    force.clear();
+    mop.computeForce(force);
+    mop.projectResponse(force);
+    f_norm = sqrt(force.dot(force));
 
-        {
-            sofa::helper::AdvancedTimer::stepBegin("step_"+std::to_string(n_it));
-            sofa::caribou::event::IterativeSolverStepBeginEvent ev;
-            sofa::simulation::PropagateEventVisitor propagator(params, &ev);
-            context->execute(propagator);
-        }
+    if (f_convergeOnResidual.getValue() && f_norm <= f_resTolerance.getValue()) {
+        msg_info() << "The step has already reached an equilibrium state";
+    } else {
 
-        // compute addForce, in mapped: addForce + applyJT (vec)
-        force.clear();
-        mop.computeForce(force);
-        mop.projectResponse(force);
-        f_norm = sqrt(force.dot(force));
+        while (n_it < f_maxit.getValue()) {
 
-        if (f_convergeOnResidual.getValue() && f_norm <= f_resTolerance.getValue()) {
-            msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of " << f_resTolerance;
-            break;
-        }
-
-
-        // assemble matrix, CG: does nothing
-        // LDL non-mapped: addKToMatrix added to system matrix
-        // LDL mapped: addKToMatrix not added to the system matrix, needs mapped FF (TODO)
-        core::behavior::MultiMatrix<simulation::common::MechanicalOperations> matrix(&mop);
-        matrix = MechanicalMatrix::K * -1.0;
-
-        // for CG: calls iteratively addDForce, mapped:  [applyJ, addDForce, applyJt(vec)]+
-        // for LDL: solves the system, everything's already assembled
-        matrix.solve(dx, force);
-
-        x.eq( x_start, dx, 1 );
-        mop.solveConstraint(x, core::ConstraintParams::POS);
-
-        //propagate positions to mapped nodes: taken from AnimateVisitor::processNodeTopDown executed by the animation loop
-        // calls apply, applyJ
-        sofa::core::MechanicalParams mp;
-        sofa::simulation::MechanicalPropagateOnlyPositionAndVelocityVisitor(&mp).execute(this->getContext()); // propagate the changes to mappings below
-
-        dx_norm = sqrt(dx.dot(dx));
+            {
+                sofa::helper::AdvancedTimer::stepBegin("step_" + std::to_string(n_it));
+                sofa::caribou::event::IterativeSolverStepBeginEvent ev;
+                sofa::simulation::PropagateEventVisitor propagator(params, &ev);
+                context->execute(propagator);
+            }
 
 
-        {
-            msg_info() << "Iteration #" << n_it << ": |f - K(x0 + dx)| = " << f_norm << " |dx| = " << dx_norm;
-            sofa::helper::AdvancedTimer::valSet("residual", f_norm);
-            sofa::helper::AdvancedTimer::valSet("correction", dx_norm);
-            sofa::caribou::event::IterativeSolverStepEndEvent ev;
-            sofa::simulation::PropagateEventVisitor propagator(params, &ev);
-            context->execute(propagator);
-            sofa::helper::AdvancedTimer::stepEnd("step_"+std::to_string(n_it));
-        }
+            // assemble matrix, CG: does nothing
+            // LDL non-mapped: addKToMatrix added to system matrix
+            // LDL mapped: addKToMatrix not added to the system matrix, needs mapped FF (TODO)
+            core::behavior::MultiMatrix<simulation::common::MechanicalOperations> matrix(&mop);
+            matrix = MechanicalMatrix::K * -1.0;
 
-        if (dx_norm <= this->f_corrTolerance.getValue()) {
-            msg_info() << "[CONVERGED] The correction's norm |dx| is smaller than the threshold of " << f_corrTolerance;
-            break;
-        }
+            // for CG: calls iteratively addDForce, mapped:  [applyJ, addDForce, applyJt(vec)]+
+            // for LDL: solves the system, everything's already assembled
+            matrix.solve(dx, force);
 
-        n_it++;
+            x.eq(x_start, dx, 1);
+            mop.solveConstraint(x, core::ConstraintParams::POS);
 
-    } // End while (n_it < f_maxit.getValue())
+            //propagate positions to mapped nodes: taken from AnimateVisitor::processNodeTopDown executed by the animation loop
+            // calls apply, applyJ
+            sofa::core::MechanicalParams mp;
+            sofa::simulation::MechanicalPropagateOnlyPositionAndVelocityVisitor(&mp).execute(
+                this->getContext()); // propagate the changes to mappings below
+
+            // compute addForce, in mapped: addForce + applyJT (vec)
+            force.clear();
+            mop.computeForce(force);
+            mop.projectResponse(force);
+            f_norm = sqrt(force.dot(force));
+
+            dx_norm = sqrt(dx.dot(dx));
+
+
+            {
+                msg_info() << "Iteration #" << n_it << ": |f - K(x0 + dx)| = " << f_norm << " |dx| = " << dx_norm;
+                sofa::helper::AdvancedTimer::valSet("residual", f_norm);
+                sofa::helper::AdvancedTimer::valSet("correction", dx_norm);
+                sofa::caribou::event::IterativeSolverStepEndEvent ev;
+                sofa::simulation::PropagateEventVisitor propagator(params, &ev);
+                context->execute(propagator);
+                sofa::helper::AdvancedTimer::stepEnd("step_" + std::to_string(n_it));
+            }
+
+            if (dx_norm <= this->f_corrTolerance.getValue()) {
+                msg_info() << "[CONVERGED] The correction's norm |dx| is smaller than the threshold of "
+                           << f_corrTolerance;
+                break;
+            }
+
+            if (f_convergeOnResidual.getValue() && f_norm <= f_resTolerance.getValue()) {
+                msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of " << f_resTolerance;
+                break;
+            }
+
+            n_it++;
+
+        } // End while (n_it < f_maxit.getValue())
+    }
 
     if (n_it >= f_maxit.getValue()) {
         n_it--;
