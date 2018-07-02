@@ -40,3 +40,4 @@ class ParticleMapping(Mapping):
 
         # Parameters
         self.numberOfNeighbors = kwargs.get('number_of_neighbors', 12)
+        self.dilatation = kwargs.get('dilatation', 3)

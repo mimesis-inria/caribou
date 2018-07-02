@@ -5,14 +5,14 @@ from ..Boundary import *
 from ..Material import Material
 from ..Behavior import Behavior
 from ..Simulation import SofaSceneBuilder
-from ..Utils import escape, memory_usage
+from ..Utils import escape, memory_usage, bbox
 from ..Report import HtmlReport
 from ..PDE import *
 from ..Optimization import *
+from ..View import ParaView
 
 import json
-import os
-import numpy as np
+import os, sys
 from math import pi as PI
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,32 +30,83 @@ class CylinderExperience(Experience):
         self.surface_size = kwargs.get('surface_size')
         self.export_directory = kwargs.get('export_directory')
 
+        # Members
         self.surface_mesh = Mesh.cylinder(center1=[0, 0, 0], center2=[0, 0, self.length], radius=self.radius,
                                           size=self.surface_size, dimension=2, quads=False)
+        self.surface_mesh_filename = ""
+        self.surface_img_filename = ""
 
     def serialize(self, keys=[], recursive=True):
-        self.surface = "An error has occurred while exporting the surface mesh"
+        self.surface_mesh_filename = "An error has occurred while exporting the surface mesh"
         mesh_directory = self.export_directory
         if self.surface_mesh is not None and self.surface_mesh.vertices.size > 0:
             if mesh_directory is not None:
                 if not os.path.isdir(mesh_directory):
                     os.mkdir(mesh_directory)
                     if not os.path.isdir(mesh_directory):
-                        self.surface = "Unabled to create output directory '{}'".format(mesh_directory)
+                        self.surface_mesh_filename = "Unabled to create output directory '{}'".format(mesh_directory)
 
                 if os.path.isdir(mesh_directory):
-                    filename = 'surface_{}.vtk'.format(escape(self.name))
-                    filepath = os.path.join(mesh_directory, filename)
-                    Mesh.toVtkFile(filepath, self.surface_mesh)
-                    self.surface = filename
+                    # INITIAL SURFACE VTK EXPORT
+                    filename = 'initial_surface_{}.vtk'.format(escape(self.name))
+                    initial_vtk_filepath = os.path.join(mesh_directory, filename)
+                    Mesh.toVtkFile(initial_vtk_filepath, self.surface_mesh)
+                    self.surface_mesh_filename = filename
+
+                    for case in self.cases:
+                        if case.solution is not None:
+                            n = self.surface_mesh.vertices.shape[0]
+                            if len(case.solution) == n:
+                                mesh = Mesh.Mesh(
+                                    vertices=np.array(case.solution),
+                                    parts=self.surface_mesh.parts,
+                                    gmsh=self.surface_mesh.gmsh
+                                )
+
+                                # CASE'S SOLUTION SURFACE VTK EXPORT
+                                filename = 'solution_surface_{}.vtk'.format(escape(case.name))
+                                case.solution_mesh_filename = filename
+                                solution_mesh_filepath = os.path.join(mesh_directory, filename)
+                                Mesh.toVtkFile(solution_mesh_filepath, mesh)
+
+                                # CASE'S SOLUTION SURFACE IMAGE EXPORT
+                                filename = 'solution_surface_{}.png'.format(escape(case.name))
+                                case.solution_image_filename = filename
+                                solution_image_filepath = os.path.join(mesh_directory, filename)
+                                xmin, xmax, ymin, ymax, zmin, zmax = bbox(case.solution)
+                                width, height, length = xmax-xmin, ymax-ymin, zmax-zmin
+
+                                ParaView(
+                                    camera=ParaView.Camera(
+                                        angle=20
+                                    ),
+                                    views=[
+                                        ParaView.View(
+                                            vtk_file=initial_vtk_filepath,
+                                            line_width=0.01,
+                                            color=[1, 0, 0],
+                                            opacity=0.1
+                                        ),
+                                        ParaView.View(
+                                            vtk_file=solution_mesh_filepath,
+                                        )
+                                ]).save(solution_image_filepath)
+
+                            else:
+                                print "SOLUTION NOT SAME SIZE ({} vs {})".format(len(case.solution), self.surface_mesh.vertices.size / 3.)
+                        else:
+                            print "NO SOLUTION FOUND"
         else:
             self.surface = "The surface is empty"
 
-        keys = keys + ['radius', 'length', 'pressure', 'surface_size', 'surface']
+        keys = keys + ['radius', 'length', 'pressure', 'surface_size', 'surface_mesh']
         return Experience.serialize(self, keys)
 
     def create_report(self):
         pressure = np.linalg.norm(self.pressure)
+
+        ntrian = self.surface_mesh.surface.triangles.shape[0]
+        nquads = self.surface_mesh.surface.quads.shape[0]
 
         report = HtmlReport(name=self.name)
         report.add_section(name="Simulation")
@@ -72,17 +123,23 @@ class CylinderExperience(Experience):
             ('Poisson ratio', self.poisson_ratio),
             ('Number of steps', self.number_of_steps),
             ('Number of surface elements',
-             self.surface_mesh.surface.triangles.size / 3. + self.surface_mesh.surface.quads.size / 4.),
+             ntrian + nquads),
         ])
 
         count = 0
         for case in self.cases:
             count = count + 1
+
+            nnodes = case.behavior_mesh.vertices.shape[0]
+            ntetra = case.behavior_mesh.volume.tetrahedrons.shape[0]
+            nhexas = case.behavior_mesh.volume.hexahedrons.shape[0]
+
             report.add_section('Experience {} : {}'.format(count, case.name))
+            report.add_image(path=case.solution_image_filename)
             report.add_list(name='Mesh', attributes=[
-                ('Number of nodes', case.behavior_mesh.vertices.size / 3.),
-                ('Number of elements',
-                 case.behavior_mesh.volume.tetrahedrons.size / 4. + case.behavior_mesh.volume.hexahedrons.size / 8.),
+                ('Number of nodes', nnodes),
+                ('Number of tetrahedrons', ntetra),
+                ('Number of hexahedrons', nhexas),
             ])
 
             report.add_list('PDE Solver', [('Type', case.solver.fullname())] + case.solver.printable_attributes())
@@ -171,6 +228,7 @@ class CylinderExperience(Experience):
 
         count = 0
         for case in self.cases:
+            print "======= RUNNING CASE {} =======".format(case.name)
             count = count + 1
             behavior_mesh = Mesh.cylinder(
                 center1=[0, 0, 0], center2=[0, 0, self.length], radius=self.radius, size=case.element_size,
@@ -185,12 +243,13 @@ class CylinderExperience(Experience):
             ])
             simulation.set_PDE_solver(case.solver)
 
-            simulation.add_boundaries([
-                FixedBoundary(part=self.surface_mesh.base, linked_to=behavior_mesh.volume),
-                PressureBoundary(part=self.surface_mesh.top, pressure=self.pressure, slope=1. / self.number_of_steps,
+            boundaries = [
+                FixedBoundary(part=behavior_mesh.base, linked_to=behavior_mesh.volume),
+                PressureBoundary(part=behavior_mesh.top, pressure=self.pressure, slope=1. / self.number_of_steps,
                                  linked_to=behavior_mesh.volume),
-                WatcherBoundary(part=self.surface_mesh.surface, linked_to=behavior_mesh.volume),
-            ])
+            ]
+            watcher = WatcherBoundary(part=self.surface_mesh.surface, linked_to=behavior_mesh.volume, link_type=case.link_type)
+            simulation.add_boundaries(boundaries + [watcher])
 
             # Material setup
             mat_options = {
@@ -274,6 +333,8 @@ class CylinderExperience(Experience):
                         case.add_step(Experience.Step(
                             duration=mechanical['end_time'] - mechanical['start_time'],
                         ))
+
+            case.solution = watcher.state.position
 
             # End the sofa's simulation
             print "Memory before unloading : {} MB".format(memory_usage())

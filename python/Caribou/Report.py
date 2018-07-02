@@ -62,10 +62,9 @@ class HtmlReport(object):
         self.lines.append('</table>')
 
     def add_image(self, name=None, path=None):
-        if os.path.isfile(path):
-            if name is not None:
-                self.lines.append('<h3>{}</h3>'.format(name))
-            self.lines.append('<img src="{}" alt="{}" width="100%"/>'.format(path, name))
+        if name is not None:
+            self.lines.append('<h3>{}</h3>'.format(name))
+        self.lines.append('<img src="{}" alt="{}" width="100%"/>'.format(path, name))
 
     def add_paragraph(self, name=None, text=None):
         if name is not None:

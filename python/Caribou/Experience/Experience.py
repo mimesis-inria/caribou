@@ -14,6 +14,12 @@ class Experience(BaseObject):
             self.material = kwargs.get('material')  # material OR material_type OR (material_type, options)
             self.behavior = kwargs.get('behavior')  # behavior OR behavior_type OR (behavior_type, options)
             self.solver = kwargs.get('solver')
+            self.link_type = kwargs.get('link_type', None)
+
+            # Members
+            self.solution = None
+            self.solution_mesh_filename = ""
+            self.solution_image_filename = ""
 
             assert isinstance(self.material, Material) or isinstance(self.material, tuple) or issubclass(self.material, Material)
             assert isinstance(self.behavior, Behavior) or isinstance(self.behavior, tuple) or issubclass(self.behavior, Behavior)

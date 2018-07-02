@@ -157,10 +157,14 @@ def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2):
         if 'tetra' in cell_data:
             mask = np.array(np.ma.masked_not_equal(cell_data['tetra']['gmsh:physical'], id).mask)
             part.tetrahedrons = cells['tetra'][~mask]
+            if len(part.tetrahedrons.shape) > 2:
+                part.tetrahedrons = part.tetrahedrons[0]
 
         if 'hexahedron' in cell_data:
             mask = np.array(np.ma.masked_not_equal(cell_data['hexahedron']['gmsh:physical'], id).mask)
             part.hexahedrons = cells['hexahedron'][~mask]
+            if len(part.hexahedrons.shape) > 2:
+                part.hexahedrons = part.hexahedrons[0]
 
         if not part.points.size:
             part.points = np.unique(

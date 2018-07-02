@@ -355,7 +355,7 @@ class SofaSceneBuilder(object):
                 node.createObject('QuarticSplineKernel', dilatation=behavior.dilatation)
 
                 if isinstance(material, LinearElastic):
-                    node.createObject('GalerkinForcefield',
+                    o = node.createObject('GalerkinForcefield',
                                       printLog=behavior.printLog,
                                       number_of_neighbors=behavior.number_of_neighbors,
                                       corotated=material.corotated,
@@ -365,6 +365,13 @@ class SofaSceneBuilder(object):
                                       youngModulus=material.young_modulus,
                                       verbose=behavior.verbose,
                                       )
+                else:
+                    raise NotImplementedError(
+                        "The material `{}` isn't compatible with the MeshlessGalerkin behavior.".format(
+                            material.__class__.__name__)
+                    )
+
+                behavior.setObject(o)
 
             elif isinstance(behavior, GravityForceField):
                 assert part.tetrahedrons.size + part.hexahedrons.size, "Gravity need either a tetra or hexa topology"
@@ -482,6 +489,7 @@ class SofaSceneBuilder(object):
                 output=output_node.getLinkPath()
             )
         elif isinstance(mapping, ParticleMapping):
+            output_node.createObject('QuarticSplineKernel', dilatation=mapping.dilatation)
             output_node.createObject(
                 'ParticleMapping',
                 input=input_node.getLinkPath(),
