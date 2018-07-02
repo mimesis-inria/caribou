@@ -3,6 +3,7 @@ from .Utils import bbox, translate, rotate
 
 from .Base import BaseObject
 
+import os
 import math
 import pygmsh
 import meshio
@@ -59,18 +60,25 @@ class Mesh(BaseObject):
         # Parameters
         self._params = kwargs.copy()
         self.name = kwargs.get('name', 'unnamed_mesh_{}'.format(Mesh.__count))
-        self.vertices = kwargs.get('vertices', np.array([]))
-        self.gmsh = kwargs.get(
-            'gmsh',
-            {'points': None, 'cells': None, 'point_data': None, 'cell_data': None, 'field_data': None}
-        )
+        self.filepath = kwargs.get('filepath', None)
 
-        self.bbox = S({
-            'min': [0, 0, 0],
-            'max': [0, 0, 0]
-        })
+        if self.filepath is not None and os.path.isfile(self.filepath):
+            fromGmshFile(self.filepath, self)
+            self.vertices = kwargs.get('vertices', self.vertices)
+        else:
+            self.vertices = kwargs.get('vertices', np.array([]))
+            self.gmsh = kwargs.get(
+                'gmsh',
+                {'points': None, 'cells': None, 'point_data': None, 'cell_data': None, 'field_data': None}
+            )
 
-        self.__parts = []
+            self.bbox = S({
+                'min': [0, 0, 0],
+                'max': [0, 0, 0]
+            })
+
+            self.__parts = []
+
         parts = kwargs.get('parts', [])
         for p in parts:
             self.add_part(p)
@@ -83,7 +91,22 @@ class Mesh(BaseObject):
             })
 
     def serialize(self, keys=[], recursive=True):
-        return self.name
+        if self.filepath is not None:
+            return BaseObject.serialize(self, ['filepath'])
+        else:
+            return BaseObject.serialize(self, ['gmsh'])
+
+    @classmethod
+    def deserialize(cls, **kwargs):
+        filepath = kwargs.get('filepath')
+        if filepath is not None:
+            return cls(**kwargs)
+
+        gmsh = kwargs.get('gmsh')
+        if gmsh is not None:
+            return fromGmsh(**gmsh)
+
+        return cls()
 
     @property
     def parts(self):
@@ -118,17 +141,22 @@ class Mesh(BaseObject):
                 return p
         return None
 
-    def write(self, filename):
-        cell_data = {}
+    def save(self, filepath):
+        toVtkFile(filename=filepath, mesh=self)
+        self.filepath = os.path.realpath(filepath)
 
 
-def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2):
+def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2, mesh=None):
     parts = []
 
-    mesh = Mesh(
-        vertices=points,
-        gmsh={'points': points, 'cells': cells, 'point_data': point_data, 'cell_data': cell_data, 'field_data': field_data}
-    )
+    if mesh is None:
+        mesh = Mesh(
+            vertices=points,
+            gmsh={'points': points, 'cells': cells, 'point_data': point_data, 'cell_data': cell_data, 'field_data': field_data}
+        )
+    else:
+        mesh.vertices = points
+        mesh.gmsh = {'points': points, 'cells': cells, 'point_data': point_data, 'cell_data': cell_data, 'field_data': field_data}
 
     for field_name in field_data:
         id = field_data[field_name][0]
@@ -182,9 +210,9 @@ def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2):
     return mesh
 
 
-def fromGmshFile(filename):
+def fromGmshFile(filename, mesh=None):
     points, cells, point_data, cell_data, field_data = meshio.read(filename)
-    return fromGmsh(points, cells, point_data, cell_data, field_data)
+    return fromGmsh(points, cells, point_data, cell_data, field_data, mesh)
 
 
 def fromStlFile(filename):
