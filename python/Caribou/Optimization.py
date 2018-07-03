@@ -8,10 +8,6 @@ class SystemSolver(BaseObject):
         # Parameters
         self.printLog = kwargs.get('print_log', False)
 
-    def serialize(self, keys=[], recursive=True):
-        keys = keys + ['printLog']
-        return BaseObject.serialize(self, keys=keys, recursive=recursive)
-
 
 class LinearSolver(SystemSolver):
     def __init__(self, **kwargs):
@@ -26,10 +22,6 @@ class CGLinearSolver(LinearSolver):
         self.iterations = kwargs.get('maximum_iterations', 2500)
         self.tolerance  = kwargs.get('tolerance', 1e-8)
         self.threshold  = kwargs.get('threshold', 1e-8)
-
-    def serialize(self, keys=[], recursive=True):
-        keys = keys + ['iterations', 'tolerance', 'threshold']
-        return LinearSolver.serialize(self, keys=keys, recursive=recursive)
 
     def printable_attributes(self):
         return [
@@ -52,10 +44,6 @@ class PardisoSolver(LinearSolver):
         self.symmetric                = kwargs.get('symmetric', PardisoSolver.SYMETRIC)
         self.iterativeSolverNumbering = kwargs.get('iterativeSolverNumbering', True)
         self.verbose = kwargs.get('verbose', False)
-
-    def serialize(self, keys=[], recursive=True):
-        keys = keys + ['symmetric', 'iterativeSolverNumbering', 'verbose']
-        return LinearSolver.serialize(self, keys=keys, recursive=recursive)
 
     def printable_attributes(self):
         m_type = "Unknown"
@@ -82,10 +70,6 @@ class NonLinearSolver(SystemSolver):
 
         assert isinstance(self.linearSolver, LinearSolver)
 
-    def serialize(self, keys=[], recursive=True):
-        keys = keys + ['linearSolver']
-        return SystemSolver.serialize(self, keys=keys, recursive=recursive)
-
     def printable_attributes(self):
         return [
                    ('Linear solver', self.linearSolver.fullname()),
@@ -101,10 +85,6 @@ class NewtonRaphsonSolver(NonLinearSolver):
         self.correctionTolerance = kwargs.get('correction_tolerance', 1e-6)
         self.convergeOnResidual = kwargs.get('converge_on_residual', False)
         self.residualTolerance = kwargs.get('residual_tolerance', 1e-6)
-
-    def serialize(self, keys=[], recursive=True):
-        keys = keys + ['maxIt', 'correctionTolerance', 'convergeOnResidual', 'residualTolerance']
-        return SystemSolver.serialize(self, keys=keys, recursive=recursive)
 
     def printable_attributes(self):
         return [

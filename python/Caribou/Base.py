@@ -27,19 +27,8 @@ class BaseObject(object):
     def classname(self):
         return type(self).__name__
 
-    def serialize(self, keys=[], recursive=True):
-        if not keys or not isinstance(keys, list) or not len(keys):
-            keys = self._params.keys()
-
-        s = {
-            'Class': self.fullname(),
-            'attributes': {}
-        }
-
-        for key in keys:
-            s['attributes'][key] = serialize(o=getattr(self, key), recursive=recursive)
-
-        return s
+    def serialize(self):
+        return self._params
 
     def fullname(self):
         module = self.__class__.__module__
@@ -77,16 +66,28 @@ def deserialize(attributes):
             return ret
     elif isinstance(attributes, list):
         return [deserialize(o) for o in attributes]
-    elif type(attributes) in [str, int, float, bool]:
+    elif isinstance(attributes, str) and attributes == 'None':
+        return None
+    elif type(attributes) in [str, int, float, bool, unicode]:
         return attributes
+    else:
+        print 'Unkown attribute type "{}" of {}'.format(type(attributes), attributes)
+        return None
 
 
-def serialize(o, recursive=True):
+def serialize(o):
     if isinstance(o, BaseObject):
-        if recursive:
-            return o.serialize()
-        else:
-            return o.fullname()
+        att = o.serialize()
+        for k in att:
+            try:
+                att[k] = serialize(att[k])
+            except AttributeError as e:
+                raise AttributeError("Unable to serialize the parameter '{}' (type '{}') of the object '{}' :\n\t {}".format(k, type(att[k]), o.fullname(), e))
+        s = {
+            'Class': o.fullname(),
+            'attributes': att
+        }
+        return s
     elif type(o) == type:
         if issubclass(o, BaseObject):
             return {
@@ -94,34 +95,27 @@ def serialize(o, recursive=True):
                 'name': o.get_class_fullname()
             }
         else:
-            return "Unknown class"
+            raise AttributeError("Unknown class to serialize '{}'".format(type(o)))
     elif isinstance(o, tuple):
-        if recursive:
-            return {
-                'Class': 'tuple',
-                'attributes': [serialize(att) for att in o]
-            }
-        else:
-            return 'tuple'
+        return {
+            'Class': 'tuple',
+            'attributes': [serialize(att) for att in o]
+        }
     elif isinstance(o, list):
-        if recursive:
-            return [serialize(att) for att in o]
-        else:
-            return 'list'
+        return [serialize(att) for att in o]
     elif isinstance(o, dict):
-        if recursive:
-            s = {}
-            for k in o:
-                s[k] = serialize(o[k])
-            return s
-        else:
-            return 'dict'
+        s = {}
+        for k in o:
+            s[k] = serialize(o[k])
+        return s
     elif isinstance(o, np.ndarray):
         return {
             'Class': 'ndarray',
             'value': o.tolist()
         }
-    elif type(o) in [str, int, float, bool]:
+    elif o is None:
+        return 'None'
+    elif type(o) in [str, int, float, bool, unicode]:
         return o
     else:
         raise AttributeError("Unknown type to serialize '{}'".format(type(o)))

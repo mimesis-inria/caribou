@@ -63,8 +63,11 @@ class Mesh(BaseObject):
         self.filepath = kwargs.get('filepath', None)
 
         if self.filepath is not None and os.path.isfile(self.filepath):
-            fromGmshFile(self.filepath, self)
+            fp = self.filepath
+            self.filepath = None  # To avoid infinite recursion
+            fromGmshFile(fp, self)
             self.vertices = kwargs.get('vertices', self.vertices)
+            self.filepath = fp
         else:
             self.vertices = kwargs.get('vertices', np.array([]))
             self.gmsh = kwargs.get(
@@ -90,11 +93,14 @@ class Mesh(BaseObject):
                 'max': [xmax, ymax, zmax]
             })
 
-    def serialize(self, keys=[], recursive=True):
+    def serialize(self):
         if self.filepath is not None:
-            return BaseObject.serialize(self, ['filepath'])
+            return {
+                'name': self.name,
+                'filepath': self.filepath
+            }
         else:
-            return BaseObject.serialize(self, ['gmsh'])
+            return BaseObject.serialize(self)
 
     @classmethod
     def deserialize(cls, **kwargs):
@@ -211,12 +217,12 @@ def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2, mesh
 
 
 def fromGmshFile(filename, mesh=None):
-    points, cells, point_data, cell_data, field_data = meshio.read(filename)
-    return fromGmsh(points, cells, point_data, cell_data, field_data, mesh)
+    points, cells, point_data, cell_data, field_data = meshio.read(str(filename))
+    return fromGmsh(points=points, cells=cells, point_data=point_data, cell_data=cell_data, field_data=field_data, mesh=mesh)
 
 
 def fromStlFile(filename):
-    points, cells, point_data, cell_data, field_data = meshio.read(filename)
+    points, cells, point_data, cell_data, field_data = meshio.read(str(filename))
     return fromGmsh(points, cells, point_data, cell_data, field_data)
 
 

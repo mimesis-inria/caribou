@@ -155,11 +155,16 @@ def memory_usage():
 
 
 def escape(string):
+    if isinstance(string, unicode):
+        o = unicode
+    else:
+        o = str
+
     s = ""
     for c in string.lower():
-        if str.isalpha(c) or str.isdigit(c):
+        if o.isalpha(c) or o.isdigit(c):
             s = s + c
-        elif str.isspace(c):
+        elif o.isspace(c):
             s  = s + '_'
     return s
 
