@@ -355,21 +355,28 @@ class SofaSceneBuilder(object):
                 node.createObject('QuarticSplineKernel', dilatation=behavior.dilatation)
 
                 if isinstance(material, LinearElastic):
-                    o = node.createObject('GalerkinForcefield',
-                                      printLog=behavior.printLog,
-                                      number_of_neighbors=behavior.number_of_neighbors,
-                                      corotated=material.corotated,
-                                      gauss_positions=grid.getLinkPath() + '.gauss_positions',
-                                      gauss_weights=grid.getLinkPath() + '.gauss_weights',
-                                      poissonRatio=material.poisson_ratio,
-                                      youngModulus=material.young_modulus,
-                                      verbose=behavior.verbose,
-                                      )
+                    linear_strain = True
+                    corotated = material.corotated
+                elif isinstance(material, StVenantKirchhoff):
+                    linear_strain = False
+                    corotated = False
                 else:
                     raise NotImplementedError(
                         "The material `{}` isn't compatible with the MeshlessGalerkin behavior.".format(
                             material.__class__.__name__)
                     )
+
+                o = node.createObject('GalerkinForcefield',
+                                      printLog=behavior.printLog,
+                                      number_of_neighbors=behavior.number_of_neighbors,
+                                      corotated=corotated,
+                                      gauss_positions=grid.getLinkPath() + '.gauss_positions',
+                                      gauss_weights=grid.getLinkPath() + '.gauss_weights',
+                                      poissonRatio=material.poisson_ratio,
+                                      youngModulus=material.young_modulus,
+                                      verbose=behavior.verbose,
+                                      linear_strain=linear_strain,
+                                      )
 
                 behavior.setObject(o)
 

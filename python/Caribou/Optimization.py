@@ -28,7 +28,7 @@ class CGLinearSolver(LinearSolver):
                    ('Maximum number of iterations', self.iterations),
                    ('Error tolerance', self.tolerance),
                    ('Denominator threshold', self.threshold)
-        ] + LinearSolver.printable_attributes()
+        ] + LinearSolver.printable_attributes(self)
 
 
 class PardisoSolver(LinearSolver):

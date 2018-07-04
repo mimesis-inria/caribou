@@ -1,5 +1,4 @@
 import os
-from math import pi as PI
 import math
 import tempfile
 import base64
@@ -108,7 +107,7 @@ class HtmlReport(object):
         for mesh in meshes:
             assert isinstance(mesh, Mesh)
             txmin, txmax, tymin, tymax, tzmin, tzmax = bbox(mesh.vertices)
-            xmin, xmax, ymin, ymax, zmin, zmax = min(xmin, txmin), min(ymin, tymin), min(zmin, tzmin), max(xmax, txmax), max(ymax, tymax), max(zmax, tzmax)
+            xmin, xmax, ymin, ymax, zmin, zmax = min(xmin, txmin), max(xmax, tymax), min(ymin, tymin), max(ymax, tymax), min(zmin, tzmin), max(zmax, tzmax)
             if mesh.filepath is None or not os.path.isfile(mesh.filepath):
                 temp = os.path.join(tempdir, 'temp_{}.vtk'.format(i))
                 mesh.save(temp)

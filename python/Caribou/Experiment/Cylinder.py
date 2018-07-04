@@ -15,9 +15,7 @@ import json
 import os, sys
 from math import pi as PI
 import math
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 
 class CylinderExperiment(Experiment):
@@ -108,141 +106,6 @@ class CylinderExperiment(Experiment):
 
         Experiment.save(self, filepath=filepath)
 
-    def create_report(self, filepath):
-        export_directory = os.getcwd()
-        export_filename = "{}.html".format(escape(self.name))
-
-        if filepath is not None:
-            if os.path.isfile(filepath):
-                export_directory = os.path.dirname(filepath)
-                export_filename = os.path.basename(filepath)
-            elif os.path.isdir(filepath):
-                export_directory = filepath
-
-        filepath = os.path.join(export_directory, export_filename)
-
-        pressure = np.linalg.norm(self.pressure)
-
-        ntrian = self.surface_mesh.surface.triangles.shape[0]
-        nquads = self.surface_mesh.surface.quads.shape[0]
-
-        report = HtmlReport(name=self.name)
-        report.add_section(name="Simulation")
-        report.add_list(name="Parameters", attributes=[
-            ('Radius', '{} {}'.format(self.radius, self.unit['length'])),
-            ('Length', '{} {}'.format(self.length, self.unit['length'])),
-            ('Volume', '{} {}<sup>3</sup>'.format(self.radius * self.radius * PI * self.length, self.unit['length'])),
-            ('Density', '{} {}/{}<sup>3</sup>'.format(self.density, self.unit['mass'], self.unit['length'])),
-            ('Mass', '{} {}'.format(self.radius * self.radius * PI * self.length * self.density, self.unit['mass'])),
-            ('Pressure', '{} {}'.format(pressure, self.unit['pressure'])),
-            ('Load surface', '{} {}<sup>2</sup>'.format(self.radius * self.radius * PI, self.unit['length'])),
-            ('Load force', '{} {}'.format(self.radius * self.radius * PI * pressure / 1e6, self.unit['load'])),
-            ('Young modulus', '{} {}'.format(self.young_modulus, self.unit['pressure'])),
-            ('Poisson ratio', self.poisson_ratio),
-            ('Number of steps', self.number_of_steps),
-            ('Number of surface elements',
-             ntrian + nquads),
-        ])
-
-        count = 0
-        for case in self.cases:
-            count = count + 1
-
-            nnodes = case.behavior_mesh.vertices.shape[0]
-            ntetra = case.behavior_mesh.volume.tetrahedrons.shape[0]
-            nhexas = case.behavior_mesh.volume.hexahedrons.shape[0]
-
-            report.add_section('Experiment {} : {}'.format(count, case.name))
-            report.add_image_from_meshes(
-                meshes=[self.surface_mesh, case.solution_mesh],
-                view_attributes=[
-                    {'line_width': 0.01,'color': [1, 0, 0],'opacity': 0.1},
-                    {}
-                ]
-            )
-            report.add_list(name='Mesh', attributes=[
-                ('Number of nodes', nnodes),
-                ('Number of tetrahedrons', ntetra),
-                ('Number of hexahedrons', nhexas),
-            ])
-
-            report.add_list('PDE Solver', [('Type', case.solver.fullname())] + case.solver.printable_attributes())
-
-            system_solver = case.solver.solver
-            if isinstance(system_solver, NonLinearSolver):
-                report.add_list(
-                    'Nonlinear solver',
-                    [('Type', system_solver.fullname())] + system_solver.printable_attributes()
-                )
-                linear_solver = system_solver.linearSolver
-            else:
-                linear_solver = system_solver
-
-            report.add_list(
-                'Linear solver',
-                [('Type', linear_solver.fullname())] + linear_solver.printable_attributes()
-            )
-
-            report.add_list(
-                'Material',
-                [('Type', case.material.fullname())] + case.material.printable_attributes()
-            )
-
-            report.add_list(
-                'Behavior',
-                [('Type', case.behavior.fullname())] + case.behavior.printable_attributes()
-            )
-
-            p = pressure * 1 / self.number_of_steps * self.radius * self.radius * PI
-            steptimes = [0]
-            newtonsteptimes = [0]
-            pressures = [p]
-            if len(case.steps) and len(case.steps[0].newtonsteps):
-                forces = [p + case.steps[0].newtonsteps[0].residual]
-            else:
-                forces = [0]
-
-            lasttime = 0
-
-            for i in range(len(case.steps)):
-                step = case.steps[i]
-                if not len(step.newtonsteps):
-                    break
-                p = pressure * (i + 1) / self.number_of_steps * self.radius * self.radius * PI
-                for newtonstep in step.newtonsteps:
-                    lasttime = lasttime + newtonstep.duration
-                    newtonsteptimes.append(lasttime)
-                    forces.append(p + newtonstep.residual)
-                steptimes.append(lasttime)
-                pressures.append(p)
-
-            if len(newtonsteptimes) < 2:
-                report.add_paragraph(name='Convergence', text='Simulation has diverged')
-                continue
-
-            # Convergence graph
-            plt.figure(figsize=(20, 10), dpi=300)
-
-            df = pd.DataFrame({'time': newtonsteptimes, 'internal force': forces})
-            plt.semilogy('time', 'internal force', data=df, color='skyblue', linewidth=1)
-
-            dp = pd.DataFrame({'time': steptimes, 'external force': pressures})
-            plt.step('time', 'external force', data=dp, marker='', color='red', linewidth=1, linestyle='dashed')
-
-            for vline in steptimes:
-                plt.axvline(x=vline, color='k', linestyle='--')
-
-            plt.legend()
-            img = os.path.realpath(
-                os.path.join(export_directory, 'convergence_graph_{}.png'.format(escape(case.name))))
-            plt.savefig(img, bbox_inches='tight')
-            report.add_image(name="Convergence", path=img)
-            print "Convergence exported at {}".format(img)
-
-        report_path = os.path.join(export_directory, 'report_{}.html'.format(escape(self.name)))
-        report.write(filepath)
-        print "Report exported at '{}'".format(report_path)
-
     def run(self):
         sofa_simulation = self.sofa.createSimulation("DAG", self.name)
         self.sofa.setSimulation(sofa_simulation)
@@ -252,8 +115,12 @@ class CylinderExperiment(Experiment):
 
         count = 0
         for case in self.cases:
-            print "======= RUNNING CASE {} =======".format(case.name)
             count = count + 1
+
+            print "======= RUNNING CASE {} =======".format(case.name)
+            if case.solution_mesh is not None:
+                print "-> Solution of case #{} ({}) previously computed.".format(count, case.name)
+                continue
 
             simulation = Simulation()
             simulation.add_meshes([
@@ -302,7 +169,7 @@ class CylinderExperiment(Experiment):
                         step_timer_output = j[j.keys()[0]]['records'][self.name]
                         mechanical = step_timer_output['Simulation::animate']['AnimateVisitor']['Mechanical']
                     except KeyError as err:
-                        print "[ERROR] No timing records in the simulation's output. (missing key '{}')"\
+                        print "[ERROR] No timing records in the simulation's output. (missing key '{}')" \
                             .format(err.message)
                         break
                     try:

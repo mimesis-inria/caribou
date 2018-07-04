@@ -46,6 +46,21 @@ class Experiment(BaseObject):
             'cases': self.cases
         })
 
+    def case(self, id):
+        if isinstance(id, (str, unicode)):
+            for c in self.cases:
+                if c.name == id:
+                    return c
+
+        if isinstance(id, str) and str.isdigit(id) and int(id)-1 < len(self.cases):
+            return self.cases[int(id)-1]
+        elif isinstance(id, unicode) and unicode.isdigit(id) and int(id)-1 < len(self.cases):
+            return self.cases[int(id)-1]
+        elif isinstance(id, int) and id-1 < len(self.cases):
+            return self.cases[id-1]
+
+        raise LookupError('Failed to find a case with index "{}"'.format(id))
+
     def save(self, filepath=None):
         export_directory = os.getcwd()
         export_filename = "{}.json".format(escape(self.name))
@@ -78,14 +93,12 @@ class Experiment(BaseObject):
 
     def add(self, case):
         assert isinstance(case, Case)
+        if case.id is None:
+            case.id = len(self.cases)+1
         self.cases.append(case)
         case.setExperiment(self)
 
         return case
-
-    def create_report(self, filepath):
-        raise NotImplementedError(
-            "The tojson functionality isn't implemented for experience of type {}".format(self.classname))
 
     def run(self):
         raise NotImplementedError(
@@ -105,6 +118,7 @@ class Case(BaseObject):
         self.link_type = kwargs.get('link_type', None)
         self.solution_mesh = kwargs.get('solution_mesh', None)
         self.behavior_mesh = kwargs.get('behavior_mesh', None)
+        self.id = kwargs.get('id', None)
 
         # Members
         self.steps = []
@@ -127,9 +141,9 @@ class Case(BaseObject):
             return
 
         # todo(jnbrunet2000@gmail.com): Exporting as vtk file will failed when further import (the field_data will be lost)
-        # filename = 'solution_surface_{}.vtk'.format(escape(self.name))
-        # solution_mesh_filepath = os.path.join(directory, filename)
-        # self.solution_mesh.save(solution_mesh_filepath)
+        filename = 'solution_surface_{}.vtk'.format(escape(self.name))
+        solution_mesh_filepath = os.path.join(directory, filename)
+        self.solution_mesh.save(solution_mesh_filepath)
 
     def serialize(self):
         return dict(BaseObject.serialize(self), **{
