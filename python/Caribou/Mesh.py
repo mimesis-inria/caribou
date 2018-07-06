@@ -30,6 +30,23 @@ class Part(BaseObject):
         self.tetrahedrons = kwargs.get('tetrahedrons', np.array([]))
         self.hexahedrons = kwargs.get('hexahedrons', np.array([]))
 
+    def __eq__(self, other):
+        """
+        Compare the part with another one
+        :param other: The other part
+        :type other: Part
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        ret = BaseObject.__eq__(self, other)
+        ret = ret and np.array_equal(self.points, other.points)
+        ret = ret and np.array_equal(self.edges, other.edges)
+        ret = ret and np.array_equal(self.triangles, other.triangles)
+        ret = ret and np.array_equal(self.quads, other.quads)
+        ret = ret and np.array_equal(self.tetrahedrons, other.tetrahedrons)
+        ret = ret and np.array_equal(self.hexahedrons, other.hexahedrons)
+        return ret
+
 
 class SurfacePart(Part):
     def __init__(self, **kwargs):
@@ -93,6 +110,21 @@ class Mesh(BaseObject):
                 'max': [xmax, ymax, zmax]
             })
 
+    def __eq__(self, other):
+        """
+        Compare the mesh with another one
+        :param other: The other mesh
+        :type other: Mesh
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = BaseObject.__eq__(self, other)
+        res = res and (\
+            (self.filepath and self.filepath == other.filepath) or \
+              (np.array_equal(self.vertices, other.vertices) and self.parts == other.parts))
+
+        return res
+
     def serialize(self):
         if self.filepath is not None:
             return {
@@ -152,7 +184,7 @@ class Mesh(BaseObject):
         self.filepath = os.path.realpath(filepath)
 
 
-def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2, mesh=None):
+def fromGmsh(points, cells, point_data, cell_data, field_data, mesh=None):
     parts = []
 
     if mesh is None:
@@ -167,49 +199,63 @@ def fromGmsh(points, cells, point_data, cell_data, field_data, dimension=2, mesh
     for field_name in field_data:
         id = field_data[field_name][0]
 
-        if dimension == 2:
-            part = SurfacePart(name=field_name, mesh=mesh)
-        else:
-            part = VolumePart(name=field_name, mesh=mesh)
+        points = np.array([])
+        edges = np.array([])
+        triangles = np.array([])
+        quads = np.array([])
+        tetrahedrons = np.array([])
+        hexahedrons = np.array([])
 
         if 'vertex' in cell_data:
             mask = np.array(np.ma.masked_not_equal(cell_data['vertex']['gmsh:physical'], id).mask)
-            part.points = cells['vertex'][~mask]
+            points = cells['vertex'][~mask]
 
         if 'line' in cell_data:
             mask = np.array(np.ma.masked_not_equal(cell_data['line']['gmsh:physical'], id).mask)
-            part.edges = cells['line'][~mask]
+            edges = cells['line'][~mask]
 
         if 'triangle' in cell_data:
             mask = np.array(np.ma.masked_not_equal(cell_data['triangle']['gmsh:physical'], id).mask)
-            part.triangles = cells['triangle'][~mask]
+            triangles = cells['triangle'][~mask]
 
         if 'quad' in cell_data:
             mask = np.array(np.ma.masked_not_equal(cell_data['quad']['gmsh:physical'], id).mask)
-            part.quads = cells['quad'][~mask]
+            quads = cells['quad'][~mask]
 
         if 'tetra' in cell_data:
             mask = np.array(np.ma.masked_not_equal(cell_data['tetra']['gmsh:physical'], id).mask)
-            part.tetrahedrons = cells['tetra'][~mask]
-            if len(part.tetrahedrons.shape) > 2:
-                part.tetrahedrons = part.tetrahedrons[0]
+            tetrahedrons = cells['tetra'][~mask]
+            if len(tetrahedrons.shape) > 2:
+                tetrahedrons = tetrahedrons[0]
 
         if 'hexahedron' in cell_data:
             mask = np.array(np.ma.masked_not_equal(cell_data['hexahedron']['gmsh:physical'], id).mask)
-            part.hexahedrons = cells['hexahedron'][~mask]
-            if len(part.hexahedrons.shape) > 2:
-                part.hexahedrons = part.hexahedrons[0]
+            hexahedrons = cells['hexahedron'][~mask]
+            if len(hexahedrons.shape) > 2:
+                hexahedrons = hexahedrons[0]
 
-        if not part.points.size:
-            part.points = np.unique(
+        if not points.size:
+            points = np.unique(
                 np.concatenate((
-                    np.unique(part.edges),
-                    np.unique(part.triangles),
-                    np.unique(part.quads),
-                    np.unique(part.tetrahedrons),
-                    np.unique(part.hexahedrons),
+                    np.unique(edges),
+                    np.unique(triangles),
+                    np.unique(quads),
+                    np.unique(tetrahedrons),
+                    np.unique(hexahedrons),
                 ))
             ).astype(int)
+
+        if tetrahedrons.size > 0 or hexahedrons.size > 0:
+            part = VolumePart(name=field_name, mesh=mesh)
+            part.tetrahedrons = tetrahedrons
+            part.hexahedrons = hexahedrons
+        else:
+            part = SurfacePart(name=field_name, mesh=mesh)
+
+        part.points = points
+        part.edges = edges
+        part.triangles = triangles
+        part.quads = quads
 
         mesh.add_part(part)
 
@@ -234,6 +280,7 @@ def toVtkFile(filename, mesh):
         point_data=mesh.gmsh['point_data'],
         cell_data=mesh.gmsh['cell_data'],
         field_data=mesh.gmsh['field_data'],
+        file_format='vtk-ascii',
     )
 
 
@@ -275,7 +322,7 @@ def cylinder(center1, center2, radius, size=10, dimension=2, quads=False):
     points = rotate(points, [0, 0, l], axis / l)
     points = translate(points, c1)
 
-    return fromGmsh(points, cells, point_data, cell_data, field_data, dimension)
+    return fromGmsh(points, cells, point_data, cell_data, field_data)
 
 
 def grid(corner, length, width, height, nx, ny, nz):

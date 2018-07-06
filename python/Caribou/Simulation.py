@@ -169,9 +169,7 @@ class SofaSceneBuilder(object):
         if part.triangles.size:
             node.createObject(
                 'TriangleSetTopologyContainer',
-                points=part.points.tolist(),
-                edges=part.edges.tolist(),
-                triangles=part.triangles.tolist(),
+                src=self.get_mesh_object(part.mesh).getLinkPath(),
             )
             node.createObject('TriangleSetTopologyModifier')
             node.createObject('TriangleSetTopologyAlgorithms')
@@ -180,9 +178,7 @@ class SofaSceneBuilder(object):
         if part.quads.size:
             node.createObject(
                 'QuadSetTopologyContainer',
-                points=part.points.tolist(),
-                edges=part.edges.tolist(),
-                quads=part.quads.tolist(),
+                src=self.get_mesh_object(part.mesh).getLinkPath(),
             )
             node.createObject('QuadSetTopologyModifier')
             node.createObject('QuadSetTopologyAlgorithms')
@@ -191,10 +187,7 @@ class SofaSceneBuilder(object):
         if part.tetrahedrons.size:
             node.createObject(
                 'TetrahedronSetTopologyContainer',
-                points=part.points.tolist(),
-                edges=part.edges.tolist(),
-                triangles=part.triangles.tolist(),
-                tetrahedra=part.tetrahedrons.tolist(),
+                src=self.get_mesh_object(part.mesh).getLinkPath(),
             )
             node.createObject('TetrahedronSetTopologyModifier')
             node.createObject('TetrahedronSetTopologyAlgorithms')
@@ -203,10 +196,7 @@ class SofaSceneBuilder(object):
         if part.hexahedrons.size:
             node.createObject(
                 'HexahedronSetTopologyContainer',
-                points=part.points.tolist(),
-                edges=part.edges.tolist(),
-                quads=part.quads.tolist(),
-                hexahedra=part.hexahedrons.tolist(),
+                src=self.get_mesh_object(part.mesh).getLinkPath(),
             )
             node.createObject('HexahedronSetTopologyModifier')
             node.createObject('HexahedronSetTopologyAlgorithms')
@@ -246,7 +236,8 @@ class SofaSceneBuilder(object):
                     correctionTolerance=system_solver.correctionTolerance,
                     residualTolerance=system_solver.residualTolerance,
                     convergeOnResidual=system_solver.convergeOnResidual,
-                    printLog=system_solver.printLog
+                    printLog=system_solver.printLog,
+                    cutoff=system_solver.cutoff,
                 )
 
                 linear_solver = system_solver.linearSolver

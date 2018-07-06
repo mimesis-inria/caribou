@@ -74,5 +74,7 @@ class ParaView(object):
 
         Render(view)
         SaveScreenshot(filename, TransparentBackground=self.transparent_background, view=view)
+        Delete(view)
+        RemoveViewsAndLayouts()
 
 

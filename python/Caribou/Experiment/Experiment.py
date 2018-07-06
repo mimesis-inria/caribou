@@ -1,9 +1,9 @@
 from ..Base import BaseObject, serialize, deserialize
 from ..Behavior import Behavior
 from ..Material import Material
-from ..Utils import escape
+from ..Utils import escape, mkdir
 
-import json, os
+import json, os, glob
 
 
 class Experiment(BaseObject):
@@ -18,18 +18,30 @@ class Experiment(BaseObject):
         self.density = kwargs.get('density', 2.3)
         self.unit = kwargs.get('unit', {'length': 'mm', 'mass': 'mg', 'pressure': 'Pa', 'load': 'N'})
         self.sofa = kwargs.get('sofa')
+        self.directory = kwargs.get('directory')
 
         # Members
         self.cases = []
+        self.__curid = 0
 
-    @classmethod
-    def deserialize(cls, **kwargs):
-        e = cls(**kwargs)
-        cases = kwargs.get('cases', [])
-        for c in cases:
-            e.add(c)
+        # Initialization
+        if self.directory is None:
+            self.directory = os.path.abspath(os.getcwd())
+        elif not os.path.isdir(self.directory):
+            mkdir(self.directory)
 
-        return e
+    def __eq__(self, other):
+        """
+        Compare the experiment with another one
+        :param other: The other experiment
+        :type other: Experiment
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        return self.number_of_steps == other.number_of_steps and \
+               self.young_modulus == other.young_modulus and \
+               self.poisson_ratio == other.poisson_ratio and \
+               self.density == other.density
 
     def serialize(self):
         att = BaseObject.serialize(self)
@@ -43,7 +55,7 @@ class Experiment(BaseObject):
             'poisson_ratio': self.poisson_ratio,
             'density': self.density,
             'unit': self.unit,
-            'cases': self.cases
+            'directory': self.directory
         })
 
     def case(self, id):
@@ -61,21 +73,10 @@ class Experiment(BaseObject):
 
         raise LookupError('Failed to find a case with index "{}"'.format(id))
 
-    def save(self, filepath=None):
-        export_directory = os.getcwd()
+    def save(self):
         export_filename = "{}.json".format(escape(self.name))
 
-        if filepath is not None:
-            if os.path.isfile(filepath):
-                export_directory = os.path.dirname(filepath)
-                export_filename = os.path.basename(filepath)
-            elif os.path.isdir(filepath):
-                export_directory = filepath
-
-        for case in self.cases:
-            case.save(export_directory)
-
-        filepath = os.path.join(export_directory, export_filename)
+        filepath = os.path.join(self.directory, export_filename)
         with open(filepath, 'w') as f:
             json.dump(serialize(self), f)
             print "Experiment exported at '{}'".format(filepath)
@@ -91,12 +92,49 @@ class Experiment(BaseObject):
         with open(filepath, 'r') as f:
             return deserialize(json.load(f))
 
+    def load_cases_from_directory(self, directory=None):
+        if directory is None or not os.path.isdir(directory):
+            directory = self.directory
+
+        assert os.path.isdir(directory)
+
+        for filename in glob.iglob(os.path.join(directory, 'case_*.json')):
+            try:
+                with open(filename, 'r') as f:
+                    case = deserialize(json.load(f))
+            except Exception as e:
+                print "File '{}' is found but can't be loaded and will be ignored.\n\tError: {}".format(filename, e)
+                continue
+
+            if not isinstance(case, Case):
+                print "File '{}' found but does not contain a case object".format(filename)
+                continue
+
+            if case.experiment is None or not case.experiment == self:
+                print "Case '{}' was found in file '{}' but was run with a different experiment.".format(case.name, filename)
+                continue
+
+            case.filepath = filename
+            self.add(case)
+            print "Case '{}' automatically loaded from file '{}'".format(case.name, filename)
+
+        self.__curid = 0 # Reset id counter
+
     def add(self, case):
         assert isinstance(case, Case)
-        if case.id is None:
-            case.id = len(self.cases)+1
+        self.__curid = self.__curid + 1
+        case.id = self.__curid
+
+        for c in self.cases:
+            if c == case:
+                if not (c.name == case.name):
+                    print "Renaming case '{}' for '{}'".format(c.name, case.name)
+                    c.name = case.name
+                c.id = case.id
+                return c
+
         self.cases.append(case)
-        case.setExperiment(self)
+        case.experiment = self
 
         return case
 
@@ -119,39 +157,65 @@ class Case(BaseObject):
         self.solution_mesh = kwargs.get('solution_mesh', None)
         self.behavior_mesh = kwargs.get('behavior_mesh', None)
         self.id = kwargs.get('id', None)
+        self.experiment = kwargs.get('experiment')
+        self.run_date = kwargs.get('run_date')
+        self.run_memory = kwargs.get('run_memory')
+        self.filepath = kwargs.get('filepath')
 
         # Members
         self.steps = []
 
-        # Private members
-        self.__experiment = None
-
         assert isinstance(self.material, Material) or isinstance(self.material, tuple) or issubclass(self.material, Material)
         assert isinstance(self.behavior, Behavior) or isinstance(self.behavior, tuple) or issubclass(self.behavior, Behavior)
 
-    def setExperiment(self, e):
-        self.__experiment = e
+    def __eq__(self, other):
+        """
+        Compare the case with another one
+        :param other: The other case
+        :type other: Case
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = self.element_size == other.element_size
+        res = res and (self.material == other.material)
+        res = res and (self.behavior == other.behavior)
+        res = res and (self.solver == other.solver)
+        res = res and (self.link_type == other.link_type)
+        res = res and (self.behavior_mesh == other.behavior_mesh)
+        return res
 
     def add_step(self, step):
         assert isinstance(step, Step)
         self.steps.append(step)
 
-    def save(self, directory):
-        if self.solution_mesh is None:
-            return
+    def save(self):
+        if self.experiment is None:
+            raise RuntimeError('Trying to save a case without an experiment set.')
 
-        # todo(jnbrunet2000@gmail.com): Exporting as vtk file will failed when further import (the field_data will be lost)
-        filename = 'solution_surface_{}.vtk'.format(escape(self.name))
-        solution_mesh_filepath = os.path.join(directory, filename)
-        self.solution_mesh.save(solution_mesh_filepath)
+        if self.solution_mesh is not None:
+            # todo(jnbrunet2000@gmail.com): Exporting as vtk file will failed when further import (the field_data will be lost)
+            filename = 'solution_surface_{}_{}.vtk'.format(escape(self.experiment.name), escape(self.name))
+            solution_mesh_filepath = os.path.join(self.experiment.directory, filename)
+            self.solution_mesh.save(solution_mesh_filepath)
+
+        filepath = os.path.join(self.experiment.directory, 'case_{}_{}.json'.format(escape(self.experiment.name), escape(self.name)))
+        with open(filepath, 'w') as f:
+            json.dump(serialize(self), f)
+            print "Case exported at '{}'".format(filepath)
+
+        self.filepath = filepath
 
     def serialize(self):
         return dict(BaseObject.serialize(self), **{
+            'name': self.name,
             'steps': self.steps,
             'material': self.material,
             'behavior': self.behavior,
             'solution_mesh': self.solution_mesh,
             'behavior_mesh': self.behavior_mesh,
+            'experiment': self.experiment,
+            'run_date': self.run_date,
+            'run_memory': self.run_memory,
         })
 
     @classmethod

@@ -10,6 +10,18 @@ class PDESolver(BaseObject):
 
         assert isinstance(self.solver, SystemSolver)
 
+    def __eq__(self, other):
+        """
+        Compare the PDESolver with another one
+        :param other: The other PDESolver
+        :type other: PDESolver
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = BaseObject.__eq__(self, other)
+        res = res and self.solver == other.solver
+        return res
+
     def printable_attributes(self):
         return [
             ('System solver', self.solver.fullname())

@@ -154,6 +154,13 @@ def memory_usage():
     return mem
 
 
+def memory_available():
+    # return the memory usage in MB
+    import psutil
+    mem = psutil.virtual_memory().available / float(2 ** 20)
+    return mem
+
+
 def escape(string):
     if isinstance(string, unicode):
         o = unicode

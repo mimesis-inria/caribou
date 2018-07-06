@@ -15,6 +15,19 @@ class Material(BaseObject):
         assert isinstance(self.part, Part)
         assert self.poisson_ratio < 0.5
 
+    def __eq__(self, other):
+        """
+        Compare the material with another one
+        :param other: The other material
+        :type other: Material
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        return BaseObject.__eq__(self, other) and \
+               self.young_modulus == other.young_modulus and \
+               self.poisson_ratio == other.poisson_ratio and \
+               self.density == other.density
+
     def printable_attributes(self):
         return [
                    ('Young modulus', self.young_modulus),
@@ -29,6 +42,18 @@ class LinearElastic(Material):
 
         # Parameters
         self.corotated = kwargs.get('corotated', False)
+
+    def __eq__(self, other):
+        """
+        Compare the LinearElastic material with another one
+        :param other: The other material
+        :type other: LinearElastic
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        return Material.__eq__(self, other) and \
+               self.corotated == other.corotated and \
+               Material.__eq__(self, other)
 
     def printable_attributes(self):
         return [

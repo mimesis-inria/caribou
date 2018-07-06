@@ -5,7 +5,7 @@ from ..Boundary import *
 from ..Material import Material
 from ..Behavior import Behavior, MeshlessGalerkin
 from ..Simulation import SofaSceneBuilder
-from ..Utils import escape, memory_usage, bbox
+from ..Utils import escape, memory_usage, bbox, memory_available
 from ..Report import HtmlReport
 from ..PDE import *
 from ..Optimization import *
@@ -16,6 +16,7 @@ import os, sys
 from math import pi as PI
 import math
 import numpy as np
+from datetime import datetime
 
 
 class CylinderExperiment(Experiment):
@@ -31,6 +32,19 @@ class CylinderExperiment(Experiment):
         # Members
         self.surface_mesh = Mesh.cylinder(center1=[0, 0, 0], center2=[0, 0, self.length], radius=self.radius,
                                           size=self.surface_size, dimension=2, quads=False)
+
+    def __eq__(self, other):
+        """
+        Compare the CylinderExperiment with another one
+        :param other: The other CylinderExperiment
+        :type other: CylinderExperiment
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        return self.radius == other.radius and \
+               self.length == other.length and \
+               self.pressure == other.pressure and \
+               Experiment.__eq__(self, other)
 
     def add(self, case):
         if not isinstance(case.behavior_mesh, Mesh.Mesh):
@@ -53,6 +67,11 @@ class CylinderExperiment(Experiment):
             case.material = m(**mat_options)
         elif type(case.material) == type and issubclass(case.material, Material):
             case.material = case.material(**mat_options)
+        elif isinstance(case.material, Material):
+            if not case.material.part == case.behavior_mesh.volume:
+                case.material.part = case.behavior_mesh.volume
+        else:
+            raise AttributeError("The case must have a material class that derives from Material")
 
         # Behavior setup
         beh_options = {
@@ -64,8 +83,13 @@ class CylinderExperiment(Experiment):
             if isinstance(options, dict):
                 beh_options.update(options)
             case.behavior = b(**beh_options)
-        elif type(case.behavior) == type and issubclass(case.behavior, Behavior):
+        elif isinstance(case.behavior, type) and issubclass(case.behavior, Behavior):
             case.behavior = case.behavior(**beh_options)
+        elif isinstance(case.behavior, Behavior):
+            if not case.behavior.part == case.behavior_mesh.volume:
+                case.behavior.part = case.behavior_mesh.volume
+        else:
+            raise AttributeError("The case must have a behavior class that derives from Behavior")
 
         return Experiment.add(self, case)
 
@@ -78,7 +102,7 @@ class CylinderExperiment(Experiment):
             'surface_mesh': self.surface_mesh,
         })
 
-    def save(self, filepath=None):
+    def save(self):
 
         # todo(jnbrunet2000@gmail.com): Exporting as vtk file will failed when further import (the field_data will be lost)
         # # INITIAL SURFACE VTK EXPORT
@@ -104,9 +128,10 @@ class CylinderExperiment(Experiment):
         #         vtkfilepath = os.path.join(export_directory, export_filename)
         #         case.behavior_mesh.save(vtkfilepath)
 
-        Experiment.save(self, filepath=filepath)
+        Experiment.save(self)
 
     def run(self):
+        self.save()
         sofa_simulation = self.sofa.createSimulation("DAG", self.name)
         self.sofa.setSimulation(sofa_simulation)
         self.sofa.timerSetEnabled(self.name, True)
@@ -121,6 +146,9 @@ class CylinderExperiment(Experiment):
             if case.solution_mesh is not None:
                 print "-> Solution of case #{} ({}) previously computed.".format(count, case.name)
                 continue
+
+            case.run_date = datetime.now()
+            case.run_memory = memory_available()
 
             simulation = Simulation()
             simulation.add_meshes([
@@ -202,6 +230,8 @@ class CylinderExperiment(Experiment):
                 parts=self.surface_mesh.parts,
                 gmsh=self.surface_mesh.gmsh
             )
+
+            case.save()
 
             # End the sofa's simulation
             sofa_simulation.unload(root)

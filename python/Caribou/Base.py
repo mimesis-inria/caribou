@@ -27,6 +27,9 @@ class BaseObject(object):
     def classname(self):
         return type(self).__name__
 
+    def __eq__(self, other):
+        return type(self) == type(other)
+
     def serialize(self):
         return self._params
 
@@ -118,4 +121,7 @@ def serialize(o):
     elif type(o) in [str, int, float, bool, unicode]:
         return o
     else:
-        raise AttributeError("Unknown type to serialize '{}'".format(type(o)))
+        try:
+            return str(o)
+        except Exception as e:
+            raise AttributeError("Unknown type to serialize '{}'\n\t{}".format(type(o), e))

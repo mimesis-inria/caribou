@@ -12,10 +12,25 @@ class Behavior(BaseObject):
 
         assert isinstance(self.part, Part)
 
+    def __eq__(self, other):
+        """
+        Compare the Behavior with another one
+        :param other: The other Behavior
+        :type other: Behavior
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = BaseObject.__eq__(self, other)
+        res = res and self.part == other.part
+        return res
+
 
 class FEMForceField(Behavior):
     def __init__(self, **kwargs):
         Behavior.__init__(self, **kwargs)
+
+    def __eq__(self, other):
+        return Behavior.__eq__(self, other)
 
 
 class GravityForceField(Behavior):
@@ -40,6 +55,21 @@ class MeshlessGalerkin(Behavior):
 
         # Private members
         self.__object = None
+
+    def __eq__(self, other):
+        """
+        Compare the Behavior with another one
+        :param other: The other Behavior
+        :type other: MeshlessGalerkin
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = Behavior.__eq__(self, other)
+        res = res and self.grid == other.grid
+        res = res and (self.number_of_neighbors == other.number_of_neighbors)
+        res = res and (self.dilatation == other.dilatation)
+        res = res and (self.surface == other.surface)
+        return res
 
     def setObject(self, object):
         """

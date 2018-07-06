@@ -23,6 +23,20 @@ class CGLinearSolver(LinearSolver):
         self.tolerance  = kwargs.get('tolerance', 1e-8)
         self.threshold  = kwargs.get('threshold', 1e-8)
 
+    def __eq__(self, other):
+        """
+        Compare the CGLinearSolver with another one
+        :param other: The other CGLinearSolver
+        :type other: CGLinearSolver
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = LinearSolver.__eq__(self, other)
+        res = res and self.iterations == other.iterations
+        res = res and self.tolerance == other.tolerance
+        res = res and self.threshold == other.threshold
+        return res
+
     def printable_attributes(self):
         return [
                    ('Maximum number of iterations', self.iterations),
@@ -44,6 +58,19 @@ class PardisoSolver(LinearSolver):
         self.symmetric                = kwargs.get('symmetric', PardisoSolver.SYMETRIC)
         self.iterativeSolverNumbering = kwargs.get('iterativeSolverNumbering', True)
         self.verbose = kwargs.get('verbose', False)
+
+    def __eq__(self, other):
+        """
+        Compare the PardisoSolver with another one
+        :param other: The other PardisoSolver
+        :type other: PardisoSolver
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = LinearSolver.__eq__(self, other)
+        res = res and self.symmetric == other.symmetric
+        res = res and self.iterativeSolverNumbering == other.iterativeSolverNumbering
+        return res
 
     def printable_attributes(self):
         m_type = "Unknown"
@@ -70,6 +97,18 @@ class NonLinearSolver(SystemSolver):
 
         assert isinstance(self.linearSolver, LinearSolver)
 
+    def __eq__(self, other):
+        """
+        Compare the NonLinearSolver with another one
+        :param other: The other NonLinearSolver
+        :type other: NonLinearSolver
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = SystemSolver.__eq__(self, other)
+        res = res and self.linearSolver == other.linearSolver
+        return res
+
     def printable_attributes(self):
         return [
                    ('Linear solver', self.linearSolver.fullname()),
@@ -85,6 +124,23 @@ class NewtonRaphsonSolver(NonLinearSolver):
         self.correctionTolerance = kwargs.get('correction_tolerance', 1e-6)
         self.convergeOnResidual = kwargs.get('converge_on_residual', False)
         self.residualTolerance = kwargs.get('residual_tolerance', 1e-6)
+        self.cutoff = kwargs.get('cutoff', False)
+
+    def __eq__(self, other):
+        """
+        Compare the NewtonRaphsonSolver with another one
+        :param other: The other NewtonRaphsonSolver
+        :type other: NewtonRaphsonSolver
+        :return: True if their parameters are equal, false otherwise
+        ":rtype: bool
+        """
+        res = NonLinearSolver.__eq__(self, other)
+        res = res and self.maxIt == other.maxIt
+        res = res and self.correctionTolerance == other.correctionTolerance
+        res = res and self.convergeOnResidual == other.convergeOnResidual
+        res = res and self.residualTolerance == other.residualTolerance
+        res = res and self.cutoff == other.cutoff
+        return res
 
     def printable_attributes(self):
         return [
@@ -92,4 +148,5 @@ class NewtonRaphsonSolver(NonLinearSolver):
                    ('Correction tolerance (|dx|)', self.correctionTolerance),
                    ('Residual tolerance (|f - K(x0 + dx)|)', self.residualTolerance),
                    ('Converge on residual tolerance', self.convergeOnResidual),
+                   ('Stop the iterations when the residual goes up', self.cutoff),
         ] + NonLinearSolver.printable_attributes(self)

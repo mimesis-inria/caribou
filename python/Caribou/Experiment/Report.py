@@ -1,5 +1,6 @@
 from ..Report import HtmlReport
 from ..Optimization import NonLinearSolver
+from ..View import ParaView
 from Cylinder import CylinderExperiment
 from Experiment import Case
 
@@ -16,6 +17,7 @@ class CylinderExperimentReport(HtmlReport):
 
         # Parameters
         self.experiment = kwargs.get('experiment')
+        self.solution = kwargs.get('solution')
 
         assert isinstance(self.experiment, CylinderExperiment)
 
@@ -41,14 +43,9 @@ class CylinderExperimentReport(HtmlReport):
              ntrian + nquads),
         ])
 
-    def add_cases(self, cases=[]):
-        if len(cases) == 0:
-            for c in self.experiment.cases:
-                self.add_case(c)
-
-        else:
-            for c in cases:
-                self.add_case(c)
+    def add_all_cases(self):
+        for c in sorted(self.experiment.cases, key=lambda case: case.id):
+            self.add_case(c)
 
         return self
 
@@ -61,13 +58,6 @@ class CylinderExperimentReport(HtmlReport):
         nhexas = case.behavior_mesh.volume.hexahedrons.shape[0]
 
         self.add_section('Case #{} : {}'.format(case.id, case.name))
-        self.add_image_from_meshes(
-            meshes=[self.experiment.surface_mesh, case.solution_mesh],
-            view_attributes=[
-                {'line_width': 0.01, 'color': [1, 0, 0], 'opacity': 0.1},
-                {}
-            ]
-        )
 
         ttime = 0
         for step in case.steps:
@@ -75,6 +65,8 @@ class CylinderExperimentReport(HtmlReport):
 
         self.add_list(name="Informations", attributes=[
             ('Time to convergence', ttime),
+            ('Run date', case.run_date),
+            ('Memory available before execution', '{} MB'.format(case.run_memory)),
         ])
 
         self.add_list(name='Mesh', attributes=[
@@ -108,6 +100,24 @@ class CylinderExperimentReport(HtmlReport):
         self.add_list(
             'Behavior',
             [('Type', case.behavior.fullname())] + case.behavior.printable_attributes()
+        )
+
+        meshes = [self.experiment.surface_mesh, case.solution_mesh]
+        view_attributes = [
+                {'line_width': 0.01, 'color': [0, 0, 0], 'opacity': 0.1, 'representation': ParaView.Representation.Wireframe},
+                {'representation': ParaView.Representation.Wireframe}
+            ]
+
+        if self.solution is not None and not case == self.solution:
+            meshes.append(self.solution.solution_mesh)
+            view_attributes.append({
+                'line_width': 0.01, 'color': [1, 0, 0], 'opacity': 0.4, 'representation': ParaView.Representation.Wireframe
+            })
+
+        self.add_image_from_meshes(
+            name='Solution',
+            meshes=meshes,
+            view_attributes=view_attributes
         )
 
         p = pressure * 1 / self.experiment.number_of_steps * self.experiment.radius * self.experiment.radius * PI
