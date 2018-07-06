@@ -5,6 +5,7 @@ set(HEADER_FILES
         src/Event/IterativeSolverEvent.h
         src/Forcefield/PressureForcefield.h
         src/Solver/NewtonRaphsonSolver.h
+        src/Helper/LinearAlgebra.h
         src/Helper/Triangle.h
 )
 
@@ -84,3 +85,29 @@ endif ()
 if (WITH_PARDISO_SOLVER)
     target_link_libraries(${PROJECT_NAME} ${PARDISO_LIB} blas lapack gomp)
 endif ()
+
+target_include_directories(${PROJECT_NAME}
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        "$<INSTALL_INTERFACE:include>")
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}Config
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        )
+
+foreach ( file ${HEADER_FILES} )
+    get_filename_component( dir ${file} DIRECTORY )
+    STRING(REGEX MATCH "^src\\/(.*)$" dira ${dir})
+    set(dira ${CMAKE_MATCH_1})
+    install( FILES ${file} DESTINATION include/${PROJECT_NAME}/${dira} )
+endforeach()
+
+install(EXPORT ${PROJECT_NAME}Config
+        FILE ${PROJECT_NAME}Targets.cmake
+        DESTINATION lib/cmake
+        )
+install(EXPORT ${PROJECT_NAME}Config DESTINATION lib/cmake)
+export(TARGETS ${PROJECT_NAME} FILE ${PROJECT_NAME}Config.cmake)
