@@ -26,6 +26,7 @@ public:
     Data<double> f_corrTolerance;
     Data<double> f_resTolerance;
     Data<bool> f_convergeOnResidual;
+    Data<bool> f_cutoff;
 
     void cleanup() override {}
 

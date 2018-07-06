@@ -23,6 +23,7 @@ NewtonRaphsonSolver::NewtonRaphsonSolver()
     , f_corrTolerance( initData(&f_corrTolerance,double(1e-5),"correctionTolerance","tolerance as the norm of correction |du| in each Newton step"))
     , f_resTolerance( initData(&f_resTolerance,double(1e-5),"residualTolerance","tolerance as the norm of residual |f - K(u)| in each Newton step"))
     , f_convergeOnResidual( initData(&f_convergeOnResidual, false,"convergeOnResidual","use the residual as the convergence criterium (stricter)"))
+    , f_cutoff( initData(&f_cutoff, false,"cutoff","Stop the iterations when the residual goes up"))
 
 {}
 
@@ -38,6 +39,9 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
 
     // MO vector dx is not allocated by default, it will seg fault if the CG is used (dx is taken by default) with an IdentityMapping
     MultiVecDeriv tempdx(&vop, core::VecDerivId::dx() ); tempdx.realloc( &vop, true, true );
+
+    // Set implicit param to true to trigger nonlinear stiffness matrix recomputation
+    mop->setImplicit(true);
 
     //////////////////////////////////////////////////////////////////////////////////
 
@@ -94,19 +98,24 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
             force.clear();
             mop.computeForce(force);
             mop.projectResponse(force);
-            f_norm = sqrt(force.dot(force));
+            double f_cur_norm = sqrt(force.dot(force));
 
             dx_norm = sqrt(dx.dot(dx));
 
 
             {
-                msg_info() << "Iteration #" << n_it << ": |f - K(x0 + dx)| = " << f_norm << " |dx| = " << dx_norm;
-                sofa::helper::AdvancedTimer::valSet("residual", f_norm);
+                msg_info() << "Iteration #" << n_it << ": |f - K(x0 + dx)| = " << f_cur_norm << " |dx| = " << dx_norm;
+                sofa::helper::AdvancedTimer::valSet("residual", f_cur_norm);
                 sofa::helper::AdvancedTimer::valSet("correction", dx_norm);
                 sofa::caribou::event::IterativeSolverStepEndEvent ev;
                 sofa::simulation::PropagateEventVisitor propagator(params, &ev);
                 context->execute(propagator);
                 sofa::helper::AdvancedTimer::stepEnd("step_" + std::to_string(n_it));
+            }
+
+            if (f_cutoff.getValue() && f_cur_norm > f_norm && n_it>0) {
+                msg_info() << "[DIVERGED] residual's norm increased";
+                break;
             }
 
             if (dx_norm <= this->f_corrTolerance.getValue()) {
@@ -115,11 +124,12 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
                 break;
             }
 
-            if (f_convergeOnResidual.getValue() && f_norm <= f_resTolerance.getValue()) {
+            if (f_convergeOnResidual.getValue() && f_cur_norm <= f_resTolerance.getValue()) {
                 msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of " << f_resTolerance;
                 break;
             }
 
+            f_norm = f_cur_norm;
             n_it++;
 
         } // End while (n_it < f_maxit.getValue())
