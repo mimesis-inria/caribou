@@ -23,8 +23,9 @@ class Case(BaseObject):
         self.density = kwargs.get('density', 2.3)
         self.unit = kwargs.get('unit', {'length': 'mm', 'mass': 'mg', 'pressure': 'Pa', 'load': 'N'})
         self.link_type = kwargs.get('link_type', None)
-        self.solution_mesh = kwargs.get('solution_mesh', None)
-        self.behavior_mesh = kwargs.get('behavior_mesh', None)
+        self.solution_surface_mesh = kwargs.get('solution_surface_mesh', None)
+        self.solution_behavior_mesh = kwargs.get('solution_behavior_mesh', None)
+        self.initial_behavior_mesh = kwargs.get('initial_behavior_mesh', None)
         self.id = kwargs.get('id', None)
         self.experiment = kwargs.get('experiment')
         self.run_date = kwargs.get('run_date')
@@ -50,7 +51,7 @@ class Case(BaseObject):
         res = res and (self.behavior == other.behavior)
         res = res and (self.solver == other.solver)
         res = res and (self.link_type == other.link_type)
-        res = res and (self.behavior_mesh == other.behavior_mesh)
+        res = res and (self.initial_behavior_mesh == other.initial_behavior_mesh)
         res = res and (self.number_of_steps == other.number_of_steps)
         res = res and (self.young_modulus == other.young_modulus)
         res = res and (self.poisson_ratio == other.poisson_ratio)
@@ -65,11 +66,17 @@ class Case(BaseObject):
         if self.experiment is None:
             raise RuntimeError('Trying to save a case without an experiment set.')
 
-        if self.solution_mesh is not None:
+        if self.solution_surface_mesh is not None:
             # todo(jnbrunet2000@gmail.com): Exporting as vtk file will failed when further import (the field_data will be lost)
             filename = 'solution_surface_{}_{}.vtk'.format(escape(self.experiment.name), escape(self.name))
             solution_mesh_filepath = os.path.join(self.experiment.directory, filename)
-            self.solution_mesh.save(solution_mesh_filepath)
+            self.solution_surface_mesh.save(solution_mesh_filepath)
+
+        if self.solution_behavior_mesh is not None:
+            # todo(jnbrunet2000@gmail.com): Exporting as vtk file will failed when further import (the field_data will be lost)
+            filename = 'solution_behavior_{}_{}.vtk'.format(escape(self.experiment.name), escape(self.name))
+            solution_mesh_filepath = os.path.join(self.experiment.directory, filename)
+            self.solution_behavior_mesh.save(solution_mesh_filepath)
 
         filepath = os.path.join(self.experiment.directory, 'case_{}_{}.json'.format(escape(self.experiment.name), escape(self.name)))
         with open(filepath, 'w') as f:
@@ -89,8 +96,9 @@ class Case(BaseObject):
             'poisson_ratio': self.poisson_ratio,
             'density': self.density,
             'unit': self.unit,
-            'solution_mesh': self.solution_mesh,
-            'behavior_mesh': self.behavior_mesh,
+            'solution_surface_mesh': self.solution_surface_mesh,
+            'solution_behavior_mesh': self.solution_behavior_mesh,
+            'initial_behavior_mesh': self.initial_behavior_mesh,
             'experiment': self.experiment,
             'run_date': self.run_date,
             'run_memory': self.run_memory,

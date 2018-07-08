@@ -267,7 +267,7 @@ class SofaSceneBuilder(object):
         if dynamic:
             self.add_pde_solver(node)
 
-        node.createObject('MechanicalObject',
+        mo = node.createObject('MechanicalObject',
                           src=self.get_mesh_object(part.mesh).getLinkPath(),
                           showObject=True,
                           showObjectScale=5,
@@ -280,6 +280,7 @@ class SofaSceneBuilder(object):
 
         # Behaviors creation
         for behavior in self.get_part_behaviors(part):
+            behavior.setState(mo)
             if isinstance(behavior, FEMForceField):
                 assert part.tetrahedrons.size + part.hexahedrons.size, "FEM Forcefields need either a tetra or hexa topology"
                 assert len(materials), "FEM Forcefields need a material"

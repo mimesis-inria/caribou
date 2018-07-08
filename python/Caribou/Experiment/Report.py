@@ -22,11 +22,6 @@ class CylinderExperimentReport(HtmlReport):
 
         assert isinstance(self.experiment, CylinderExperiment)
 
-        pressure = np.linalg.norm(self.experiment.pressure)
-
-        ntrian = self.experiment.surface_mesh.surface.triangles.shape[0]
-        nquads = self.experiment.surface_mesh.surface.quads.shape[0]
-
     def add_all_cases(self):
         for c in sorted(self.experiment.cases, key=lambda case: case.id):
             self.add_case(c)
@@ -36,9 +31,9 @@ class CylinderExperimentReport(HtmlReport):
     def add_case(self, case):
         assert isinstance(case, Case)
 
-        nnodes = case.behavior_mesh.vertices.shape[0]
-        ntetra = case.behavior_mesh.volume.tetrahedrons.shape[0]
-        nhexas = case.behavior_mesh.volume.hexahedrons.shape[0]
+        nnodes = case.initial_behavior_mesh.vertices.shape[0]
+        ntetra = case.initial_behavior_mesh.volume.tetrahedrons.shape[0]
+        nhexas = case.initial_behavior_mesh.volume.hexahedrons.shape[0]
 
         self.open_section('Case #{} : {}'.format(case.id, case.name))
 
@@ -109,14 +104,14 @@ class CylinderExperimentReport(HtmlReport):
             [('Type', case.behavior.fullname())] + case.behavior.printable_attributes()
         )
 
-        meshes = [self.experiment.surface_mesh, case.solution_mesh]
+        meshes = [self.experiment.surface_mesh, case.solution_surface_mesh]
         view_attributes = [
                 {'line_width': 0.01, 'color': [0, 0, 0], 'opacity': 0.1, 'representation': ParaView.Representation.Wireframe},
                 {'representation': ParaView.Representation.Wireframe}
             ]
 
-        if self.solution is not None and not case == self.solution:
-            meshes.append(self.solution.solution_mesh)
+        if self.solution is not None and isinstance(self.solution, Case) and not case == self.solution:
+            meshes.append(self.solution.solution_surface_mesh)
             view_attributes.append({
                 'line_width': 0.01, 'color': [1, 0, 0], 'opacity': 0.4, 'representation': ParaView.Representation.Wireframe
             })

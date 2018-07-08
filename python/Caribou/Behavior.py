@@ -10,6 +10,9 @@ class Behavior(BaseObject):
         self.part = kwargs.get('part', None)
         self.printLog = kwargs.get('print_log', False)
 
+        # Members
+        self.__mo = None
+
         assert isinstance(self.part, Part)
 
     def __eq__(self, other):
@@ -23,6 +26,13 @@ class Behavior(BaseObject):
         res = BaseObject.__eq__(self, other)
         res = res and self.part == other.part
         return res
+
+    def setState(self, state):
+        self.__mo = state
+
+    @property
+    def state(self):
+        return self.__mo
 
 
 class FEMForceField(Behavior):

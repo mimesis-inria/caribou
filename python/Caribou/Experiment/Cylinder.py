@@ -48,14 +48,16 @@ class CylinderExperiment(Experiment):
                Experiment.__eq__(self, other)
 
     def add(self, case):
-        if not isinstance(case.behavior_mesh, Mesh.Mesh):
-            case.behavior_mesh = Mesh.cylinder(
+        assert isinstance(case, Case)
+
+        if not isinstance(case.initial_behavior_mesh, Mesh.Mesh):
+            case.initial_behavior_mesh = Mesh.cylinder(
                 center1=[0, 0, 0], center2=[0, 0, self.length], radius=self.radius, size=case.element_size,
                 dimension=3, quads=False)
 
         # Material setup
         mat_options = {
-            'part': case.behavior_mesh.volume,
+            'part': case.initial_behavior_mesh.volume,
             'young_modulus': case.young_modulus,
             'poisson_ratio': case.poisson_ratio,
             'density': case.density,
@@ -69,14 +71,14 @@ class CylinderExperiment(Experiment):
         elif type(case.material) == type and issubclass(case.material, Material):
             case.material = case.material(**mat_options)
         elif isinstance(case.material, Material):
-            if not case.material.part == case.behavior_mesh.volume:
-                case.material.part = case.behavior_mesh.volume
+            if not case.material.part == case.initial_behavior_mesh.volume:
+                case.material.part = case.initial_behavior_mesh.volume
         else:
             raise AttributeError("The case must have a material class that derives from Material")
 
         # Behavior setup
         beh_options = {
-            'part': case.behavior_mesh.volume,
+            'part': case.initial_behavior_mesh.volume,
         }
 
         if isinstance(case.behavior, tuple):
@@ -87,8 +89,8 @@ class CylinderExperiment(Experiment):
         elif isinstance(case.behavior, type) and issubclass(case.behavior, Behavior):
             case.behavior = case.behavior(**beh_options)
         elif isinstance(case.behavior, Behavior):
-            if not case.behavior.part == case.behavior_mesh.volume:
-                case.behavior.part = case.behavior_mesh.volume
+            if not case.behavior.part == case.initial_behavior_mesh.volume:
+                case.behavior.part = case.initial_behavior_mesh.volume
         else:
             raise AttributeError("The case must have a behavior class that derives from Behavior")
 
@@ -104,31 +106,6 @@ class CylinderExperiment(Experiment):
         })
 
     def save(self):
-
-        # todo(jnbrunet2000@gmail.com): Exporting as vtk file will failed when further import (the field_data will be lost)
-        # # INITIAL SURFACE VTK EXPORT
-        # export_directory = os.getcwd()
-        # export_filename = "initial_surface_{}.vtk".format(escape(self.name))
-        #
-        # if filepath is not None:
-        #     if os.path.isfile(filepath):
-        #         export_directory = os.path.dirname(filepath)
-        #         export_filename = os.path.basename(filepath)
-        #     elif os.path.isdir(filepath):
-        #         export_directory = filepath
-        #
-        # vtkfilepath = os.path.join(export_directory, export_filename)
-        #
-        # if self.surface_mesh is not None and self.surface_mesh.vertices.size > 0:
-        #     self.surface_mesh.save(vtkfilepath)
-        #
-        # # Behavior cases meshes
-        # for case in self.cases:
-        #     if case.behavior_mesh is not None:
-        #         export_filename = "initial_volume_{}.vtk".format(escape(case.name))
-        #         vtkfilepath = os.path.join(export_directory, export_filename)
-        #         case.behavior_mesh.save(vtkfilepath)
-
         Experiment.save(self)
 
     def run(self):
@@ -144,7 +121,7 @@ class CylinderExperiment(Experiment):
             count = count + 1
 
             print "======= RUNNING CASE {} =======".format(case.name)
-            if case.solution_mesh is not None:
+            if case.solution_behavior_mesh is not None:
                 print "-> Solution of case #{} ({}) previously computed.".format(count, case.name)
                 continue
 
@@ -154,16 +131,16 @@ class CylinderExperiment(Experiment):
             simulation = Simulation()
             simulation.add_meshes([
                 self.surface_mesh,
-                case.behavior_mesh
+                case.initial_behavior_mesh
             ])
             simulation.set_PDE_solver(case.solver)
 
             boundaries = [
-                FixedBoundary(part=case.behavior_mesh.base, linked_to=case.behavior_mesh.volume),
-                PressureBoundary(part=case.behavior_mesh.top, pressure=self.pressure, slope=1. / case.number_of_steps,
-                                 linked_to=case.behavior_mesh.volume),
+                FixedBoundary(part=case.initial_behavior_mesh.base, linked_to=case.initial_behavior_mesh.volume),
+                PressureBoundary(part=case.initial_behavior_mesh.top, pressure=self.pressure, slope=1. / case.number_of_steps,
+                                 linked_to=case.initial_behavior_mesh.volume),
             ]
-            watcher = WatcherBoundary(part=self.surface_mesh.surface, linked_to=case.behavior_mesh.volume, link_type=case.link_type)
+            watcher = WatcherBoundary(part=self.surface_mesh.surface, linked_to=case.initial_behavior_mesh.volume, link_type=case.link_type)
             simulation.add_boundaries(boundaries + [watcher])
 
             simulation.add_materials([
@@ -226,10 +203,16 @@ class CylinderExperiment(Experiment):
                             duration=mechanical['end_time'] - mechanical['start_time'],
                         ))
 
-            case.solution_mesh = Mesh.Mesh(
+            case.solution_surface_mesh = Mesh.Mesh(
                 vertices=np.array(watcher.state.position),
                 parts=self.surface_mesh.parts,
                 gmsh=self.surface_mesh.gmsh
+            )
+
+            case.solution_behavior_mesh = Mesh.Mesh(
+                vertices=np.array(case.behavior.state.position),
+                parts=case.initial_behavior_mesh.parts,
+                gmsh=case.initial_behavior_mesh.gmsh
             )
 
             case.save()

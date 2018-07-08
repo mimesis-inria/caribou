@@ -173,8 +173,7 @@ class HtmlReport(object):
 
         print "Report exported at '{}'".format(filepath)
 
-    def add_image_from_meshes(self, name=None, meshes=[], view_attributes=[], image_width=1000):
-        assert len(meshes) == len(view_attributes)
+    def add_image_from_meshes(self, name=None, meshes=[], view_attributes=[], types=[], image_width=1000):
         tempdir = tempfile.gettempdir()
         tempfiles = []
         views = []
@@ -189,10 +188,26 @@ class HtmlReport(object):
                 temp = os.path.join(tempdir, 'temp_{}.vtk'.format(i))
                 mesh.save(temp)
                 tempfiles.append(temp)
+            try:
+                type = types[i]
+            except IndexError:
+                type = 'surface'
 
-            views.append(ParaView.SurfaceView(**dict({
-                'vtk_file': mesh.filepath
-            }, **view_attributes[i])))
+            try:
+                view_attribute = view_attributes[i]
+            except IndexError:
+                view_attribute = {}
+
+            if type == 'surface':
+                views.append(ParaView.SurfaceView(**dict({
+                    'vtk_file': mesh.filepath
+                }, **view_attribute)))
+            elif type == 'quality':
+                views.append(ParaView.ElementsView(**dict({
+                    'vtk_file': mesh.filepath
+                }, **view_attribute)))
+            else:
+                raise NotImplementedError('The view type "{}" isn\'t implemented.'.format(type))
             i = i + 1
 
         width, height, length = xmax - xmin, ymax - ymin, zmax - zmin
