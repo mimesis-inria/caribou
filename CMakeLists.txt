@@ -3,15 +3,18 @@ project(caribou)
 
 set(HEADER_FILES
         src/Event/IterativeSolverEvent.h
+        src/Forcefield/FEMForcefield.h
         src/Forcefield/PressureForcefield.h
         src/Solver/NewtonRaphsonSolver.h
         src/Helper/LinearAlgebra.h
+        src/Helper/Tetrahedron.h
         src/Helper/Triangle.h
 )
 
 set(SOURCE_FILES
         src/InitCaribou.cpp
         src/Event/IterativeSolverEvent.cpp
+        src/Forcefield/FEMForcefield.cpp
         src/Forcefield/PressureForcefield.cpp
         src/Solver/NewtonRaphsonSolver.cpp
 )

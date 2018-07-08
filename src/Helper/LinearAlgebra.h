@@ -222,4 +222,15 @@ inline defaulttype::Mat<3,3,real> rotationMatrixIrving(const defaulttype::Mat<3,
 
 } // namespace sofa
 
+
+template <int N, typename real=double>
+inline sofa::defaulttype::Mat<N, N, real>  operator ^(const sofa::defaulttype::Vec<N, real> & v1, const sofa::defaulttype::Vec<N, real> & v2) {
+    sofa::defaulttype::Mat<N, N, real> res;
+    for (unsigned int i = 0; i < N; ++i)
+        for (unsigned int j = 0; j < N; ++j)
+            res[i][j]       = v1[i] * v2[j];
+
+    return res;
+};
+
 #endif //CARIBOU_HELPER_LINEARALGEBRA_H

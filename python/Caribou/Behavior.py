@@ -26,11 +26,32 @@ class Behavior(BaseObject):
 
 
 class FEMForceField(Behavior):
+    class Corotational:
+        LARGE = "LARGE"
+        POLAR = "POLAR"
+        SVD = "SVD"
+
     def __init__(self, **kwargs):
         Behavior.__init__(self, **kwargs)
 
+        # Parameters
+        self.corotational_method = kwargs.get('corotational_method', FEMForceField.Corotational.LARGE)
+
     def __eq__(self, other):
         return Behavior.__eq__(self, other)
+
+
+class CaribouFEMForceField(FEMForceField):
+    class Corotational:
+        LARGE = 1
+        POLAR = 2
+        SVD = 3
+
+    def __init__(self, **kwargs):
+        FEMForceField.__init__(self, **kwargs)
+
+    def __eq__(self, other):
+        return FEMForceField.__eq__(self, other)
 
 
 class GravityForceField(Behavior):

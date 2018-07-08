@@ -287,14 +287,23 @@ class SofaSceneBuilder(object):
 
                 material = materials[0]
                 if isinstance(material, LinearElastic):
-                    method = 'large' if material.corotated else 'small'
+                    method = behavior.corotational_method if material.corotated else 'small'
                     if part.tetrahedrons.size:
-                        node.createObject(
-                            'TetrahedronFEMForceField',
-                            method=method,
-                            youngModulus=material.young_modulus,
-                            poissonRatio=material.poisson_ratio
-                        )
+                        if isinstance(behavior, CaribouFEMForceField):
+                            node.createObject(
+                                'FEMForcefield',
+                                corotational=method,
+                                youngModulus=material.young_modulus,
+                                poissonRatio=material.poisson_ratio,
+                                printLog=behavior.printLog,
+                            )
+                        else:
+                            node.createObject(
+                                'TetrahedronFEMForceField',
+                                method=method.lower(),
+                                youngModulus=material.young_modulus,
+                                poissonRatio=material.poisson_ratio
+                            )
                     if part.hexahedrons.size:
                         node.createObject(
                             'HexahedronFEMForceField',
