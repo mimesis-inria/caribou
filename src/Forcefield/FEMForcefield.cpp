@@ -25,7 +25,7 @@ FEMForcefield<DataTypes>::FEMForcefield()
     , d_corotational(initData(&d_corotational, "corotational","Corotation \"small\", \"large\" (by QR), \"polar\" or \"svd\" displacements"))
 
     , d_use_centroid_deformation_for_rotation_extraction(
-        initData(&d_use_centroid_deformation_for_rotation_extraction, true, "use_centroid_deformation_for_rotation_extraction",
+        initData(&d_use_centroid_deformation_for_rotation_extraction, false, "use_centroid_deformation_for_rotation_extraction",
                  "Use the centroid point of an element to extract the rotation motion"))
 {
     sofa::helper::WriteAccessor<Data<sofa::helper::OptionsGroup>> corotationalOptions = d_corotational;

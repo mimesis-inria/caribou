@@ -10,6 +10,7 @@ from ..Report import HtmlReport
 from ..PDE import *
 from ..Optimization import *
 from ..View import ParaView
+from .Case import Case, NewtonStep, Step
 
 import json
 import os, sys
@@ -55,9 +56,9 @@ class CylinderExperiment(Experiment):
         # Material setup
         mat_options = {
             'part': case.behavior_mesh.volume,
-            'young_modulus': self.young_modulus,
-            'poisson_ratio': self.poisson_ratio,
-            'density': self.density,
+            'young_modulus': case.young_modulus,
+            'poisson_ratio': case.poisson_ratio,
+            'density': case.density,
         }
 
         if isinstance(case.material, tuple):
@@ -159,7 +160,7 @@ class CylinderExperiment(Experiment):
 
             boundaries = [
                 FixedBoundary(part=case.behavior_mesh.base, linked_to=case.behavior_mesh.volume),
-                PressureBoundary(part=case.behavior_mesh.top, pressure=self.pressure, slope=1. / self.number_of_steps,
+                PressureBoundary(part=case.behavior_mesh.top, pressure=self.pressure, slope=1. / case.number_of_steps,
                                  linked_to=case.behavior_mesh.volume),
             ]
             watcher = WatcherBoundary(part=self.surface_mesh.surface, linked_to=case.behavior_mesh.volume, link_type=case.link_type)
@@ -186,7 +187,7 @@ class CylinderExperiment(Experiment):
                     case.behavior.stats_integration_points_per_particle = case.behavior.object.stats_integration_points_per_particle[0]
                     case.behavior.stats_particles_per_integration_point = case.behavior.object.stats_particles_per_integration_point[0]
 
-            for i in range(self.number_of_steps):
+            for i in range(case.number_of_steps):
                 self.sofa.timerBegin(self.name)
                 root.simulationStep(1)
                 timer_output = '{' + str(self.sofa.timerEnd(self.name, root)) + '}'

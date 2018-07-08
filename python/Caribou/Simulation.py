@@ -376,6 +376,7 @@ class SofaSceneBuilder(object):
                                       youngModulus=material.young_modulus,
                                       verbose=behavior.verbose,
                                       linear_strain=linear_strain,
+                                      incremental_rotation=behavior.incremental_rotation,
                                       )
 
                 behavior.setObject(o)

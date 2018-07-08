@@ -51,6 +51,12 @@ class HtmlReport(object):
                 transition: 0.4s;
             }
             
+            .accordion.section {
+            background-color: #000;
+            color: #FFF;
+            font-weight: bold;
+            }
+            
 
             button.accordion::after {
             
@@ -81,8 +87,12 @@ class HtmlReport(object):
         self.lines.append('<body>')
         self.lines.append('<h1>{}</h1>'.format(self.name))
 
-    def add_section(self, name):
-        self.lines.append('<h2>{}</h2>'.format(name))
+    def open_section(self, name):
+        self.lines.append('<button class="accordion section">{}</button>'.format(name))
+        self.lines.append('<div class="panel">')
+
+    def close_section(self):
+        self.lines.append('</div>')
 
     def add_list(self, name=None, attributes=[]):
         assert len(attributes)
@@ -161,6 +171,8 @@ class HtmlReport(object):
             f.flush()
             f.close()
 
+        print "Report exported at '{}'".format(filepath)
+
     def add_image_from_meshes(self, name=None, meshes=[], view_attributes=[], image_width=1000):
         assert len(meshes) == len(view_attributes)
         tempdir = tempfile.gettempdir()
@@ -178,7 +190,7 @@ class HtmlReport(object):
                 mesh.save(temp)
                 tempfiles.append(temp)
 
-            views.append(ParaView.View(**dict({
+            views.append(ParaView.SurfaceView(**dict({
                 'vtk_file': mesh.filepath
             }, **view_attributes[i])))
             i = i + 1

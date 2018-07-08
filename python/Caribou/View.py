@@ -24,12 +24,27 @@ class ParaView(object):
 
     class View(object):
         def __init__(self, **kwargs):
-            # Parameters
             self.vtk_file = kwargs.get('vtk_file', None)
+
+    class SurfaceView(View):
+        def __init__(self, **kwargs):
+            ParaView.View.__init__(self, **kwargs)
+
+            # Parameters
             self.representation = kwargs.get('representation', ParaView.Representation.Surface)
             self.color = kwargs.get('color', [0.0, 0.0, 0.0])
             self.opacity = kwargs.get('opacity', 1)
             self.line_width = kwargs.get('line_width', 1)
+
+        def render(self, view):
+            reader = OpenDataFile(self.vtk_file)
+            SetActiveSource(reader)
+            surface = Show(reader, view)
+            surface.Representation = 'Surface'
+            surface.SetRepresentationType(self.representation)
+            surface.AmbientColor = self.color
+            surface.Opacity = self.opacity
+            surface.LineWidth = self.line_width
 
     def __init__(self, **kwargs):
         # Parameters
@@ -50,16 +65,8 @@ class ParaView(object):
         view.ViewSize = [width, height]
 
         for v in self.views:
-            reader = OpenDataFile(v.vtk_file)
-            SetActiveSource(reader)
-            surface = Show(reader, view)
-            surface.Representation = 'Surface'
-            surface.SetRepresentationType(v.representation)
-            surface.AmbientColor = v.color
-            surface.Opacity = v.opacity
-            surface.LineWidth = v.line_width
+            v.render(view)
             ResetCamera(view)
-            # Render(view)
 
         view.Background = self.background_color
         view.CameraPosition = self.camera.position

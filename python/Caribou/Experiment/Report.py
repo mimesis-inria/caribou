@@ -1,6 +1,7 @@
 from ..Report import HtmlReport
 from ..Optimization import NonLinearSolver
 from ..View import ParaView
+from ..Utils import generate_n_colors
 from Cylinder import CylinderExperiment
 from Experiment import Case
 
@@ -26,23 +27,6 @@ class CylinderExperimentReport(HtmlReport):
         ntrian = self.experiment.surface_mesh.surface.triangles.shape[0]
         nquads = self.experiment.surface_mesh.surface.quads.shape[0]
 
-        self.add_section(name="Simulation")
-        self.add_list(name="Parameters", attributes=[
-            ('Radius', '{} {}'.format(self.experiment.radius, self.experiment.unit['length'])),
-            ('Length', '{} {}'.format(self.experiment.length, self.experiment.unit['length'])),
-            ('Volume', '{} {}<sup>3</sup>'.format(self.experiment.radius * self.experiment.radius * PI * self.experiment.length, self.experiment.unit['length'])),
-            ('Density', '{} {}/{}<sup>3</sup>'.format(self.experiment.density, self.experiment.unit['mass'], self.experiment.unit['length'])),
-            ('Mass', '{} {}'.format(self.experiment.radius * self.experiment.radius * PI * self.experiment.length * self.experiment.density, self.experiment.unit['mass'])),
-            ('Pressure', '{} {}'.format(pressure, self.experiment.unit['pressure'])),
-            ('Load surface', '{} {}<sup>2</sup>'.format(self.experiment.radius * self.experiment.radius * PI, self.experiment.unit['length'])),
-            ('Load force', '{} {}'.format(self.experiment.radius * self.experiment.radius * PI * pressure / 1e6, self.experiment.unit['load'])),
-            ('Young modulus', '{} {}'.format(self.experiment.young_modulus, self.experiment.unit['pressure'])),
-            ('Poisson ratio', self.experiment.poisson_ratio),
-            ('Number of steps', self.experiment.number_of_steps),
-            ('Number of surface elements',
-             ntrian + nquads),
-        ])
-
     def add_all_cases(self):
         for c in sorted(self.experiment.cases, key=lambda case: case.id):
             self.add_case(c)
@@ -52,21 +36,44 @@ class CylinderExperimentReport(HtmlReport):
     def add_case(self, case):
         assert isinstance(case, Case)
 
-        pressure = np.linalg.norm(self.experiment.pressure)
         nnodes = case.behavior_mesh.vertices.shape[0]
         ntetra = case.behavior_mesh.volume.tetrahedrons.shape[0]
         nhexas = case.behavior_mesh.volume.hexahedrons.shape[0]
 
-        self.add_section('Case #{} : {}'.format(case.id, case.name))
+        self.open_section('Case #{} : {}'.format(case.id, case.name))
 
         ttime = 0
         for step in case.steps:
             ttime = ttime + step.duration
 
+        pressure = np.linalg.norm(self.experiment.pressure)
+
+        ntrian = self.experiment.surface_mesh.surface.triangles.shape[0]
+        nquads = self.experiment.surface_mesh.surface.quads.shape[0]
+
         self.add_list(name="Informations", attributes=[
             ('Time to convergence', ttime),
             ('Run date', case.run_date),
             ('Memory available before execution', '{} MB'.format(case.run_memory)),
+            ('Radius', '{} {}'.format(self.experiment.radius, case.unit['length'])),
+            ('Length', '{} {}'.format(self.experiment.length, case.unit['length'])),
+            ('Volume',
+             '{} {}<sup>3</sup>'.format(self.experiment.radius * self.experiment.radius * PI * self.experiment.length,
+                                        case.unit['length'])),
+            ('Density', '{} {}/{}<sup>3</sup>'.format(case.density, case.unit['mass'],
+                                                      case.unit['length'])),
+            ('Mass', '{} {}'.format(
+                self.experiment.radius * self.experiment.radius * PI * self.experiment.length * case.density,
+                case.unit['mass'])),
+            ('Pressure', '{} {}'.format(pressure, case.unit['pressure'])),
+            ('Load surface', '{} {}<sup>2</sup>'.format(self.experiment.radius * self.experiment.radius * PI,
+                                                        case.unit['length'])),
+            ('Load force', '{} {}'.format(self.experiment.radius * self.experiment.radius * PI * pressure / 1e6,
+                                          case.unit['load'])),
+            ('Young modulus', '{} {}'.format(case.young_modulus, case.unit['pressure'])),
+            ('Poisson ratio', case.poisson_ratio),
+            ('Number of steps', case.number_of_steps),
+            ('Number of surface elements', ntrian + nquads),
         ])
 
         self.add_list(name='Mesh', attributes=[
@@ -120,51 +127,76 @@ class CylinderExperimentReport(HtmlReport):
             view_attributes=view_attributes
         )
 
-        p = pressure * 1 / self.experiment.number_of_steps * self.experiment.radius * self.experiment.radius * PI
-        steptimes = [0]
-        newtonsteptimes = [0]
-        pressures = [p]
-        if len(case.steps) and len(case.steps[0].newtonsteps):
-            forces = [p + case.steps[0].newtonsteps[0].residual]
-        else:
-            forces = [0]
+        self.add_convergence_comparison(name="Convergence", cases=[case])
 
-        lasttime = 0
-
-        for i in range(len(case.steps)):
-            step = case.steps[i]
-            if not len(step.newtonsteps):
-                break
-            p = pressure * (i + 1) / self.experiment.number_of_steps * self.experiment.radius * self.experiment.radius * PI
-            for newtonstep in step.newtonsteps:
-                lasttime = lasttime + newtonstep.duration
-                newtonsteptimes.append(lasttime)
-                forces.append(p + newtonstep.residual)
-            steptimes.append(lasttime)
-            pressures.append(p)
-
-        if len(newtonsteptimes) < 2:
-            self.add_paragraph(name='Convergence', text='Simulation has diverged')
-        else:
-            # Convergence graph
-            plt.figure(figsize=(20, 10), dpi=300)
-
-            df = pd.DataFrame({'time': newtonsteptimes, 'internal force': forces})
-            plt.semilogy('time', 'internal force', data=df, color='skyblue', linewidth=1)
-
-            dp = pd.DataFrame({'time': steptimes, 'external force': pressures})
-            plt.step('time', 'external force', data=dp, marker='', color='red', linewidth=1, linestyle='dashed')
-
-            for vline in steptimes:
-                plt.axvline(x=vline, color='k', linestyle='--')
-
-            plt.legend()
-            img = NamedTemporaryFile(suffix='.png')
-            plt.savefig(img.name, bbox_inches='tight')
-            self.add_image(name="Convergence", path=img.name, binary=True)
+        self.close_section()
 
         return self
 
-    def add_convergence_comparison(self, cases=[]):
-        pass
+    def add_convergence_comparison(self, name, cases=[]):
+        if not cases:
+            return
+
+        if not isinstance(cases, list):
+            cases = [cases]
+
+        colors = generate_n_colors(len(cases))
+        pressure = np.linalg.norm(self.experiment.pressure) * self.experiment.radius * self.experiment.radius * PI
+
+        plt.figure(figsize=(20, 10), dpi=300)
+        maximum_number_of_increment = 0
+
+        i = 0
+        for case in cases:
+            if not case.steps:
+                continue
+            color = colors[i]
+            pressures = []
+            internal_forces = []
+            slope = 1. / case.number_of_steps
+            maximum_number_of_increment = max(maximum_number_of_increment, len(case.steps))
+
+            j = 1
+            for step in case.steps:
+                nb_newtonsteps = case.solver.solver.maxIt
+                newtonslope = 1. / nb_newtonsteps
+                load_completion_at_start = slope*j      # (%)
+                load_completion_at_end = slope * (j+1)  # (%)
+                for k in range(nb_newtonsteps):
+                    newton_completion = newtonslope * k  # Newton completion (%)
+                    pressures.append(load_completion_at_start + newton_completion * (
+                                load_completion_at_end - load_completion_at_start))
+                    if k >= len(step.newtonsteps):
+                        internal_force = internal_forces[len(internal_forces)-1]
+                    else:
+                        newtonstep = step.newtonsteps[k]
+                        internal_force = newtonstep.residual + load_completion_at_start*pressure
+
+                    internal_forces.append(internal_force)
+                j = j+1
+
+            if not internal_forces:
+                continue
+
+            pressures.insert(0, 0)
+            internal_forces.insert(0, internal_forces[0])
+
+            df = pd.DataFrame({'load (%)': pressures, case.name: internal_forces})
+            plt.semilogy('load (%)', case.name, data=df, color=color, linewidth=1)
+
+            i = i+1
+
+        if maximum_number_of_increment > 0:
+            slope = 1. / float(maximum_number_of_increment)
+            pressure_states = [0] + [slope * float(i+2) for i in range(maximum_number_of_increment)]
+            pressures = [pressure*slope] + [pressure*slope * float(i+1) for i in range(maximum_number_of_increment)]
+            dp = pd.DataFrame({'load (%)': pressure_states, 'external force': pressures})
+            plt.step('load (%)', 'external force', data=dp, marker='', color='red', linewidth=1, linestyle='dashed')
+
+        plt.legend()
+        img = NamedTemporaryFile(suffix='.png')
+        plt.savefig(img.name, bbox_inches='tight')
+        self.add_image(name=name, path=img.name, binary=True)
+
+
 

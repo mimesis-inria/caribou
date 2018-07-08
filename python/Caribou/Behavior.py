@@ -69,6 +69,7 @@ class MeshlessGalerkin(Behavior):
         self.surface = kwargs.get('surface', None)
         self.number_of_neighbors = kwargs.get('number_of_neighbors', 8)
         self.dilatation = kwargs.get('dilatation', 1)
+        self.incremental_rotation = kwargs.get('incremental_rotation', True)
 
         self.stats_number_of_integration_points = kwargs.get('stats_number_of_integration_points')
         self.stats_integration_points_per_particle = kwargs.get('stats_integration_points_per_particle')
@@ -90,6 +91,7 @@ class MeshlessGalerkin(Behavior):
         res = res and (self.number_of_neighbors == other.number_of_neighbors)
         res = res and (self.dilatation == other.dilatation)
         res = res and (self.surface == other.surface)
+        res = res and (self.incremental_rotation == other.incremental_rotation)
         return res
 
     def setObject(self, object):
@@ -116,9 +118,10 @@ class MeshlessGalerkin(Behavior):
 
     def printable_attributes(self):
         atts = [
-                   ('Grid', self.grid),
-                   ('Dilatation', self.dilatation),
-                   ('Number of neighbors', self.number_of_neighbors),
+            ('Grid', self.grid),
+            ('Dilatation', self.dilatation),
+            ('Number of neighbors', self.number_of_neighbors),
+            ('Incremental rotation', self.incremental_rotation),
         ]
 
         atts = atts + [
