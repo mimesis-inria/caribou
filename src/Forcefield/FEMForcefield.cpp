@@ -22,14 +22,14 @@ FEMForcefield<DataTypes>::FEMForcefield()
     , d_poissonRatio(initData(&d_poissonRatio, Real(0.3),  "poissonRatio", "Poisson's ratio of the material"))
     , d_initial_positions(initData(&d_initial_positions,   "initial_positions", "List of initial coordinates of the tetrahedrons nodes"))
     , d_tetrahedrons(initData(&d_tetrahedrons, "tetrahedrons", "List of tetrahedrons by their nodes indices (ex: [t1p1 t1p2 t1p3 t1p4 t2p1 t2p2 t2p3 t2p4...])"))
-    , d_corotational(initData(&d_corotational, "corotational","Corotation \"small\", \"large\" (by QR), \"polar\" or \"svd\" displacements"))
+    , d_corotational(initData(&d_corotational, "corotational","Corotation \"small\", \"large\" (by QR), \"polar\", \"svd\" or \"deformation_gradient\""))
 
-    , d_use_centroid_deformation_for_rotation_extraction(
-        initData(&d_use_centroid_deformation_for_rotation_extraction, false, "use_centroid_deformation_for_rotation_extraction",
-                 "Use the centroid point of an element to extract the rotation motion"))
+    , d_incremental_rotation(initData(&d_incremental_rotation, true, "incremental_rotation",
+                                      "Extract the incremental rotation (rotate the displacement with the last extracted"
+                                      " rotation before the current extraction)"))
 {
     sofa::helper::WriteAccessor<Data<sofa::helper::OptionsGroup>> corotationalOptions = d_corotational;
-    corotationalOptions->setNames(4,"NONE", "LARGE", "POLAR", "SVD"); // .. add other options
+    corotationalOptions->setNames(5,"NONE", "LARGE", "POLAR", "SVD", "DEFORMATION_GRADIENT"); // .. add other options
     corotationalOptions->setSelectedItem(0);
 }
 
@@ -87,7 +87,8 @@ void FEMForcefield<DataTypes>::computeStiffnessMatrix()
 {
     sofa::helper::ReadAccessor<Data<VecCoord>> X = d_initial_positions;
     sofa::helper::ReadAccessor<Data<sofa::helper::vector<Tetrahedron>>> tetrahedrons = d_tetrahedrons;
-    sofa::helper::WriteAccessor<Data<sofa::helper::vector<Mat1212>>> stiffness_matrices = d_element_stiffness_matrices;
+    sofa::helper::WriteOnlyAccessor<Data<sofa::helper::vector<Mat1212>>> stiffness_matrices = d_element_stiffness_matrices;
+    sofa::helper::WriteOnlyAccessor<Data<sofa::helper::vector<sofa::helper::fixed_array<Deriv, 4>>>> element_shape_derivatives = d_element_shape_derivatives;
 
     // Make sure we got some rest coordinates and tetrahedrons
     if (X.empty() || tetrahedrons.empty())
@@ -122,11 +123,12 @@ void FEMForcefield<DataTypes>::computeStiffnessMatrix()
 
     // Compute the elemental stiffness matrices and initialize the rotation matrices
     stiffness_matrices.resize(tetrahedrons.size());
+    element_shape_derivatives.resize(tetrahedrons.size());
     m_element_rotations.resize(tetrahedrons.size(), Mat33::Identity());
     m_element_initial_rotations.resize(tetrahedrons.size(), Mat33::Identity());
     m_element_initial_inverted_transformations.resize(tetrahedrons.size(), Mat33::Identity());
 
-    size_t i = 0;
+    size_t tId = 0;
     for (const Tetrahedron & tetrahedron: tetrahedrons) {
         Coord
             a = X[tetrahedron[0]],
@@ -134,10 +136,14 @@ void FEMForcefield<DataTypes>::computeStiffnessMatrix()
             c = X[tetrahedron[2]],
             d = X[tetrahedron[3]];
 
+        Mat1212 & K = stiffness_matrices[tId];
         Mat612 B;
+        Mat33 & R0 = m_element_initial_rotations[tId];
+        sofa::helper::fixed_array<Deriv, 4> & shape_derivatives = element_shape_derivatives[tId];
 
-        if (corotational_method() == Corotational::NONE || d_use_centroid_deformation_for_rotation_extraction.getValue()) {
-            B = getStrainDisplacement(a,b,c,d);
+        // Compute the shape derivatives
+        if (corotational_method() == Corotational::NONE || corotational_method() == Corotational::DEFORMATION_GRADIENT) {
+            shape_derivatives = getShapeDerivatives(a, b, c, d);
         } else {
             // Transformation matrix
             Mat33 A(b-a, // Edge 0
@@ -147,27 +153,90 @@ void FEMForcefield<DataTypes>::computeStiffnessMatrix()
 
             // For SVD, we need the initial inverted transformation matrix to detect degenerate cases
             if (corotational_method() == Corotational::SVD)
-                m_element_initial_inverted_transformations[i] = A.inverted();
+                m_element_initial_inverted_transformations[tId] = A.inverted();
 
             // We extract the initial rotation matrix from the steady state
             if (corotational_method() == Corotational::LARGE)
-                m_element_initial_rotations[i] = extractRotationLarge(A);
+                R0 = extractRotationLarge(A);
             else
-                m_element_initial_rotations[i] = extractRotationPolar(A);
+                R0 = extractRotationPolar(A);
 
             // Compute the rotated strain-displacement matrix
             if (corotational_method() == Corotational::LARGE)
-                B = getStrainDisplacement(a-a, b-a, c-a, d-a, m_element_initial_rotations[i]);
+                shape_derivatives = getShapeDerivatives(Coord(0,0,0), R0*(b-a), R0*(c-a), R0*(d-a));
             else
-                B = getStrainDisplacement(a,b,c,d, m_element_initial_rotations[i]);
+                shape_derivatives = getShapeDerivatives(R0*a, R0*b, R0*c, R0*d);
         }
+
+        // Get the strain-displacement matrix
+        B = getStrainDisplacement(shape_derivatives);
 
         // Compute the stiffness matrix
         Real volume = fabs( dot( cross(b-a, c-a), d-a ) ) / 6.0;
-        stiffness_matrices[i] = volume*B.transposed()*C*B;
+        K = volume*B.transposed()*C*B;
 
-        ++i;
+        ++tId;
     }
+}
+
+template<class DataTypes>
+typename FEMForcefield<DataTypes>::Mat33 FEMForcefield<DataTypes>::computeRotation(
+    const sofa::helper::fixed_array<Coord, 4> & node_position,
+    const sofa::helper::fixed_array<Coord, 4> & node_rest_position,
+    const TetrahedronID & tId) const
+{
+
+    Mat33 R;
+
+    Coord // Initial positions
+        x0_a = node_rest_position[0],
+        x0_b = node_rest_position[1],
+        x0_c = node_rest_position[2],
+        x0_d = node_rest_position[3];
+
+    Coord // Current positions
+        x_a = node_position[0],
+        x_b = node_position[1],
+        x_c = node_position[2],
+        x_d = node_position[3];
+
+    sofa::helper::fixed_array<Deriv,4> u;
+    if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
+        // Compute the centroid displacement gradient
+        u[0]= (x_a - x0_a);
+        u[1]= (x_b - x0_b);
+        u[2]= (x_c - x0_c);
+        u[3]= (x_d - x0_d);
+
+        sofa::helper::fixed_array<Deriv, 4> shape_derivatives = getShapeDerivatives(x0_a, x0_b, x0_c, x0_d);
+
+        Mat33 GradU;
+        for (unsigned int j = 0; j < 4; ++j) {
+            GradU += (u[j] ^ shape_derivatives[j]);
+        }
+
+        // Extract the rotation from the deformation gradient
+        const Mat33 F = GradU + Mat33::Identity();
+        R = extractRotationPolar(F);
+    } else {
+        // Transformation matrix
+        Mat33 A(
+            (x_b - x_a),
+            (x_c - x_a),
+            (x_d - x_a)
+        );
+
+        // Extract the current rotation
+        if (corotational_method() == Corotational::SVD)
+            R = extractRotationSVD(A, m_element_initial_inverted_transformations[tId],
+                                       m_element_initial_rotations[tId]);
+        else if (corotational_method() == Corotational::LARGE)
+            R = extractRotationLarge(A);
+        else
+            R = extractRotationPolar(A);
+    }
+
+    return R;
 }
 
 template<class DataTypes>
@@ -180,10 +249,20 @@ void FEMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, D
     sofa::helper::ReadAccessor<Data<VecCoord>> x = d_x;
     sofa::helper::ReadAccessor<Data<VecCoord>> X = d_initial_positions;
     sofa::helper::ReadAccessor<Data<sofa::helper::vector<Tetrahedron>>> tetrahedrons = d_tetrahedrons;
-    sofa::helper::ReadAccessor<Data<sofa::helper::vector<Mat1212>>> stiffness_matrices = d_element_stiffness_matrices;
+    sofa::helper::ReadAccessor<Data<sofa::helper::vector<sofa::helper::fixed_array<Deriv, 4>>>> element_shape_derivatives = d_element_shape_derivatives;
 
-    for (size_t i = 0; i < tetrahedrons.size(); ++i) {
-        const auto & tetrahedron = tetrahedrons[i];
+    const Real & youngModulus = this->d_youngModulus.getValue();
+    const Real & poissonRatio = this->d_poissonRatio.getValue();
+
+    const Real lambda = youngModulus*poissonRatio / ((1 + poissonRatio)*(1 - 2*poissonRatio));
+    const Real mu = youngModulus / (2 * (1 + poissonRatio));
+
+    for (TetrahedronID tId = 0; tId < tetrahedrons.size(); ++tId) {
+        const auto & tetrahedron = tetrahedrons[tId];
+
+        // Current rotation
+        Mat33 & R  = m_element_rotations[tId];
+        Mat33 Rt = R.transposed();
 
         PointID // Node indices
             a = tetrahedron[0],
@@ -212,62 +291,25 @@ void FEMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, D
             u[2]= (x_c - x0_c);
             u[3]= (x_d - x0_d);
         } else {
-            // Linear corotational method
-            Mat33 & R  = m_element_rotations[i];
+            // Corotational method
+            if (d_incremental_rotation.getValue()) {
+                Mat33 Rtemp;
+                if (corotational_method() == Corotational::DEFORMATION_GRADIENT)
+                    Rtemp = computeRotation({Rt*x_a, Rt*x_b, Rt*x_c, Rt*x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
+                else
+                    Rtemp = computeRotation({R*x_a, R*x_b, R*x_c, R*x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
+                R = Rtemp*R;
+            } else {
+                R = computeRotation({x_a, x_b, x_c, x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
+            }
 
-            if (d_use_centroid_deformation_for_rotation_extraction.getValue()) {
-                // Compute the centroid displacement gradient
-                u[0]= (x_a - x0_a);
-                u[1]= (x_b - x0_b);
-                u[2]= (x_c - x0_c);
-                u[3]= (x_d - x0_d);
-
-                Real volume = fabs( dot( cross(x0_b-x0_a, x0_c-x0_a), x0_d-x0_a ) ) / 6.0;
-                Deriv shape_derivatives[4] = {
-                    -(cross(x0_b,x0_c) + cross(x0_c,x0_d) + cross(x0_d,x0_b)) / (6*volume),
-                    (cross(x0_c,x0_d) + cross(x0_d,x0_a) + cross(x0_a,x0_c)) / (6*volume),
-                    -(cross(x0_d,x0_a) + cross(x0_a,x0_b) + cross(x0_b,x0_d)) / (6*volume),
-                    (cross(x0_a,x0_b) + cross(x0_b,x0_c) + cross(x0_c,x0_a)) / (6*volume)
-                };
-
-                Mat33 GradU;
-                for (auto indice : tetrahedron) {
-                    GradU += (u[indice] ^ shape_derivatives[indice]);
-                }
-
-                // Extract the rotation from the deformation gradient
-                const Mat33 F = GradU + Mat33::Identity();
-                R = extractRotationPolar(F);
-                const Mat33 Rt = R.transposed();
-
+            if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
                 u[0]= (Rt*x_a - x0_a);
                 u[1]= (Rt*x_b - x0_b);
                 u[2]= (Rt*x_c - x0_c);
                 u[3]= (Rt*x_d - x0_d);
-
             } else {
-                // Transformation matrix
-                Mat33 A(
-                    R * (x_b - x_a),
-                    R * (x_c - x_a),
-                    R * (x_d - x_a)
-                );
-
-                // Extract the current rotation
-                Mat33 Rtemp;
-
-                if (corotational_method() == Corotational::SVD)
-                    Rtemp = extractRotationSVD(A, m_element_initial_inverted_transformations[i],
-                                               m_element_initial_rotations[i]);
-                else if (corotational_method() == Corotational::LARGE)
-                    Rtemp = extractRotationLarge(A);
-                else
-                    Rtemp = extractRotationPolar(A);
-
-                R = Rtemp * R;
-
-                // Get the initial rotation
-                const Mat33 &R0 = m_element_initial_rotations[i];
+                const Mat33 &R0 = m_element_initial_rotations[tId];
 
                 // Rotate the displacements
                 if (corotational_method() == Corotational::LARGE) {
@@ -288,36 +330,30 @@ void FEMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, D
                     u[3] = (R * x_d - R0 * x0_d);
                 }
             }
+
+            Rt = R.transposed();
         }
 
-        // Gather the nodal displacement into one vector
-        const Vec12 U (
-            u[0][0], u[0][1], u[0][2], u[1][0], u[1][1], u[1][2], u[2][0], u[2][1], u[2][2], u[3][0], u[3][1], u[3][2]
-        );
+        const sofa::helper::fixed_array<Deriv, 4> & shape_derivatives = element_shape_derivatives[tId];
 
-        // Compute the internal elastic force
-        const Mat1212 & K = stiffness_matrices[i];
-        const Vec12 F = K*U;
+        Mat33 GradU;
+        for (unsigned int j = 0; j < 4; ++j) {
+            GradU += (u[j] ^ shape_derivatives[j]);
+        }
 
-        // Return the computed nodal forces
-        if (corotational_method() == Corotational::NONE) {
-            f[a] -= Deriv( F[0], F[1], F[2] );
-            f[b] -= Deriv( F[3], F[4], F[5] );
-            f[c] -= Deriv( F[6], F[7], F[8] );
-            f[d] -= Deriv( F[9], F[10], F[11] );
-        } else {
-            if (d_use_centroid_deformation_for_rotation_extraction.getValue()) {
-                const Mat33 R = m_element_rotations[i];
-                f[a] -= R * Deriv(F[0], F[1], F[2]);
-                f[b] -= R * Deriv(F[3], F[4], F[5]);
-                f[c] -= R * Deriv(F[6], F[7], F[8]);
-                f[d] -= R * Deriv(F[9], F[10], F[11]);
+        const Mat33 I = Mat33::Identity();
+        const Mat33 E2 = (GradU + GradU.transposed()); // Twice the strain tensor (2*epsilon)
+        Mat33 S = mu*E2 + 0.5*(lambda*trace(E2)*I);  // Stress tensor
+        Real volume = fabs( dot( cross(x0_b-x0_a, x0_c-x0_a), x0_d-x0_a ) ) / 6.0;
+
+        for (unsigned int j = 0; j < 4; ++j) {
+            PointID indice = tetrahedron[j];
+            if (corotational_method() == Corotational::NONE) {
+                f[indice] -= volume * S * shape_derivatives[j];
+            } else if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
+                f[indice] -= volume * R * S * shape_derivatives[j];
             } else {
-                const Mat33 Rt = m_element_rotations[i].transposed();
-                f[a] -= Rt * Deriv(F[0], F[1], F[2]);
-                f[b] -= Rt * Deriv(F[3], F[4], F[5]);
-                f[c] -= Rt * Deriv(F[6], F[7], F[8]);
-                f[d] -= Rt * Deriv(F[9], F[10], F[11]);
+                f[indice] -= volume * Rt * S * shape_derivatives[j];
             }
         }
     }
@@ -330,49 +366,81 @@ void FEMForcefield<DataTypes>::addDForce(const core::MechanicalParams* mparams, 
     sofa::helper::WriteAccessor<Data<VecDeriv>> df = d_df;
     sofa::helper::ReadAccessor<Data<VecCoord>> dx = d_dx;
     sofa::helper::ReadAccessor<Data<sofa::helper::vector<Tetrahedron>>> tetrahedrons = d_tetrahedrons;
-    sofa::helper::ReadAccessor<Data<sofa::helper::vector<Mat1212>>> stiffness_matrices = d_element_stiffness_matrices;
+    sofa::helper::ReadAccessor<Data<sofa::helper::vector<sofa::helper::fixed_array<Deriv, 4>>>> element_shape_derivatives = d_element_shape_derivatives;
     Real kFactor = (Real) mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue());
+    sofa::helper::ReadAccessor<Data<VecCoord>> X = d_initial_positions;
 
-    for (size_t i = 0; i < tetrahedrons.size(); ++i) {
-        const auto & indices = tetrahedrons[i];
+    const Real & youngModulus = this->d_youngModulus.getValue();
+    const Real & poissonRatio = this->d_poissonRatio.getValue();
 
-        const Mat33 & R  = m_element_rotations[i];
+    const Real lambda = youngModulus*poissonRatio / ((1 + poissonRatio)*(1 - 2*poissonRatio));
+    const Real mu = youngModulus / (2 * (1 + poissonRatio));
+
+    for (size_t tId = 0; tId < tetrahedrons.size(); ++tId) {
+        const auto & tetrahedron = tetrahedrons[tId];
+
+        PointID // Node indices
+            a = tetrahedron[0],
+            b = tetrahedron[1],
+            c = tetrahedron[2],
+            d = tetrahedron[3];
+
+        Coord // Initial positions
+            x0_a = X[a],
+            x0_b = X[b],
+            x0_c = X[c],
+            x0_d = X[d];
+
+        const Mat33 & R  = m_element_rotations[tId];
         const Mat33   Rt = R.transposed();
 
-        PointID a = indices[0];
-        PointID b = indices[1];
-        PointID c = indices[2];
-        PointID d = indices[3];
+        Deriv u[4];
 
-        const Deriv u[4] = {
-            Rt*dx[a],
-            Rt*dx[b],
-            Rt*dx[c],
-            Rt*dx[d],
-        };
+        switch (corotational_method()) {
+            case Corotational::DEFORMATION_GRADIENT:
+                u[0] = Rt*dx[a];
+                u[1] = Rt*dx[b];
+                u[2] = Rt*dx[c];
+                u[3] = Rt*dx[d];
+                break;
+            case Corotational::LARGE:
+            case Corotational::SVD:
+            case Corotational::POLAR:
+                u[0] = R*dx[a];
+                u[1] = R*dx[b];
+                u[2] = R*dx[c];
+                u[3] = R*dx[d];
+                break;
+            default:
+                u[0] = dx[a];
+                u[1] = dx[b];
+                u[2] = dx[c];
+                u[3] = dx[d];
+                break;
+        }
 
-        const Vec12 U (
-            u[0][0],
-            u[0][1],
-            u[0][2],
-            u[1][0],
-            u[1][1],
-            u[1][2],
-            u[2][0],
-            u[2][1],
-            u[2][2],
-            u[3][0],
-            u[3][1],
-            u[3][2]
-        );
+        const sofa::helper::fixed_array<Deriv, 4> & shape_derivatives = element_shape_derivatives[tId];
 
-        const Mat1212 & K = stiffness_matrices[i];
-        const Vec12 dF = -1. * (K*U) * kFactor;
+        Mat33 GradU;
+        for (unsigned int j = 0; j < 4; ++j) {
+            GradU += (u[j] ^ shape_derivatives[j]);
+        }
 
-        df[a] += R * Deriv( dF[0], dF[1], dF[2] );
-        df[b] += R * Deriv( dF[3], dF[4], dF[5] );
-        df[c] += R * Deriv( dF[6], dF[7], dF[8] );
-        df[d] += R * Deriv( dF[9], dF[10], dF[11] );
+        const Mat33 I = Mat33::Identity();
+        const Mat33 E2 = (GradU + GradU.transposed()); // Twice the strain tensor (2*epsilon)
+        Mat33 S = mu*E2 + 0.5*(lambda*trace(E2)*I);  // Stress tensor
+        Real volume = fabs( dot( cross(x0_b-x0_a, x0_c-x0_a), x0_d-x0_a ) ) / 6.0;
+
+        for (unsigned int j = 0; j < 4; ++j) {
+            PointID indice = tetrahedron[j];
+            if (corotational_method() == Corotational::NONE) {
+                df[indice] -= volume * S * shape_derivatives[j];
+            } else if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
+                df[indice] -= volume * R * S * shape_derivatives[j];
+            } else {
+                df[indice] -= volume * Rt * S * shape_derivatives[j];
+            }
+        }
     }
 }
 
@@ -400,7 +468,7 @@ void FEMForcefield<DataTypes>::addKToMatrix(BaseMatrix * matrix, SReal kFact, un
                     const Mat33 & R  = m_element_rotations[i];
                     const Mat33   Rt = R.transposed();
 
-                    if (d_use_centroid_deformation_for_rotation_extraction.getValue()) {
+                    if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
                         K = -kFact * R * K * Rt;
                     } else {
                         K = -kFact * Rt * K * R;
@@ -421,7 +489,6 @@ SOFA_DECL_CLASS(FEMForcefield)
 static int FEMForcefieldClass = core::RegisterObject("Caribou FEM Forcefield")
                                          .add< FEMForcefield<sofa::defaulttype::Vec3dTypes> >(true)
 ;
-
 
 } // namespace forcefield
 

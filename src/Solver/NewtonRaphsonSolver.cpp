@@ -113,7 +113,7 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
                 sofa::helper::AdvancedTimer::stepEnd("step_" + std::to_string(n_it));
             }
 
-            if (f_cutoff.getValue() && f_cur_norm > f_norm && n_it>0) {
+            if (f_cutoff.getValue() && f_cur_norm > f_norm && n_it>1) {
                 msg_info() << "[DIVERGED] residual's norm increased";
                 break;
             }

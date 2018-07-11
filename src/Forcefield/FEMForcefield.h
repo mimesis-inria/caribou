@@ -31,7 +31,8 @@ public:
         NONE = 0,    ///< No corotational method used (small displacements)
         LARGE = 1,   ///< Corotational method based on a QR decomposition    -> Nesme et al 2005 "Efficient, Physically Plausible Finite Elements"
         POLAR = 2,   ///< Corotational method based on a polar decomposition -> Muller et al 2004 "Interactive Virtual Materials"
-        SVD = 3      ///< Corotational method based on a SVD decomposition   -> inspired from Irving et al 2004 "Invertible Finite Element for Robust Simulation of Large Deformation"
+        SVD = 3,      ///< Corotational method based on a SVD decomposition   -> inspired from Irving et al 2004 "Invertible Finite Element for Robust Simulation of Large Deformation"
+        DEFORMATION_GRADIENT = 4  ///< Corotational method based on rotation extraction from the deformation gradient (F = GradU + I)
     };
 
     // Type definitions
@@ -48,9 +49,10 @@ public:
     using Mat1212  = defaulttype::Mat<12, 12, Real>;
     using Vec3     = defaulttype::Vec<3, Real>;
     using Vec6     = defaulttype::Vec<6, Real>;
-    using Vec12     = defaulttype::Vec<12, Real>;
+    using Vec12    = defaulttype::Vec<12, Real>;
     using PointID  =  typename TetrahedronSetTopologyContainer::PointID;
-    using Tetrahedron  = typename TetrahedronSetTopologyContainer::Tetrahedron;
+    using Tetrahedron   = typename TetrahedronSetTopologyContainer::Tetrahedron;
+    using TetrahedronID = size_t;
 
 
     // Public methods
@@ -61,12 +63,12 @@ public:
     SReal getPotentialEnergy(const core::MechanicalParams* /* mparams */, const Data<VecCoord>& /* d_x */) const override {return 0;}
     void addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int &offset) override;
 
-    inline Mat612 getStrainDisplacement(const Deriv (& ShapeDerivative)[4]) const
+    inline Mat612 getStrainDisplacement(const helper::fixed_array<Deriv, 4> shapeDerivatives) const
     {
         Mat612 B;
 
         for (unsigned int i = 0; i < 4; ++i) {
-            const Deriv & GradS = ShapeDerivative[i];
+            const Deriv & GradS = shapeDerivatives[i];
 
             B[0][i*3+0] = GradS[0];  B[0][i*3+1] = 0;         B[0][i*3+2] = 0;
             B[1][i*3+0] = 0;         B[1][i*3+1] = GradS[1];  B[1][i*3+2] = 0;
@@ -79,34 +81,15 @@ public:
         return B;
     }
 
-    inline Mat612 getStrainDisplacement(const Coord & a, const Coord & b, const Coord & c, const Coord & d) const
+    inline helper::fixed_array<Deriv, 4> getShapeDerivatives(const Coord & a, const Coord & b, const Coord & c, const Coord & d) const
     {
         Real volume = fabs( dot( cross(b-a, c-a), d-a ) ) / 6.0;
-        Deriv shape_derivatives[4];
-
-        // Shape derivative of a
-        shape_derivatives[0] = -(cross(b,c) + cross(c,d) + cross(d,b)) / (6*volume);
-
-        // Shape derivative of b
-        shape_derivatives[1] = (cross(c,d) + cross(d,a) + cross(a,c)) / (6*volume);
-
-        // Shape derivative of c
-        shape_derivatives[2] = -(cross(d,a) + cross(a,b) + cross(b,d)) / (6*volume);
-
-        // Shape derivative of d
-        shape_derivatives[3] = (cross(a,b) + cross(b,c) + cross(c,a)) / (6*volume);
-
-        return getStrainDisplacement(shape_derivatives);
-    }
-
-    inline Mat612 getStrainDisplacement(const Coord & a, const Coord & b, const Coord & c, const Coord & d, const Mat33 & R) const
-    {
-        Coord a_rotated = R*a;
-        Coord b_rotated = R*b;
-        Coord c_rotated = R*c;
-        Coord d_rotated = R*d;
-
-        return getStrainDisplacement(a_rotated, b_rotated, c_rotated, d_rotated);
+        return {
+            -(cross(b,c) + cross(c,d) + cross(d,b)) / (6*volume),
+             (cross(c,d) + cross(d,a) + cross(a,c)) / (6*volume),
+            -(cross(d,a) + cross(a,b) + cross(b,d)) / (6*volume),
+             (cross(a,b) + cross(b,c) + cross(c,a)) / (6*volume)
+        };
     }
 
     void draw(const core::visual::VisualParams* vparams) override {SOFA_UNUSED(vparams);}
@@ -122,6 +105,7 @@ protected:
             case 1: return Corotational::LARGE;
             case 2: return Corotational::POLAR;
             case 3: return Corotational::SVD;
+            case 4: return Corotational::DEFORMATION_GRADIENT;
             default:return Corotational::NONE;
         }
     }
@@ -161,16 +145,19 @@ protected:
         return Mat33(x, y, z);
     }
 
+    Mat33 computeRotation(const helper::fixed_array<Coord, 4> & node_position, const helper::fixed_array<Coord, 4> & node_rest_position, const TetrahedronID & tId) const;
+
     // Inputs
     Data< Real > d_youngModulus;
     Data< Real > d_poissonRatio;
     Data<helper::vector<Coord>> d_initial_positions;  ///< List of initial coordinates of the tetrahedrons nodes
     Data<helper::vector<Tetrahedron>> d_tetrahedrons; ///< List of tetrahedrons by their nodes indices (ex: [t1p1 t1p2 t1p3 t1p4 t2p1 t2p2 t2p3 t2p4...])
     Data<sofa::helper::OptionsGroup> d_corotational; ///< the computation method of the rotation extraction
-    Data<bool> d_use_centroid_deformation_for_rotation_extraction; ///< Use the centroid point of an element to extract the rotation motion
+    Data<bool> d_incremental_rotation; ///< Extract the incremental rotation (rotate the displacement with the last extracted rotation before the current extraction)
 
     // Outputs
     Data<helper::vector<Mat1212>> d_element_stiffness_matrices; ///< List of elements stiffness matrices
+    Data<helper::vector<helper::fixed_array<Deriv, 4>>> d_element_shape_derivatives; ///< List of elements shape derivatives at their nodes
 
 private:
     helper::vector<Mat33> m_element_initial_inverted_transformations; ///< Initial inverted transformation matrices extracted from each elements

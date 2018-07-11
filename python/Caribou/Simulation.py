@@ -294,6 +294,7 @@ class SofaSceneBuilder(object):
                             node.createObject(
                                 'FEMForcefield',
                                 corotational=method,
+                                incremental_rotation=behavior.incremental_rotation,
                                 youngModulus=material.young_modulus,
                                 poissonRatio=material.poisson_ratio,
                                 printLog=behavior.printLog,

@@ -48,7 +48,16 @@ class FEMForceField(Behavior):
         self.corotational_method = kwargs.get('corotational_method', FEMForceField.Corotational.LARGE)
 
     def __eq__(self, other):
-        return Behavior.__eq__(self, other)
+        res = Behavior.__eq__(self, other)
+        res = res and (self.corotational_method == other.corotational_method)
+        return res
+
+    def printable_attributes(self):
+        atts = [
+            ('Corotational method', self.corotational_method),
+        ]
+
+        return atts + Behavior.printable_attributes(self)
 
 
 class CaribouFEMForceField(FEMForceField):
@@ -56,12 +65,30 @@ class CaribouFEMForceField(FEMForceField):
         LARGE = 1
         POLAR = 2
         SVD = 3
+        DEFORMATION_GRADIENT = 4
 
     def __init__(self, **kwargs):
         FEMForceField.__init__(self, **kwargs)
+        self.incremental_rotation = kwargs.get('incremental_rotation', False)
 
     def __eq__(self, other):
-        return FEMForceField.__eq__(self, other)
+        res = FEMForceField.__eq__(self, other)
+        res = res and (self.incremental_rotation == other.incremental_rotation)
+        return res
+
+    def printable_attributes(self):
+        methods = {
+            CaribouFEMForceField.Corotational.LARGE: "LARGE",
+            CaribouFEMForceField.Corotational.SVD:   "SVD",
+            CaribouFEMForceField.Corotational.POLAR: "POLAR",
+            CaribouFEMForceField.Corotational.DEFORMATION_GRADIENT: "DEFORMATION GRADIENT",
+        }
+        atts = [
+            ('Corotational method', methods[self.corotational_method]),
+            ('Incremental rotation', self.incremental_rotation,)
+        ]
+
+        return atts + Behavior.printable_attributes(self)
 
 
 class GravityForceField(Behavior):
