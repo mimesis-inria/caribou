@@ -1,4 +1,5 @@
 #include <sofa/core/ObjectFactory.h>
+#include <sofa/core/visual/VisualParams.h>
 #include "FEMForcefield.h"
 #include "../Helper/LinearAlgebra.h"
 
@@ -20,6 +21,7 @@ template<class DataTypes>
 FEMForcefield<DataTypes>::FEMForcefield()
     : d_youngModulus(initData(&d_youngModulus, Real(1000), "youngModulus", "Young's modulus of the material"))
     , d_poissonRatio(initData(&d_poissonRatio, Real(0.3),  "poissonRatio", "Poisson's ratio of the material"))
+    , d_draw_scale(initData(&d_draw_scale, Real(0.666667),  "draw_scale", "Scale applied to tetrahedrons drawn when the draw forcefield option is enabled"))
     , d_initial_positions(initData(&d_initial_positions,   "initial_positions", "List of initial coordinates of the tetrahedrons nodes"))
     , d_tetrahedrons(initData(&d_tetrahedrons, "tetrahedrons", "List of tetrahedrons by their nodes indices (ex: [t1p1 t1p2 t1p3 t1p4 t2p1 t2p2 t2p3 t2p4...])"))
     , d_corotational(initData(&d_corotational, "corotational","Corotation \"small\", \"large\" (by QR), \"polar\", \"svd\" or \"deformation_gradient\""))
@@ -483,6 +485,63 @@ void FEMForcefield<DataTypes>::addKToMatrix(BaseMatrix * matrix, SReal kFact, un
             }
         }
     }
+}
+
+template<class DataTypes>
+void FEMForcefield<DataTypes>::draw(const core::visual::VisualParams* vparams)
+{
+    if (!vparams->displayFlags().getShowForceFields()) return;
+
+    if (vparams->displayFlags().getShowWireFrame())
+        vparams->drawTool()->setPolygonMode(0,true);
+
+    vparams->drawTool()->disableLighting();
+
+    sofa::helper::ReadAccessor<Data<sofa::helper::vector<Tetrahedron>>> tetrahedrons = d_tetrahedrons;
+    sofa::helper::ReadAccessor<Data<VecCoord>> x = this->mstate->read(core::VecCoordId::position());
+    sofa::helper::ReadAccessor<Data<Real>> scale = this->d_draw_scale;
+
+    std::vector< defaulttype::Vector3 > points[4];
+    for (size_t tId = 0; tId < tetrahedrons.size(); ++tId) {
+        const auto &tetrahedron = tetrahedrons[tId];
+        PointID // Node indices
+            a = tetrahedron[0],
+            b = tetrahedron[1],
+            c = tetrahedron[2],
+            d = tetrahedron[3];
+
+        Coord center = (x[a]+x[b]+x[c]+x[d])*0.25;
+        Coord pa = center + (x[a]-center)*scale;
+        Coord pb = center + (x[b]-center)*scale;
+        Coord pc = center + (x[c]-center)*scale;
+        Coord pd = center + (x[d]-center)*scale;
+
+        points[0].push_back(pa);
+        points[0].push_back(pb);
+        points[0].push_back(pc);
+
+        points[1].push_back(pb);
+        points[1].push_back(pc);
+        points[1].push_back(pd);
+
+        points[2].push_back(pc);
+        points[2].push_back(pd);
+        points[2].push_back(pa);
+
+        points[3].push_back(pd);
+        points[3].push_back(pa);
+        points[3].push_back(pb);
+    }
+
+    vparams->drawTool()->drawTriangles(points[0], defaulttype::Vec<4,float>(0.0,0.0,1.0,1.0));
+    vparams->drawTool()->drawTriangles(points[1], defaulttype::Vec<4,float>(0.0,0.5,1.0,1.0));
+    vparams->drawTool()->drawTriangles(points[2], defaulttype::Vec<4,float>(0.0,1.0,1.0,1.0));
+    vparams->drawTool()->drawTriangles(points[3], defaulttype::Vec<4,float>(0.5,1.0,1.0,1.0));
+
+    if (vparams->displayFlags().getShowWireFrame())
+        vparams->drawTool()->setPolygonMode(0,false);
+
+    vparams->drawTool()->enableLighting();
 }
 
 SOFA_DECL_CLASS(FEMForcefield)

@@ -92,7 +92,7 @@ public:
         };
     }
 
-    void draw(const core::visual::VisualParams* vparams) override {SOFA_UNUSED(vparams);}
+    void draw(const core::visual::VisualParams* vparams) override;
 
 protected:
     void computeStiffnessMatrix();
@@ -150,6 +150,7 @@ protected:
     // Inputs
     Data< Real > d_youngModulus;
     Data< Real > d_poissonRatio;
+    Data<Real> d_draw_scale; ///< Scale applied to tetrahedrons drawn when the draw forcefield option is enabled
     Data<helper::vector<Coord>> d_initial_positions;  ///< List of initial coordinates of the tetrahedrons nodes
     Data<helper::vector<Tetrahedron>> d_tetrahedrons; ///< List of tetrahedrons by their nodes indices (ex: [t1p1 t1p2 t1p3 t1p4 t2p1 t2p2 t2p3 t2p4...])
     Data<sofa::helper::OptionsGroup> d_corotational; ///< the computation method of the rotation extraction
