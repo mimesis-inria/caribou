@@ -59,6 +59,8 @@ class SofaSceneBuilder(object):
         assert isinstance(self.simulation, Simulation)
         assert self.node is not None
 
+        self.node.gravity = [0, 0, 0]
+
         # Meshes map set up
         self.meshes_map = {}
         self.meshes_node = self.node.createChild("meshes")
@@ -226,8 +228,9 @@ class SofaSceneBuilder(object):
             )
 
     def add_pde_solver(self, node):
-        if isinstance(self.simulation.pde_solver, StaticSolver):
-            system_solver = self.simulation.pde_solver.solver
+        pde_solver = self.simulation.pde_solver
+        if isinstance(pde_solver, StaticSolver):
+            system_solver = pde_solver.solver
 
             if isinstance(system_solver, NewtonRaphsonSolver):
                 node.createObject(
@@ -250,6 +253,16 @@ class SofaSceneBuilder(object):
                     "The system solver `{}` isn't compatible for the sofa scene builder.".format(
                         system_solver.__class__.__name__)
                 )
+        elif isinstance(pde_solver, ImplicitEuler):
+            node.createObject(
+                'EulerImplicitSolver',
+                printLog=pde_solver.printLog,
+                rayleighStiffness=pde_solver.rayleigh_stiffness,
+                rayleighMass=pde_solver.rayleigh_mass,
+                vdamping=pde_solver.velocity_damping,
+            )
+            solver = pde_solver.solver
+            self.add_linear_solver(node, solver)
         else:
             raise NotImplementedError(
                 "The PDE solver `{}` isn't compatible for the sofa scene builder.".format(
@@ -287,6 +300,14 @@ class SofaSceneBuilder(object):
                 assert len(materials) == 1, "FEM Forcefields can only deal with 1 material a the moment"
 
                 material = materials[0]
+
+                # Mass creation
+                if isinstance(self.simulation.pde_solver, DynamicSolver):
+                    node.createObject(
+                        'MeshMatrixMass',
+                        massDensity=material.density,
+                    )
+
                 if isinstance(material, LinearElastic):
                     method = behavior.corotational_method if material.corotated else 'small'
                     if part.tetrahedrons.size:
@@ -342,6 +363,13 @@ class SofaSceneBuilder(object):
                                       )
 
                 material = materials[0]
+
+                # Mass creation
+                if isinstance(self.simulation.pde_solver, DynamicSolver):
+                    node.createObject(
+                        'MeshMatrixMass',
+                        massDensity=material.density,
+                    )
 
                 (g_min_x, g_min_y, g_min_z), (g_max_x, g_max_y, g_max_z), (nx, ny, nz) = behavior.grid
                 grid = node.createObject('MeshlessGridTopology',

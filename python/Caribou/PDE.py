@@ -7,6 +7,7 @@ class PDESolver(BaseObject):
         BaseObject.__init__(self, **kwargs)
         # Parameters
         self.solver = kwargs.get('solver', None)
+        self.printLog = kwargs.get('print_log', False)
 
         assert isinstance(self.solver, SystemSolver)
 
@@ -34,4 +35,18 @@ class StaticSolver(PDESolver):
 
 
 class DynamicSolver(PDESolver):
-    None
+    def __init__(self, **kwargs):
+        PDESolver.__init__(self, **kwargs)
+        # Parameters
+        self.solver = kwargs.get('solver', None)
+        self.mass = kwargs.get('mass', None)
+
+
+class ImplicitEuler(DynamicSolver):
+    def __init__(self, **kwargs):
+        DynamicSolver.__init__(self, **kwargs)
+
+        # Parameters
+        self.rayleigh_stiffness = kwargs.get('rayleigh_stiffness', 0)
+        self.rayleigh_mass = kwargs.get('rayleigh_mass', 0)
+        self.velocity_damping = kwargs.get('velocity_damping', 0)

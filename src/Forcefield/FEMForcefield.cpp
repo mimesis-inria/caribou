@@ -434,11 +434,11 @@ void FEMForcefield<DataTypes>::addDForce(const core::MechanicalParams* mparams, 
         for (unsigned int j = 0; j < 4; ++j) {
             PointID indice = tetrahedron[j];
             if (corotational_method() == Corotational::NONE) {
-                df[indice] -= volume * S * shape_derivatives[j];
+                df[indice] -= volume * S * shape_derivatives[j] * kFactor;
             } else if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
-                df[indice] -= volume * R * S * shape_derivatives[j];
+                df[indice] -= volume * R * S * shape_derivatives[j] * kFactor;
             } else {
-                df[indice] -= volume * Rt * S * shape_derivatives[j];
+                df[indice] -= volume * Rt * S * shape_derivatives[j] * kFactor;
             }
         }
     }
