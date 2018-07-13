@@ -125,7 +125,8 @@ void NewtonRaphsonSolver::solve(const core::ExecParams* params /* PARAMS FIRST *
             }
 
             if (f_convergeOnResidual.getValue() && f_cur_norm <= f_resTolerance.getValue()) {
-                msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of " << f_resTolerance;
+                msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of "
+                           << f_resTolerance;
                 break;
             }
 

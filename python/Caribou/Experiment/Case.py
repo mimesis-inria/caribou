@@ -120,10 +120,13 @@ class Step(BaseObject):
         # Parameters
         self.duration = kwargs.get('duration', 0)
         self.newtonsteps = kwargs.get('newtonsteps', [])
+        self.load = kwargs.get('load', 0)
 
     def serialize(self):
         return dict(BaseObject.serialize(self), **{
-            'newtonsteps': self.newtonsteps
+            'duration': self.duration,
+            'newtonsteps': self.newtonsteps,
+            'load': self.load,
         })
 
 
@@ -135,3 +138,12 @@ class NewtonStep(BaseObject):
         self.duration = kwargs.get('duration', 0)
         self.residual = kwargs.get('residual', 0)
         self.correction = kwargs.get('correction', 0)
+        self.load = kwargs.get('load', 0)
+
+    def serialize(self):
+        return dict(BaseObject.serialize(self), **{
+            'duration': self.duration,
+            'residual': self.residual,
+            'correction': self.correction,
+            'load': self.load,
+        })

@@ -1,5 +1,6 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/visual/VisualParams.h>
+#include <sofa/helper/AdvancedTimer.h>
 #include "FEMForcefield.h"
 #include "../Helper/LinearAlgebra.h"
 
@@ -256,6 +257,8 @@ void FEMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, D
     const Real & youngModulus = this->d_youngModulus.getValue();
     const Real & poissonRatio = this->d_poissonRatio.getValue();
 
+    sofa::helper::AdvancedTimer::stepBegin("FEMForcefield::addForce");
+
     const Real lambda = youngModulus*poissonRatio / ((1 + poissonRatio)*(1 - 2*poissonRatio));
     const Real mu = youngModulus / (2 * (1 + poissonRatio));
 
@@ -350,15 +353,20 @@ void FEMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, D
 
         for (unsigned int j = 0; j < 4; ++j) {
             PointID indice = tetrahedron[j];
+            Deriv force;
             if (corotational_method() == Corotational::NONE) {
-                f[indice] -= volume * S * shape_derivatives[j];
+                force = volume * S * shape_derivatives[j];
             } else if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
-                f[indice] -= volume * R * S * shape_derivatives[j];
+                force = volume * R * S * shape_derivatives[j];
             } else {
-                f[indice] -= volume * Rt * S * shape_derivatives[j];
+                force = volume * Rt * S * shape_derivatives[j];
             }
+
+            f[indice] -= force;
         }
     }
+
+    sofa::helper::AdvancedTimer::stepEnd("FEMForcefield::addForce");
 
 }
 

@@ -58,9 +58,11 @@ public:
     Data<Real> d_slope; ///< Slope of pressure increment, the resulting pressure will be p^t = p^{t-1} + p*slope. If slope = 0, the pressure will be constant
     TriangleTopologyLink d_triangleContainer; ///< Triangle set topology container that contains the triangle indices
     MechanicalStateLink d_mechanicalState; ///< Mechanical state that contains the triangle positions
+    Data<unsigned int> d_number_of_steps_before_increment; ///< Number of steps to wait before adding an increment. This can be used to simulate a Newton-Raphson solver.
 
     // Outputs
     Data<VecDeriv> d_nodal_forces; /// Current nodal forces from the applied pressure
+    Data<Real> d_current_load;  ///< Current total load applied
 
 private:
 
@@ -68,6 +70,7 @@ private:
 
     bool m_pressure_is_constant = false;
     Deriv m_current_pressure;
+    unsigned int m_number_of_steps_since_last_increment = 0;
 };
 
 } // namespace forcefield

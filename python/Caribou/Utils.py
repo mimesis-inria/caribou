@@ -3,7 +3,7 @@ import math
 import sys
 import errno
 import os
-import colorsys
+import seaborn as sns
 import numpy as np
 from numpy import linalg as LA
 from collections import namedtuple
@@ -181,12 +181,10 @@ def generate_n_colors(n):
     Generate N different color sets
     (from https://stackoverflow.com/a/17684501)
     """
-    hsv_tuples = [(x*1.0/n, 0.5, 0.5) for x in xrange(n)]
-    rgb_out = []
-    for hsv in hsv_tuples:
-        r, g, b = colorsys.hsv_to_rgb(*hsv)
-        rgb_out.append([r, g, b, 1])
-    return rgb_out
+    if n < 7:
+        return sns.color_palette()
+    else:
+        sns.color_palette("hls", n)
 
 
 def is_number(s):

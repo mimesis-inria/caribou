@@ -50,6 +50,7 @@ class PressureBoundary(Boundary):
         # Parameters
         self.pressure = kwargs.get('pressure', [0, -1, 0])
         self.slope = kwargs.get('slope', 0)
+        self.number_of_steps_before_increment = kwargs.get('number_of_steps_before_increment', 1)
 
         assert len(self.pressure) == 3
 

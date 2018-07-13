@@ -4,7 +4,7 @@ from ..Simulation import Simulation
 from ..Boundary import *
 from ..Material import Material
 from ..Behavior import Behavior, MeshlessGalerkin
-from ..Simulation import SofaSceneBuilder
+from ..Sofa import SceneBuilder
 from ..Utils import escape, memory_usage, bbox, memory_available
 from ..Report import HtmlReport
 from ..PDE import *
@@ -135,9 +135,17 @@ class CylinderExperiment(Experiment):
             ])
             simulation.set_PDE_solver(case.solver)
 
+            if isinstance(case.solver, StaticSolver) and not isinstance(case.solver, NewtonRaphsonSolver):
+                nb_steps_before_increment = case.solver.newton_iterations
+            else:
+                nb_steps_before_increment = 1
+
             boundaries = [
                 FixedBoundary(part=case.initial_behavior_mesh.base, linked_to=case.initial_behavior_mesh.volume),
-                PressureBoundary(part=case.initial_behavior_mesh.top, pressure=self.pressure, slope=1. / case.number_of_steps,
+                PressureBoundary(part=case.initial_behavior_mesh.top,
+                                 pressure=self.pressure,
+                                 slope=1. / case.number_of_steps,
+                                 number_of_steps_before_increment=nb_steps_before_increment,
                                  linked_to=case.initial_behavior_mesh.volume),
             ]
             watcher = WatcherBoundary(part=self.surface_mesh.surface, linked_to=case.initial_behavior_mesh.volume, link_type=case.link_type)
@@ -154,7 +162,7 @@ class CylinderExperiment(Experiment):
             # Launch the sofa's simulation
             print "Memory usage before scene creation : {} MB".format(memory_usage())
             root = self.sofa.createNode("root")
-            SofaSceneBuilder(simulation=simulation, node=root)
+            SceneBuilder(simulation=simulation, node=root)
             sofa_simulation.init(root)
             print "Memory usage after scene creation : {} MB".format(memory_usage())
 
@@ -164,7 +172,12 @@ class CylinderExperiment(Experiment):
                     case.behavior.stats_integration_points_per_particle = case.behavior.object.stats_integration_points_per_particle[0]
                     case.behavior.stats_particles_per_integration_point = case.behavior.object.stats_particles_per_integration_point[0]
 
-            for i in range(case.number_of_steps):
+            if isinstance(case.solver, StaticSolver) and not isinstance(case.solver, NewtonRaphsonSolver):
+                number_of_steps = case.number_of_steps * case.solver.newton_iterations
+            else:
+                number_of_steps = case.number_of_steps
+
+            for i in range(number_of_steps):
                 self.sofa.timerBegin(self.name)
                 root.simulationStep(1)
                 timer_output = '{' + str(self.sofa.timerEnd(self.name, root)) + '}'
@@ -178,30 +191,69 @@ class CylinderExperiment(Experiment):
                         print "[ERROR] No timing records in the simulation's output. (missing key '{}')" \
                             .format(err.message)
                         break
-                    try:
-                        newtonraphson = mechanical['NewtonRaphsonSolver::Solve']
-                        try:
-                            newton_nb_iterations = newtonraphson['nb_iterations']
-                        except KeyError:
+
+                    if isinstance(case.solver, NewtonRaphsonSolver):
+                        solver = mechanical['NewtonRaphsonSolver::Solve']
+
+                        if 'nb_iterations' in solver:
+                            newton_nb_iterations = solver['nb_iterations']
+                        else:
                             print "[ERROR] No newton iterations at step {}".format(i)
                             break
 
                         newton_steps = []
                         for ii in range(int(newton_nb_iterations)):
-                            newton_step = mechanical['NewtonRaphsonSolver::Solve']['step_{}'.format(ii)]
+                            newton_step = solver['step_{}'.format(ii)]
+
+                            try:
+                                newton_step_load = newton_step['PressureForcefield::addForce']['load']
+                            except KeyError:
+                                print "[ERROR] No current load found at newton step {}".format(i)
+                                newton_step_load = 0
+
                             newton_steps.append(NewtonStep(
                                 duration=newton_step['end_time'] - newton_step['start_time'],
                                 residual=newton_step['residual'],
-                                correction=newton_step['correction']
+                                correction=newton_step['correction'],
+                                load=newton_step_load,
                             ))
+
+                        try:
+                            step_load = solver['PressureForcefield::addForce']['load']
+                        except KeyError:
+                            print "[ERROR] No current load found at step {}".format(i)
+                            step_load = 0
+
                         case.add_step(Step(
                             duration=mechanical['end_time'] - mechanical['start_time'],
-                            newtonsteps=newton_steps
+                            newtonsteps=newton_steps,
+                            load=step_load,
                         ))
-                    except KeyError:
+
+                    elif isinstance(case.solver, StaticSolver):
+                        solver = mechanical['StaticSolver::Solve']
+
+                        try:
+                            step_load = solver['PressureForcefield::addForce']['load']
+                        except KeyError:
+                            print "[ERROR] No current load found at step {}".format(i)
+                            step_load = 0
+
                         case.add_step(Step(
                             duration=mechanical['end_time'] - mechanical['start_time'],
+                            newtonsteps=[
+                                NewtonStep(
+                                    duration=solver['end_time'] - solver['start_time'],
+                                    residual=solver['residual'],
+                                    correction=solver['correction'],
+                                    load=step_load,
+                                )
+                            ],
+                            load=step_load,
                         ))
+                    else:
+                        print "[ERROR] The solver '{}' isn't supported yet for the cylinder simulation.".format(case.solver.fullname())
+                        break
 
             case.solution_surface_mesh = Mesh.Mesh(
                 vertices=np.array(watcher.state.position),

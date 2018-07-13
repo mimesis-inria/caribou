@@ -3,6 +3,7 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
+#include <sofa/helper/AdvancedTimer.h>
 
 #include "../Helper/Triangle.h"
 
@@ -29,10 +30,14 @@ PressureForcefield<DataTypes>::PressureForcefield()
         initLink("triangle_container", "Triangle set topology container that contains the triangle indices"))
     , d_mechanicalState(
         initLink("state", "Mechanical state that contains the triangle positions"))
+    , d_number_of_steps_before_increment(
+        initData(&d_number_of_steps_before_increment, (unsigned int) 1, "number_of_steps_before_increment",
+                 "Number of steps to wait before adding an increment. This can be used to simulate a Newton-Raphson solver."))
 
     // Outputs
     , d_nodal_forces(
         initData(&d_nodal_forces, "nodal_forces", "Current nodal forces from the applied pressure", true, true))
+    , d_current_load(initData(&d_current_load, (Real) 0, "current_load", "Current total load applied"))
 {
     this->f_listening.setValue(true);
 }
@@ -85,6 +90,9 @@ void PressureForcefield<DataTypes>::init()
 
     nodal_forces.resize(rest_positions.size());
 
+    // Force an increment on the first step of the simulation
+    m_number_of_steps_since_last_increment = d_number_of_steps_before_increment.getValue();
+
     if (m_pressure_is_constant)
         addNodalPressures(d_pressure.getValue());
 }
@@ -98,24 +106,48 @@ void PressureForcefield<DataTypes>::handleEvent(sofa::core::objectmodel::Event* 
     if (m_pressure_is_constant)
         return;
 
-    if (m_current_pressure.norm() >= d_pressure.getValue().norm())
+    const Deriv & pressure = d_pressure.getValue();
+    const Real &  slope = d_slope.getValue();
+    const unsigned int number_of_steps_before_increment = d_number_of_steps_before_increment.getValue();
+    unsigned int & number_of_steps_since_last_increment = m_number_of_steps_since_last_increment;
+
+    // If we've reach the total threshold, stop adding pressure
+    if (m_current_pressure.norm() >= pressure.norm())
         return;
 
-    m_current_pressure = m_current_pressure + d_pressure.getValue() * d_slope.getValue();
+    // Update the counter of steps since the last increment was done
+    number_of_steps_since_last_increment++;
 
-    if (m_current_pressure.norm() > d_pressure.getValue().norm())
-        m_current_pressure = d_pressure.getValue();
+    if (number_of_steps_since_last_increment < number_of_steps_before_increment)
+        return;
 
-    addNodalPressures(m_current_pressure);
+    // Reset the counter as we are doing an increment right now
+    number_of_steps_since_last_increment = 0;
+
+    Deriv increment = pressure * slope;
+    Deriv pressure_to_apply = m_current_pressure + increment;
+
+    if (pressure_to_apply.norm() > pressure.norm())
+        increment = pressure - m_current_pressure;
+
+    m_current_pressure += increment;
+
+    addNodalPressures(increment);
 }
 
 template<class DataTypes>
 void PressureForcefield<DataTypes>::addNodalPressures(Deriv pressure)
 {
     sofa::helper::WriteAccessor<Data<VecDeriv>> nodal_forces = d_nodal_forces;
+    sofa::helper::WriteAccessor<Data<Real>> current_load = d_current_load;
+
     const auto & triangles = d_triangles.getValue();
     const auto rest_positions = d_mechanicalState.get()->readRestPositions();
 
+    msg_info() << "Adding a pressure increment of " << pressure;
+
+    Deriv load;
+    Real total_area = 0;
     for (size_t i = 0; i < triangles.size(); ++i) {
         const auto & triangle = triangles[i];
         const auto & p1 = rest_positions[triangle[0]];
@@ -123,13 +155,18 @@ void PressureForcefield<DataTypes>::addNodalPressures(Deriv pressure)
         const auto & p3 = rest_positions[triangle[2]];
 
         const Real area = caribou::helper::triangle::area(p1, p2, p3);
-        const Deriv force = area * pressure / (Real) 3;
+        const Deriv force = area * pressure;
 
-        nodal_forces[triangle[0]] += force;
-        nodal_forces[triangle[1]] += force;
-        nodal_forces[triangle[2]] += force;
+        total_area += area;
+
+        nodal_forces[triangle[0]] += force / (Real) 3;
+        nodal_forces[triangle[1]] += force / (Real) 3;
+        nodal_forces[triangle[2]] += force / (Real) 3;
+
+        load += force;
     }
 
+    current_load += load.norm();
 }
 
 template<class DataTypes>
@@ -137,12 +174,16 @@ void PressureForcefield<DataTypes>::addForce(const sofa::core::MechanicalParams*
 {
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_x);
-
+    sofa::helper::AdvancedTimer::stepBegin("PressureForcefield::addForce");
+    sofa::helper::ReadAccessor<Data<Real>> current_load = d_current_load;
     sofa::helper::ReadAccessor<Data<VecDeriv>> nodal_forces = d_nodal_forces;
     sofa::helper::WriteAccessor<Data<VecDeriv>> f = d_f;
 
     for (size_t i = 0; i < f.size(); ++i)
         f[i] += nodal_forces[i];
+
+    sofa::helper::AdvancedTimer::valSet("load", current_load);
+    sofa::helper::AdvancedTimer::stepEnd("PressureForcefield::addForce");
 }
 
 template<class DataTypes>
