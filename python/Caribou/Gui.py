@@ -4,7 +4,7 @@ import warnings
 try:
     from libSofaPython import Sofa
 except ImportError as v:
-    warnings.warn("The python module Sofa is required.")
+    warnings.warn("The python module sofa is required.")
 
 
 def init(prefix=None, config_dir=None, screenshot_dir=None):
