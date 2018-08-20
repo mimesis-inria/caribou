@@ -1,8 +1,12 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/helper/AdvancedTimer.h>
+#include <sofa/simulation/AnimateBeginEvent.h>
 #include "FEMForcefield.h"
 #include "../Helper/LinearAlgebra.h"
+
+#include <random>
+
 
 namespace sofa
 {
@@ -30,10 +34,17 @@ FEMForcefield<DataTypes>::FEMForcefield()
     , d_incremental_rotation(initData(&d_incremental_rotation, true, "incremental_rotation",
                                       "Extract the incremental rotation (rotate the displacement with the last extracted"
                                       " rotation before the current extraction)"))
+    , d_number_of_steps_before_updating_the_stiffness(
+        initData(&d_number_of_steps_before_updating_the_stiffness, (unsigned int) 0, "number_of_steps_before_updating_the_stiffness",
+                 "Number of steps to wait before updating the stiffness matrix. "
+                 "Set to 0 to always keep an updated stiffmatrix (will update during addForce)"))
+    , d_test_case(initData(&d_test_case, (unsigned int) 0, "testcase", "testcase"))
 {
     sofa::helper::WriteAccessor<Data<sofa::helper::OptionsGroup>> corotationalOptions = d_corotational;
     corotationalOptions->setNames(5,"NONE", "LARGE", "POLAR", "SVD", "DEFORMATION_GRADIENT"); // .. add other options
     corotationalOptions->setSelectedItem(0);
+
+    this->f_listening.setValue(true);
 }
 
 template<class DataTypes>
@@ -81,8 +92,23 @@ void FEMForcefield<DataTypes>::init()
         }
     }
 
+
+    m_number_of_steps_since_last_update = d_number_of_steps_before_updating_the_stiffness.getValue();
+
     // todo (jnbrunet2000@gmail.com): This should be called when the input data changes or is initialized
     computeStiffnessMatrix();
+}
+
+template<class DataTypes>
+void FEMForcefield<DataTypes>::reset()
+{
+    Inherit::reset();
+    sofa::helper::ReadAccessor<Data<sofa::helper::vector<Tetrahedron>>> tetrahedrons = d_tetrahedrons;
+    for (TetrahedronID tId = 0; tId < tetrahedrons.size(); ++tId) {
+        m_element_rotations[tId] = m_element_initial_rotations[tId];
+    }
+
+    m_number_of_steps_since_last_update = d_number_of_steps_before_updating_the_stiffness.getValue();
 }
 
 template<class DataTypes>
@@ -102,7 +128,7 @@ void FEMForcefield<DataTypes>::computeStiffnessMatrix()
         for (const PointID & id : tetrahedron) {
             if (id > X.size()-1) {
                 msg_error() << "The set of rest positions does not match the set of tetrahedrons "
-                               "(some nodes got an id greater than the number of rest positions provided).";
+                               "(some nodes have an id greater than the number of rest positions provided).";
                 return;
             }
         }
@@ -128,6 +154,7 @@ void FEMForcefield<DataTypes>::computeStiffnessMatrix()
     stiffness_matrices.resize(tetrahedrons.size());
     element_shape_derivatives.resize(tetrahedrons.size());
     m_element_rotations.resize(tetrahedrons.size(), Mat33::Identity());
+    m_stiffness_element_rotations.resize(tetrahedrons.size(), Mat33::Identity());
     m_element_initial_rotations.resize(tetrahedrons.size(), Mat33::Identity());
     m_element_initial_inverted_transformations.resize(tetrahedrons.size(), Mat33::Identity());
 
@@ -142,34 +169,31 @@ void FEMForcefield<DataTypes>::computeStiffnessMatrix()
         Mat1212 & K = stiffness_matrices[tId];
         Mat612 B;
         Mat33 & R0 = m_element_initial_rotations[tId];
+        Mat33 & R = m_element_rotations[tId];
         sofa::helper::fixed_array<Deriv, 4> & shape_derivatives = element_shape_derivatives[tId];
 
-        // Compute the shape derivatives
-        if (corotational_method() == Corotational::NONE || corotational_method() == Corotational::DEFORMATION_GRADIENT) {
+        // Transformation matrix
+        Mat33 A(b-a, // Edge 0
+                c-a, // Edge 1
+                d-a  // Edge 2
+        );
+
+        // For SVD, we need the initial inverted transformation matrix to detect degenerate cases
+        m_element_initial_inverted_transformations[tId] = A.inverted();
+
+        // We extract the initial rotation matrix from the steady state
+        if (corotational_method() == Corotational::LARGE)
+            R0 = extractRotationLarge(A);
+        else
+            R0 = extractRotationPolar(A);
+
+        // Compute the rotated strain-displacement matrix
+        if (corotational_method() == Corotational::LARGE)
+            shape_derivatives = getShapeDerivatives(Coord(0,0,0), R0*(b-a), R0*(c-a), R0*(d-a));
+        else if (corotational_method() == Corotational::SVD || corotational_method() == Corotational::POLAR)
+            shape_derivatives = getShapeDerivatives(R0*a, R0*b, R0*c, R0*d);
+        else // Deformation gradient or small
             shape_derivatives = getShapeDerivatives(a, b, c, d);
-        } else {
-            // Transformation matrix
-            Mat33 A(b-a, // Edge 0
-                    c-a, // Edge 1
-                    d-a  // Edge 2
-            );
-
-            // For SVD, we need the initial inverted transformation matrix to detect degenerate cases
-            if (corotational_method() == Corotational::SVD)
-                m_element_initial_inverted_transformations[tId] = A.inverted();
-
-            // We extract the initial rotation matrix from the steady state
-            if (corotational_method() == Corotational::LARGE)
-                R0 = extractRotationLarge(A);
-            else
-                R0 = extractRotationPolar(A);
-
-            // Compute the rotated strain-displacement matrix
-            if (corotational_method() == Corotational::LARGE)
-                shape_derivatives = getShapeDerivatives(Coord(0,0,0), R0*(b-a), R0*(c-a), R0*(d-a));
-            else
-                shape_derivatives = getShapeDerivatives(R0*a, R0*b, R0*c, R0*d);
-        }
 
         // Get the strain-displacement matrix
         B = getStrainDisplacement(shape_derivatives);
@@ -177,8 +201,40 @@ void FEMForcefield<DataTypes>::computeStiffnessMatrix()
         // Compute the stiffness matrix
         Real volume = fabs( dot( cross(b-a, c-a), d-a ) ) / 6.0;
         K = volume*B.transposed()*C*B;
+        R = R0;
 
         ++tId;
+    }
+}
+
+template<class DataTypes>
+void FEMForcefield<DataTypes>::handleEvent(sofa::core::objectmodel::Event* event)
+{
+    if (!sofa::simulation::AnimateBeginEvent::checkEventType(event))
+        return;
+
+    // If the number of steps is zero, the update will be done each time inside the addForce function
+    if (d_number_of_steps_before_updating_the_stiffness.getValue() == 0)
+        return;
+
+
+    const unsigned int number_of_steps_before_updating_the_stiffness = d_number_of_steps_before_updating_the_stiffness.getValue();
+    unsigned int & number_of_steps_since_last_update = m_number_of_steps_since_last_update;
+
+    // Update the counter of steps since the last increment was done
+    number_of_steps_since_last_update++;
+
+    if (number_of_steps_since_last_update < number_of_steps_before_updating_the_stiffness)
+        return;
+
+    // Reset the counter as we are doing an update right now
+    number_of_steps_since_last_update = 0;
+
+    msg_info() << "Updating the tangent stiffness matrix.";
+
+    sofa::helper::ReadAccessor<Data<sofa::helper::vector<Tetrahedron>>> tetrahedrons = d_tetrahedrons;
+    for (TetrahedronID tId = 0; tId < tetrahedrons.size(); ++tId) {
+        m_stiffness_element_rotations[tId] = m_element_rotations[tId];
     }
 }
 
@@ -186,7 +242,7 @@ template<class DataTypes>
 typename FEMForcefield<DataTypes>::Mat33 FEMForcefield<DataTypes>::computeRotation(
     const sofa::helper::fixed_array<Coord, 4> & node_position,
     const sofa::helper::fixed_array<Coord, 4> & node_rest_position,
-    const TetrahedronID & tId) const
+    const TetrahedronID & tId)
 {
 
     Mat33 R;
@@ -230,10 +286,10 @@ typename FEMForcefield<DataTypes>::Mat33 FEMForcefield<DataTypes>::computeRotati
         );
 
         // Extract the current rotation
-        if (corotational_method() == Corotational::SVD)
+        if (corotational_method() == Corotational::SVD) {
             R = extractRotationSVD(A, m_element_initial_inverted_transformations[tId],
-                                       m_element_initial_rotations[tId]);
-        else if (corotational_method() == Corotational::LARGE)
+                                   m_element_initial_rotations[tId]);
+        } else if (corotational_method() == Corotational::LARGE)
             R = extractRotationLarge(A);
         else
             R = extractRotationPolar(A);
@@ -266,7 +322,9 @@ void FEMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, D
         const auto & tetrahedron = tetrahedrons[tId];
 
         // Current rotation
+        Mat33 & StiffnessRotation  = m_stiffness_element_rotations[tId];
         Mat33 & R  = m_element_rotations[tId];
+        const Mat33 &R0 = m_element_initial_rotations[tId];
         Mat33 Rt = R.transposed();
 
         PointID // Node indices
@@ -295,18 +353,61 @@ void FEMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, D
             u[1]= (x_b - x0_b);
             u[2]= (x_c - x0_c);
             u[3]= (x_d - x0_d);
+
+            // todo(jnbrunet2000@gmail.com): Remove this when the corotational debug is finished
+            R = computeRotation({x_a, x_b, x_c, x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
         } else {
             // Corotational method
             if (d_incremental_rotation.getValue()) {
-                Mat33 Rtemp;
-                if (corotational_method() == Corotational::DEFORMATION_GRADIENT)
-                    Rtemp = computeRotation({Rt*x_a, Rt*x_b, Rt*x_c, Rt*x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
-                else
-                    Rtemp = computeRotation({R*x_a, R*x_b, R*x_c, R*x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
-                R = Rtemp*R;
+                if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
+                    Mat33 Rtemp = computeRotation({Rt * x_a, Rt * x_b, Rt * x_c, Rt * x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
+                    R = Rtemp*R;
+                } else {
+                    R = computeRotation({x_a, x_b, x_c, x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
+                    Quaternion qR; qR.fromMatrix(R);
+                    Quaternion qR0; qR0.fromMatrix(R0);
+                    Quaternion qDiff = Quaternion::createFromRotationVector(qR.angularDisplacement(qR, qR0));
+                    Mat33 Rdiff;
+                    qDiff.toMatrix(Rdiff);
+                    R = Rdiff*R;
+                }
             } else {
-                R = computeRotation({x_a, x_b, x_c, x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
+                unsigned int testcase = d_test_case.getValue();
+                Real angle;
+                int index;
+                Coord v;
+                Mat33 Rrng;
+                Mat33 Rnoise;
+                std::random_device rd;     // only used once to initialise (seed) engine
+                std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+                std::uniform_int_distribution<int> uni_index(0,2); // guaranteed unbiased
+                std::uniform_int_distribution<int> uni_angle(-90,90); // guaranteed unbiased
+                switch (testcase) {
+                    case 0:
+                        R = computeRotation({x_a, x_b, x_c, x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
+                        break;
+                    case 1:
+                        R = R0;
+                        break;
+                    case 2:
+                        angle = 45 * 3.14159265 / 180.;
+                        Quaternion::createQuaterFromEuler(Coord(angle, angle, angle)).toMatrix(Rnoise);
+                        R = Rnoise * R0;
+                        break;
+                    case 3:
+                        index = uni_index(rng);
+                        angle = uni_angle(rng)  * 3.14159265 / 180.;
+                        v[index] = angle;
+                        Quaternion::createQuaterFromEuler(v).toMatrix(Rrng);
+                        R = Rrng*R0;
+                        break;
+                    default:
+                        R = computeRotation({x_a, x_b, x_c, x_d}, {x0_a, x0_b, x0_c, x0_d}, tId);
+                }
             }
+
+            if (d_number_of_steps_before_updating_the_stiffness.getValue() == 0)
+                StiffnessRotation = R;
 
             if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
                 u[0]= (Rt*x_a - x0_a);
@@ -314,8 +415,6 @@ void FEMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, D
                 u[2]= (Rt*x_c - x0_c);
                 u[3]= (Rt*x_d - x0_d);
             } else {
-                const Mat33 &R0 = m_element_initial_rotations[tId];
-
                 // Rotate the displacements
                 if (corotational_method() == Corotational::LARGE) {
                     u[0] = Coord(0, 0, 0);
@@ -401,7 +500,7 @@ void FEMForcefield<DataTypes>::addDForce(const core::MechanicalParams* mparams, 
             x0_c = X[c],
             x0_d = X[d];
 
-        const Mat33 & R  = m_element_rotations[tId];
+        const Mat33 & R  = m_stiffness_element_rotations[tId];
         const Mat33   Rt = R.transposed();
 
         Deriv u[4];
@@ -475,7 +574,7 @@ void FEMForcefield<DataTypes>::addKToMatrix(BaseMatrix * matrix, SReal kFact, un
                 if (corotational_method() == Corotational::NONE) {
                     K = -kFact * K;
                 } else {
-                    const Mat33 & R  = m_element_rotations[i];
+                    const Mat33 & R  = m_stiffness_element_rotations[i];
                     const Mat33   Rt = R.transposed();
 
                     if (corotational_method() == Corotational::DEFORMATION_GRADIENT) {
@@ -500,7 +599,7 @@ void FEMForcefield<DataTypes>::draw(const core::visual::VisualParams* vparams)
 {
     if (!vparams->displayFlags().getShowForceFields()) return;
 
-    if (vparams->displayFlags().getShowWireFrame())
+//    if (vparams->displayFlags().getShowWireFrame())
         vparams->drawTool()->setPolygonMode(0,true);
 
     vparams->drawTool()->disableLighting();
@@ -512,17 +611,32 @@ void FEMForcefield<DataTypes>::draw(const core::visual::VisualParams* vparams)
     std::vector< defaulttype::Vector3 > points[4];
     for (size_t tId = 0; tId < tetrahedrons.size(); ++tId) {
         const auto &tetrahedron = tetrahedrons[tId];
+//        const Mat33 & R = m_element_rotations[tId];
+//        const Mat33 & R0 = m_element_initial_rotations[tId];
+
+//        Quaternion qR; qR.fromMatrix(R);
+//        Quaternion qR0; qR0.fromMatrix(R0);
+
+//        if (diff.norm() < 0.001)
+//            continue;
         PointID // Node indices
             a = tetrahedron[0],
             b = tetrahedron[1],
             c = tetrahedron[2],
             d = tetrahedron[3];
 
+//        Real h = (x[a]-x[b]).norm();
+
         Coord center = (x[a]+x[b]+x[c]+x[d])*0.25;
         Coord pa = center + (x[a]-center)*scale;
         Coord pb = center + (x[b]-center)*scale;
         Coord pc = center + (x[c]-center)*scale;
         Coord pd = center + (x[d]-center)*scale;
+
+//        vparams->drawTool()->drawFrame(center, Quaternion::createFromRotationVector(qR.angularDisplacement(qR, qR0)), defaulttype::Vector3(1,1,1));
+//        h *= 0.1;
+//        vparams->drawTool()->drawFrame(center, qR, defaulttype::Vector3(h,h,h));
+//        vparams->drawTool()->drawFrame(center, qR0, defaulttype::Vector3(h*0.5,h*0.5,h*0.5));
 
         points[0].push_back(pa);
         points[0].push_back(pb);
@@ -541,12 +655,12 @@ void FEMForcefield<DataTypes>::draw(const core::visual::VisualParams* vparams)
         points[3].push_back(pb);
     }
 
-    vparams->drawTool()->drawTriangles(points[0], defaulttype::Vec<4,float>(0.0,0.0,1.0,1.0));
-    vparams->drawTool()->drawTriangles(points[1], defaulttype::Vec<4,float>(0.0,0.5,1.0,1.0));
-    vparams->drawTool()->drawTriangles(points[2], defaulttype::Vec<4,float>(0.0,1.0,1.0,1.0));
-    vparams->drawTool()->drawTriangles(points[3], defaulttype::Vec<4,float>(0.5,1.0,1.0,1.0));
+    vparams->drawTool()->drawTriangles(points[0], defaulttype::Vec<4,float>(0.0,0.0,1.0,0.3));
+    vparams->drawTool()->drawTriangles(points[1], defaulttype::Vec<4,float>(0.0,0.5,1.0,0.3));
+    vparams->drawTool()->drawTriangles(points[2], defaulttype::Vec<4,float>(0.0,1.0,1.0,0.3));
+    vparams->drawTool()->drawTriangles(points[3], defaulttype::Vec<4,float>(0.5,1.0,1.0,0.3));
 
-    if (vparams->displayFlags().getShowWireFrame())
+//    if (vparams->displayFlags().getShowWireFrame())
         vparams->drawTool()->setPolygonMode(0,false);
 
     vparams->drawTool()->enableLighting();

@@ -58,10 +58,12 @@ public:
     // Public methods
     FEMForcefield();
     void init() override;
+    void reset() override;
     void addForce(const core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& d_v) override;
     void addDForce(const core::MechanicalParams* mparams, Data<VecDeriv>& d_df, const Data<VecDeriv>& d_dx) override;
     SReal getPotentialEnergy(const core::MechanicalParams* /* mparams */, const Data<VecCoord>& /* d_x */) const override {return 0;}
     void addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int &offset) override;
+    void handleEvent(sofa::core::objectmodel::Event* event) override;
 
     inline Mat612 getStrainDisplacement(const helper::fixed_array<Deriv, 4> shapeDerivatives) const
     {
@@ -110,7 +112,7 @@ protected:
         }
     }
 
-    inline Mat33 extractRotationSVD(const Mat33 & A, const Mat33 & transformation, const Mat33 & initial_rotation) const {
+    inline Mat33 extractRotationSVD(const Mat33 & A, const Mat33 & transformation, const Mat33 & initial_rotation, bool * degenerated = nullptr) const {
         Mat33 F = A*transformation;
 
         if(determinant(F) < 1e-6) {
@@ -118,8 +120,8 @@ protected:
             defaulttype::Mat<3,3,Real> U(defaulttype::NOINIT), V(defaulttype::NOINIT);
             defaulttype::Vec<3,Real> Sdiag(defaulttype::NOINIT);
 
-            if (helper::Decompose<Real>::SVD_stable( F, U, Sdiag, V ))
-                msg_warning() << "Rotation extraction of a degenerate element";
+            if (helper::Decompose<Real>::SVD_stable( F, U, Sdiag, V ) && degenerated != nullptr)
+                *degenerated = true;
 
             return U * V.transposed() * initial_rotation;
         } else {
@@ -145,7 +147,7 @@ protected:
         return Mat33(x, y, z);
     }
 
-    Mat33 computeRotation(const helper::fixed_array<Coord, 4> & node_position, const helper::fixed_array<Coord, 4> & node_rest_position, const TetrahedronID & tId) const;
+    Mat33 computeRotation(const helper::fixed_array<Coord, 4> & node_position, const helper::fixed_array<Coord, 4> & node_rest_position, const TetrahedronID & tId);
 
     // Inputs
     Data< Real > d_youngModulus;
@@ -155,6 +157,8 @@ protected:
     Data<helper::vector<Tetrahedron>> d_tetrahedrons; ///< List of tetrahedrons by their nodes indices (ex: [t1p1 t1p2 t1p3 t1p4 t2p1 t2p2 t2p3 t2p4...])
     Data<sofa::helper::OptionsGroup> d_corotational; ///< the computation method of the rotation extraction
     Data<bool> d_incremental_rotation; ///< Extract the incremental rotation (rotate the displacement with the last extracted rotation before the current extraction)
+    Data<unsigned int> d_number_of_steps_before_updating_the_stiffness; ///< Number of steps to wait before updating the stiffness matrix.
+    Data<unsigned int> d_test_case; ///< TEST CASE, to be deleted
 
     // Outputs
     Data<helper::vector<Mat1212>> d_element_stiffness_matrices; ///< List of elements stiffness matrices
@@ -164,6 +168,8 @@ private:
     helper::vector<Mat33> m_element_initial_inverted_transformations; ///< Initial inverted transformation matrices extracted from each elements
     helper::vector<Mat33> m_element_initial_rotations; ///< Initial rotation matrices extracted from each elements
     helper::vector<Mat33> m_element_rotations; ///< Rotation matrices extracted from each elements
+    helper::vector<Mat33> m_stiffness_element_rotations; ///< Rotation matrices extracted from each elements currently applied to the stiffness matrix
+    unsigned int m_number_of_steps_since_last_update = 0; ///< Number of steps executed since the last stiffness matrix update
 };
 
 } // namespace forcefield

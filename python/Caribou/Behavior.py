@@ -70,6 +70,8 @@ class CaribouFEMForceField(FEMForceField):
     def __init__(self, **kwargs):
         FEMForceField.__init__(self, **kwargs)
         self.incremental_rotation = kwargs.get('incremental_rotation', False)
+        self.number_of_steps_before_updating_the_stiffness = kwargs.get('number_of_steps_before_updating_the_stiffness', 0)
+        self.draw_scale = kwargs.get('draw_scale', 0.67)
 
     def __eq__(self, other):
         res = FEMForceField.__eq__(self, other)

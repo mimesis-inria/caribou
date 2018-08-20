@@ -280,8 +280,10 @@ class SceneBuilder(object):
                                 'FEMForcefield',
                                 corotational=method,
                                 incremental_rotation=behavior.incremental_rotation,
+                                number_of_steps_before_updating_the_stiffness=behavior.number_of_steps_before_updating_the_stiffness,
                                 youngModulus=material.young_modulus,
                                 poissonRatio=material.poisson_ratio,
+                                draw_scale=behavior.draw_scale,
                                 printLog=behavior.printLog,
                             )
                         else:

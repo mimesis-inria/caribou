@@ -41,7 +41,8 @@ public:
 
     PressureForcefield();
 
-    void init() override ;
+    void init() override;
+    void reset() override;
     void addForce(const sofa::core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& d_v) override;
     void addDForce(const sofa::core::MechanicalParams* /*mparams*/, Data<VecDeriv>& /*d_df*/, const Data<VecDeriv>& /*d_dx*/) override {}
     void draw(const core::visual::VisualParams* vparams) override;

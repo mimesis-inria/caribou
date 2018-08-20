@@ -5,3 +5,4 @@ gen
 cmake-build*
 venv
 *.pyc
+build/

@@ -98,6 +98,20 @@ void PressureForcefield<DataTypes>::init()
 }
 
 template<class DataTypes>
+void PressureForcefield<DataTypes>::reset()
+{
+    core::behavior::ForceField<DataTypes>::reset();
+    // Force an increment on the first step of the simulation
+    m_number_of_steps_since_last_increment = d_number_of_steps_before_increment.getValue();
+
+    sofa::helper::WriteAccessor<Data<VecDeriv>> nodal_forces = d_nodal_forces;
+
+    nodal_forces.clear();
+    d_current_load.setValue(0.);
+    m_current_pressure = Deriv();
+}
+
+template<class DataTypes>
 void PressureForcefield<DataTypes>::handleEvent(sofa::core::objectmodel::Event* event)
 {
     if (!sofa::simulation::AnimateBeginEvent::checkEventType(event))
