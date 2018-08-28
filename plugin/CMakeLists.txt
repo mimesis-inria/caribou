@@ -4,19 +4,24 @@ project(pluginCaribou)
 set(LIB_NAME caribou)
 
 set(HEADER_FILES
+        Engine/CutGridEngine.h
         Event/IterativeSolverEvent.h
         Forcefield/FEMForcefield.h
+        Forcefield/IBMForcefield.h
         Forcefield/PressureForcefield.h
         Solver/NewtonRaphsonSolver.h
         Helper/LinearAlgebra.h
+        Helper/Hexahedron.h
         Helper/Tetrahedron.h
         Helper/Triangle.h
 )
 
 set(SOURCE_FILES
         InitCaribou.cpp
+        Engine/CutGridEngine.cpp
         Event/IterativeSolverEvent.cpp
         Forcefield/FEMForcefield.cpp
+        Forcefield/IBMForcefield.cpp
         Forcefield/PressureForcefield.cpp
         Solver/NewtonRaphsonSolver.cpp
 )
