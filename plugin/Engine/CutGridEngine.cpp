@@ -1,3 +1,4 @@
+#undef NDEBUG
 #include "CutGridEngine.h"
 #include "../Helper/Hexahedron.h"
 #include <sofa/core/ObjectFactory.h>
@@ -63,6 +64,8 @@ void CutGridEngine::update()
     const auto number_of_hexahedrons = d_grid_topology->getNbHexahedra();
     const auto number_of_points = d_grid_topology->getNbPoints();
 
+    using EdgeId = sofa::caribou::helper::hexahedron::EdgeId;
+    using AlphaValue = sofa::caribou::helper::hexahedron::AlphaValue;
 
     cleanDirty();
 
@@ -90,16 +93,16 @@ void CutGridEngine::update()
         for (unsigned char j = 0; j < 8; ++j)
             nodes[j] = d_grid_topology->getPoint(hexa[j]);
 
-        sofa::helper::vector<std::array<Coord, 3>> cube_triangles = sofa::caribou::helper::hexahedron::triangulate(
+        sofa::helper::vector<std::array<Coord, 3>> cube_triangles = sofa::caribou::helper::hexahedron::triangulate_interior(
                 nodes,
                 [this, nodes](const unsigned char & node_id) {
                     Flag flag = getFlag(nodes[node_id]);
                     return flag == Flag::Inside || flag == Flag::Boundary;
                 },
-                [nodes](const unsigned char & edge_id) {
+                [nodes](const EdgeId & edge_id) {
                     constexpr Real x0 = 0, x1 = 10, radius = 0.5;
-                    Coord p0 = nodes[sofa::caribou::helper::hexahedron::get_edge(edge_id)[0]];
-                    Coord p1 = nodes[sofa::caribou::helper::hexahedron::get_edge(edge_id)[1]];
+                    Coord p0 = nodes[sofa::caribou::helper::hexahedron::edges[edge_id][0]];
+                    Coord p1 = nodes[sofa::caribou::helper::hexahedron::edges[edge_id][1]];
 
                     if (p0[0] < x0)
                         p0[0] = x0;
@@ -111,10 +114,10 @@ void CutGridEngine::update()
                     else if (p1[0] > x1)
                         p1[0] = x1;
 
-                    Real isovalue_0 = radius - sqrt(p0[1]*p0[1] + p0[2]*p0[2]);
-                    Real isovalue_1 = radius - sqrt(p1[1]*p1[1] + p1[2]*p1[2]);
+                    auto isovalue_0 = (AlphaValue) (radius - sqrt(p0[1]*p0[1] + p0[2]*p0[2]));
+                    auto isovalue_1 = (AlphaValue) (radius - sqrt(p1[1]*p1[1] + p1[2]*p1[2]));
 
-                    Real alpha = - isovalue_0 / (isovalue_1 - isovalue_0);
+                    AlphaValue alpha = - isovalue_0 / (isovalue_1 - isovalue_0);
                     return alpha;
                 });
 
@@ -229,7 +232,7 @@ void CutGridEngine::draw(const core::visual::VisualParams* vparams)
                     }
                 }
 
-                for (const auto & edge : sofa::caribou::helper::hexahedron::get_edges()) {
+                for (const auto & edge : sofa::caribou::helper::hexahedron::edges) {
                     Coord point1 = d_grid_topology->getPoint(d_grid_topology->getHexa(i)[edge[0]]);
                     Coord point2 = d_grid_topology->getPoint(d_grid_topology->getHexa(i)[edge[1]]);
                     switch (hexahedrons_flags[i]) {

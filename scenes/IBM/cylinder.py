@@ -6,7 +6,7 @@ if 'SOFAPLUGIN_PATH' in os.environ:
     for pluginPath in os.environ['SOFAPLUGIN_PATH'].split(':'):
         Sofa.addPluginRepository(pluginPath)
 
-mesh   = Mesh.cylinder(center1=(0, 0, 0), center2=(10, 0, 0), radius=0.5, size=20, dimension=2, quads=True)
+# mesh   = Mesh.cylinder(center1=(0, 0, 0), center2=(10, 0, 0), radius=0.5, size=20, dimension=2, quads=True)
 
 def createScene(root):
     root.createObject('APIVersion', name=17.12)
@@ -14,14 +14,14 @@ def createScene(root):
     root.createObject('RequiredPlugin', name='caribou')
 
     cylnode = root.createChild('cylinder')
-    surface = cylnode.createObject('Mesh',
-                         name='cylinder_mesh',
-                         edges=mesh.surface.edges.tolist(),
-                         triangles=mesh.surface.triangles.tolist(),
-                         quads=mesh.surface.quads.tolist(),
-                         position=mesh.vertices.tolist(),
-                         )
-    cylnode.createObject('TriangleSetTopologyContainer', src='@cylinder_mesh')
+    # surface = cylnode.createObject('Mesh',
+    #                      name='cylinder_mesh',
+    #                      edges=mesh.surface.edges.tolist(),
+    #                      triangles=mesh.surface.triangles.tolist(),
+    #                      quads=mesh.surface.quads.tolist(),
+    #                      position=mesh.vertices.tolist(),
+    #                      )
+    # cylnode.createObject('TriangleSetTopologyContainer', src='@cylinder_mesh')
 
 
     size = 0.25
@@ -31,7 +31,7 @@ def createScene(root):
 
     engine = cylnode.createObject('CutGridEngine',
                                   grid_topology=grid.getLinkPath(),
-                                  surface_topology=surface.getLinkPath(),
+                                  # surface_topology=surface.getLinkPath(),
                                   showHexahedrons="ALL",
                                   showBoundaryColor=[0, 0, 1, 0.5],
                                   showOutsideColor=[0, 1, 0, 0.5],
