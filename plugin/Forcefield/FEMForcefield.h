@@ -156,9 +156,7 @@ protected:
     Data<helper::vector<Coord>> d_initial_positions;  ///< List of initial coordinates of the tetrahedrons nodes
     Data<helper::vector<Tetrahedron>> d_tetrahedrons; ///< List of tetrahedrons by their nodes indices (ex: [t1p1 t1p2 t1p3 t1p4 t2p1 t2p2 t2p3 t2p4...])
     Data<sofa::helper::OptionsGroup> d_corotational; ///< the computation method of the rotation extraction
-    Data<bool> d_incremental_rotation; ///< Extract the incremental rotation (rotate the displacement with the last extracted rotation before the current extraction)
     Data<unsigned int> d_number_of_steps_before_updating_the_stiffness; ///< Number of steps to wait before updating the stiffness matrix.
-    Data<unsigned int> d_test_case; ///< TEST CASE, to be deleted
 
     // Outputs
     Data<helper::vector<Mat1212>> d_element_stiffness_matrices; ///< List of elements stiffness matrices
