@@ -12,6 +12,7 @@ set(HEADER_FILES
         Solver/NewtonRaphsonSolver.h
         Helper/LinearAlgebra.h
         Helper/Hexahedron.h
+        Helper/MirtichIntegration.h
         Helper/Tetrahedron.h
         Helper/Triangle.h
 )

@@ -85,7 +85,7 @@ protected:
     Data<sofa::helper::vector<Flag>> d_points_flags;
     Data<sofa::helper::vector<Flag>> d_hexahedrons_flags;
     Data<sofa::helper::vector<Coord>> d_triangle_positions;
-    Data<sofa::helper::vector<Triangle>> d_triangles;
+    Data<sofa::helper::vector<sofa::helper::vector<Triangle>>> d_triangles;
 
 private:
 

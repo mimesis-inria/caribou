@@ -487,10 +487,13 @@ AlphaPosition alpha_position(const NodeId node_id, const EdgeId edge_id) {
  *                               the edge, 1 being the second node, and anywhere between is the exact location of the cut.
  * @return List of triangles where a triangle is represented by three edge intersections (an instersection is a pair of <edge_id, alpha-position> (see AlphaPosition)
  */
-std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> &isInside, const std::array<AlphaValue, 12> &edgeIntersections)
+void triangulate(
+        const std::array<bool, 8> &isInside,
+        const std::array<AlphaValue, 12> &edgeIntersections,
+        std::array<std::vector<std::array<AlphaPosition, 3>>, 6> & faces_triangles,
+        std::vector<std::array<AlphaPosition, 3>> & cut_triangles)
 {
     using AlphaTriangle = std::array<AlphaPosition, 3>;
-    std::vector<AlphaTriangle> triangles;
 
     // Determine the index into the edge table which tells us which vertices are inside of the surface
     unsigned short flags = 0;
@@ -500,7 +503,9 @@ std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> 
 
     /* Cube is entirely in/out of the surface */
     if (MarchingCubeEdgeTable[flags] == 0)
-        return triangles;
+        return;
+
+    cut_triangles.clear();
 
     // STEP 1: Meshing the triangles that cut the hexa
     for (unsigned short i = 0; MarchingCubeTriTable[flags][i] != -1; i += 3) {
@@ -512,14 +517,14 @@ std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> 
         }
 
         // Add the triangle to the output
-        triangles.push_back(triangle);
+        cut_triangles.push_back(triangle);
     }
 
     // STEP 2: Meshing the hexahedron's faces that reside under the cut surface
 
     // Populate each edges with its connected triangles
     std::array<std::vector<AlphaTriangle>, 12> edge_triangles;
-    for (const AlphaTriangle & t : triangles) {
+    for (const AlphaTriangle & t : cut_triangles) {
         for (const AlphaPosition & p : t) {
             const EdgeId  edgeId = p.first;
             edge_triangles[edgeId].push_back(t);
@@ -530,7 +535,7 @@ std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> 
     // alpha position (between 0 and 1) : intersection = edge[0] + alpha * (edge[1] - edge[0]).
     // If no intersection is on an edge, the alpha value is -1.
     std::array<AlphaValue, 12> intersection_of_edge = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-    for (const AlphaTriangle & triangle : triangles) {
+    for (const AlphaTriangle & triangle : cut_triangles) {
         for (const AlphaPosition & intersection : triangle) {
             const EdgeId & edge_id = intersection.first;
             const AlphaValue & alpha = intersection.second;
@@ -547,7 +552,7 @@ std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> 
         else cube_debug << " 0";
     cube_debug << '\n';
     cube_debug << "  Triangles:" << '\n';
-    for (const AlphaTriangle & triangle : triangles) {
+    for (const AlphaTriangle & triangle : cut_triangles) {
         cube_debug << "    ";
         for (const AlphaPosition & intersection : triangle) {
             const EdgeId & edge_id = intersection.first;
@@ -589,7 +594,7 @@ std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> 
         std::array<const AlphaPosition *, 4> connected_intersection = {nullptr, nullptr, nullptr, nullptr};
 
         // Populate the connected intersection to each face's nodes
-        for (const AlphaTriangle & triangle : triangles) {
+        for (const AlphaTriangle & triangle : cut_triangles) {
             const AlphaPosition * node = nullptr;
             const AlphaPosition * intersection = nullptr;
 
@@ -811,7 +816,8 @@ std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> 
         }
 
         // Create triangles for each subfaces found
-        std::vector<std::array<AlphaPosition, 3>> alpha_triangles;
+        std::vector<AlphaTriangle> & face_triangles = faces_triangles[face_id];
+        face_triangles.clear();
         for (std::list<AlphaPosition> & subface : subfaces) {
 
             assert_trace(subface.size() <= 5, "A subface cannot contain more than 5 nodes", (cube_debug.str() + face_debug.str()));
@@ -820,25 +826,46 @@ std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> 
             t1[0] = subface.front(); subface.pop_front();
             t1[1] = subface.front(); subface.pop_front();
             t1[2] = subface.front(); subface.pop_front();
-            alpha_triangles.push_back(t1);
+            face_triangles.push_back(t1);
 
             if (!subface.empty()) {
                 t2[0] = t1[2];
                 t2[1] = subface.front(); subface.pop_front();
                 t2[2] = t1[0];
-                alpha_triangles.push_back(t2);
+                face_triangles.push_back(t2);
             }
 
             if (!subface.empty()) {
                 t3[0] = t2[2];
                 t3[1] = subface.front(); subface.pop_front();
                 t3[2] = t1[0];
-                alpha_triangles.push_back(t3);
+                face_triangles.push_back(t3);
             }
         }
-
-        triangles.insert(std::end(triangles), std::begin(alpha_triangles), std::end(alpha_triangles));
     }
+}
+
+/**
+ * Triangulate an hexahedron cut by an iso-surface. This function will create a mesh of triangles that cover the iso-surface inside an hexahedron (the cut surface).
+ * @param isInside [IN] Array of booleans that indicate whether or not one of the hexahedron's node is inside or outside of the iso-surface (cut-surface).
+ * @param edgeIntersections [IN] Array of intersection coefficients that indicate where the iso-surface cut an edge.
+ *                               Each coefficient should be between 0 and 1, 0 being the position of the first node of
+ *                               the edge, 1 being the second node, and anywhere between is the exact location of the cut.
+ * @return List of triangles where a triangle is represented by three edge intersections (an instersection is a pair of <edge_id, alpha-position> (see AlphaPosition)
+ */
+std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> &isInside, const std::array<AlphaValue, 12> &edgeIntersections)
+{
+    using AlphaTriangle = std::array<AlphaPosition, 3>;
+    std::array<std::vector<AlphaTriangle>, 6> faces_triangles;
+    std::vector<AlphaTriangle> cut_triangles;
+
+    triangulate(isInside, edgeIntersections, faces_triangles, cut_triangles);
+
+    std::vector<AlphaTriangle> triangles;
+    for (const auto & face : faces_triangles) {
+        triangles.insert(std::end(triangles), std::begin(face), std::end(face));
+    }
+    triangles.insert(std::end(triangles), std::begin(cut_triangles), std::end(cut_triangles));
 
     return triangles;
 }

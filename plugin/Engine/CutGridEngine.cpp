@@ -26,7 +26,7 @@ CutGridEngine::CutGridEngine()
     , d_points_flags(initData(&d_points_flags, "points_flags", "[OUT] Flags (Outside -1, Boundary 0 or Inside 1) of the points"))
     , d_hexahedrons_flags(initData(&d_hexahedrons_flags, "hexahedrons_flags", "[OUT] Flags (Outside -1, Boundary 0 or Inside 1) of the hexahedrons"))
     , d_triangle_positions(initData(&d_triangle_positions, "triangle_positions", "[OUT] List of triangles vertices positions."))
-    , d_triangles(initData(&d_triangles, "triangles", "[OUT] List of created triangles."))
+    , d_triangles(initData(&d_triangles, "triangles", "[OUT] List of created triangles per hexahedron.", false))
 {
     d_points_flags.setReadOnly(true);
     d_hexahedrons_flags.setReadOnly(true);
@@ -72,11 +72,11 @@ void CutGridEngine::update()
     sofa::helper::WriteOnlyAccessor<Data<sofa::helper::vector<Flag>>> points_flags = d_points_flags;
     sofa::helper::WriteOnlyAccessor<Data<sofa::helper::vector<Flag>>> hexahedrons_flags = d_hexahedrons_flags;
     sofa::helper::WriteOnlyAccessor<Data<sofa::helper::vector<Coord>>> triangle_positions = d_triangle_positions;
-    sofa::helper::WriteOnlyAccessor<Data<sofa::helper::vector<Triangle>>> triangles = d_triangles;
+    sofa::helper::WriteOnlyAccessor<Data<sofa::helper::vector<sofa::helper::vector<Triangle>>>> triangles = d_triangles;
 
     points_flags.resize(number_of_points);
     hexahedrons_flags.resize(number_of_hexahedrons);
-    triangles.clear();
+    triangles.resize(number_of_hexahedrons);
 
     for (size_t i = 0; i < points_flags.size(); ++i) {
         const Coord & p = d_grid_topology->getPoint(i);
@@ -88,6 +88,7 @@ void CutGridEngine::update()
     size_t nb_non_boundary_with_triangles = 0;
     for (size_t i = 0; i < hexahedrons_flags.size(); ++i) {
         const auto & hexa = d_grid_topology->getHexa(i);
+        triangles[i].clear();
 
         std::array<Coord, 8> nodes;
         for (unsigned char j = 0; j < 8; ++j)
@@ -133,7 +134,7 @@ void CutGridEngine::update()
                     triangle[j] = id;
                 }
             }
-            triangles.push_back(triangle);
+            triangles[i].push_back(triangle);
         }
 
         hexahedrons_flags[i] = getFlag(hexa);
@@ -207,7 +208,7 @@ void CutGridEngine::draw(const core::visual::VisualParams* vparams)
     unsigned int showHexahedron = d_showHexahedrons.getValue().getSelectedId();
     sofa::helper::ReadAccessor<Data<sofa::helper::vector<Flag>>> hexahedrons_flags = d_hexahedrons_flags;
     sofa::helper::ReadAccessor<Data<sofa::helper::vector<Coord>>> triangle_positions = d_triangle_positions;
-    sofa::helper::ReadAccessor<Data<sofa::helper::vector<Triangle>>> triangles = d_triangles;
+    sofa::helper::ReadAccessor<Data<sofa::helper::vector<sofa::helper::vector<Triangle>>>> triangles = d_triangles;
 
     if (showHexahedron > 0 /*NONE*/) {
         std::vector<Vector3> points_inside;
@@ -265,19 +266,22 @@ void CutGridEngine::draw(const core::visual::VisualParams* vparams)
     if (d_showTriangles.getValue()) {
         std::vector<Vector3> points;
         std::vector<Vector3> edges_points;
-        for (const auto & triangle : triangles) {
-            points.push_back(triangle_positions[triangle[0]]);
-            edges_points.push_back(triangle_positions[triangle[0]]);
+        const auto number_of_hexahedrons = d_grid_topology->getNbHexahedra();
+        for (size_t i = 0; i < number_of_hexahedrons; ++i) {
+            for (const auto &triangle : triangles[i]) {
+                points.push_back(triangle_positions[triangle[0]]);
+                edges_points.push_back(triangle_positions[triangle[0]]);
 
-            points.push_back(triangle_positions[triangle[1]]);
-            edges_points.push_back(triangle_positions[triangle[1]]);
-            edges_points.push_back(triangle_positions[triangle[1]]);
+                points.push_back(triangle_positions[triangle[1]]);
+                edges_points.push_back(triangle_positions[triangle[1]]);
+                edges_points.push_back(triangle_positions[triangle[1]]);
 
-            points.push_back(triangle_positions[triangle[2]]);
-            edges_points.push_back(triangle_positions[triangle[2]]);
-            edges_points.push_back(triangle_positions[triangle[2]]);
+                points.push_back(triangle_positions[triangle[2]]);
+                edges_points.push_back(triangle_positions[triangle[2]]);
+                edges_points.push_back(triangle_positions[triangle[2]]);
 
-            edges_points.push_back(triangle_positions[triangle[0]]);
+                edges_points.push_back(triangle_positions[triangle[0]]);
+            }
         }
         drawTool->drawTriangles(points, d_showTrianglesColor.getValue());
         drawTool->drawLines(edges_points, 1, d_showTrianglesColor.getValue());

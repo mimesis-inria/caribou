@@ -2,13 +2,14 @@
 #undef NDEBUG
 
 #include "../../plugin/Helper/Hexahedron.h"
+#include "../../plugin/Helper/MirtichIntegration.h"
 
 #include <Python.h>
 
 #include <array>
 
 static PyObject *
-triangulate(PyObject *self, PyObject *args)
+helpers_triangulate(PyObject *self, PyObject *args)
 {
     PyObject *pIsInside;
     PyObject *pEdgeIntersections;
@@ -63,31 +64,117 @@ triangulate(PyObject *self, PyObject *args)
     }
 
     // Get the triangles
-    std::vector<std::array<sofa::caribou::helper::hexahedron::AlphaPosition, 3>> triangles = sofa::caribou::helper::hexahedron::triangulate(isInside, edgeIntersections);
+    using AlphaPosition = sofa::caribou::helper::hexahedron::AlphaPosition;
+    using AlphaTriangle = std::array<AlphaPosition, 3>;
+    std::array<std::vector<AlphaTriangle>, 6> faces_triangles;
+    std::vector<AlphaTriangle> cut_triangles;
+
+    sofa::caribou::helper::hexahedron::triangulate(isInside, edgeIntersections, faces_triangles, cut_triangles);
 
     // Serialize the result to python lists
-    PyObject * pTriangles = PyList_New(triangles.size());
-    for (unsigned int i = 0; i < triangles.size(); ++i) {
-        PyObject * pTriangleNodes = PyList_New(3);
+    PyObject * pFaceTriangles = PyList_New(6);
+    for (unsigned int face_id = 0; face_id < 6; ++ face_id) {
+        const std::vector<AlphaTriangle> & triangles = faces_triangles[face_id];
+        PyObject * pTriangles = PyList_New(triangles.size());
+        for (unsigned int i = 0; i < triangles.size(); ++i) {
+            PyObject *pTriangleNodes = PyList_New(3);
+            for (unsigned int j = 0; j < 3; ++j) {
+                sofa::caribou::helper::hexahedron::EdgeId edgeId = triangles[i][j].first;
+                sofa::caribou::helper::hexahedron::AlphaValue alpha = triangles[i][j].second;
+                PyObject *pAlphaPosition = PyTuple_Pack(
+                        3,
+                        PyInt_FromLong(sofa::caribou::helper::hexahedron::edges[edgeId][0]),
+                        PyInt_FromLong(sofa::caribou::helper::hexahedron::edges[edgeId][1]),
+                        PyFloat_FromDouble(alpha)
+                );
+                PyList_SetItem(pTriangleNodes, j, pAlphaPosition);
+            }
+            PyList_SetItem(pTriangles, i, pTriangleNodes);
+        }
+        PyList_SetItem(pFaceTriangles, face_id, pTriangles);
+    }
+
+    PyObject * pCutTriangles = PyList_New(cut_triangles.size());
+    for (unsigned int i = 0; i < cut_triangles.size(); ++i) {
+        PyObject *pTriangleNodes = PyList_New(3);
         for (unsigned int j = 0; j < 3; ++j) {
-            sofa::caribou::helper::hexahedron::EdgeId edgeId = triangles[i][j].first;
-            sofa::caribou::helper::hexahedron::AlphaValue alpha = triangles[i][j].second;
-            PyObject * pAlphaPosition = PyTuple_Pack(
-                3,
-                PyInt_FromLong(sofa::caribou::helper::hexahedron::edges[edgeId][0]),
-                PyInt_FromLong(sofa::caribou::helper::hexahedron::edges[edgeId][1]),
-                PyFloat_FromDouble(alpha)
+            sofa::caribou::helper::hexahedron::EdgeId edgeId = cut_triangles[i][j].first;
+            sofa::caribou::helper::hexahedron::AlphaValue alpha = cut_triangles[i][j].second;
+            PyObject *pAlphaPosition = PyTuple_Pack(
+                    3,
+                    PyInt_FromLong(sofa::caribou::helper::hexahedron::edges[edgeId][0]),
+                    PyInt_FromLong(sofa::caribou::helper::hexahedron::edges[edgeId][1]),
+                    PyFloat_FromDouble(alpha)
             );
             PyList_SetItem(pTriangleNodes, j, pAlphaPosition);
         }
-        PyList_SetItem(pTriangles, i, pTriangleNodes);
+        PyList_SetItem(pCutTriangles, i, pTriangleNodes);
     }
 
-    return pTriangles;
+    return PyTuple_Pack(2, pFaceTriangles, pCutTriangles);
+}
+
+static PyObject *
+helpers_integrate(PyObject *self, PyObject *args)
+{
+    PyObject *pFaces;
+    // Parse the parameters
+    if (!PyArg_ParseTuple(args, "O!", &PyList_Type, &pFaces)) {
+        PyErr_SetString(PyExc_TypeError, "parameter must be a list.");
+        return nullptr;
+    }
+
+    // get the faces and their subfaces
+    std::vector<std::vector<std::array<double, 3>>> faces;
+    Py_ssize_t nb_faces = PyList_Size(pFaces);
+    for (unsigned int i = 0; i < nb_faces; ++i) {
+        std::vector<std::array<double, 3>> subfaces;
+        PyObject *pSubFaces = PyList_GetItem(pFaces, i);
+        if (!PyList_Check(pSubFaces)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be a list of faces where each faces is a list of subfaces.");
+            return nullptr;
+        }
+
+        Py_ssize_t nb_subfaces = PyList_Size(pSubFaces);
+        for (unsigned int j = 0; j < nb_subfaces; ++j) {
+            std::array<double, 3> pos;
+            PyObject * pPos = PyList_GetItem(pSubFaces, j);
+            if (PyList_Check(pPos) && PyList_Size(pPos) == 3) {
+                pos[0] = PyFloat_AsDouble(PyList_GetItem(pPos, 0));
+                pos[1] = PyFloat_AsDouble(PyList_GetItem(pPos, 1));
+                pos[2] = PyFloat_AsDouble(PyList_GetItem(pPos, 2));
+            } else if(PyTuple_Check(pPos) && PyTuple_Size(pPos) == 3) {
+                pos[0] = PyFloat_AsDouble(PyTuple_GetItem(pPos, 0));
+                pos[1] = PyFloat_AsDouble(PyTuple_GetItem(pPos, 1));
+                pos[2] = PyFloat_AsDouble(PyTuple_GetItem(pPos, 2));
+            } else {
+                PyErr_SetString(PyExc_TypeError, "Subfaces must be a list of positions where a position is a list of 3 floats or a tuple of 3 floats");
+                return nullptr;
+            }
+            subfaces.push_back(pos);
+        }
+        faces.push_back(subfaces);
+    }
+
+    std::vector<double> result = integrate<std::array<double, 3>>(faces);
+
+    PyObject * pResults = PyList_New(result.size());
+    for (unsigned int i = 0; i < result.size(); ++i) {
+        PyObject * pValue = PyFloat_FromDouble(result[i]);
+        PyList_SetItem(pResults, i, pValue);
+    }
+
+    return pResults;
+
 }
 
 static PyMethodDef HexahedronMethods[] = {
-        {"triangulate",  triangulate, METH_VARARGS, "Triangulate an hexahedron cut by an iso-surface. This function will create a mesh of triangles that cover the iso-surface inside an hexahedron (the cut surface)."},
+        {"triangulate",  helpers_triangulate, METH_VARARGS, "Triangulate an hexahedron cut by an iso-surface. This function will create a mesh of triangles that cover the iso-surface inside an hexahedron (the cut surface)."},
+        {NULL, NULL, 0, NULL}        /* Sentinel */
+};
+
+static PyMethodDef HelperMethods[] = {
+        {"integrate",  helpers_integrate, METH_VARARGS, "Integrate an hexahedron cut by an iso-surface."},
         {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
@@ -99,7 +186,7 @@ extern "C" void initHelpers(void)
 
     PyEval_InitThreads();
 
-    PyObject *libraryModule = Py_InitModule("Helpers", nullptr);
+    PyObject *libraryModule = Py_InitModule("Helpers", HelperMethods);
     PyObject *hexahedronModule = Py_InitModule("Hexahedron", HexahedronMethods);
 
     PyModule_AddObject(libraryModule, "Hexahedron", hexahedronModule);

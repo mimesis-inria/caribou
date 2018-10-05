@@ -1,6 +1,6 @@
-from Caribou import Mesh
 import os
 import Sofa
+from math import pi as PI
 
 if 'SOFAPLUGIN_PATH' in os.environ:
     for pluginPath in os.environ['SOFAPLUGIN_PATH'].split(':'):
@@ -42,8 +42,6 @@ def createScene(root):
     cylnode.createObject('IBMForcefield',
                          youngModulus=5000,
                          poissonRatio=0.3,
-                         container=container.getLinkPath(),
-                         points_flags=engine.getLinkPath() + '.points_flags',
                          hexahedrons_flags=engine.getLinkPath() + '.hexahedrons_flags'
                          )
 
