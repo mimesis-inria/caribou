@@ -15,18 +15,18 @@ namespace geometry
  * @tparam Dim Dimension of the current space (default to 3D).
  * @tparam Real Type of the floating values.
  */
-template<int Dim=3, typename Data=BaseData, typename Real=float, typename TPoint=Point<Dim, BaseData, Real>>
-class Segment : public Entity<Data>
+template<typename TPoint, typename TData=BaseData>
+class Segment : public Entity<TData>
 {
 public:
     Segment() = delete;
-    Segment(const TPoint & p1, const TPoint & p2) : nodes({p1, p2}) {};
+    Segment(const TPoint & p1, const TPoint & p2, TData d = BaseData()) : Entity<TData>(d) , nodes({p1, p2}){};
     Segment(std::array<TPoint, 2> l) : nodes(l) {}
     Segment(std::initializer_list<std::initializer_list<typename TPoint::Real>> l) {
         nodes[0] = std::begin(l);
         nodes[1] = std::end(l);
     }
-    Segment(const Segment & s) {
+    Segment(const Segment & s) : Entity<TData> (s.data){
         std::copy(std::begin(s.nodes), std::end(s.nodes), std::begin(nodes));
     }
 
@@ -54,6 +54,11 @@ public:
 protected:
     std::array<TPoint, 2> nodes;
 };
+
+template<typename TPoint, typename TData=BaseData>
+Segment<TPoint, TData> make_segment(const TPoint & p1, const TPoint & p2, TData data = TData()) {
+    return Segment<TPoint, TData>(p1, p2, data);
+}
 
 } // namespace geometry
 

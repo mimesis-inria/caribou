@@ -19,10 +19,6 @@ namespace python
 void create_point(py::module & m) {
     py::class_<Entity<>>(m, "Entity");
 
-    py::class_<Point<>, Entity<>>(m, "Point")
-            .def(py::self == py::self)
-            ;
-
     py::class_<Point1D<>, Entity<>>(m, "Point1D")
             .def(py::init<>())
             .def(py::init<float>())

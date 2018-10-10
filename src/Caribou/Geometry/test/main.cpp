@@ -13,11 +13,19 @@ struct Data {
 };
 
 TEST(Geometry, Point) {
-    caribou::geometry::Point3D<> p1(1, 2, 3);
-    caribou::geometry::Point3D<> p2 = {1, 2, 3};
-    caribou::geometry::Point3D<> p3({1, 2, 3});
-    caribou::geometry::Point3D<> p4; p4[0] = p1[0]; p4[1]= p2[1]; p4[2] = p3[2];
-    caribou::geometry::Point3D<> p5 = p4;
+    auto p1 = caribou::geometry::make_point({1, 2, 3});
+    auto p2 = caribou::geometry::make_point(1, 2, 3);
+
+    ASSERT_EQ(p1, p2);
+
+    caribou::geometry::Point3D<caribou::geometry::BaseData, int> p3({1, 2, 3});
+    caribou::geometry::Point3D<caribou::geometry::BaseData, int> p4;
+    p4[0] = p1[0]; p4[1]= p2[1]; p4[2] = p3[2];
+
+    ASSERT_EQ(p3, p4);
+    ASSERT_EQ(p1, p4);
+
+    auto p5 = p4;
 
     ASSERT_EQ(p5.x(), 1);
 
@@ -48,11 +56,11 @@ TEST(Geometry, Point) {
 TEST(Geometry, Segment) {
     caribou::geometry::Point3D<> p1(0, 0, 0);
     caribou::geometry::Point3D<> p2 = {1, 1, 1};
-    caribou::geometry::Segment<> s1 =  { p1, p2 };
+    auto s1 =  caribou::geometry::make_segment(p1, p2);
 
     caribou::geometry::Point3D<> p3(0, 0, 0);
     caribou::geometry::Point3D<> p4 = {1, 1, 1};
-    caribou::geometry::Segment<> s2 ( p3, p4 );
+    auto s2 = caribou::geometry::make_segment(p3, p4);
 
     ASSERT_EQ(s1, s2);
 }
