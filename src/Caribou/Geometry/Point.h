@@ -23,11 +23,15 @@ public:
         std::copy(std::begin(p.coordinate), std::end(p.coordinate), std::begin(coordinate));
     }
 
-    bool operator==(const Point<Dim, BaseData, Real> & p) const {
+    bool operator==(const Point<Dim, Data, Real> & p) const {
         return (
                 this->data == p.data &&
                 std::equal(std::begin(coordinate), std::end(coordinate), std::begin(p.coordinate))
         );
+    }
+
+    bool operator!=(const Point<Dim, Data, Real> & p) const {
+        return not (*this == p);
     }
 
     Real & operator[] (std::size_t x) {
@@ -51,7 +55,8 @@ public:
         Parent::coordinate[0] = x;
     }
 
-    Real & x = Parent::coordinate[0];
+    const Real & x () const { return Parent::coordinate[0]; }
+    void set_x(const Real & x) {Parent::coordinate[0] = x;}
 };
 
 /**
@@ -68,8 +73,11 @@ public:
         Parent::coordinate[1] = y;
     }
 
-    Real & x = Parent::coordinate[0];
-    Real & y = Parent::coordinate[1];
+    const Real & x () const { return Parent::coordinate[0]; }
+    const Real & y () const { return Parent::coordinate[1]; }
+
+    void set_x(const Real & x) {Parent::coordinate[0] = x;}
+    void set_y(const Real & y) {Parent::coordinate[1] = y;}
 };
 
 /**
@@ -87,9 +95,13 @@ public:
         Parent::coordinate[2] = z;
     }
 
-    Real & x = Parent::coordinate[0];
-    Real & y = Parent::coordinate[1];
-    Real & z = Parent::coordinate[2];
+    const Real & x () const { return Parent::coordinate[0]; }
+    const Real & y () const { return Parent::coordinate[1]; }
+    const Real & z () const { return Parent::coordinate[2]; }
+
+    void set_x(const Real & x) {Parent::coordinate[0] = x;}
+    void set_y(const Real & y) {Parent::coordinate[1] = y;}
+    void set_z(const Real & z) {Parent::coordinate[2] = z;}
 };
 
 } // namespace geometry
