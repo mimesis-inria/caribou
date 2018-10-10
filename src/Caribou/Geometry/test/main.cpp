@@ -20,18 +20,20 @@ TEST(Geometry, Point) {
     caribou::geometry::Point3D<> p5 = p4;
 
     ASSERT_EQ(p5.x(), 1);
+
     p5.set_y(4);
     ASSERT_EQ(p5[1], 4);
+
     ASSERT_EQ(p5[2], 3);
     ASSERT_EQ(p1, p2);
 
-    caribou::geometry::Point3D<Data, char> p6;
-    p6.data.a = 1;
-    p6.data.b = 2;
+    caribou::geometry::Point3D<Data, char> p6 (0, 0, 0);
+    p6.data.a = (char)1;
+    p6.data.b = (char)2;
 
-    caribou::geometry::Point3D<Data, char> p7;
-    p7.data.a = 1;
-    p7.data.b = 2;
+    caribou::geometry::Point3D<Data, char> p7 (0, 0, 0);
+    p7.data.a = (char)1;
+    p7.data.b = (char)2;
 
     caribou::geometry::Point3D<Data, char> p8;
     p8.data.a = 5;

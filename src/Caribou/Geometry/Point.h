@@ -2,6 +2,7 @@
 #define CARIBOU_GEOMETRY_POINT_H
 
 #include <Caribou/Geometry/Entity.h>
+#include <cassert>
 
 namespace caribou
 {
@@ -11,30 +12,52 @@ namespace geometry
 /**
  * A point in space (independent of the space dimension).
  * @tparam Dim Dimension of the current space (default to 3D).
- * @tparam Real Type of the floating values.
+ * @tparam TReal Type of the floating values.
  */
-template<int Dim=3, typename Data=BaseData, typename Real=float>
-class Point : public Entity<Data>
+template<int Dim=3, typename TData=BaseData, typename TReal=float>
+class Point : public Entity<TData>
 {
 public:
+    typedef TReal Real;
+    typedef TData Data;
+
     Point() = default;
     Point(std::initializer_list<Real> l) : coordinate(l) {}
     Point(const Point<Dim, Data, Real> & p) {
         std::copy(std::begin(p.coordinate), std::end(p.coordinate), std::begin(coordinate));
+        this->data = p.data;
     }
 
-    bool operator==(const Point<Dim, Data, Real> & p) const {
+    inline Point<Dim, Data, Real> &operator=(const Point<Dim, Data, Real> & p) {
+        // check for self-assignment
+        if(&p == this)
+            return *this;
+
+        std::copy(std::begin(p.coordinate), std::end(p.coordinate), std::begin(coordinate));
+        this->data = p.data;
+
+        return *this;
+    }
+
+    inline Point<Dim, Data, Real> &operator=(const std::initializer_list<Real> * l) {
+        assert(l->size() == Dim && "Cannot initialized a Point of n dimension with a list of m dimension");
+        std::copy(std::begin(*l), std::end(*l), std::begin(coordinate));
+
+        return *this;
+    }
+
+    inline bool operator==(const Point<Dim, Data, Real> & p) const {
         return (
                 this->data == p.data &&
                 std::equal(std::begin(coordinate), std::end(coordinate), std::begin(p.coordinate))
         );
     }
 
-    bool operator!=(const Point<Dim, Data, Real> & p) const {
+    inline bool operator!=(const Point<Dim, Data, Real> & p) const {
         return not (*this == p);
     }
 
-    Real & operator[] (std::size_t x) {
+    inline Real & operator[] (std::size_t x) {
         return coordinate[x];
     }
 
@@ -55,8 +78,8 @@ public:
         Parent::coordinate[0] = x;
     }
 
-    const Real & x () const { return Parent::coordinate[0]; }
-    void set_x(const Real & x) {Parent::coordinate[0] = x;}
+    inline const Real & x () const { return Parent::coordinate[0]; }
+    inline void set_x(const Real & x) {Parent::coordinate[0] = x;}
 };
 
 /**
@@ -73,11 +96,11 @@ public:
         Parent::coordinate[1] = y;
     }
 
-    const Real & x () const { return Parent::coordinate[0]; }
-    const Real & y () const { return Parent::coordinate[1]; }
+    inline const Real & x () const { return Parent::coordinate[0]; }
+    inline const Real & y () const { return Parent::coordinate[1]; }
 
-    void set_x(const Real & x) {Parent::coordinate[0] = x;}
-    void set_y(const Real & y) {Parent::coordinate[1] = y;}
+    inline void set_x(const Real & x) {Parent::coordinate[0] = x;}
+    inline void set_y(const Real & y) {Parent::coordinate[1] = y;}
 };
 
 /**
@@ -95,13 +118,13 @@ public:
         Parent::coordinate[2] = z;
     }
 
-    const Real & x () const { return Parent::coordinate[0]; }
-    const Real & y () const { return Parent::coordinate[1]; }
-    const Real & z () const { return Parent::coordinate[2]; }
+    inline const Real & x () const { return Parent::coordinate[0]; }
+    inline const Real & y () const { return Parent::coordinate[1]; }
+    inline const Real & z () const { return Parent::coordinate[2]; }
 
-    void set_x(const Real & x) {Parent::coordinate[0] = x;}
-    void set_y(const Real & y) {Parent::coordinate[1] = y;}
-    void set_z(const Real & z) {Parent::coordinate[2] = z;}
+    inline void set_x(const Real & x) {Parent::coordinate[0] = x;}
+    inline void set_y(const Real & y) {Parent::coordinate[1] = y;}
+    inline void set_z(const Real & z) {Parent::coordinate[2] = z;}
 };
 
 } // namespace geometry

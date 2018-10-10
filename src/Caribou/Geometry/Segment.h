@@ -22,22 +22,32 @@ public:
     Segment() = delete;
     Segment(const TPoint & p1, const TPoint & p2) : nodes({p1, p2}) {};
     Segment(std::array<TPoint, 2> l) : nodes(l) {}
-    Segment(const Segment<Dim, Data, Real, TPoint> & s) {
+    Segment(std::initializer_list<std::initializer_list<typename TPoint::Real>> l) {
+        nodes[0] = std::begin(l);
+        nodes[1] = std::end(l);
+    }
+    Segment(const Segment & s) {
         std::copy(std::begin(s.nodes), std::end(s.nodes), std::begin(nodes));
     }
 
-    bool operator==(const Segment<Dim, BaseData, Real, TPoint> & s) const {
+    inline const TPoint & n1 () const { return nodes[0]; }
+    inline const TPoint & n2 () const { return nodes[1]; }
+
+    inline void set_n1(const TPoint & n) {nodes[0] = n;}
+    inline void set_n2(const TPoint & n) {nodes[1] = n;}
+
+    inline bool operator==(const Segment & s) const {
         return (
                 this->data == s.data &&
                 std::equal(std::begin(nodes), std::end(nodes), std::begin(s.nodes))
         );
     }
 
-    bool operator!=(const Segment<Dim, Data, Real> & s) const {
+    inline bool operator!=(const Segment& s) const {
         return not (*this == s);
     }
 
-    TPoint & operator[] (std::size_t x) {
+    inline TPoint & operator[] (std::size_t x) {
         return nodes[x];
     }
 
