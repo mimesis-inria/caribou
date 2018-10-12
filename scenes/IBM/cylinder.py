@@ -26,23 +26,31 @@ def createScene(root):
 
     size = 0.25
     grid = cylnode.createObject('RegularGridTopology', n=[int(round(10/size))+1, int(round(1/size))+1, int(round(1/size))+1], min=[0, -0.5, -0.5], max=[10, 0.5, 0.5])
-    cylnode.createObject('MechanicalObject', showObject=False, src=grid.getLinkPath())
+    cylnode.createObject('MechanicalObject', showObject=True, src=grid.getLinkPath())
     container = cylnode.createObject('HexahedronSetTopologyContainer', src=grid.getLinkPath())
 
-    engine = cylnode.createObject('CutGridEngine',
-                                  grid_topology=grid.getLinkPath(),
-                                  # surface_topology=surface.getLinkPath(),
-                                  showHexahedrons="ALL",
-                                  showBoundaryColor=[0, 0, 1, 0.5],
-                                  showOutsideColor=[0, 1, 0, 0.5],
-                                  showInsideColor=[1, 0, 0, 0.5],
-                                  showTriangles=True,
-                                  showTrianglesColor=[1, 0, 1, 0.5],
-                                  )
+    # engine = cylnode.createObject('CutGridEngine',
+    #                               grid_topology=grid.getLinkPath(),
+    #                               # surface_topology=surface.getLinkPath(),
+    #                               showHexahedrons="ALL",
+    #                               showBoundaryColor=[0, 0, 1, 0.5],
+    #                               showOutsideColor=[0, 1, 0, 0.5],
+    #                               showInsideColor=[1, 0, 0, 0.5],
+    #                               showTriangles=True,
+    #                               showTrianglesColor=[1, 0, 1, 0.5],
+    #                               )
     cylnode.createObject('IBMForcefield',
                          youngModulus=5000,
                          poissonRatio=0.3,
-                         hexahedrons_flags=engine.getLinkPath() + '.hexahedrons_flags'
+                         # hexahedrons_flags=engine.getLinkPath() + '.hexahedrons_flags'
+                         )
+
+    cylnode.createObject('HexahedronFEMForceField',
+                         youngModulus=5000,
+                         poissonRatio=0.3,
+                         method="small",
+                         printLog=True,
+                         # hexahedrons_flags=engine.getLinkPath() + '.hexahedrons_flags'
                          )
 
     # visualnode = cylnode.createChild('visual')

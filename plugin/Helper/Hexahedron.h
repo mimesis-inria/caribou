@@ -360,20 +360,19 @@ using AlphaValue = float;
  * 0-------1
  */
 
-/* Cut hexahedron node numbering
- *        7-------------6
- *       /|            /|
- *      / |           / |
- *     /  |          /  |
- *    6---|--5------4   |
- *    |   |         |   |
- *    |   |         |   |
- *    7   |         3   |
- *    |   4---------|---5
- *    |  /          |  /
- *    | /           | /
- *    0------1------2
- */
+
+static const std::array<std::array<char, 3>, 8> local_coordinate_of_node = {{
+//  {xi, eta, zeta}
+    {-1, -1, -1}, // 0
+    { 1, -1, -1}, // 1
+    { 1,  1, -1}, // 2
+    {-1,  1, -1}, // 3
+    {-1, -1,  1}, // 4
+    { 1, -1,  1}, // 5
+    { 1,  1,  1}, // 6
+    {-1,  1,  1}  // 7
+}};
+
 
 /**
  * List of edges by node ID. For example, edges[5] = {5, 6} is represented by node 5 and node 6.
@@ -424,7 +423,7 @@ static const std::array<std::array<NodeId, 4>, 6> nodes_of_face = {{
  * 2, 1 and 10 that are adjacent to the node 2. Here, the order of the edges listed for a node allows for a normal
  * vector pointing outward of the cube interior.
  */
-std::array<std::array<EdgeId,3>,8> edges_adjacent_to_node = {{
+static std::array<std::array<EdgeId,3>,8> edges_adjacent_to_node = {{
     {0, 3, 8},  // 0
     {1, 0, 9},  // 1
     {2, 1, 10}, // 2
@@ -447,7 +446,7 @@ using AlphaPosition = std::pair<EdgeId, AlphaValue>;
  * @param node_id_2 The second node.
  * @return The index of the edge connecting the two nodes, or -1 if no such edge exists.
  */
-char find_edge_id_from_two_nodes(const unsigned char node_id_1, const unsigned char node_id_2) {
+static char find_edge_id_from_two_nodes(const unsigned char node_id_1, const unsigned char node_id_2) {
     std::array<EdgeId,3> edge_indices = edges_adjacent_to_node[node_id_1];
     for (const EdgeId edge_id : edge_indices) {
         const std::array<NodeId, 2> & edge = edges[edge_id];
@@ -465,7 +464,7 @@ char find_edge_id_from_two_nodes(const unsigned char node_id_1, const unsigned c
  * @param edge_id The edge id for which we want the alpha value
  * @return The alpha position <edge_id, alpha-value>
  */
-AlphaPosition alpha_position(const NodeId node_id, const EdgeId edge_id) {
+static AlphaPosition alpha_position(const NodeId node_id, const EdgeId edge_id) {
     const std::array<NodeId, 2> & edge = edges[edge_id];
     if (edge[0] == node_id)
         return std::make_pair(edge_id, 0.);
@@ -487,7 +486,7 @@ AlphaPosition alpha_position(const NodeId node_id, const EdgeId edge_id) {
  *                               the edge, 1 being the second node, and anywhere between is the exact location of the cut.
  * @return List of triangles where a triangle is represented by three edge intersections (an instersection is a pair of <edge_id, alpha-position> (see AlphaPosition)
  */
-void triangulate(
+static void triangulate(
         const std::array<bool, 8> &isInside,
         const std::array<AlphaValue, 12> &edgeIntersections,
         std::array<std::vector<std::array<AlphaPosition, 3>>, 6> & faces_triangles,
@@ -853,7 +852,7 @@ void triangulate(
  *                               the edge, 1 being the second node, and anywhere between is the exact location of the cut.
  * @return List of triangles where a triangle is represented by three edge intersections (an instersection is a pair of <edge_id, alpha-position> (see AlphaPosition)
  */
-std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> &isInside, const std::array<AlphaValue, 12> &edgeIntersections)
+static std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> &isInside, const std::array<AlphaValue, 12> &edgeIntersections)
 {
     using AlphaTriangle = std::array<AlphaPosition, 3>;
     std::array<std::vector<AlphaTriangle>, 6> faces_triangles;
@@ -881,7 +880,7 @@ std::vector<std::array<AlphaPosition, 3>> triangulate(const std::array<bool, 8> 
  * @return True if the hexahedron was triangulated, false otherwise (the hexahedron is completely inside or outside of the iso-surface).
  */
 template<typename IntersectFct, typename IsInsideFct>
-bool triangulate (const IsInsideFct & IsInside, const IntersectFct & ComputeIntersection, std::vector<std::array<AlphaPosition, 3>> & triangles, const double snap_treshold = 0.000000000001)
+static bool triangulate (const IsInsideFct & IsInside, const IntersectFct & ComputeIntersection, std::vector<std::array<AlphaPosition, 3>> & triangles, const double snap_treshold = 0.000000000001)
 {
 
     /*
@@ -938,7 +937,7 @@ bool triangulate (const IsInsideFct & IsInside, const IntersectFct & ComputeInte
  * @return A list of triangles forming the mesh. A triangle is represented by an array of 3 coordinate.
  */
 template<class Coord, typename IntersectFct, typename IsInsideFct>
-std::vector<std::array<Coord, 3>> triangulate (const std::array<Coord, 8> & nodes, const IsInsideFct & IsInside, const IntersectFct & ComputeIntersection, const double snap_treshold = 0.000000000001)
+static std::vector<std::array<Coord, 3>> triangulate (const std::array<Coord, 8> & nodes, const IsInsideFct & IsInside, const IntersectFct & ComputeIntersection, const double snap_treshold = 0.000000000001)
 {
     std::vector<std::array<Coord, 3>> triangles;
 
@@ -968,7 +967,7 @@ std::vector<std::array<Coord, 3>> triangulate (const std::array<Coord, 8> & node
 
 
 template<class Coord, typename IntersectFct, typename IsInsideFct>
-std::vector<std::array<Coord, 3>> triangulate_interior (const std::array<Coord, 8> & nodes, const IsInsideFct & IsInside, const IntersectFct & ComputeIntersection, const double snap_treshold = 0.000000000001)
+static std::vector<std::array<Coord, 3>> triangulate_interior (const std::array<Coord, 8> & nodes, const IsInsideFct & IsInside, const IntersectFct & ComputeIntersection, const double snap_treshold = 0.000000000001)
 {
     using AlphaTriangle = std::array<AlphaPosition, 3>;
     using Triangle = std::array<Coord, 3>;

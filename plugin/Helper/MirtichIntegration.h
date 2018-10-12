@@ -5,7 +5,7 @@
 #include <vector>
 #include <array>
 
-void compProj( std::vector< std::vector< double > > &projInt, const std::vector< double > &face0, const std::vector< double > &face1, const std::vector< double > &face2,    //we don't even need face2!
+void compProj( std::vector< std::vector< double > > &projInt, const std::vector< double > &face0, const std::vector< double > &face1,
                const std::vector < std::vector< unsigned int > > &exponentsAlphaBeta, const std::vector< unsigned int > &factorials)
 {
     double delta;
@@ -59,7 +59,7 @@ void compFace( std::vector< double > &faceIntegrals, const std::vector< double >
 {
     std::vector< std::vector< double > > projInt( 9, std::vector< double >(9, 0.));
 
-    compProj( projInt, face0, face1, face2, exponentsAlphaBeta, factorials);
+    compProj( projInt, face0, face1, exponentsAlphaBeta, factorials);
 
     double w = -1.*(normal[0]*face0[1] + normal[1]*face1[1] + normal[2]*face2[1]); //fixes problems if normal not normed.
 
