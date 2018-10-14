@@ -30,7 +30,6 @@ IBMForcefield<DataTypes>::IBMForcefield()
         , d_triangle_positions(initData(&d_triangle_positions, "triangle_positions", "[IN] List of triangles vertices positions."))
         , d_triangles(initData(&d_triangles, "triangles",
                 "[IN] List of triangles per hexahedron (they should represent both the cut surface and the hexa's subsurfaces under the cut).", false))
-        , d_stiffnesses(initData(&d_stiffnesses, "stiffnesses", "[OUT] Stiffness matrices of each hexahedron"))
 {
             f_listening.setValue(true);
 }
@@ -47,9 +46,9 @@ void IBMForcefield<DataTypes>::init()
         if (!state)
             state = this->getContext()->template get<MechanicalState<DataTypes>>();
         if (state) {
-            d_initial_positions.setParent(state->findData("position"));
+            d_initial_positions.setParent(state->findData("rest_position"));
             msg_info() << "Initial positions automatically linked to the mechanical object '"
-                       << state->getPathName() << "'";
+                       << state->getPathName() << ".rest_position'";
             if (d_initial_positions.getValue().empty()) {
                 msg_warning()
                         << "Initial positions were automatically linked to the mechanical object '"
@@ -129,7 +128,6 @@ void IBMForcefield<DataTypes>::update()
 
     cleanDirty();
 
-    sofa::helper::WriteOnlyAccessor<Data<sofa::helper::vector<Mat24_24>>> stiffnesses = d_stiffnesses;
     m_hexahedrons.clear();
 
     // Lame's coefficients and the material matrix
@@ -180,7 +178,6 @@ void IBMForcefield<DataTypes>::update()
 
     // Compute the element stiffness matrices
     m_hexahedrons.resize(hexahedrons.size());
-    stiffnesses.resize(hexahedrons.size());
     for (size_t hexa_id = 0; hexa_id < hexahedrons.size(); ++hexa_id) {
         Hexa & hexa = m_hexahedrons[hexa_id];
 
@@ -189,6 +186,13 @@ void IBMForcefield<DataTypes>::update()
         for (size_t node_id = 0; node_id < hexahedrons[hexa_id].size(); ++node_id) {
             hexa.nodes[node_id] = hexahedrons[hexa_id][node_id];
             nodes[node_id] = initial_positions[hexa.nodes[node_id]];
+        }
+
+        if (hexa_id == 0) {
+            const Real hx = (nodes[1]-nodes[0]).norm();
+            const Real hy = (nodes[3]-nodes[0]).norm();
+            const Real hz = (nodes[4]-nodes[0]).norm();
+            std::cout << "hx, hy, hz = " << hx << ", " << hy << ", " << hz <<std::endl;
         }
 
         // Jacobian matrix computation at local position (xi, eta, zeta) :
@@ -217,29 +221,6 @@ void IBMForcefield<DataTypes>::update()
                 {     0  ,     0  ,   hz/2. }
             };
         };
-
-        // Gather the nodals Jacobians and compute the hexahedron's jacobian
-//        std::array<Mat33, 8> jacobians; // Nodal jacobians J_i = dx_i/dxi_i
-//        Mat33 J = Jacobian(0, 0, 0); // Hexahedron's jacobian J = dx/dxi (sum of the nodal dx_i/dxi_i)
-//        for (unsigned int i = 0; i < hexa.nodes.size(); ++i) {
-//            const auto & Xi = sofa::caribou::helper::hexahedron::local_coordinate_of_node[i];
-//            const auto & xi = Xi[0];
-//            const auto & eta = Xi[1];
-//            const auto & zeta = Xi[2];
-//            auto & Ji = jacobians[i];
-//
-//            Ji = Jacobian(xi, eta, zeta);
-//            J += Ji;
-//        }
-
-//        Real detJ = defaulttype::determinant(J);
-//        if (detJ < 1.0e-100) {
-//            msg_error() << "Some of the hexahedrons are badly shaped and their jacobian cannot be inverted.";
-//            m_hexahedrons.clear();
-//            return;
-//        }
-//
-//        Mat33 Jinverted = J.inverted();
 
         // Integrand used to compute the stiffness
         auto f = [this, &Jacobian, &C] (Real xi, Real eta, Real zeta) -> Mat24_24 {
@@ -277,25 +258,29 @@ void IBMForcefield<DataTypes>::update()
             return Bt * C * B * detJ;
         };
 
-        // Do the integration
-//        const Real hx = (nodes[1]-nodes[0]).norm();
-//        const Real hy = (nodes[3]-nodes[0]).norm();
-//        const Real hz = (nodes[4]-nodes[0]).norm();
-//        const Real volume = hx*hy*hz;
-
-        Mat24_24 & K = stiffnesses[hexa_id];
+        // Gauss quadrature
+        Mat24_24 & K = hexa.K;
         K.fill(0.);
-        K = f(0, 0, 0) ;
-//        const double inv_sqrt3 = 1.0/sqrt(3.0);
-//        for (int gx1=-1; gx1<=1; gx1+=2)
-//            for (int gx2=-1; gx2<=1; gx2+=2)
-//                for (int gx3=-1; gx3<=1; gx3+=2) {
-//                    double xi = gx1 * inv_sqrt3;
-//                    double eta = gx2 * inv_sqrt3;
-//                    double zeta = gx3 * inv_sqrt3;
-//
-//                    K += f(xi, eta, zeta);
-//                }
+
+        const std::array<Coord, 8> integration_points = {{
+                {-1./sqrt(3.0), -1./sqrt(3.0), -1./sqrt(3.0)},
+                {-1./sqrt(3.0), -1./sqrt(3.0),  1./sqrt(3.0)},
+                {-1./sqrt(3.0),  1./sqrt(3.0), -1./sqrt(3.0)},
+                {-1./sqrt(3.0),  1./sqrt(3.0),  1./sqrt(3.0)},
+                { 1./sqrt(3.0), -1./sqrt(3.0), -1./sqrt(3.0)},
+                { 1./sqrt(3.0), -1./sqrt(3.0),  1./sqrt(3.0)},
+                { 1./sqrt(3.0),  1./sqrt(3.0), -1./sqrt(3.0)},
+                { 1./sqrt(3.0),  1./sqrt(3.0),  1./sqrt(3.0)}
+        }};
+
+        for (const auto & Xi : integration_points) {
+            const auto & xi   = Xi[0];
+            const auto & eta  = Xi[1];
+            const auto & zeta = Xi[2];
+            K += f(xi, eta, zeta);
+        }
+
+        msg_info_when(hexa_id == 0) << K[0][0] << " " << K[0][1] << " " << K[0][2];
     }
 }
 
@@ -309,17 +294,64 @@ template<class DataTypes>
 void IBMForcefield<DataTypes>::addForce(const core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& d_v)
 {
     SOFA_UNUSED(mparams);
-    SOFA_UNUSED(d_f);
-    SOFA_UNUSED(d_x);
     SOFA_UNUSED(d_v);
+    sofa::helper::ReadAccessor<Data<VecCoord>> x = d_x;
+    sofa::helper::ReadAccessor<Data<VecCoord>> x0 = d_initial_positions;
+    sofa::helper::WriteAccessor<Data<VecDeriv>> f = d_f;
+
+    for (const auto & hexa : m_hexahedrons) {
+        // Gather the displacement vector
+        Vec24 U;
+        size_t i = 0;
+        for (const auto & node_id : hexa.nodes) {
+            U[i++] = x[node_id][0] - x0[node_id][0];
+            U[i++] = x[node_id][1] - x0[node_id][1];
+            U[i++] = x[node_id][2] - x0[node_id][2];
+        }
+
+        // Compute the force vector
+        const auto & K = hexa.K;
+        Vec24 F = K*U;
+
+        // Write the forces into the output vector
+        i = 0;
+        for (const auto & node_id : hexa.nodes) {
+            f[node_id][0] -= F[i++];
+            f[node_id][1] -= F[i++];
+            f[node_id][2] -= F[i++];
+        }
+    }
 }
 
 template<class DataTypes>
 void IBMForcefield<DataTypes>::addDForce(const core::MechanicalParams* mparams, Data<VecDeriv>& d_df, const Data<VecDeriv>& d_dx)
 {
-    SOFA_UNUSED(mparams);
-    SOFA_UNUSED(d_df);
-    SOFA_UNUSED(d_dx);
+    auto kFactor = (Real)mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue());
+    sofa::helper::ReadAccessor<Data<VecDeriv>> dx = d_dx;
+    sofa::helper::WriteAccessor<Data<VecDeriv>> df = d_df;
+
+    for (const auto & hexa : m_hexahedrons) {
+        // Gather the displacement vector
+        Vec24 U;
+        size_t i = 0;
+        for (const auto & node_id : hexa.nodes) {
+            U[i++] = dx[node_id][0];
+            U[i++] = dx[node_id][1];
+            U[i++] = dx[node_id][2];
+        }
+
+        // Compute the force vector
+        const auto & K = hexa.K;
+        Vec24 F = K*U*kFactor;
+
+        // Write the forces into the output vector
+        i = 0;
+        for (const auto & node_id : hexa.nodes) {
+            df[node_id][0] -= F[i++];
+            df[node_id][1] -= F[i++];
+            df[node_id][2] -= F[i++];
+        }
+    }
 }
 
 template<class DataTypes>

@@ -1,6 +1,7 @@
 #ifndef CARIBOU_FORCEFIELD_IBMFORCEFIELD_H
 #define CARIBOU_FORCEFIELD_IBMFORCEFIELD_H
 
+#include <array>
 #include <sofa/core/behavior/ForceField.h>
 #include <SofaBaseTopology/HexahedronSetTopologyContainer.h>
 #include "../Engine/CutGridEngine.h"
@@ -92,7 +93,6 @@ public:
 
     // Output
 //    Data<sofa::helper::vector<std::array<Real, 84>>> d_integrated_monomials;
-    Data<sofa::helper::vector<Mat24_24>> d_stiffnesses;
 
 private:
     std::vector<Hexa> m_hexahedrons;

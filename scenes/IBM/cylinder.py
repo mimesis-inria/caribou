@@ -2,9 +2,9 @@ import os
 import Sofa
 from math import pi as PI
 
-if 'SOFAPLUGIN_PATH' in os.environ:
-    for pluginPath in os.environ['SOFAPLUGIN_PATH'].split(':'):
-        Sofa.addPluginRepository(pluginPath)
+# if 'SOFAPLUGIN_PATH' in os.environ:
+#     for pluginPath in os.environ['SOFAPLUGIN_PATH'].split(':'):
+#         Sofa.addPluginRepository(pluginPath)
 
 # mesh   = Mesh.cylinder(center1=(0, 0, 0), center2=(10, 0, 0), radius=0.5, size=20, dimension=2, quads=True)
 
@@ -12,8 +12,14 @@ def createScene(root):
     root.createObject('APIVersion', name=17.12)
     root.createObject('VisualStyle', displayFlags="showBehaviorModels showCollisionModels showWireframe")
     root.createObject('RequiredPlugin', name='caribou')
+    root.gravity = [0, -9.8, 0]
+    root.dt=0.001
+    # root.createObject('FreeMotionAnimationLoop')
 
     cylnode = root.createChild('cylinder')
+    cylnode.createObject('EulerImplicitSolver', rayleighStiffness="0", rayleighMass="0")
+    cylnode.createObject('CGLinearSolver', iterations="2500", tolerance="1e-09", threshold="1e-09")
+    # cylnode.createObject('CentralDifference')
     # surface = cylnode.createObject('Mesh',
     #                      name='cylinder_mesh',
     #                      edges=mesh.surface.edges.tolist(),
@@ -24,10 +30,13 @@ def createScene(root):
     # cylnode.createObject('TriangleSetTopologyContainer', src='@cylinder_mesh')
 
 
-    size = 0.25
-    grid = cylnode.createObject('RegularGridTopology', n=[int(round(10/size))+1, int(round(1/size))+1, int(round(1/size))+1], min=[0, -0.5, -0.5], max=[10, 0.5, 0.5])
+    l = 100.
+    w = l/7.
+    size = 1
+    grid = cylnode.createObject('RegularGridTopology', n=[int(round(l/size))+1, int(round(w/size))+1, int(round(w/size))+1], min=[0, -w/2., -w/2.], max=[l, w/2., w/2.])
     cylnode.createObject('MechanicalObject', showObject=True, src=grid.getLinkPath())
     container = cylnode.createObject('HexahedronSetTopologyContainer', src=grid.getLinkPath())
+    cylnode.createObject('HexahedronSetGeometryAlgorithms')
 
     # engine = cylnode.createObject('CutGridEngine',
     #                               grid_topology=grid.getLinkPath(),
@@ -39,20 +48,25 @@ def createScene(root):
     #                               showTriangles=True,
     #                               showTrianglesColor=[1, 0, 1, 0.5],
     #                               )
-    cylnode.createObject('IBMForcefield',
-                         youngModulus=5000,
-                         poissonRatio=0.3,
-                         # hexahedrons_flags=engine.getLinkPath() + '.hexahedrons_flags'
-                         )
+    # cylnode.createObject('IBMForcefield',
+    #                      youngModulus=500000,
+    #                      poissonRatio=0.3,
+    #                      printLog=True,
+    #                      # hexahedrons_flags=engine.getLinkPath() + '.hexahedrons_flags'
+    #                      )
 
     cylnode.createObject('HexahedronFEMForceField',
-                         youngModulus=5000,
+                         youngModulus=500000,
                          poissonRatio=0.3,
                          method="small",
                          printLog=True,
                          # hexahedrons_flags=engine.getLinkPath() + '.hexahedrons_flags'
                          )
 
+    cylnode.createObject('BoxROI', name="fixed_roi", box=[-0.1, -w/2.-0.1, -w/2-0.1, 0.1, w/2.+0.1, w/2.+0.1])
+    cylnode.createObject('FixedConstraint', indices="@fixed_roi.indices")
+
+    cylnode.createObject('DiagonalMass', massDensity="2.5")
     # visualnode = cylnode.createChild('visual')
     # visualnode.createObject('VisualModel',
     #                         src=surface.getLinkPath(),
