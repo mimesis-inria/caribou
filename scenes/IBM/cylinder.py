@@ -14,7 +14,6 @@ mesh   = Mesh.cylinder(center1=(0, 0, 0), center2=(l, 0, 0), radius=w/2., size=2
 def createScene(root):
     root.createObject('APIVersion', name=17.12)
     root.createObject('VisualStyle', displayFlags="showBehaviorModels showCollisionModels showWireframe")
-    root.createObject('RequiredPlugin', name='CGALPlugin')
     root.gravity = [0, -9.8, 0]
     root.dt=0.001
     # root.createObject('FreeMotionAnimationLoop')
@@ -38,7 +37,9 @@ def createScene(root):
                                 min=[0, -w/2., -w/2.],
                                 max=[l, w/2., w/2.],
                                 vertices=mesh.vertices.tolist(),
-                                input_triangles=mesh.surface.triangles.tolist())
+                                input_triangles=mesh.surface.triangles.tolist(),
+                                drawHexahedra=True
+                                )
     # cylnode.createObject('MechanicalObject', showObject=True, src=grid.getLinkPath())
     # container = cylnode.createObject('HexahedronSetTopologyContainer', src=grid.getLinkPath())
     # cylnode.createObject('HexahedronSetGeometryAlgorithms')
