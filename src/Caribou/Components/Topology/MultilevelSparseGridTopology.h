@@ -33,7 +33,6 @@ public:
 
     MultilevelSparseGridTopology();
     void init() override;
-    void buildFromTriangleMesh(const std::string& filename) override;
 
 protected:
     Data<unsigned char> d_number_of_subdivision;
