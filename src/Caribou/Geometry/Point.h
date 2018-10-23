@@ -22,6 +22,7 @@ public:
     typedef BasePoint<Dim, TData, TReal> Self;
     typedef TReal Real;
     typedef TData Data;
+    static constexpr int Dimension = Dim;
 
     BasePoint() = default;
 

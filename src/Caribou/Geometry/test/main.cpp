@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
-#include <Caribou/Geometry/Point.h>
-#include <Caribou/Geometry/Segment.h>
+#include <Caribou/Geometry/Polygon.h>
 
 struct Data {
     char a;
@@ -88,6 +87,21 @@ TEST(Geometry, Segment) {
             3*sizeof(char) /* p6 3xcoordinates */ + 2*sizeof(char) /* p6 data */ +
             2*sizeof(char) /* segment data */
     );
+}
+
+TEST(Geometry, Polygon) {
+    using namespace caribou::geometry;
+    using Point3D = Point3D<>;
+
+    Point3D p1 = {0, 0, 0};
+    Point3D p2 = {1, 0, 0};
+    Point3D p3 = {0, 1, 0};
+
+    auto s1 = make_segment(p1, p2);
+    auto s2 = make_segment(p2, p3);
+    auto s3 = make_segment(p3, p1);
+
+    Polygon<3> polygon_1 = {s1, s2, s3};
 }
 
 int main(int argc, char **argv) {

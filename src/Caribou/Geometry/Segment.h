@@ -19,6 +19,9 @@ template<class TPoint, typename TData=BaseData>
 class Segment : public Entity<TData>
 {
 public:
+    typedef TPoint PointType;
+    static constexpr int Dimension = PointType::Dimension;
+
     Segment() = delete;
     Segment(const TPoint & p1, const TPoint & p2, TData d = BaseData()) : Entity<TData>(d) , nodes({p1, p2}){};
     Segment(std::array<TPoint, 2> l) : nodes(l) {}
