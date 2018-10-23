@@ -20,8 +20,8 @@ TEST(Geometry, Point) {
     ASSERT_EQ(p1, p2);
     ASSERT_EQ(p1*p2, 14);
 
-    caribou::geometry::Point3D<caribou::geometry::BaseData, int> p3({1, 2, 3});
-    caribou::geometry::Point3D<caribou::geometry::BaseData, int> p4;
+    caribou::geometry::Point3D<caribou::geometry::BaseData, unsigned char> p3({1, 2, 3});
+    caribou::geometry::Point3D<caribou::geometry::BaseData, unsigned char> p4;
     p4[0] = p1[0]; p4[1]= p2[1]; p4[2] = p3[2];
 
     ASSERT_EQ(p3, p4);
@@ -37,15 +37,15 @@ TEST(Geometry, Point) {
     ASSERT_EQ(p5[2], 3);
     ASSERT_EQ(p1, p2);
 
-    caribou::geometry::Point3D<Data, char> p6 (0, 0, 0);
+    caribou::geometry::Point3D<Data, unsigned char> p6 (0, 0, 0);
     p6.data.a = (char)1;
     p6.data.b = (char)2;
 
-    caribou::geometry::Point3D<Data, char> p7 (0, 0, 0);
+    caribou::geometry::Point3D<Data, unsigned char> p7 (0, 0, 0);
     p7.data.a = (char)1;
     p7.data.b = (char)2;
 
-    caribou::geometry::Point3D<Data, char> p8;
+    caribou::geometry::Point3D<Data, unsigned char> p8;
     p8.data.a = 5;
     p8.data.b = 6;
 
@@ -76,16 +76,16 @@ TEST(Geometry, Segment) {
     ASSERT_NE(s2, s1);
 
     // Make sure a segment have minimal space taken in the memory
-    caribou::geometry::Point3D<Data, char> p5;
-    caribou::geometry::Point3D<Data, char> p6;
-    Data d = {(char) 1, (char)2};
+    caribou::geometry::Point3D<Data, unsigned char> p5;
+    caribou::geometry::Point3D<Data, unsigned char> p6;
+    Data d = {(unsigned char) 1, (unsigned char)2};
     auto s3 = make_segment(p5, p6, d);
     ASSERT_EQ(
             sizeof(s3),
 
-            3*sizeof(char) /* p5 3xcoordinates */ + 2*sizeof(char) /* p5 data */ +
-            3*sizeof(char) /* p6 3xcoordinates */ + 2*sizeof(char) /* p6 data */ +
-            2*sizeof(char) /* segment data */
+            3*sizeof(unsigned char) /* p5 3xcoordinates */ + 2*sizeof(unsigned char) /* p5 data */ +
+            3*sizeof(unsigned char) /* p6 3xcoordinates */ + 2*sizeof(unsigned char) /* p6 data */ +
+            2*sizeof(unsigned char) /* segment data */
     );
 }
 
@@ -101,7 +101,27 @@ TEST(Geometry, Polygon) {
     auto s2 = make_segment(p2, p3);
     auto s3 = make_segment(p3, p1);
 
-    Polygon<3> polygon_1 = {s1, s2, s3};
+    // Create a polygon from 3 segments
+    auto polygon_1 = make_polygon(s1, s2, s3);
+
+    // Create a copied polygone
+    auto polygon_2 = polygon_1;
+
+    // Make sure that the polygon and its copy are equal
+    ASSERT_EQ(polygon_1, polygon_2);
+
+    // Change the first node of the copy
+    polygon_2[0] = {1, 1, 1};
+
+    // Make sure that the polygon and its copy are no longer equal
+    ASSERT_NE(polygon_1, polygon_2);
+
+    // Make a polygon from 3 points
+    auto polygon_3 = make_polygon(p1, p2, p3);
+
+    // Since the 3 points are the same that forms the 3 segments when we close them, make sure that this new polygon
+    // is equal to the first one
+    ASSERT_EQ(polygon_1, polygon_3);
 }
 
 int main(int argc, char **argv) {

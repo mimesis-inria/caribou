@@ -26,6 +26,7 @@ template<typename Data=BaseData>
 class Entity
 {
 public:
+    typedef Data DataType;
     Entity() = default;
     Entity(const Data & d) : data(d) {}
     Data data;

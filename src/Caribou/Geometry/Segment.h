@@ -22,7 +22,7 @@ public:
     typedef TPoint PointType;
     static constexpr int Dimension = PointType::Dimension;
 
-    Segment() = delete;
+    Segment() = default;
     Segment(const TPoint & p1, const TPoint & p2, TData d = BaseData()) : Entity<TData>(d) , nodes({p1, p2}){};
     Segment(std::array<TPoint, 2> l) : nodes(l) {}
     Segment(const Segment & s) : Entity<TData> (s.data){
@@ -63,6 +63,10 @@ public:
         return nodes[x];
     }
 
+    inline const TPoint & operator[] (std::size_t x) const {
+        return nodes[x];
+    }
+
     std::array<TPoint, 2> nodes;
 };
 
@@ -70,7 +74,7 @@ template<class TPoint, typename TData>
 class Segment<TPoint *, TData> : public Entity<TData>
 {
 public:
-    Segment() = delete;
+    Segment() = default;
     Segment(TPoint * p1, TPoint * p2, TData d = BaseData()) : Entity<TData>(d) , nodes({p1, p2}){};
     Segment(std::array<TPoint*, 2> l) : nodes(l) {}
     Segment(const Segment<TPoint *, TData> & s) : Entity<TData> (s.data){
@@ -108,6 +112,10 @@ public:
     }
 
     inline TPoint & operator[] (std::size_t x) {
+        return *nodes[x];
+    }
+
+    inline const TPoint & operator[] (std::size_t x) const {
         return *nodes[x];
     }
 

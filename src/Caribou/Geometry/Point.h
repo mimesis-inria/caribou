@@ -15,14 +15,14 @@ namespace geometry
  * @tparam Dim Dimension of the current space (default to 3D).
  * @tparam TReal Type of the floating values.
  */
-template<int Dim, typename TData, typename TReal>
+template<size_t Dim, typename TData, typename TReal>
 class BasePoint : public Entity<TData>
 {
 public:
     typedef BasePoint<Dim, TData, TReal> Self;
     typedef TReal Real;
     typedef TData Data;
-    static constexpr int Dimension = Dim;
+    static constexpr size_t Dimension = Dim;
 
     BasePoint() = default;
 
@@ -45,25 +45,32 @@ public:
         return *this;
     }
 
-    inline Self &operator=(const std::initializer_list<TReal> * l) {
-        assert(l->size() == Dim && "Cannot initialized a Point of n dimension with a list of m dimension");
+    template <typename TOtherReal>
+    inline Self &operator=(const std::initializer_list<TOtherReal> * l) {
+        static_assert(l->size() == Dim, "Cannot initialized a Point of n dimension with a list of m dimension");
         std::copy(std::begin(*l), std::end(*l), std::begin(coordinate));
 
         return *this;
     }
 
-    inline bool operator==(const Self & p) const {
+    template<size_t OtherDim, typename TOtherData, typename TOtherReal>
+    inline bool operator==(const BasePoint<OtherDim, TOtherData, TOtherReal> & p) const {
         return (
                 this->data == p.data &&
                 std::equal(std::begin(coordinate), std::end(coordinate), std::begin(p.coordinate))
         );
     }
 
-    inline bool operator!=(const Self & p) const {
+    template<size_t OtherDim, typename TOtherData, typename TOtherReal>
+    inline bool operator!=(const BasePoint<OtherDim, TOtherData, TOtherReal> & p) const {
         return not (*this == p);
     }
 
     inline TReal & operator[] (std::size_t x) {
+        return coordinate[x];
+    }
+
+    inline const TReal & operator[] (std::size_t x) const {
         return coordinate[x];
     }
 
@@ -72,11 +79,10 @@ public:
         return std::inner_product(std::begin(coordinate), std::end(coordinate), std::begin(other.coordinate), 0);
     }
 
-protected:
     std::array<TReal, Dim> coordinate;
 };
 
-template<int Dim, typename TData=BaseData, typename TReal=float>
+template<size_t Dim, typename TData=BaseData, typename TReal=float>
 class Point : public BasePoint<Dim, TData, TReal>
 {
 };
@@ -99,10 +105,11 @@ public:
 
     inline const TReal & x () const { return Self::coordinate[0]; }
 
-    inline void set_x(const TReal & x) {Self::coordinate[0] = x;}
+    template <typename TOtherReal>
+    inline void set_x(const TOtherReal & x) {Self::coordinate[0] = static_cast<TReal> (x);}
 
     template<typename TOtherData, typename TOtherReal>
-    inline TReal operator*(const Point<1, TOtherData, TOtherReal> & other) {
+    inline TReal operator*(const Point<1, TOtherData, TOtherReal> & other) const  {
         return
             x() * (TReal)other.x()
         ;
@@ -137,7 +144,7 @@ public:
     inline void set_y(const TReal & y) {Self::coordinate[1] = y;}
 
     template<typename TOtherData, typename TOtherReal>
-    inline TReal operator*(const Point<2, TOtherData, TOtherReal> & other) {
+    inline TReal operator*(const Point<2, TOtherData, TOtherReal> & other) const  {
         return
             x() * (TReal)other.x()
             +
@@ -176,7 +183,7 @@ public:
     inline void set_z(const TReal & z) {Self::coordinate[2] = z;}
 
     template<typename TOtherData, typename TOtherReal>
-    inline TReal operator*(const Point<3, TOtherData, TOtherReal> & other) {
+    inline TReal operator*(const Point<3, TOtherData, TOtherReal> & other) const {
         return
             x() * (TReal)other.x()
             +
@@ -190,7 +197,7 @@ public:
 template<typename TData=BaseData, typename TReal=float>
 using Point3D = Point<3, TData, TReal>;
 
-template<int Dim, typename TData=BaseData, typename TReal=float>
+template<size_t Dim, typename TData=BaseData, typename TReal=float>
 Point<Dim, TData, TReal> make_point(TReal const (&coordinates)[Dim], const TData & data = TData()) {
     return Point<Dim, TData, TReal>(coordinates, data);
 }
