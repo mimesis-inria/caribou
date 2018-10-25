@@ -10,26 +10,11 @@ namespace caribou
 namespace geometry
 {
 
-struct BaseData
-{
-    bool operator==(const BaseData &) const {
-        return true;
-    }
-};
-
-
 /**
  * An entity represent the base of every geometry classes.
- * @tparam Data A data attached to the entity. It can be used as a property or a container of properties for the entity.
  */
-template<typename Data=BaseData>
-class Entity
+struct Entity
 {
-public:
-    typedef Data DataType;
-    Entity() = default;
-    Entity(const Data & d) : data(d) {}
-    Data data;
 };
 
 } // namespace geometry

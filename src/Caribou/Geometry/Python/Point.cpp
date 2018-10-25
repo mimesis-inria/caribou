@@ -17,9 +17,9 @@ namespace python
 {
 
 void create_point(py::module & m) {
-    py::class_<Entity<>>(m, "Entity");
+    py::class_<Entity>(m, "Entity");
 
-    py::class_<Point1D<>, Entity<>>(m, "Point1D")
+    py::class_<Point1D<>, Entity>(m, "Point1D")
             .def(py::init<>())
             .def(py::init<float>())
             .def(py::init<double>())
@@ -29,7 +29,7 @@ void create_point(py::module & m) {
             )
             ;
 
-    py::class_<Point2D<>, Entity<>>(m, "Point2D")
+    py::class_<Point2D<>, Entity>(m, "Point2D")
             .def(py::init<>())
             .def(py::init<float, float>())
             .def(py::init<double, double>())
@@ -43,7 +43,7 @@ void create_point(py::module & m) {
             )
             ;
 
-    py::class_<Point3D<>, Entity<>>(m, "Point3D")
+    py::class_<Point3D<>, Entity>(m, "Point3D")
             .def(py::init<>())
             .def(py::init<float, float, float>())
             .def(py::init<double, double, double>())

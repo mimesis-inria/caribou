@@ -15,22 +15,21 @@ namespace geometry
  * @tparam Dim Dimension of the current space (default to 3D).
  * @tparam TReal Type of the floating values.
  */
-template<size_t Dim, typename TData, typename TReal>
-class BasePoint : public Entity<TData>
+template<size_t Dim, typename TReal>
+class BasePoint : public Entity
 {
 public:
-    typedef BasePoint<Dim, TData, TReal> Self;
+    typedef BasePoint<Dim, TReal> Self;
     typedef TReal Real;
-    typedef TData Data;
     static constexpr size_t Dimension = Dim;
 
     BasePoint() = default;
 
-    BasePoint(TReal const (&c)[Dim], const TData data = TData()) : Entity<TData>(data) {
+    BasePoint(TReal const (&c)[Dim]) : Entity() {
         std::copy(std::begin(c), std::end(c), std::begin(coordinate));
     }
 
-    BasePoint(const Self & p) : Entity<TData>(p.data) {
+    BasePoint(const Self & p) : Entity() {
         std::copy(std::begin(p.coordinate), std::end(p.coordinate), std::begin(coordinate));
     }
 
@@ -40,7 +39,6 @@ public:
             return *this;
 
         std::copy(std::begin(p.coordinate), std::end(p.coordinate), std::begin(coordinate));
-        this->data = p.data;
 
         return *this;
     }
@@ -48,21 +46,21 @@ public:
     template <typename TOtherReal>
     inline Self &operator=(const std::initializer_list<TOtherReal> * l) {
         static_assert(l->size() == Dim, "Cannot initialized a Point of n dimension with a list of m dimension");
+
         std::copy(std::begin(*l), std::end(*l), std::begin(coordinate));
 
         return *this;
     }
 
-    template<size_t OtherDim, typename TOtherData, typename TOtherReal>
-    inline bool operator==(const BasePoint<OtherDim, TOtherData, TOtherReal> & p) const {
+    template<size_t OtherDim, typename TOtherReal>
+    inline bool operator==(const BasePoint<OtherDim, TOtherReal> & p) const {
         return (
-                this->data == p.data &&
                 std::equal(std::begin(coordinate), std::end(coordinate), std::begin(p.coordinate))
         );
     }
 
-    template<size_t OtherDim, typename TOtherData, typename TOtherReal>
-    inline bool operator!=(const BasePoint<OtherDim, TOtherData, TOtherReal> & p) const {
+    template<size_t OtherDim, typename TOtherReal>
+    inline bool operator!=(const BasePoint<OtherDim, TOtherReal> & p) const {
         return not (*this == p);
     }
 
@@ -74,30 +72,30 @@ public:
         return coordinate[x];
     }
 
-    template<typename TOtherData, typename TOtherReal>
-    inline TReal operator*(const BasePoint<Dim, TOtherData, TOtherReal> & other) const {
+    template<typename TOtherReal>
+    inline TReal operator*(const BasePoint<Dim, TOtherReal> & other) const {
         return std::inner_product(std::begin(coordinate), std::end(coordinate), std::begin(other.coordinate), 0);
     }
 
     std::array<TReal, Dim> coordinate;
 };
 
-template<size_t Dim, typename TData=BaseData, typename TReal=float>
-class Point : public BasePoint<Dim, TData, TReal>
+template<size_t Dim, typename TReal=float>
+class Point : public BasePoint<Dim, TReal>
 {
 };
 
 /**
  * A 1D point in space.
  */
-template<typename TData, typename TReal>
-class Point<1, TData, TReal>  : public BasePoint<1, TData, TReal>
+template<typename TReal>
+class Point<1, TReal>  : public BasePoint<1, TReal>
 {
-    using Self = Point<1, TData, TReal>;
+    using Self = Point<1, TReal>;
 public:
     Point() = default;
 
-    Point(TReal const (&coordinates)[1], const TData data = TData()) : BasePoint<1, TData, TReal>(coordinates, data) {}
+    Point(TReal const (&coordinates)[1]) : BasePoint<1, TReal>(coordinates) {}
 
     explicit Point (const TReal & x) {
         Self::coordinate[0] = x;
@@ -108,8 +106,8 @@ public:
     template <typename TOtherReal>
     inline void set_x(const TOtherReal & x) {Self::coordinate[0] = static_cast<TReal> (x);}
 
-    template<typename TOtherData, typename TOtherReal>
-    inline TReal operator*(const Point<1, TOtherData, TOtherReal> & other) const  {
+    template<typename TOtherReal>
+    inline TReal operator*(const Point<1, TOtherReal> & other) const  {
         return
             x() * (TReal)other.x()
         ;
@@ -117,20 +115,20 @@ public:
 
 };
 
-template<typename TData=BaseData, typename TReal=float>
-using Point1D = Point<1, TData, TReal>;
+template<typename TReal=float>
+using Point1D = Point<1, TReal>;
 
 /**
  * A 2D point in space.
  */
-template<typename TData, typename TReal>
-class Point<2, TData, TReal>  : public BasePoint<2, TData, TReal>
+template<typename TReal>
+class Point<2, TReal>  : public BasePoint<2, TReal>
 {
-    using Self = Point<2, TData, TReal>;
+    using Self = Point<2, TReal>;
 public:
     Point() = default;
 
-    Point(TReal const (&coordinates)[2], const TData data = TData()) : BasePoint<2, TData, TReal>(coordinates, data) {}
+    Point(TReal const (&coordinates)[2]) : BasePoint<2, TReal>(coordinates) {}
 
     Point (const TReal & x, const TReal & y) {
         Self::coordinate[0] = x;
@@ -143,8 +141,8 @@ public:
     inline void set_x(const TReal & x) {Self::coordinate[0] = x;}
     inline void set_y(const TReal & y) {Self::coordinate[1] = y;}
 
-    template<typename TOtherData, typename TOtherReal>
-    inline TReal operator*(const Point<2, TOtherData, TOtherReal> & other) const  {
+    template<typename TOtherReal>
+    inline TReal operator*(const Point<2, TOtherReal> & other) const  {
         return
             x() * (TReal)other.x()
             +
@@ -153,20 +151,20 @@ public:
     }
 };
 
-template<typename TData=BaseData, typename TReal=float>
-using Point2D = Point<2, TData, TReal>;
+template<typename TReal=float>
+using Point2D = Point<2, TReal>;
 
 /**
  * A 3D point in space.
  */
-template<typename TData, typename TReal>
-class Point<3, TData, TReal>  : public BasePoint<3, TData, TReal>
+template<typename TReal>
+class Point<3, TReal>  : public BasePoint<3, TReal>
 {
-    using Self = Point<3, TData, TReal>;
+    using Self = Point<3, TReal>;
 public:
     Point() = default;
 
-    Point(TReal const (&coordinates)[3], const TData data = TData()) : BasePoint<3, TData, TReal>(coordinates, data) {}
+    Point(TReal const (&coordinates)[3]) : BasePoint<3, TReal>(coordinates) {}
 
     Point (const TReal & x, const TReal & y, const TReal & z) {
         Self::coordinate[0] = x;
@@ -182,8 +180,8 @@ public:
     inline void set_y(const TReal & y) {Self::coordinate[1] = y;}
     inline void set_z(const TReal & z) {Self::coordinate[2] = z;}
 
-    template<typename TOtherData, typename TOtherReal>
-    inline TReal operator*(const Point<3, TOtherData, TOtherReal> & other) const {
+    template<typename TOtherReal>
+    inline TReal operator*(const Point<3, TOtherReal> & other) const {
         return
             x() * (TReal)other.x()
             +
@@ -194,12 +192,12 @@ public:
     }
 };
 
-template<typename TData=BaseData, typename TReal=float>
-using Point3D = Point<3, TData, TReal>;
+template<typename TReal=float>
+using Point3D = Point<3, TReal>;
 
-template<size_t Dim, typename TData=BaseData, typename TReal=float>
-Point<Dim, TData, TReal> make_point(TReal const (&coordinates)[Dim], const TData & data = TData()) {
-    return Point<Dim, TData, TReal>(coordinates, data);
+template<size_t Dim, typename TReal=float>
+Point<Dim, TReal> make_point(TReal const (&coordinates)[Dim]) {
+    return Point<Dim, TReal>(coordinates);
 }
 
 template<typename... TReal>

@@ -12,124 +12,133 @@ namespace geometry
 
 /**
  * A segment (between 2 nodes) in space (independent of the space dimension).
- * @tparam Dim Dimension of the current space (default to 3D).
- * @tparam Real Type of the floating values.
+ * @tparam TPoint The type of Point we want to use for our segment
  */
-template<class TPoint, typename TData=BaseData>
-class Segment : public Entity<TData>
+template<class TPoint>
+class Segment : public Entity
 {
 public:
     typedef TPoint PointType;
     static constexpr int Dimension = PointType::Dimension;
 
     Segment() = default;
-    Segment(const TPoint & p1, const TPoint & p2, TData d = BaseData()) : Entity<TData>(d) , nodes({p1, p2}){};
-    Segment(std::array<TPoint, 2> l) : nodes(l) {}
-    Segment(const Segment & s) : Entity<TData> (s.data){
+    Segment(const TPoint & p1, const TPoint & p2) : Entity() , nodes({p1, p2}){};
+    Segment(const Segment & s) : Entity() {
         std::copy(std::begin(s.nodes), std::end(s.nodes), std::begin(nodes));
     }
 
-    inline const TPoint & n1 () const { return nodes[0]; }
-    inline const TPoint & n2 () const { return nodes[1]; }
+    /** Const accessor to the first node of the segment */
+    inline const TPoint &
+    first_node () const
+    { return nodes[0]; }
 
-    inline void set_n1(const TPoint & n) {nodes[0] = n;}
-    inline void set_n2(const TPoint & n) {nodes[1] = n;}
+    /** Accessor to the first node of the segment */
+    inline TPoint &
+    first_node ()
+    { return nodes[0]; }
 
-    inline bool operator==(const Segment & s) const {
+    /** Const accessor to the second node of the segment */
+    inline const TPoint &
+    second_node () const
+    { return nodes[1]; }
+
+    /** Accessor to the second node of the segment */
+    inline TPoint &
+    second_node ()
+    { return nodes[1]; }
+
+    /**
+     * Assignment operator from an other segment (this = other;)
+     * @tparam TOtherPoint The type of Point the other segment
+     * @param other The other segment from which data we want to copy inside this one
+     * @return This segment
+     */
+    template<class TOtherPoint>
+    inline Segment<TPoint>
+    &operator=(const Segment<TOtherPoint> & other)
+    {
+        // check for self-assignment
+        if(&other == this)
+            return *this;
+
+        std::copy(std::begin(other.nodes), std::end(other.nodes), std::begin(nodes));
+
+        return *this;
+    }
+
+    /**
+     * Equality operator (this == other)
+     * @tparam TOtherPoint The type of Point the other segment
+     * @param other The other segment against who we want to compare ourself
+     * @return True if other is equal to this segment, false otherwise
+     */
+    template<class TOtherPoint>
+    inline bool
+    operator==(const Segment<TOtherPoint> & other) const
+    {
         return (
-                this->data == s.data &&
-                std::equal(std::begin(nodes), std::end(nodes), std::begin(s.nodes))
+                std::equal(std::begin(nodes), std::end(nodes), std::begin(other.nodes))
         );
     }
 
-    inline bool operator==(const Segment<TPoint *, TData> & s) const {
-        return (
-                this->data == s.data &&
-                std::equal(std::begin(nodes), std::end(nodes), std::begin(s.nodes), [](const TPoint &a, const TPoint * b) -> bool {
-                    return a == *b;
-                })
-        );
+    /**
+     * see operator==
+     */
+    template<class TOtherPoint>
+    inline bool
+    operator!=(const Segment<TOtherPoint>& other) const
+    {
+        return not (*this == other);
     }
 
-    inline bool operator!=(const Segment& s) const {
-        return not (*this == s);
+
+    /**
+     * Subscript operator (this[index])
+     * @param index The index (0 or 1) of the point we want to get
+     * @return A reference to the node at position index
+     */
+    inline TPoint &
+    operator[] (std::size_t index)
+    {
+        return nodes[index];
     }
 
-    inline bool operator!=(const Segment<TPoint *, TData>& s) const {
-        return not (*this == s);
-    }
-
-    inline TPoint & operator[] (std::size_t x) {
-        return nodes[x];
-    }
-
-    inline const TPoint & operator[] (std::size_t x) const {
+    /**
+     * Subscript operator (this[index])
+     * @param index The index (0 or 1) of the point we want to get
+     * @return A const reference to the node at position index
+     */
+    inline const TPoint &
+    operator[] (std::size_t x) const
+    {
         return nodes[x];
     }
 
     std::array<TPoint, 2> nodes;
 };
 
-template<class TPoint, typename TData>
-class Segment<TPoint *, TData> : public Entity<TData>
-{
-public:
-    Segment() = default;
-    Segment(TPoint * p1, TPoint * p2, TData d = BaseData()) : Entity<TData>(d) , nodes({p1, p2}){};
-    Segment(std::array<TPoint*, 2> l) : nodes(l) {}
-    Segment(const Segment<TPoint *, TData> & s) : Entity<TData> (s.data){
-        std::copy(std::begin(s.nodes), std::end(s.nodes), std::begin(nodes));
-    }
-
-    inline const TPoint & n1 () const { return *nodes[0]; }
-    inline const TPoint & n2 () const { return *nodes[1]; }
-
-    inline void set_n1(const TPoint & n) {*(nodes[0]) = n;}
-    inline void set_n2(const TPoint & n) {*(nodes[1]) = n;}
-
-    inline bool operator==(const Segment<TPoint *, TData> & s) const {
-        return (
-                this->data == s.data &&
-                std::equal(std::begin(nodes), std::end(nodes), std::begin(s.nodes))
-        );
-    }
-
-    inline bool operator==(const Segment<TPoint, TData> & s) const {
-        return (
-                this->data == s.data &&
-                std::equal(std::begin(nodes), std::end(nodes), std::begin(s.nodes), [](const TPoint * a, const TPoint &b) -> bool {
-                    return *a == b;
-                })
-        );
-    }
-
-    inline bool operator!=(const Segment <TPoint *, TData> & s) const {
-        return not (*this == s);
-    }
-
-    inline bool operator!=(const Segment <TPoint, TData> & s) const {
-        return not (*this == s);
-    }
-
-    inline TPoint & operator[] (std::size_t x) {
-        return *nodes[x];
-    }
-
-    inline const TPoint & operator[] (std::size_t x) const {
-        return *nodes[x];
-    }
-
-    std::array<TPoint*, 2> nodes;
-};
-
-template<typename TPoint, typename TData=BaseData>
-Segment<TPoint, TData> make_segment(const TPoint & p1, const TPoint & p2, TData data = TData()) {
-    return Segment<TPoint, TData>(p1, p2, data);
-}
-
-template<typename TPoint, typename TData=BaseData>
-Segment<TPoint *, TData> make_segment(TPoint * p1, TPoint * p2, TData data = TData()) {
-    return Segment<TPoint *, TData>(p1, p2, data);
+/**
+ * Tool function to create a new segment between two points.
+ *
+ * Example:
+ *
+ * \code{.cpp}
+ * // Create a segment between 2 points
+ * auto p1 = make_point(0,0,0)
+ * auto p2 = make_point(1,1,1)
+ *
+ * auto s1 = make_segment(p1, p2)
+ * \endcode
+ *
+ * @tparam TPoint The type of Point we want to add to our segment. It is usually automatically deducted from the parameters.
+ * @param p1 First node of the segment
+ * @param p2 Second node of the segment
+ *
+ * @return A newly created segment between p1 and p2
+ */
+template<typename TPoint>
+Segment<TPoint> make_segment(const TPoint & p1, const TPoint & p2) {
+    return Segment<TPoint>(p1, p2);
 }
 
 } // namespace geometry
