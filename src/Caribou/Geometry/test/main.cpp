@@ -5,37 +5,31 @@ TEST(Geometry, Point) {
     using namespace caribou::geometry;
     using Point3D = Point3D<>;
 
-    auto p1 = make_point({1, 2, 3});
+    auto p1 = make_point(1, 2, 3);
     auto p2 = make_point(1, 2, 3);
 
     ASSERT_EQ(p1, p2);
-    ASSERT_EQ(p1*p2, 14);
 
     Point3D p3({1, 2, 3});
     Point3D p4;
-    p4[0] = p1[0]; p4[1]= p2[1]; p4[2] = p3[2];
+
+    p4[0] = p1[0];
+    p4[1]= p2[1];
+    p4[2] = p3[2];
 
     ASSERT_EQ(p3, p4);
-    ASSERT_EQ(p1, p4);
 
     auto p5 = p4;
 
     ASSERT_EQ(p5.x(), 1);
 
-    p5.set_y(4);
+    p5.y() = 4;
     ASSERT_EQ(p5[1], 4);
 
     ASSERT_EQ(p5[2], 3);
     ASSERT_EQ(p1, p2);
 
-    Point3D p6 (0, 0, 0);
-
-    Point3D p7 (0, 0, 0);
-
-    caribou::geometry::Point3D<unsigned char> p8;
-
-    ASSERT_EQ(p6, p7);
-    ASSERT_NE(p6, p8);
+    caribou::geometry::Point3D<caribou::algebra::Vector<3, unsigned char>> p8;
 
     // Make sure a point have minimal space taken in the memory
     ASSERT_LE(
@@ -60,15 +54,15 @@ TEST(Geometry, Segment) {
     ASSERT_EQ(s2, s1);
 
     // Make sure a segment have minimal space taken in the memory
-    caribou::geometry::Point3D<unsigned char> p5;
-    caribou::geometry::Point3D<unsigned char> p6;
+    caribou::geometry::Point3D<caribou::algebra::Vector<3, unsigned char>> p5;
+    caribou::geometry::Point3D<caribou::algebra::Vector<3, unsigned char>> p6;
     auto s3 = make_segment(p5, p6);
     ASSERT_LE(
         sizeof(s3),
         (sizeof(p5) + sizeof(p6) + 1)
     );
 }
-
+//
 TEST(Geometry, Polygon) {
     using namespace caribou::geometry;
     using Point3D = Point3D<>;

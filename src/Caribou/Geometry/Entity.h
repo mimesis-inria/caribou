@@ -1,10 +1,6 @@
 #ifndef CARIBOU_GEOMETRY_ENTITY_H
 #define CARIBOU_GEOMETRY_ENTITY_H
 
-#include <array>
-#include <initializer_list>
-#include <algorithm>
-
 namespace caribou
 {
 namespace geometry

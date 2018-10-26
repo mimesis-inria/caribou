@@ -25,7 +25,7 @@ void create_point(py::module & m) {
             .def(py::init<double>())
             .def_property("x",
                           [](const Point1D<> &p) { return p.x(); },
-                          [](Point1D<> &p, const float & x) { p.set_x(x); }
+                          [](Point1D<> &p, const float & x) { p.x() = x; }
             )
             ;
 
@@ -35,11 +35,11 @@ void create_point(py::module & m) {
             .def(py::init<double, double>())
             .def_property("x",
                           [](const Point2D<> &p) { return p.x(); },
-                          [](Point2D<> &p, const float & x) { p.set_x(x); }
+                          [](Point2D<> &p, const float & x) { p.x() = x; }
             )
             .def_property("y",
                           [](const Point2D<> &p) { return p.y(); },
-                          [](Point2D<> &p, const float & y) { p.set_y(y); }
+                          [](Point2D<> &p, const float & y) { p.y() = y; }
             )
             ;
 
@@ -49,15 +49,15 @@ void create_point(py::module & m) {
             .def(py::init<double, double, double>())
             .def_property("x",
                           [](const Point3D<> &p) { return p.x(); },
-                          [](Point3D<> &p, const float & x) { p.set_x(x); }
+                          [](Point3D<> &p, const float & x) { p.x() = x; }
             )
             .def_property("y",
                           [](const Point3D<> &p) { return p.y(); },
-                          [](Point3D<> &p, const float & y) { p.set_y(y); }
+                          [](Point3D<> &p, const float & y) { p.y() = y; }
             )
             .def_property("z",
                           [](const Point3D<> &p) { return p.z(); },
-                          [](Point3D<> &p, const float & z) { p.set_z(z); }
+                          [](Point3D<> &p, const float & z) { p.z() = z; }
             )
             ;
 }

@@ -2,8 +2,13 @@
 #define CARIBOU_GEOMETRY_POINT_H
 
 #include <Caribou/Geometry/Entity.h>
+#include <Caribou/Algebra/Vector.h>
 #include <cassert>
 #include <numeric>
+#include <cstddef>
+#include <array>
+#include <initializer_list>
+#include <algorithm>
 
 namespace caribou
 {
@@ -13,196 +18,182 @@ namespace geometry
 /**
  * A point in space (independent of the space dimension).
  * @tparam Dim Dimension of the current space (default to 3D).
- * @tparam TReal Type of the floating values.
+ * @tparam TVector Type of the vector position. Default to caribou::algebra::Vector<Dim>>
  */
-template<size_t Dim, typename TReal>
+template<size_t Dim, typename TVector = caribou::algebra::Vector<Dim>>
 class BasePoint : public Entity
 {
 public:
-    typedef BasePoint<Dim, TReal> Self;
-    typedef TReal Real;
+    using VectorType = TVector;
     static constexpr size_t Dimension = Dim;
 
     BasePoint() = default;
 
-    BasePoint(TReal const (&c)[Dim]) : Entity() {
-        std::copy(std::begin(c), std::end(c), std::begin(coordinate));
-    }
+    template <typename ValueType>
+    BasePoint(std::initializer_list<ValueType> il) : Entity() , coordinates(il) {}
 
-    BasePoint(const Self & p) : Entity() {
-        std::copy(std::begin(p.coordinate), std::end(p.coordinate), std::begin(coordinate));
-    }
+    template<typename OtherVectorType>
+    BasePoint(const BasePoint<Dim, OtherVectorType> & other) : Entity(), coordinates(other.coordinates) {}
 
-    inline Self &operator=(const Self & p) {
+    template<typename OtherVectorType>
+    inline BasePoint<Dim, TVector>
+    &operator=(const BasePoint<Dim, OtherVectorType> & other)
+    {
         // check for self-assignment
-        if(&p == this)
+        if(&other == this)
             return *this;
 
-        std::copy(std::begin(p.coordinate), std::end(p.coordinate), std::begin(coordinate));
+        coordinates = other.coordinates;
 
         return *this;
     }
 
-    template <typename TOtherReal>
-    inline Self &operator=(const std::initializer_list<TOtherReal> * l) {
-        static_assert(l->size() == Dim, "Cannot initialized a Point of n dimension with a list of m dimension");
-
-        std::copy(std::begin(*l), std::end(*l), std::begin(coordinate));
-
-        return *this;
+    template <typename ValueType>
+    inline ValueType &
+    operator[] (std::size_t x)
+    {
+        return coordinates[x];
     }
 
-    template<size_t OtherDim, typename TOtherReal>
-    inline bool operator==(const BasePoint<OtherDim, TOtherReal> & p) const {
-        return (
-                std::equal(std::begin(coordinate), std::end(coordinate), std::begin(p.coordinate))
-        );
+    template <typename ValueType>
+    inline const ValueType &
+    operator[] (std::size_t x) const
+    {
+        return coordinates[x];
     }
 
-    template<size_t OtherDim, typename TOtherReal>
-    inline bool operator!=(const BasePoint<OtherDim, TOtherReal> & p) const {
-        return not (*this == p);
+    // TODO(jnbrunet2000@gmail.com): This should not be mandatory for the vector template. We should add it using the detection idiom
+    using ValueType = typename VectorType::value_type;
+    inline ValueType &
+    operator[] (std::size_t x)
+    {
+        return coordinates[x];
     }
 
-    inline TReal & operator[] (std::size_t x) {
-        return coordinate[x];
+    inline const ValueType &
+    operator[] (std::size_t x) const
+    {
+        return coordinates[x];
     }
 
-    inline const TReal & operator[] (std::size_t x) const {
-        return coordinate[x];
-    }
 
-    template<typename TOtherReal>
-    inline TReal operator*(const BasePoint<Dim, TOtherReal> & other) const {
-        return std::inner_product(std::begin(coordinate), std::end(coordinate), std::begin(other.coordinate), 0);
-    }
+    template<typename OtherPoint>
+    inline bool
+    operator==(const OtherPoint & other) const
+    { return coordinates == other.coordinates; }
 
-    std::array<TReal, Dim> coordinate;
+    template<typename OtherPoint>
+    inline bool
+    operator!=(const OtherPoint & other) const
+    { return !(*this == other); }
+
+
+    VectorType coordinates;
 };
 
-template<size_t Dim, typename TReal=float>
-class Point : public BasePoint<Dim, TReal>
+template<size_t Dim, typename TVector = caribou::algebra::Vector<Dim>>
+class Point : public BasePoint<Dim, TVector>
 {
 };
 
 /**
  * A 1D point in space.
  */
-template<typename TReal>
-class Point<1, TReal>  : public BasePoint<1, TReal>
+template<typename TVector>
+class Point<1, TVector>  : public BasePoint<1, TVector>
 {
-    using Self = Point<1, TReal>;
+    using Self = Point<1, TVector>;
+    // TODO(jnbrunet2000@gmail.com): This should not be mandatory for the vector template. We should add it using the detection idiom
+    using ValueType = typename BasePoint<1, TVector>::ValueType;
 public:
     Point() = default;
 
-    Point(TReal const (&coordinates)[1]) : BasePoint<1, TReal>(coordinates) {}
-
-    explicit Point (const TReal & x) {
-        Self::coordinate[0] = x;
+    template <typename ValueType>
+    explicit Point (const ValueType & x) {
+        Self::coordinates[0] = x;
     }
 
-    inline const TReal & x () const { return Self::coordinate[0]; }
-
-    template <typename TOtherReal>
-    inline void set_x(const TOtherReal & x) {Self::coordinate[0] = static_cast<TReal> (x);}
-
-    template<typename TOtherReal>
-    inline TReal operator*(const Point<1, TOtherReal> & other) const  {
-        return
-            x() * (TReal)other.x()
-        ;
-    }
-
+    inline const ValueType & x () const { return Self::coordinates[0]; }
+    inline ValueType & x () { return Self::coordinates[0]; }
 };
-
-template<typename TReal=float>
-using Point1D = Point<1, TReal>;
 
 /**
  * A 2D point in space.
  */
-template<typename TReal>
-class Point<2, TReal>  : public BasePoint<2, TReal>
+template<typename TVector>
+class Point<2, TVector>  : public BasePoint<2, TVector>
 {
-    using Self = Point<2, TReal>;
+    using Self = Point<2, TVector>;
+    // TODO(jnbrunet2000@gmail.com): This should not be mandatory for the vector template. We should add it using the detection idiom
+    using ValueType = typename BasePoint<2, TVector>::ValueType;
 public:
     Point() = default;
 
-    Point(TReal const (&coordinates)[2]) : BasePoint<2, TReal>(coordinates) {}
-
-    Point (const TReal & x, const TReal & y) {
-        Self::coordinate[0] = x;
-        Self::coordinate[1] = y;
+    template <typename ValueType>
+    Point (const ValueType & x, const ValueType & y) {
+        Self::coordinates[0] = x;
+        Self::coordinates[1] = y;
     }
 
-    inline const TReal & x () const { return Self::coordinate[0]; }
-    inline const TReal & y () const { return Self::coordinate[1]; }
-
-    inline void set_x(const TReal & x) {Self::coordinate[0] = x;}
-    inline void set_y(const TReal & y) {Self::coordinate[1] = y;}
-
-    template<typename TOtherReal>
-    inline TReal operator*(const Point<2, TOtherReal> & other) const  {
-        return
-            x() * (TReal)other.x()
-            +
-            y() * (TReal)other.y()
-        ;
+    template <typename ValueType>
+    Point(std::initializer_list<ValueType> il) : BasePoint<2, TVector>() {
+        std::copy(std::begin(il), std::end(il), std::begin(Self::coordinates));
     }
+
+    inline const ValueType & x () const { return Self::coordinates[0]; }
+    inline ValueType & x () { return Self::coordinates[0]; }
+
+    inline const ValueType & y () const { return Self::coordinates[1]; }
+    inline ValueType & y () { return Self::coordinates[1]; }
 };
-
-template<typename TReal=float>
-using Point2D = Point<2, TReal>;
 
 /**
  * A 3D point in space.
  */
-template<typename TReal>
-class Point<3, TReal>  : public BasePoint<3, TReal>
+template<typename TVector>
+class Point<3, TVector>  : public BasePoint<3, TVector>
 {
-    using Self = Point<3, TReal>;
+    using Self = Point<3, TVector>;
+    // TODO(jnbrunet2000@gmail.com): This should not be mandatory for the vector template. We should add it using the detection idiom
+    using ValueType = typename BasePoint<3, TVector>::ValueType;
 public:
     Point() = default;
 
-    Point(TReal const (&coordinates)[3]) : BasePoint<3, TReal>(coordinates) {}
-
-    Point (const TReal & x, const TReal & y, const TReal & z) {
-        Self::coordinate[0] = x;
-        Self::coordinate[1] = y;
-        Self::coordinate[2] = z;
+    template <typename ValueType>
+    Point (const ValueType & x, const ValueType & y, const ValueType & z) {
+        Self::coordinates[0] = x;
+        Self::coordinates[1] = y;
+        Self::coordinates[2] = z;
     }
 
-    inline const TReal & x () const { return Self::coordinate[0]; }
-    inline const TReal & y () const { return Self::coordinate[1]; }
-    inline const TReal & z () const { return Self::coordinate[2]; }
-
-    inline void set_x(const TReal & x) {Self::coordinate[0] = x;}
-    inline void set_y(const TReal & y) {Self::coordinate[1] = y;}
-    inline void set_z(const TReal & z) {Self::coordinate[2] = z;}
-
-    template<typename TOtherReal>
-    inline TReal operator*(const Point<3, TOtherReal> & other) const {
-        return
-            x() * (TReal)other.x()
-            +
-            y() * (TReal)other.y()
-            +
-            z() * (TReal)other.z()
-        ;
+    template <typename ValueType>
+    Point(std::initializer_list<ValueType> il) : BasePoint<3, TVector>() {
+        std::copy(std::begin(il), std::end(il), std::begin(Self::coordinates));
     }
+
+    inline const ValueType & x () const { return Self::coordinates[0]; }
+    inline ValueType & x () { return Self::coordinates[0]; }
+
+    inline const ValueType & y () const { return Self::coordinates[1]; }
+    inline ValueType & y () { return Self::coordinates[1]; }
+
+    inline const ValueType & z () const { return Self::coordinates[2]; }
+    inline ValueType & z () { return Self::coordinates[2]; }
 };
 
-template<typename TReal=float>
-using Point3D = Point<3, TReal>;
+template<typename TVector = caribou::algebra::Vector<1>>
+using Point1D = Point<1, TVector>;
 
-template<size_t Dim, typename TReal=float>
-Point<Dim, TReal> make_point(TReal const (&coordinates)[Dim]) {
-    return Point<Dim, TReal>(coordinates);
-}
+template<typename TVector = caribou::algebra::Vector<2>>
+using Point2D = Point<2, TVector>;
 
-template<typename... TReal>
-auto make_point (TReal&&... coordinates) {
-    return make_point<sizeof...(coordinates)>({ std::forward<TReal>(coordinates)... });
+template<typename TVector = caribou::algebra::Vector<3>>
+using Point3D = Point<3, TVector>;
+
+template<typename ValueType, typename... Args>
+auto make_point (ValueType value, Args&&... args) {
+    caribou::algebra::Vector<sizeof...(args) + 1, ValueType> coordinates ({ value, std::forward<Args>(args)... });
+    return coordinates;
 }
 
 
