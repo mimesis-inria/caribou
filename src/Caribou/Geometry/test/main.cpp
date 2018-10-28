@@ -65,7 +65,7 @@ TEST(Geometry, Segment) {
         (sizeof(p5) + sizeof(p6) + 1)
     );
 }
-//
+
 TEST(Geometry, Polygon) {
     using namespace caribou::geometry;
     using Point3D = Point3D<>;
