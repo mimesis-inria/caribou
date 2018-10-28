@@ -171,6 +171,12 @@ public:
         std::copy(std::begin(il), std::end(il), std::begin(Self::coordinates));
     }
 
+    template <typename ValueType>
+    Point(ValueType const (&coordinates)[3]) : BasePoint<3, TVector>() {
+        Self::coordinates = coordinates;
+    }
+
+
     inline const ValueType & x () const { return Self::coordinates[0]; }
     inline ValueType & x () { return Self::coordinates[0]; }
 

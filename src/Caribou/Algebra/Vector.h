@@ -51,6 +51,15 @@ struct Vector : public std::array<TComponent, Dim>
     }
 
     /**
+     * Constructor by c-array or initializer list
+     */
+    Vector(ComponentType const (&components)[Dimension]) {
+        for (size_t i = 0; i < Dimension; ++i) {
+            (*this)[i] = components[i];
+        }
+    }
+
+    /**
      * Constructor by variadic arguments.
      *
      * Example:
@@ -78,6 +87,12 @@ struct Vector : public std::array<TComponent, Dim>
     ///////////////////
     //// Operators ////
     ///////////////////
+
+    /** Comparison operator with a vector of a same dimension and with component data type of OtherComponentType **/
+    template<typename OtherComponentType>
+    inline bool
+    operator==(const Vector<Dimension, OtherComponentType> & other) const
+    { return std::equal(this->begin(), this->end(), other.begin()); }
 
     /** Alias for inner_product **/
     template <size_t OtherDimension, typename OtherComponentType=float>

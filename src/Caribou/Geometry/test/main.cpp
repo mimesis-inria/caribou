@@ -53,12 +53,15 @@ TEST(Geometry, Segment) {
     ASSERT_EQ(s1, s2);
     ASSERT_EQ(s2, s1);
 
+    auto s3 = make_segment({0, 0, 0}, {1, 1, 1});
+    ASSERT_EQ(s1, s3);
+
     // Make sure a segment have minimal space taken in the memory
     caribou::geometry::Point3D<caribou::algebra::Vector<3, unsigned char>> p5;
     caribou::geometry::Point3D<caribou::algebra::Vector<3, unsigned char>> p6;
-    auto s3 = make_segment(p5, p6);
+    auto s4 = make_segment(p5, p6);
     ASSERT_LE(
-        sizeof(s3),
+        sizeof(s4),
         (sizeof(p5) + sizeof(p6) + 1)
     );
 }
@@ -96,6 +99,10 @@ TEST(Geometry, Polygon) {
     // Since the 3 points are the same that forms the 3 segments when we close them, make sure that this new polygon
     // is equal to the first one
     ASSERT_EQ(polygon_1, polygon_3);
+
+    // Test polygon creation with initializer lists
+    auto polygon_4 = make_polygon({{0, 0, 0}, {1, 0, 0}, {0, 1, 0}});
+    ASSERT_EQ(polygon_3, polygon_4);
 }
 
 int main(int argc, char **argv) {

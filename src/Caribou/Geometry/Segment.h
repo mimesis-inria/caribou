@@ -141,6 +141,16 @@ Segment<TPoint> make_segment(const TPoint & p1, const TPoint & p2) {
     return Segment<TPoint>(p1, p2);
 }
 
+template<size_t N, typename ValueType>
+Segment<Point<N, caribou::algebra::Vector<N, ValueType>>>
+make_segment(ValueType const (&a1)[N], ValueType const (&a2)[N])
+{
+    Point <N, caribou::algebra::Vector<N, ValueType>> p1(a1);
+    Point <N, caribou::algebra::Vector<N, ValueType>> p2(a2);
+
+    return make_segment(p1, p2);
+}
+
 } // namespace geometry
 
 } // namespace caribou

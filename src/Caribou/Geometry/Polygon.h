@@ -56,7 +56,6 @@ public:
         return nodes[x];
     }
 
-protected:
     std::array<PointType, NumberOfNodes> nodes;
 };
 
@@ -85,14 +84,23 @@ auto make_polygon (Segment<TPoint> & arg, Args&&... args) {
     return make_polygon_from_segments<sizeof...(args)+1>({ arg, std::forward<Args>(args)... });
 }
 
-
 //
 // Tool functions to create a polygon with a list of points
 //
 template<size_t Dim, typename TReal, typename... Args>
-auto make_polygon (Point<Dim, TReal> & arg, Args&&... args) {
-//    return make_polygon_from_points<sizeof...(args)+1, Point<Dim, TReal>>({ arg, std::forward<Args>(args)... });
+auto make_polygon (Point<Dim, TReal> & arg, Args&&... args)
+{
     return Polygon<sizeof...(args)+1, Point<Dim, TReal>>({ arg, std::forward<Args>(args)... });
+}
+
+template<size_t Dimension, size_t NumberOfNodes, typename ValueType>
+auto make_polygon(ValueType const (&arg)[NumberOfNodes][Dimension])
+{
+    Polygon<NumberOfNodes, Point<Dimension, caribou::algebra::Vector<Dimension,ValueType>>> p;
+    for (size_t i = 0; i < NumberOfNodes; ++i) {
+        p[i] = arg[i];
+    }
+    return p;
 }
 
 } // namespace geometry
