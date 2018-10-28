@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <algorithm>
 #include <numeric>
+#include <cmath>
 
 namespace caribou
 {
@@ -103,12 +104,30 @@ struct Vector : public std::array<TComponent, Dim>
         return inner_product(other);
     }
 
+    /** Alias for cross_product **/
+    template <typename OtherComponentType=float>
+    Vector<Dimension, ComponentType>
+    operator^(const Vector<Dimension, OtherComponentType> & other) const
+    {
+        static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
+
+        return cross_product(other);
+    };
+
     /** Alias for scalar_multiplication **/
     template <class TScalar>
     Vector<Dimension, ComponentType>
     operator*(const TScalar & scalar) const
     {
         return scalar_multiplication(scalar);
+    }
+
+    /** Alias for scalar_division **/
+    template <class TScalar>
+    Vector<Dimension, ComponentType>
+    operator/(const TScalar & scalar) const
+    {
+        return scalar_division(scalar);
     }
 
     /** Alias for direct_sum **/
@@ -119,6 +138,14 @@ struct Vector : public std::array<TComponent, Dim>
         return direct_sum(other);
     }
 
+    /** Alias for direct_sub **/
+    template <size_t OtherDimension, typename OtherComponentType=float>
+    Vector<Dimension, ComponentType>
+    operator-(const Vector<OtherDimension, OtherComponentType> & other) const
+    {
+        return direct_sub(other);
+    }
+
     /////////////////////////////////
     //// Mathematical operations ////
     /////////////////////////////////
@@ -126,36 +153,63 @@ struct Vector : public std::array<TComponent, Dim>
     /**
      * Compute the inner product with another vector (aliases are dot, scalar_product and operator*).
      */
-    template <size_t OtherDimension, typename OtherComponentType=float>
+    template <typename OtherComponentType=float>
     ComponentType
-    inner_product(const Vector<OtherDimension, OtherComponentType> & other) const
+    inner_product(const Vector<Dimension, OtherComponentType> & other) const
     {
         return std::inner_product(std::begin(other), std::end(other), std::begin(*this), (TComponent) 0);
     }
 
     /** Alias for inner_product **/
-    template <size_t OtherDimension, typename OtherComponentType=float>
+    template <typename OtherComponentType=float>
     ComponentType
-    dot(const Vector<OtherDimension, OtherComponentType> & other) const
+    dot(const Vector<Dimension, OtherComponentType> & other) const
     {
         return inner_product(other);
     }
 
     /** Alias for inner_product **/
-    template <size_t OtherDimension, typename OtherComponentType=float>
+    template <typename OtherComponentType=float>
     ComponentType
-    scalar_product(const Vector<OtherDimension, OtherComponentType> & other) const
+    scalar_product(const Vector<Dimension, OtherComponentType> & other) const
     {
         return inner_product(other);
     }
 
     /**
+     * Compute the cross product with another vector.
+     */
+    template <typename OtherComponentType=float>
+    Vector<Dimension, ComponentType>
+    cross_product(const Vector<Dimension, OtherComponentType> & other) const
+    {
+        static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
+
+        const auto & a = *this;
+        const auto & b = other;
+
+        return {
+                a[1]*b[2] -a[2]*b[1],
+                a[2]*b[0] -a[0]*b[2],
+                a[0]*b[1] -a[1]*b[0],
+        };
+    };
+
+    /** Alias for cross_product **/
+    template <typename OtherComponentType=float>
+    Vector<Dimension, ComponentType>
+    cross(const Vector<Dimension, OtherComponentType> & other) const
+    {
+        return cross_product(other);
+    };
+
+    /**
      * Compute the direct sum with another vector (sum between each scalar components).
      * @return The resulting vector
      */
-    template <size_t OtherDimension, typename OtherComponentType=float>
+    template <typename OtherComponentType=float>
     Vector<Dimension, ComponentType>
-    direct_sum(const Vector<OtherDimension, OtherComponentType> & other) const
+    direct_sum(const Vector<Dimension, OtherComponentType> & other) const
     {
         Vector<Dimension, ComponentType> result(false);
         std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::plus<ComponentType >());
@@ -163,7 +217,20 @@ struct Vector : public std::array<TComponent, Dim>
     }
 
     /**
-     * Compute the scalar multiplication (not to be confused by the scalar production).
+     * Compute the direct sub with another vector (subtraction between each scalar components).
+     * @return The resulting vector
+     */
+    template <typename OtherComponentType=float>
+    Vector<Dimension, ComponentType>
+    direct_sub(const Vector<Dimension, OtherComponentType> & other) const
+    {
+        Vector<Dimension, ComponentType> result(false);
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ComponentType >());
+        return result;
+    }
+
+    /**
+     * Compute the scalar multiplication (not to be confused by the scalar product).
      * @tparam TScalar The data type of the scalar (ex float, double, int,...)
      * @param scalar The scalar value
      * @return The resulting vector
@@ -179,6 +246,43 @@ struct Vector : public std::array<TComponent, Dim>
         return result;
     }
 
+    /**
+    * Compute the scalar division.
+    * @tparam TScalar The data type of the scalar (ex float, double, int,...)
+    * @param scalar The scalar value
+    * @return The resulting vector
+    */
+    template <class TScalar>
+    Vector<Dimension, ComponentType>
+    scalar_division(const TScalar & scalar) const
+    {
+        Vector<Dimension, ComponentType> result(false);
+        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ComponentType & component) {
+            return component/scalar;
+        });
+        return result;
+    }
+
+
+    /////////////////////////////////
+    //// Mathematical properties ////
+    /////////////////////////////////
+
+    /** Compute the length of the vector. **/
+    ComponentType
+    length() const
+    {
+        return sqrt((*this).dot(*this));
+    };
+
+    /** Get the unit vector (current vector normalized to unit length) **/
+    Vector<Dimension, ComponentType>
+    unit() const
+    {
+        return (*this)/length();
+    };
+
+
 private:
     template<size_t current_index, typename... Args>
     void recursive_set(ComponentType component, Args&&... other_components) {
@@ -190,10 +294,18 @@ private:
     void recursive_set(ComponentType component) {
         (*this)[current_index] = component;
     }
-
-
-
 };
+
+template <size_t Dim, typename TComponent=float>
+std::ostream& operator<<(std::ostream& os, const Vector<Dim, TComponent>& v)
+{
+    os << std::string("(");
+    os << std::accumulate(std::next(std::begin(v)), std::end(v), std::to_string(v[0]), [](const std::string & s, const TComponent & component) -> std::string {
+        return s + std::string(", ") + std::to_string(component);
+    });
+    os << std::string(")");
+    return os;
+}
 
 } // namespace algebra
 

@@ -36,6 +36,27 @@ public:
         std::copy(std::begin(il), std::end(il), std::begin(nodes));
     }
 
+    inline VectorType normal() const {
+        auto v1 = segment(0).direction();
+        auto v2 = segment(1).direction();
+
+        return v1.cross(v2).unit();
+    }
+
+    inline Segment<VectorType> segment(size_t index) const
+    {
+        size_t i1 = index;
+        size_t i2 = index+1;
+
+        if (i1 >= Dimension)
+            i1 = i1 % Dimension;
+
+        if (i2 >= Dimension)
+            i2 = i2 % Dimension;
+
+        return make_segment(nodes[i1], nodes[i2]);
+    }
+
     template<typename TOtherVector>
     inline bool operator==(const Polygon<NNodes, TOtherVector> & other) const {
         using OtherPointType = typename Polygon<NNodes, TOtherVector>::PointType;

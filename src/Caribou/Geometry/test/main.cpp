@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <Caribou/Geometry/Polygon.h>
+#include <Caribou/Geometry/Triangle.h>
 
 TEST(Geometry, Point) {
     using namespace caribou::geometry;
@@ -103,6 +103,30 @@ TEST(Geometry, Polygon) {
     // Test polygon creation with initializer lists
     auto polygon_4 = make_polygon({{0, 0, 0}, {1, 0, 0}, {0, 1, 0}});
     ASSERT_EQ(polygon_3, polygon_4);
+}
+
+TEST(Geometry, Triangle) {
+    using namespace caribou::geometry;
+    using Point3D = Point3D<>;
+
+    Point3D p1 = {0, 0, 0};
+    Point3D p2 = {1, 0, 0};
+    Point3D p3 = {0, 1, 0};
+
+    // Creates a triangle from 3 points
+    auto t1 = make_triangle(p1, p2, p3);
+
+    // Creates the same triangle with 3 lists initializer
+    auto t2 = make_triangle({0,0,0}, {1,0,0}, {0,1,0});
+
+    // Creates the same triangle with a list initializer of 3 lists initializer
+    auto t3 = make_triangle({{0,0,0}, {1,0,0}, {0,1,0}});
+
+    // Makes sure they are all equals
+    ASSERT_EQ(t1, t2);
+    ASSERT_EQ(t1, t3);
+
+    ASSERT_EQ(t3.normal(), caribou::algebra::Vector<3>(0, 0, 1));
 }
 
 int main(int argc, char **argv) {

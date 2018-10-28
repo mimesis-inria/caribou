@@ -32,6 +32,16 @@ TEST(Geometry, Vector) {
 
     auto sum = v2 + v3;
     ASSERT_EQ(sum, Vector<3>(v2[0]+v3[0], v2[1]+v3[1], v2[2]+v3[2]));
+
+    // Cross product
+    Vector<3> v8 {10, 0, 0};
+    Vector<3> v9 {0, 10, 0};
+    Vector<3> v10 {0, 0, 100};
+    ASSERT_EQ(v8^v9, v10);
+
+    // Unitary vector
+    Vector<3> v11 {0, 0, 1};
+    ASSERT_EQ(v10.unit(), v11);
 }
 
 

@@ -49,6 +49,28 @@ public:
     second_node ()
     { return nodes[1]; }
 
+    /** Get the direction vector (from p1 to p2) **/
+    inline VectorType
+    direction() const
+    {
+        return second_node().coordinates - first_node().coordinates;
+    }
+
+    /** Get the unit vector (aka normalized direction vector)  **/
+    inline VectorType
+    unit() const
+    {
+        VectorType dir = direction();
+        return dir / dir.length();
+    }
+
+    /** Get the reversed segment (from p2 to p1) **/
+    inline Segment<VectorType>
+    reversed() const
+    {
+        return Segment<VectorType>(second_node(), first_node());
+    }
+
     /**
      * Assignment operator from an other segment (this = other;)
      * @tparam TOtherVector The type vector of the other segment
