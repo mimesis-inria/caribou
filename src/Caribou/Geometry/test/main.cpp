@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <Caribou/Geometry/Triangle.h>
+#include <Caribou/Geometry/Hexahedron.h>
 
 TEST(Geometry, Point) {
     using namespace caribou::geometry;
@@ -127,6 +128,20 @@ TEST(Geometry, Triangle) {
     ASSERT_EQ(t1, t3);
 
     ASSERT_EQ(t3.normal(), caribou::algebra::Vector<3>(0, 0, 1));
+}
+
+TEST(Geometry, Hexahedron) {
+    using namespace caribou::geometry;
+    using Point3D = Point3D<>;
+
+    // Constructors test
+    Point3D p1, p2, p3, p4, p5, p6, p7, p8;
+    Hexahedron<8, Point3D::VectorType> hexa_1 ({p1, p2, p3, p4, p5, p6, p7, p8});
+
+    Point3D::VectorType v1, v2, v3, v4, v5, v6, v7, v8;
+    LinearHexahedron<Point3D::VectorType> hexa_2 ({v1, v2, v3, v4, v5, v6, v7, v8});
+
+    ASSERT_EQ(8 * sizeof(p1), sizeof(hexa_1));
 }
 
 int main(int argc, char **argv) {

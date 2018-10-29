@@ -36,6 +36,9 @@ public:
     BasePoint(const BasePoint<Dim, OtherVectorType> & other) : Entity(), coordinates(other.coordinates) {}
 
     template<typename OtherVectorType>
+    BasePoint(const OtherVectorType & coordinates) : Entity(), coordinates(coordinates) {}
+
+    template<typename OtherVectorType>
     inline BasePoint<Dim, TVector>
     &operator=(const BasePoint<Dim, OtherVectorType> & other)
     {
@@ -44,6 +47,14 @@ public:
             return *this;
 
         coordinates = other.coordinates;
+
+        return *this;
+    }
+
+    inline BasePoint<Dim, TVector>
+    &operator=(const TVector & coordinates)
+    {
+        this->coordinates = coordinates;
 
         return *this;
     }
@@ -175,7 +186,6 @@ public:
     Point(ValueType const (&coordinates)[3]) : BasePoint<3, TVector>() {
         Self::coordinates = coordinates;
     }
-
 
     inline const ValueType & x () const { return Self::coordinates[0]; }
     inline ValueType & x () { return Self::coordinates[0]; }
