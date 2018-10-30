@@ -2,6 +2,8 @@
 #define CARIBOU_GEOMETRY_HEXAHEDRON_H
 
 #include <Caribou/Geometry/Point.h>
+#include <Caribou/Geometry/Segment.h>
+#include <Caribou/Geometry/Quad.h>
 
 namespace caribou
 {
@@ -74,22 +76,135 @@ template <typename TVector>
 struct LinearHexahedron : public Hexahedron<8, TVector>
 {
     using Base = Hexahedron<8, TVector>;
-//    using Hexahedron<8, TVector>::Hexahedron; // Import the base constructors
+    using Hexahedron<8, TVector>::Hexahedron; // Import the base constructors
     using VectorType = TVector;
     using PointType = Point<3, VectorType>;
+    using SegmentType = Segment<VectorType>;
+    using FaceType = Quad<VectorType>;
 
-    LinearHexahedron (const std::initializer_list<PointType> & il) : Base(il)
-    {
-    }
+    LinearHexahedron() : Base ({
+       //  {xi, eta, zeta}
+       PointType({-1, -1, -1}), // 0
+       PointType({ 1, -1, -1}), // 1
+       PointType({ 1,  1, -1}), // 2
+       PointType({-1,  1, -1}), // 3
+       PointType({-1, -1,  1}), // 4
+       PointType({ 1, -1,  1}), // 5
+       PointType({ 1,  1,  1}), // 6
+       PointType({-1,  1,  1})  // 7
+    })
+    {}
 
-    LinearHexahedron (const std::initializer_list<VectorType> & il) : Base(il)
-    {
-    }
-
-    /** Get the node at index **/
+    /**
+     * Get the node at index
+     *
+     *
+     *          7----------------6
+     *         /|               /|
+     *        / |              / |
+     *       /  |             /  |
+     *      /   |            /   |
+     *     3----------------2    |
+     *     |    |           |    |
+     *     |    |           |    |
+     *     |    |           |    |
+     *     |    4-----------|----5
+     *     |   /            |   /
+     *     |  /             |  /
+     *     | /              | /
+     *     |/               |/
+     *     0----------------1
+     *
+     */
     PointType node(size_t index) const {
         return Base::nodes[index];
-    }
+    };
+
+    /**
+     * Get the edge at index
+     * 
+     *                   6
+     *                   .
+     *          +----------------+
+     *         /|               /|
+     *   11 ../ |              / |
+     *       /  |  2          /...... 10
+     *      /   |  .         /   |
+     *     +----------------+    |... 5
+     *     | 7..|           |    |
+     *     |    |           |    |
+     *     |    |           |....|.... 1
+     *  3..|    +-----------|----+
+     *     |   /      4     |   /
+     *     |  / 8           | 9/
+     *     | /              | /
+     *     |/        0      |/
+     *     +----------------+
+     *
+     */
+    SegmentType edge(size_t index) const {
+        static constexpr std::array<std::array<unsigned char, 2>, 12> edges {{
+            {0, 1}, // 0
+            {1, 2}, // 1
+            {2, 3}, // 2
+            {3, 0}, // 3
+            {4, 5}, // 4
+            {5, 6}, // 5
+            {6, 7}, // 6
+            {7, 4}, // 7
+            {0, 4}, // 8
+            {1, 5}, // 9
+            {2, 6}, // 10
+            {3, 7}, // 11
+        }};
+
+        return SegmentType (
+                Base::nodes[edges[index][0]],
+                Base::nodes[edges[index][1]]
+        );
+    };
+
+    /**
+     * Get the face at index
+     *                          2
+     *                         .
+     *          +----------------+
+     *         /|     5         /|
+     *        / |     .        / |
+     *       /  |     .       /  |
+     *      /   |            /   |
+     *     +----------------+    |
+     *     |    |           |    |
+     *     |    |           |  .......... 3
+     * 1...|.   |           |    |
+     *     |    +-----------|----+
+     *     |   /      ................... 0
+     *     |  /             |  /
+     *     | /              | /
+     *     |/               |/
+     *     +----------------+
+     *               .
+     *               .
+     *               4
+     */
+    FaceType face(size_t index) const {
+        static const std::array<std::array<NodeId, 4>, 6> nodes_of_face = {{
+            {0, 1, 2, 3}, // 0 ; Edges = {0, 1, 2, 3,}
+            {3, 7, 4, 0}, // 1 ; Edges = {11, 7, 8, 3}
+            {7, 6, 5, 4}, // 2 ; Edges = {6, 5, 4, 7}
+            {5, 6, 2, 1}, // 3 ; Edges = {5, 10, 1, 9}
+            {5, 1, 0, 4}, // 4 ; Edges = {9, 0, 8, 4}
+            {2, 6, 7, 3}, // 5 ; Edges = {10, 6, 11, 2}
+        }};
+
+        return FaceType (
+                Base::nodes[nodes_of_face[index][0]],
+                Base::nodes[nodes_of_face[index][1]],
+                Base::nodes[nodes_of_face[index][2]],
+                Base::nodes[nodes_of_face[index][3]]
+        );
+    };
+
 };
 
 /**

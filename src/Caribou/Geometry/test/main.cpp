@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <Caribou/Geometry/Triangle.h>
+#include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Hexahedron.h>
 
 TEST(Geometry, Point) {
@@ -130,6 +131,31 @@ TEST(Geometry, Triangle) {
     ASSERT_EQ(t3.normal(), caribou::algebra::Vector<3>(0, 0, 1));
 }
 
+TEST(Geometry, Quad) {
+    using namespace caribou::geometry;
+    using Point3D = Point3D<>;
+
+    Point3D p1 = {1, -1, 0};
+    Point3D p2 = {-1, -1, 0};
+    Point3D p3 = {1, 1, 0};
+    Point3D p4 = {-1, 1, 0};
+
+    // Creates a quad from 4 points
+    auto q1 = make_quad(p1, p2, p3, p4);
+
+    // Creates the same quad with 3 lists initializer
+    auto q2 = make_quad({1, -1, 0}, {-1, -1, 0}, {1, 1, 0}, {-1, 1, 0});
+
+    // Creates the same quad with a list initializer of 4 lists initializer
+    auto q3 = make_quad({ {1, -1, 0}, {-1, -1, 0}, {1, 1, 0}, {-1, 1, 0} });
+
+    // Makes sure they are all equals
+    ASSERT_EQ(q1, q2);
+    ASSERT_EQ(q1, q3);
+
+    ASSERT_EQ(q3.normal(), caribou::algebra::Vector<3>(0, 0, -1));
+}
+
 TEST(Geometry, Hexahedron) {
     using namespace caribou::geometry;
     using Point3D = Point3D<>;
@@ -139,9 +165,15 @@ TEST(Geometry, Hexahedron) {
     Hexahedron<8, Point3D::VectorType> hexa_1 ({p1, p2, p3, p4, p5, p6, p7, p8});
 
     Point3D::VectorType v1, v2, v3, v4, v5, v6, v7, v8;
-    LinearHexahedron<Point3D::VectorType> hexa_2 ({v1, v2, v3, v4, v5, v6, v7, v8});
+    RegularLinearHexahedron<Point3D::VectorType> hexa_2 ({v1, v2, v3, v4, v5, v6, v7, v8});
 
+    // Make sure a hexahedron does not take anymore space than 8 nodes
     ASSERT_EQ(8 * sizeof(p1), sizeof(hexa_1));
+
+    // Create a base hexahedron by using the base constructor without any arguments
+    RegularLinearHexahedron<Point3D::VectorType> base_hexa;
+    auto edge_0 = base_hexa.edge(0);
+    ASSERT_EQ(2, edge_0.length());
 }
 
 int main(int argc, char **argv) {
