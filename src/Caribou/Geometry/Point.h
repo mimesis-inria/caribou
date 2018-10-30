@@ -37,6 +37,18 @@ public:
     template<typename OtherVectorType>
     BasePoint(const OtherVectorType & coordinates) : coordinates(coordinates) {}
 
+    inline BasePoint<Dimension, VectorType>
+    scale(caribou::algebra::Vector<Dimension, float> s) const
+    {
+        VectorType scaled_coordinates;
+        for (size_t i = 0; i < Dimension; ++i) {
+            scaled_coordinates[i] = coordinates[i] * s[i];
+        }
+
+        return BasePoint<Dimension, VectorType>(scaled_coordinates);
+
+    }
+
     template<typename OtherVectorType>
     inline BasePoint<Dim, TVector>
     &operator=(const BasePoint<Dim, OtherVectorType> & other)

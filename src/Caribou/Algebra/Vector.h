@@ -91,13 +91,13 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Comparison operator with a vector of a same dimension and with component data type of OtherComponentType **/
     template<typename OtherComponentType>
-    inline bool
+    constexpr bool
     operator==(const Vector<Dimension, OtherComponentType> & other) const
     { return std::equal(this->begin(), this->end(), other.begin()); }
 
     /** Alias for inner_product **/
     template <size_t OtherDimension, typename OtherComponentType=float>
-    ComponentType
+    constexpr ComponentType
     operator*(const Vector<OtherDimension, OtherComponentType> & other) const
     {
         static_assert(Dimension == OtherDimension, "The inner product cannot be computed on vectors of different size.");
@@ -106,7 +106,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for cross_product **/
     template <typename OtherComponentType=float>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     operator^(const Vector<Dimension, OtherComponentType> & other) const
     {
         static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
@@ -116,7 +116,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for scalar_multiplication **/
     template <class TScalar>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     operator*(const TScalar & scalar) const
     {
         return scalar_multiplication(scalar);
@@ -124,7 +124,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for scalar_division **/
     template <class TScalar>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     operator/(const TScalar & scalar) const
     {
         return scalar_division(scalar);
@@ -132,7 +132,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for direct_sum **/
     template <size_t OtherDimension, typename OtherComponentType=float>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     operator+(const Vector<OtherDimension, OtherComponentType> & other) const
     {
         return direct_sum(other);
@@ -140,7 +140,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for direct_sub **/
     template <size_t OtherDimension, typename OtherComponentType=float>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     operator-(const Vector<OtherDimension, OtherComponentType> & other) const
     {
         return direct_sub(other);
@@ -154,7 +154,7 @@ struct Vector : public std::array<TComponent, Dim>
      * Compute the inner product with another vector (aliases are dot, scalar_product and operator*).
      */
     template <typename OtherComponentType=float>
-    ComponentType
+    constexpr ComponentType
     inner_product(const Vector<Dimension, OtherComponentType> & other) const
     {
         return std::inner_product(std::begin(other), std::end(other), std::begin(*this), (TComponent) 0);
@@ -162,7 +162,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for inner_product **/
     template <typename OtherComponentType=float>
-    ComponentType
+    constexpr ComponentType
     dot(const Vector<Dimension, OtherComponentType> & other) const
     {
         return inner_product(other);
@@ -170,7 +170,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for inner_product **/
     template <typename OtherComponentType=float>
-    ComponentType
+    constexpr ComponentType
     scalar_product(const Vector<Dimension, OtherComponentType> & other) const
     {
         return inner_product(other);
@@ -180,7 +180,7 @@ struct Vector : public std::array<TComponent, Dim>
      * Compute the cross product with another vector.
      */
     template <typename OtherComponentType=float>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     cross_product(const Vector<Dimension, OtherComponentType> & other) const
     {
         static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
@@ -197,7 +197,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for cross_product **/
     template <typename OtherComponentType=float>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     cross(const Vector<Dimension, OtherComponentType> & other) const
     {
         return cross_product(other);
@@ -208,7 +208,7 @@ struct Vector : public std::array<TComponent, Dim>
      * @return The resulting vector
      */
     template <typename OtherComponentType=float>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     direct_sum(const Vector<Dimension, OtherComponentType> & other) const
     {
         Vector<Dimension, ComponentType> result(false);
@@ -221,7 +221,7 @@ struct Vector : public std::array<TComponent, Dim>
      * @return The resulting vector
      */
     template <typename OtherComponentType=float>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     direct_sub(const Vector<Dimension, OtherComponentType> & other) const
     {
         Vector<Dimension, ComponentType> result(false);
@@ -236,7 +236,7 @@ struct Vector : public std::array<TComponent, Dim>
      * @return The resulting vector
      */
     template <class TScalar>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     scalar_multiplication(const TScalar & scalar) const
     {
         Vector<Dimension, ComponentType> result(false);
@@ -253,7 +253,7 @@ struct Vector : public std::array<TComponent, Dim>
     * @return The resulting vector
     */
     template <class TScalar>
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     scalar_division(const TScalar & scalar) const
     {
         Vector<Dimension, ComponentType> result(false);
@@ -269,14 +269,14 @@ struct Vector : public std::array<TComponent, Dim>
     /////////////////////////////////
 
     /** Compute the length of the vector. **/
-    ComponentType
+    constexpr ComponentType
     length() const
     {
         return sqrt((*this).dot(*this));
     };
 
     /** Get the unit vector (current vector normalized to unit length) **/
-    Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ComponentType>
     unit() const
     {
         return (*this)/length();

@@ -24,6 +24,7 @@ struct Hexahedron
 
     using VectorType = TVector;
     using PointType = Point<3, VectorType>;
+    using ComponentType = typename VectorType::ComponentType;
 
     static_assert(NumberOfNodes >= 8, "A hexahedron must have at least eight nodes.");
 
@@ -55,6 +56,23 @@ struct Hexahedron
             nodes[i][1] = (*v)[1];
             nodes[i][2] = (*v)[2];
         }
+    }
+
+    /** Copy constructor **/
+    explicit Hexahedron (const Hexahedron<NumberOfNodes, VectorType> & other) {
+        std::copy(std::begin(other.nodes), std::end(other.nodes), std::begin(nodes));
+    }
+
+    /** Scale the hexahedron by s (sx, sy, sz) from the origin **/
+    Hexahedron<NumberOfNodes, VectorType>
+    inline scale(VectorType s) const
+    {
+        std::array<PointType, NumberOfNodes> scaled_nodes;
+        for (size_t i = 0; i < NumberOfNodes; ++i) {
+            scaled_nodes[i] = nodes[i].scale(s);
+        }
+
+        return scaled_nodes;
     }
 
 protected:
@@ -123,21 +141,21 @@ struct LinearHexahedron : public Hexahedron<8, TVector>
     /**
      * Get the edge at index
      * 
-     *                   6
-     *                   .
-     *          +----------------+
+     *      7            6
+     *       .           .
+     *        . +----------------+
      *         /|               /|
-     *   11 ../ |              / |
-     *       /  |  2          /...... 10
+     * 11 ..../ |              / |
+     *       /  |  2          /....... 10
      *      /   |  .         /   |
-     *     +----------------+    |... 5
-     *     | 7..|           |    |
+     *     +----------------+    |.... 5
      *     |    |           |    |
-     *     |    |           |....|.... 1
-     *  3..|    +-----------|----+
+     *     |    |           |    |
+     *     |    |           |......... 1
+     * 3 ..|    +-----------|----+
      *     |   /      4     |   /
-     *     |  / 8           | 9/
-     *     | /              | /
+     *     |  /             |  /...... 9
+     * 8 ..../              | /
      *     |/        0      |/
      *     +----------------+
      *
@@ -176,7 +194,7 @@ struct LinearHexahedron : public Hexahedron<8, TVector>
      *     +----------------+    |
      *     |    |           |    |
      *     |    |           |  .......... 3
-     * 1...|.   |           |    |
+     * 1...|    |           |    |
      *     |    +-----------|----+
      *     |   /      ................... 0
      *     |  /             |  /
@@ -188,7 +206,7 @@ struct LinearHexahedron : public Hexahedron<8, TVector>
      *               4
      */
     FaceType face(size_t index) const {
-        static const std::array<std::array<NodeId, 4>, 6> nodes_of_face = {{
+        static const std::array<std::array<unsigned char, 4>, 6> nodes_of_face = {{
             {0, 1, 2, 3}, // 0 ; Edges = {0, 1, 2, 3,}
             {3, 7, 4, 0}, // 1 ; Edges = {11, 7, 8, 3}
             {7, 6, 5, 4}, // 2 ; Edges = {6, 5, 4, 7}
@@ -197,14 +215,13 @@ struct LinearHexahedron : public Hexahedron<8, TVector>
             {2, 6, 7, 3}, // 5 ; Edges = {10, 6, 11, 2}
         }};
 
-        return FaceType (
+        return FaceType {
                 Base::nodes[nodes_of_face[index][0]],
                 Base::nodes[nodes_of_face[index][1]],
                 Base::nodes[nodes_of_face[index][2]],
                 Base::nodes[nodes_of_face[index][3]]
-        );
+         };
     };
-
 };
 
 /**

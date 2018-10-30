@@ -174,6 +174,9 @@ TEST(Geometry, Hexahedron) {
     RegularLinearHexahedron<Point3D::VectorType> base_hexa;
     auto edge_0 = base_hexa.edge(0);
     ASSERT_EQ(2, edge_0.length());
+
+    auto face_0 = base_hexa.face(0);
+    ASSERT_EQ(Point3D::VectorType(0, 0, 1), face_0.normal());
 }
 
 int main(int argc, char **argv) {

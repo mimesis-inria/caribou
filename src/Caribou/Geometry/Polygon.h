@@ -18,7 +18,6 @@ class Polygon
 {
 public:
     static constexpr size_t Dimension = TVector::Dimension;
-    static constexpr size_t NumberOfSegments = NNodes;
     static constexpr size_t NumberOfNodes = NNodes;
 
     using VectorType = TVector;
