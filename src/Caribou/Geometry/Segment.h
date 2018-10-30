@@ -1,8 +1,6 @@
 #ifndef CARIBOU_GEOMETRY_SEGMENT_H
 #define CARIBOU_GEOMETRY_SEGMENT_H
 
-
-#include <Caribou/Geometry/Entity.h>
 #include <Caribou/Geometry/Point.h>
 
 namespace caribou
@@ -15,7 +13,7 @@ namespace geometry
  * @tparam TPoint The type of Point we want to use for our segment
  */
 template<class TVector>
-class Segment : public Entity
+class Segment
 {
 public:
     static constexpr int Dimension = TVector::Dimension;
@@ -24,8 +22,8 @@ public:
     using PointType = Point<Dimension, VectorType>;
 
     Segment() = default;
-    Segment(const PointType & p1, const PointType & p2) : Entity() , nodes({p1, p2}){};
-    Segment(const Segment & s) : Entity() {
+    Segment(const PointType & p1, const PointType & p2) : nodes({p1, p2}){};
+    Segment(const Segment & s) {
         std::copy(std::begin(s.nodes), std::end(s.nodes), std::begin(nodes));
     }
 
@@ -69,6 +67,12 @@ public:
     reversed() const
     {
         return Segment<VectorType>(second_node(), first_node());
+    }
+
+    inline typename VectorType::ComponentType
+    length() const
+    {
+        return direction().length();
     }
 
     /**

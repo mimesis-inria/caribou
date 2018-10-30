@@ -15,7 +15,7 @@ namespace geometry
  * type (regular or non-regular).
  */
 template <size_t NNodes, typename TVector>
-struct Hexahedron : public Entity
+struct Hexahedron
 {
 
     static constexpr size_t NumberOfNodes = NNodes;
@@ -39,12 +39,12 @@ struct Hexahedron : public Entity
      * \endcode
      *
      */
-    Hexahedron (const std::initializer_list<PointType> & il) : Entity()
+    Hexahedron (const std::initializer_list<PointType> & il)
     {
         std::copy(std::begin(il), std::end(il), std::begin(nodes));
     }
 
-    Hexahedron (const std::initializer_list<VectorType> & il) : Entity()
+    Hexahedron (const std::initializer_list<VectorType> & il)
     {
         auto v = std::begin(il);
         size_t i = 0;

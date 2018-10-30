@@ -1,7 +1,6 @@
 #ifndef CARIBOU_GEOMETRY_POINT_H
 #define CARIBOU_GEOMETRY_POINT_H
 
-#include <Caribou/Geometry/Entity.h>
 #include <Caribou/Algebra/Vector.h>
 #include <cassert>
 #include <numeric>
@@ -21,7 +20,7 @@ namespace geometry
  * @tparam TVector Type of the vector position. Default to caribou::algebra::Vector<Dim>>
  */
 template<size_t Dim, typename TVector = caribou::algebra::Vector<Dim>>
-class BasePoint : public Entity
+class BasePoint
 {
 public:
     using VectorType = TVector;
@@ -30,13 +29,13 @@ public:
     BasePoint() = default;
 
     template <typename ValueType>
-    BasePoint(std::initializer_list<ValueType> il) : Entity() , coordinates(il) {}
+    BasePoint(std::initializer_list<ValueType> il) : coordinates(il) {}
 
     template<typename OtherVectorType>
-    BasePoint(const BasePoint<Dim, OtherVectorType> & other) : Entity(), coordinates(other.coordinates) {}
+    BasePoint(const BasePoint<Dim, OtherVectorType> & other) : coordinates(other.coordinates) {}
 
     template<typename OtherVectorType>
-    BasePoint(const OtherVectorType & coordinates) : Entity(), coordinates(coordinates) {}
+    BasePoint(const OtherVectorType & coordinates) : coordinates(coordinates) {}
 
     template<typename OtherVectorType>
     inline BasePoint<Dim, TVector>

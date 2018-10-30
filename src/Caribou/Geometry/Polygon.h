@@ -2,7 +2,6 @@
 #define CARIBOU_GEOMETRY_POLYGON_H
 #include <cassert>
 
-#include <Caribou/Geometry/Entity.h>
 #include <Caribou/Geometry/Point.h>
 #include <Caribou/Geometry/Segment.h>
 
@@ -15,7 +14,7 @@ namespace geometry
  * A polygon (of n nodes) in space (independent of the space dimension).
  */
 template<size_t NNodes, typename TVector>
-class Polygon : public Entity
+class Polygon
 {
 public:
     static constexpr size_t Dimension = TVector::Dimension;
@@ -30,9 +29,9 @@ public:
 
     Polygon() = default;
 
-    Polygon(PointType const (&n)[NumberOfNodes]) : Entity(), nodes(n) {}
-    Polygon(const std::array<PointType, NumberOfNodes> & n) : Entity(), nodes(n) {}
-    Polygon(const std::initializer_list<PointType > & il) : Entity() {
+    Polygon(PointType const (&n)[NumberOfNodes]) : nodes(n) {}
+    Polygon(const std::array<PointType, NumberOfNodes> & n) : nodes(n) {}
+    Polygon(const std::initializer_list<PointType > & il) {
         std::copy(std::begin(il), std::end(il), std::begin(nodes));
     }
 

@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.1)
 project(Geometry)
 
 set(HEADER_FILES
-        Entity.h
         Point.h
         )
 
