@@ -9,8 +9,8 @@ namespace geometry
 {
 
 /** A triangle is an alias to a polygon of three nodes. **/
-template<typename VectorType>
-using Triangle = Polygon<3, VectorType>;
+template<size_t Dimension>
+using Triangle = Polygon<3, Dimension>;
 
 /**
  * Create a triangle from three points.
@@ -25,8 +25,9 @@ using Triangle = Polygon<3, VectorType>;
  * \endcode
  * @return
  */
-template<typename TPoint>
-Triangle<typename TPoint::VectorType> make_triangle(const TPoint & p1, const TPoint & p2, const TPoint & p3) {
+template<size_t Dimension>
+Triangle<Dimension>
+make_triangle(const Point<Dimension> & p1, const Point<Dimension> & p2, const Point<Dimension> & p3) {
     return make_polygon(p1, p2, p3);
 }
 
@@ -42,7 +43,8 @@ Triangle<typename TPoint::VectorType> make_triangle(const TPoint & p1, const TPo
  * @return
  */
 template<size_t Dimension, typename ValueType>
-auto make_triangle(ValueType const (&arg)[3][Dimension])
+auto
+make_triangle(ValueType const (&arg)[3][Dimension])
 {
     return make_polygon(arg);
 }
@@ -59,7 +61,8 @@ auto make_triangle(ValueType const (&arg)[3][Dimension])
  * @return
  */
 template<size_t Dimension, typename ValueType>
-auto make_triangle(const ValueType (&arg1)[Dimension], const ValueType (&arg2)[Dimension], const ValueType (&arg3)[Dimension])
+auto
+make_triangle(const ValueType (&arg1)[Dimension], const ValueType (&arg2)[Dimension], const ValueType (&arg3)[Dimension])
 {
     ValueType nodes[3][Dimension];
 

@@ -1,12 +1,19 @@
 #ifndef CARIBOU_ALGEBRA_VECTOR_H
 #define CARIBOU_ALGEBRA_VECTOR_H
 
+#include <ostream>
 #include <cstddef>
 #include <array>
 #include <initializer_list>
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+
+#ifdef CARIBOU_USE_DOUBLE
+#define FLOATING_POINT_TYPE double
+#else
+#define FLOATING_POINT_TYPE float
+#endif
 
 namespace caribou
 {
@@ -21,13 +28,13 @@ namespace algebra
  *
  *
  * @tparam Dim The dimension of the vector
- * @tparam TComponent The data type of the vector's components (default to float)
+ * @tparam TValueType The data type of the vector's components (default to float)
  */
-template <size_t Dim, typename TComponent=float>
-struct Vector : public std::array<TComponent, Dim>
+template <size_t Dim, typename TValueType=FLOATING_POINT_TYPE>
+struct Vector : public std::array<TValueType, Dim>
 {
     static constexpr size_t Dimension = Dim;
-    using ComponentType = TComponent;
+    using ValueType = TValueType;
 
     //////////////////////
     //// Constructors ////
@@ -47,18 +54,31 @@ struct Vector : public std::array<TComponent, Dim>
     /**
      * Constructor by a list initializer (ex. Vector<3> A {0, 100, 0}).
      */
-    Vector(std::initializer_list<ComponentType> il) {
+    template <typename OtherValueType>
+    Vector(std::initializer_list<OtherValueType> il) {
         std::copy(il.begin(), il.end(), this->begin());
     }
 
     /**
      * Constructor by c-array or initializer list
      */
-    Vector(ComponentType const (&components)[Dimension]) {
+    template <typename OtherValueType>
+    Vector(OtherValueType const (&components)[Dimension]) {
         for (size_t i = 0; i < Dimension; ++i) {
-            (*this)[i] = components[i];
+            (*this)[i] = static_cast<ValueType>(components[i]);
         }
-    }
+    };
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherValueType>
+    Vector(const Vector<Dimension, OtherValueType> & other)
+    {
+         for (size_t i = 0; i < Dimension; ++i) {
+             (*this)[i] = static_cast<ValueType> (other[i]);
+         }
+    };
 
     /**
      * Constructor by variadic arguments.
@@ -80,7 +100,7 @@ struct Vector : public std::array<TComponent, Dim>
      * will have its coordinates as char values, and not as float values.
      */
     template<typename... Args>
-    Vector(ComponentType first_component, Args&&... other_components)
+    Vector(ValueType first_component, Args&&... other_components)
     {
         recursive_set<0> (first_component, std::forward<Args>(other_components)...);
     }
@@ -89,25 +109,24 @@ struct Vector : public std::array<TComponent, Dim>
     //// Operators ////
     ///////////////////
 
-    /** Comparison operator with a vector of a same dimension and with component data type of OtherComponentType **/
-    template<typename OtherComponentType>
+    /** Comparison operator with a vector of a same dimension and with component data type of OtherValueType **/
+    template<typename OtherValueType>
     constexpr bool
-    operator==(const Vector<Dimension, OtherComponentType> & other) const
+    operator==(const Vector<Dimension, OtherValueType> & other) const
     { return std::equal(this->begin(), this->end(), other.begin()); }
 
     /** Alias for inner_product **/
-    template <size_t OtherDimension, typename OtherComponentType=float>
-    constexpr ComponentType
-    operator*(const Vector<OtherDimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr ValueType
+    operator*(const Vector<Dimension, OtherValueType> & other) const
     {
-        static_assert(Dimension == OtherDimension, "The inner product cannot be computed on vectors of different size.");
         return inner_product(other);
     }
 
     /** Alias for cross_product **/
-    template <typename OtherComponentType=float>
-    constexpr Vector<Dimension, ComponentType>
-    operator^(const Vector<Dimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr Vector<Dimension, ValueType>
+    operator^(const Vector<Dimension, OtherValueType> & other) const
     {
         static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
 
@@ -116,7 +135,7 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for scalar_multiplication **/
     template <class TScalar>
-    constexpr Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ValueType>
     operator*(const TScalar & scalar) const
     {
         return scalar_multiplication(scalar);
@@ -124,24 +143,24 @@ struct Vector : public std::array<TComponent, Dim>
 
     /** Alias for scalar_division **/
     template <class TScalar>
-    constexpr Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ValueType>
     operator/(const TScalar & scalar) const
     {
         return scalar_division(scalar);
     }
 
     /** Alias for direct_sum **/
-    template <size_t OtherDimension, typename OtherComponentType=float>
-    constexpr Vector<Dimension, ComponentType>
-    operator+(const Vector<OtherDimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr Vector<Dimension, ValueType>
+    operator+(const Vector<Dimension, OtherValueType> & other) const
     {
         return direct_sum(other);
     }
 
     /** Alias for direct_sub **/
-    template <size_t OtherDimension, typename OtherComponentType=float>
-    constexpr Vector<Dimension, ComponentType>
-    operator-(const Vector<OtherDimension, OtherComponentType> & other) const
+    template <typename OtherValueType=float>
+    constexpr Vector<Dimension, ValueType>
+    operator-(const Vector<Dimension, OtherValueType> & other) const
     {
         return direct_sub(other);
     }
@@ -153,25 +172,25 @@ struct Vector : public std::array<TComponent, Dim>
     /**
      * Compute the inner product with another vector (aliases are dot, scalar_product and operator*).
      */
-    template <typename OtherComponentType=float>
-    constexpr ComponentType
-    inner_product(const Vector<Dimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr ValueType
+    inner_product(const Vector<Dimension, OtherValueType> & other) const
     {
-        return std::inner_product(std::begin(other), std::end(other), std::begin(*this), (TComponent) 0);
+        return std::inner_product(std::begin(other), std::end(other), std::begin(*this), (ValueType) 0);
     }
 
     /** Alias for inner_product **/
-    template <typename OtherComponentType=float>
-    constexpr ComponentType
-    dot(const Vector<Dimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr ValueType
+    dot(const Vector<Dimension, OtherValueType> & other) const
     {
         return inner_product(other);
     }
 
     /** Alias for inner_product **/
-    template <typename OtherComponentType=float>
-    constexpr ComponentType
-    scalar_product(const Vector<Dimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr ValueType
+    scalar_product(const Vector<Dimension, OtherValueType> & other) const
     {
         return inner_product(other);
     }
@@ -179,9 +198,9 @@ struct Vector : public std::array<TComponent, Dim>
     /**
      * Compute the cross product with another vector.
      */
-    template <typename OtherComponentType=float>
-    constexpr Vector<Dimension, ComponentType>
-    cross_product(const Vector<Dimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr Vector<Dimension, ValueType>
+    cross_product(const Vector<Dimension, OtherValueType> & other) const
     {
         static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
 
@@ -196,9 +215,9 @@ struct Vector : public std::array<TComponent, Dim>
     };
 
     /** Alias for cross_product **/
-    template <typename OtherComponentType=float>
-    constexpr Vector<Dimension, ComponentType>
-    cross(const Vector<Dimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr Vector<Dimension, ValueType>
+    cross(const Vector<Dimension, OtherValueType> & other) const
     {
         return cross_product(other);
     };
@@ -207,12 +226,12 @@ struct Vector : public std::array<TComponent, Dim>
      * Compute the direct sum with another vector (sum between each scalar components).
      * @return The resulting vector
      */
-    template <typename OtherComponentType=float>
-    constexpr Vector<Dimension, ComponentType>
-    direct_sum(const Vector<Dimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr Vector<Dimension, ValueType>
+    direct_sum(const Vector<Dimension, OtherValueType> & other) const
     {
-        Vector<Dimension, ComponentType> result(false);
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::plus<ComponentType >());
+        Vector<Dimension, ValueType> result(false);
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::plus<ValueType >());
         return result;
     }
 
@@ -220,12 +239,12 @@ struct Vector : public std::array<TComponent, Dim>
      * Compute the direct sub with another vector (subtraction between each scalar components).
      * @return The resulting vector
      */
-    template <typename OtherComponentType=float>
-    constexpr Vector<Dimension, ComponentType>
-    direct_sub(const Vector<Dimension, OtherComponentType> & other) const
+    template <typename OtherValueType>
+    constexpr Vector<Dimension, ValueType>
+    direct_sub(const Vector<Dimension, OtherValueType> & other) const
     {
-        Vector<Dimension, ComponentType> result(false);
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ComponentType >());
+        Vector<Dimension, ValueType> result(false);
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ValueType >());
         return result;
     }
 
@@ -236,11 +255,11 @@ struct Vector : public std::array<TComponent, Dim>
      * @return The resulting vector
      */
     template <class TScalar>
-    constexpr Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ValueType>
     scalar_multiplication(const TScalar & scalar) const
     {
-        Vector<Dimension, ComponentType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ComponentType & component) {
+        Vector<Dimension, ValueType> result(false);
+        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
             return component*scalar;
         });
         return result;
@@ -253,11 +272,11 @@ struct Vector : public std::array<TComponent, Dim>
     * @return The resulting vector
     */
     template <class TScalar>
-    constexpr Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ValueType>
     scalar_division(const TScalar & scalar) const
     {
-        Vector<Dimension, ComponentType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ComponentType & component) {
+        Vector<Dimension, ValueType> result(false);
+        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
             return component/scalar;
         });
         return result;
@@ -269,14 +288,14 @@ struct Vector : public std::array<TComponent, Dim>
     /////////////////////////////////
 
     /** Compute the length of the vector. **/
-    constexpr ComponentType
+    constexpr ValueType
     length() const
     {
         return sqrt((*this).dot(*this));
     };
 
     /** Get the unit vector (current vector normalized to unit length) **/
-    constexpr Vector<Dimension, ComponentType>
+    constexpr Vector<Dimension, ValueType>
     unit() const
     {
         return (*this)/length();
@@ -285,13 +304,13 @@ struct Vector : public std::array<TComponent, Dim>
 
 private:
     template<size_t current_index, typename... Args>
-    void recursive_set(ComponentType component, Args&&... other_components) {
+    void recursive_set(ValueType component, Args&&... other_components) {
         (*this)[current_index] = component;
         recursive_set<current_index+1>(std::forward<Args>(other_components)...);
     }
 
     template<size_t current_index>
-    void recursive_set(ComponentType component) {
+    void recursive_set(ValueType component) {
         (*this)[current_index] = component;
     }
 };

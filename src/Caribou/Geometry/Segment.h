@@ -12,14 +12,14 @@ namespace geometry
  * A segment (between 2 nodes) in space (independent of the space dimension).
  * @tparam TPoint The type of Point we want to use for our segment
  */
-template<class TVector>
+template <size_t Dim>
 class Segment
 {
 public:
-    static constexpr int Dimension = TVector::Dimension;
+    static constexpr size_t Dimension = Dim;
 
-    using VectorType = TVector;
-    using PointType = Point<Dimension, VectorType>;
+    using PointType = Point<Dimension>;
+    using VectorType = typename PointType::VectorType ;
 
     Segment() = default;
     Segment(const PointType & p1, const PointType & p2) : nodes({p1, p2}){};
@@ -63,13 +63,13 @@ public:
     }
 
     /** Get the reversed segment (from p2 to p1) **/
-    inline Segment<VectorType>
+    inline Segment<Dimension>
     reversed() const
     {
-        return Segment<VectorType>(second_node(), first_node());
+        return Segment<Dimension>(second_node(), first_node());
     }
 
-    inline typename VectorType::ComponentType
+    inline typename VectorType::ValueType
     length() const
     {
         return direction().length();
@@ -77,13 +77,11 @@ public:
 
     /**
      * Assignment operator from an other segment (this = other;)
-     * @tparam TOtherVector The type vector of the other segment
      * @param other The other segment from which data we want to copy inside this one
      * @return This segment
      */
-    template<class TOtherVector>
-    inline Segment<PointType>
-    &operator=(const Segment<TOtherVector> & other)
+    inline Segment &
+    operator=(const Segment<Dimension> & other)
     {
         // check for self-assignment
         if(&other == this)
@@ -96,13 +94,11 @@ public:
 
     /**
      * Equality operator (this == other)
-     * @tparam TOtherVector The type vector of the other segment
      * @param other The other segment against who we want to compare ourself
      * @return True if other is equal to this segment, false otherwise
      */
-    template<class TOtherVector>
     inline bool
-    operator==(const Segment<TOtherVector> & other) const
+    operator==(const Segment & other) const
     {
         return (
                 std::equal(std::begin(nodes), std::end(nodes), std::begin(other.nodes))
@@ -112,9 +108,8 @@ public:
     /**
      * see operator==
      */
-    template<class TOtherVector>
     inline bool
-    operator!=(const Segment<TOtherVector>& other) const
+    operator!=(const Segment & other) const
     {
         return not (*this == other);
     }
@@ -146,35 +141,34 @@ public:
 };
 
 /**
- * Tool function to create a new segment between two points.
+ * Create a new segment between two points.
  *
  * Example:
  *
  * \code{.cpp}
- * // Create a segment between 2 points
  * auto p1 = make_point(0,0,0)
  * auto p2 = make_point(1,1,1)
  *
  * auto s1 = make_segment(p1, p2)
  * \endcode
  *
- * @tparam TVector The vector type we want to use for our segment's point coordinates. It is usually automatically deducted from the parameters.
- * @param p1 Coordinates of the first node of the segment
- * @param p2 Coordinates of the second node of the segment
+ * @tparam Dim The dimension of the point
+ * @param p1 First node of the segment
+ * @param p2 Second node of the segment
  *
  * @return A newly created segment between p1 and p2
  */
-template<typename TPoint>
-Segment<typename TPoint::VectorType> make_segment(const TPoint & p1, const TPoint & p2) {
-    return Segment<typename TPoint::VectorType>(p1, p2);
+template <size_t Dim>
+Segment<Dim> make_segment(const Point<Dim> & p1, const Point<Dim> & p2) {
+    return Segment<Dim>(p1, p2);
 }
 
 template<size_t N, typename ValueType>
-Segment<caribou::algebra::Vector<N, ValueType>>
+Segment<N>
 make_segment(ValueType const (&a1)[N], ValueType const (&a2)[N])
 {
-    Point <N, caribou::algebra::Vector<N, ValueType>> p1(a1);
-    Point <N, caribou::algebra::Vector<N, ValueType>> p2(a2);
+    Point <N> p1(a1);
+    Point <N> p2(a2);
 
     return make_segment(p1, p2);
 }

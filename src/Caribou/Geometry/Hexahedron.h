@@ -16,15 +16,16 @@ namespace geometry
  * This class will be overloaded with the number of nodes (8-nodes linear, 20-nodes quadratic, etc.) and the
  * type (regular or non-regular).
  */
-template <size_t NNodes, typename TVector>
+template <size_t NNodes>
 struct Hexahedron
 {
 
     static constexpr size_t NumberOfNodes = NNodes;
 
-    using VectorType = TVector;
-    using PointType = Point<3, VectorType>;
-    using ComponentType = typename VectorType::ComponentType;
+    using PointType = Point<3>;
+    using VectorType = typename PointType::VectorType;
+    using ValueType = typename VectorType::ValueType;
+    using SegmentType = Segment<3>;
 
     static_assert(NumberOfNodes >= 8, "A hexahedron must have at least eight nodes.");
 
@@ -59,12 +60,12 @@ struct Hexahedron
     }
 
     /** Copy constructor **/
-    explicit Hexahedron (const Hexahedron<NumberOfNodes, VectorType> & other) {
+    explicit Hexahedron (const Hexahedron<NumberOfNodes> & other) {
         std::copy(std::begin(other.nodes), std::end(other.nodes), std::begin(nodes));
     }
 
     /** Scale the hexahedron by s (sx, sy, sz) from the origin **/
-    Hexahedron<NumberOfNodes, VectorType>
+    Hexahedron<NumberOfNodes>
     inline scale(VectorType s) const
     {
         std::array<PointType, NumberOfNodes> scaled_nodes;
@@ -90,15 +91,14 @@ protected:
  */
 
 
-template <typename TVector>
-struct LinearHexahedron : public Hexahedron<8, TVector>
+struct LinearHexahedron : public Hexahedron<8>
 {
-    using Base = Hexahedron<8, TVector>;
-    using Hexahedron<8, TVector>::Hexahedron; // Import the base constructors
-    using VectorType = TVector;
-    using PointType = Point<3, VectorType>;
-    using SegmentType = Segment<VectorType>;
-    using FaceType = Quad<VectorType>;
+    using Base = Hexahedron<8>;
+    using Hexahedron<8>::Hexahedron; // Import the base constructors
+    using VectorType = typename Base::VectorType;
+    using PointType = typename Base::PointType;
+    using SegmentType = typename Base::SegmentType;
+    using FaceType = Quad<3>;
 
     LinearHexahedron() : Base ({
        //  {xi, eta, zeta}
@@ -228,10 +228,9 @@ struct LinearHexahedron : public Hexahedron<8, TVector>
  * Regular linear hexahedron
  * @tparam TVector
  */
-template <typename TVector>
-struct RegularLinearHexahedron : public LinearHexahedron<TVector>
+struct RegularLinearHexahedron : public LinearHexahedron
 {
-    using LinearHexahedron<TVector>::LinearHexahedron; // Import the base constructors
+    using LinearHexahedron::LinearHexahedron; // Import the base constructors
 };
 
 } // namespace geometry

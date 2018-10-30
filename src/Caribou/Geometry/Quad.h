@@ -9,8 +9,8 @@ namespace geometry
 {
 
 /** A quad is an alias to a polygon of four nodes. **/
-template<typename VectorType>
-using Quad = Polygon<4, VectorType>;
+template<size_t Dimension>
+using Quad = Polygon<4, Dimension>;
 
 /**
  * Create a quad from four points.
@@ -26,9 +26,9 @@ using Quad = Polygon<4, VectorType>;
  * \endcode
  * @return
  */
-template<typename TPoint>
-Quad<typename TPoint::VectorType>
-make_quad(const TPoint & p1, const TPoint & p2, const TPoint & p3, const TPoint & p4) {
+template<size_t Dimension>
+Quad<Dimension>
+make_quad(const Point<Dimension> & p1, const Point<Dimension> & p2, const Point<Dimension> & p3, const Point<Dimension> & p4) {
     return make_polygon(p1, p2, p3, p4);
 }
 

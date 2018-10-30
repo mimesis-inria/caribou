@@ -17,13 +17,13 @@ namespace geometry
 /**
  * A point in space (independent of the space dimension).
  * @tparam Dim Dimension of the current space (default to 3D).
- * @tparam TVector Type of the vector position. Default to caribou::algebra::Vector<Dim>>
  */
-template<size_t Dim, typename TVector = caribou::algebra::Vector<Dim>>
+template<size_t Dim>
 class BasePoint
 {
 public:
-    using VectorType = TVector;
+    using VectorType = caribou::algebra::Vector<Dim>;
+    using ValueType = typename VectorType::ValueType;
     static constexpr size_t Dimension = Dim;
 
     BasePoint() = default;
@@ -31,27 +31,24 @@ public:
     template <typename ValueType>
     BasePoint(std::initializer_list<ValueType> il) : coordinates(il) {}
 
-    template<typename OtherVectorType>
-    BasePoint(const BasePoint<Dim, OtherVectorType> & other) : coordinates(other.coordinates) {}
+    BasePoint(const BasePoint<Dim> & other) : coordinates(other.coordinates) {}
 
-    template<typename OtherVectorType>
-    BasePoint(const OtherVectorType & coordinates) : coordinates(coordinates) {}
+    BasePoint(const VectorType & coordinates) : coordinates(coordinates) {}
 
-    inline BasePoint<Dimension, VectorType>
-    scale(caribou::algebra::Vector<Dimension, float> s) const
+    inline BasePoint<Dimension>
+    scale(VectorType s) const
     {
         VectorType scaled_coordinates;
         for (size_t i = 0; i < Dimension; ++i) {
             scaled_coordinates[i] = coordinates[i] * s[i];
         }
 
-        return BasePoint<Dimension, VectorType>(scaled_coordinates);
+        return BasePoint<Dimension>(scaled_coordinates);
 
     }
 
-    template<typename OtherVectorType>
-    inline BasePoint<Dim, TVector>
-    &operator=(const BasePoint<Dim, OtherVectorType> & other)
+    inline BasePoint<Dim>
+    &operator=(const BasePoint<Dim> & other)
     {
         // check for self-assignment
         if(&other == this)
@@ -62,30 +59,14 @@ public:
         return *this;
     }
 
-    inline BasePoint<Dim, TVector>
-    &operator=(const TVector & coordinates)
+    inline BasePoint<Dim>
+    &operator=(const VectorType & coordinates)
     {
         this->coordinates = coordinates;
 
         return *this;
     }
 
-    template <typename ValueType>
-    inline ValueType &
-    operator[] (std::size_t x)
-    {
-        return coordinates[x];
-    }
-
-    template <typename ValueType>
-    inline const ValueType &
-    operator[] (std::size_t x) const
-    {
-        return coordinates[x];
-    }
-
-    // TODO(jnbrunet2000@gmail.com): This should not be mandatory for the vector template. We should add it using the detection idiom
-    using ValueType = typename VectorType::value_type;
     inline ValueType &
     operator[] (std::size_t x)
     {
@@ -98,39 +79,34 @@ public:
         return coordinates[x];
     }
 
-
-    template<typename OtherPoint>
     inline bool
-    operator==(const OtherPoint & other) const
+    operator==(const BasePoint<Dimension> & other) const
     { return coordinates == other.coordinates; }
 
-    template<typename OtherPoint>
     inline bool
-    operator!=(const OtherPoint & other) const
+    operator!=(const BasePoint<Dimension> & other) const
     { return !(*this == other); }
 
 
     VectorType coordinates;
 };
 
-template<size_t Dim, typename TVector = caribou::algebra::Vector<Dim>>
-class Point : public BasePoint<Dim, TVector>
+template<size_t Dim>
+class Point : public BasePoint<Dim>
 {
 };
 
 /**
  * A 1D point in space.
  */
-template<typename TVector>
-class Point<1, TVector>  : public BasePoint<1, TVector>
+ template <>
+class Point<1>  : public BasePoint<1>
 {
-    using Self = Point<1, TVector>;
-    // TODO(jnbrunet2000@gmail.com): This should not be mandatory for the vector template. We should add it using the detection idiom
-    using ValueType = typename BasePoint<1, TVector>::ValueType;
+    using Self = Point<1>;
 public:
+    using ValueType = typename BasePoint<1>::ValueType;
     Point() = default;
 
-    template <typename ValueType>
     explicit Point (const ValueType & x) {
         Self::coordinates[0] = x;
     }
@@ -142,23 +118,20 @@ public:
 /**
  * A 2D point in space.
  */
-template<typename TVector>
-class Point<2, TVector>  : public BasePoint<2, TVector>
+template<>
+class Point<2>  : public BasePoint<2>
 {
-    using Self = Point<2, TVector>;
-    // TODO(jnbrunet2000@gmail.com): This should not be mandatory for the vector template. We should add it using the detection idiom
-    using ValueType = typename BasePoint<2, TVector>::ValueType;
+    using Self = Point<2>;
 public:
+    using ValueType = typename BasePoint<2>::ValueType;
     Point() = default;
 
-    template <typename ValueType>
     Point (const ValueType & x, const ValueType & y) {
         Self::coordinates[0] = x;
         Self::coordinates[1] = y;
     }
 
-    template <typename ValueType>
-    Point(std::initializer_list<ValueType> il) : BasePoint<2, TVector>() {
+    Point(std::initializer_list<ValueType> il) : BasePoint<2>() {
         std::copy(std::begin(il), std::end(il), std::begin(Self::coordinates));
     }
 
@@ -172,29 +145,27 @@ public:
 /**
  * A 3D point in space.
  */
-template<typename TVector>
-class Point<3, TVector>  : public BasePoint<3, TVector>
+template<>
+class Point<3>  : public BasePoint<3>
 {
-    using Self = Point<3, TVector>;
-    // TODO(jnbrunet2000@gmail.com): This should not be mandatory for the vector template. We should add it using the detection idiom
-    using ValueType = typename BasePoint<3, TVector>::ValueType;
+    using Self = Point<3>;
 public:
+    using ValueType = typename BasePoint<3>::ValueType;
     Point() = default;
 
-    template <typename ValueType>
     Point (const ValueType & x, const ValueType & y, const ValueType & z) {
         Self::coordinates[0] = x;
         Self::coordinates[1] = y;
         Self::coordinates[2] = z;
     }
 
-    template <typename ValueType>
-    Point(std::initializer_list<ValueType> il) : BasePoint<3, TVector>() {
+    template <typename OtherValueType>
+    Point(std::initializer_list<OtherValueType> il) : BasePoint<3>() {
         std::copy(std::begin(il), std::end(il), std::begin(Self::coordinates));
     }
 
-    template <typename ValueType>
-    Point(ValueType const (&coordinates)[3]) : BasePoint<3, TVector>() {
+    template <typename OtherValueType>
+    Point(OtherValueType const (&coordinates)[3]) : BasePoint<3>() {
         Self::coordinates = coordinates;
     }
 
@@ -208,19 +179,14 @@ public:
     inline ValueType & z () { return Self::coordinates[2]; }
 };
 
-template<typename TVector = caribou::algebra::Vector<1>>
-using Point1D = Point<1, TVector>;
-
-template<typename TVector = caribou::algebra::Vector<2>>
-using Point2D = Point<2, TVector>;
-
-template<typename TVector = caribou::algebra::Vector<3>>
-using Point3D = Point<3, TVector>;
+using Point1D = Point<1>;
+using Point2D = Point<2>;
+using Point3D = Point<3>;
 
 template<typename ValueType, typename... Args>
 auto make_point (ValueType value, Args&&... args) {
     caribou::algebra::Vector<sizeof...(args) + 1, ValueType> coordinates ({ value, std::forward<Args>(args)... });
-    return coordinates;
+    return BasePoint<sizeof...(args) +1> (coordinates);
 }
 
 

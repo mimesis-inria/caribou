@@ -1,11 +1,13 @@
 #include <gtest/gtest.h>
+#include <Caribou/Geometry/Point.h>
+#include <Caribou/Geometry/Segment.h>
+#include <Caribou/Geometry/Polygon.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Hexahedron.h>
 
 TEST(Geometry, Point) {
     using namespace caribou::geometry;
-    using Point3D = Point3D<>;
 
     auto p1 = make_point(1, 2, 3);
     auto p2 = make_point(1, 2, 3);
@@ -31,18 +33,17 @@ TEST(Geometry, Point) {
     ASSERT_EQ(p5[2], 3);
     ASSERT_EQ(p1, p2);
 
-    caribou::geometry::Point3D<caribou::algebra::Vector<3, unsigned char>> p8;
+    Point3D p8;
 
     // Make sure a point have minimal space taken in the memory
-    ASSERT_LE(
+    ASSERT_EQ(
         sizeof(p8),
-        (3 * sizeof(unsigned char) + 1)
+        (3 * sizeof(Point3D::ValueType))
     );
 }
 
 TEST(Geometry, Segment) {
     using namespace caribou::geometry;
-    using Point3D = Point3D<>;
 
     Point3D p1(0, 0, 0);
     Point3D p2 = {1, 1, 1};
@@ -59,8 +60,8 @@ TEST(Geometry, Segment) {
     ASSERT_EQ(s1, s3);
 
     // Make sure a segment have minimal space taken in the memory
-    caribou::geometry::Point3D<caribou::algebra::Vector<3, unsigned char>> p5;
-    caribou::geometry::Point3D<caribou::algebra::Vector<3, unsigned char>> p6;
+    Point3D p5;
+    Point3D p6;
     auto s4 = make_segment(p5, p6);
     ASSERT_LE(
         sizeof(s4),
@@ -70,7 +71,6 @@ TEST(Geometry, Segment) {
 
 TEST(Geometry, Polygon) {
     using namespace caribou::geometry;
-    using Point3D = Point3D<>;
 
     Point3D p1 = {0, 0, 0};
     Point3D p2 = {1, 0, 0};
@@ -109,7 +109,6 @@ TEST(Geometry, Polygon) {
 
 TEST(Geometry, Triangle) {
     using namespace caribou::geometry;
-    using Point3D = Point3D<>;
 
     Point3D p1 = {0, 0, 0};
     Point3D p2 = {1, 0, 0};
@@ -133,7 +132,6 @@ TEST(Geometry, Triangle) {
 
 TEST(Geometry, Quad) {
     using namespace caribou::geometry;
-    using Point3D = Point3D<>;
 
     Point3D p1 = {1, -1, 0};
     Point3D p2 = {-1, -1, 0};
@@ -158,20 +156,19 @@ TEST(Geometry, Quad) {
 
 TEST(Geometry, Hexahedron) {
     using namespace caribou::geometry;
-    using Point3D = Point3D<>;
 
     // Constructors test
     Point3D p1, p2, p3, p4, p5, p6, p7, p8;
-    Hexahedron<8, Point3D::VectorType> hexa_1 ({p1, p2, p3, p4, p5, p6, p7, p8});
+    Hexahedron<8> hexa_1 ({p1, p2, p3, p4, p5, p6, p7, p8});
 
     Point3D::VectorType v1, v2, v3, v4, v5, v6, v7, v8;
-    RegularLinearHexahedron<Point3D::VectorType> hexa_2 ({v1, v2, v3, v4, v5, v6, v7, v8});
+    RegularLinearHexahedron hexa_2 ({v1, v2, v3, v4, v5, v6, v7, v8});
 
     // Make sure a hexahedron does not take anymore space than 8 nodes
     ASSERT_EQ(8 * sizeof(p1), sizeof(hexa_1));
 
     // Create a base hexahedron by using the base constructor without any arguments
-    RegularLinearHexahedron<Point3D::VectorType> base_hexa;
+    RegularLinearHexahedron base_hexa;
     auto edge_0 = base_hexa.edge(0);
     ASSERT_EQ(2, edge_0.length());
 
