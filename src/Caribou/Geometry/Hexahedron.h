@@ -48,6 +48,11 @@ struct Hexahedron
         std::copy(std::begin(il), std::end(il), std::begin(nodes));
     }
 
+    /** Constructor by an array of points **/
+    Hexahedron (const std::array<PointType, NumberOfNodes> & n) : nodes(n)
+    {
+    }
+
     Hexahedron (const std::initializer_list<VectorType> & il)
     {
         auto v = std::begin(il);
@@ -89,7 +94,6 @@ protected:
  * | /     | /
  * 0-------1
  */
-
 
 struct LinearHexahedron : public Hexahedron<8>
 {
