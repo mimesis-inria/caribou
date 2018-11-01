@@ -226,6 +226,24 @@ struct LinearHexahedron : public Hexahedron<8>
                 Base::nodes[nodes_of_face[index][3]]
          };
     };
+
+    inline FaceType
+    left() const {return face(1);};
+
+    inline FaceType
+    right() const {return face(3);};
+
+    inline FaceType
+    top() const {return face(5);};
+
+    inline FaceType
+    bottom() const {return face(4);};
+
+    inline FaceType
+    back() const {return face(2);};
+
+    inline FaceType
+    front() const {return face(0);};
 };
 
 /**
