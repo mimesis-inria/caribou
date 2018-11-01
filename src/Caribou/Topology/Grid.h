@@ -39,14 +39,6 @@ struct Grid
     Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions);
 
     /**
-     * Constructor of a sub-cell grid.
-     * @param parent Parent grid of this new grid.
-     * @param anchor The anchor point position vector (x, y, z). This is the position of the node id #0 on a hexahedron (see caribou::geometry::LinearHexahedron).
-     * @param dimensions Vector of 3 float (sx, sy, sz) which specify the dimension of the grid from the anchor point in the x, y and z directions respectively
-     */
-    Grid(Grid* parent, VecFloat anchor, VecFloat dimensions);
-
-    /**
      * Subdivide the Grid into nx, ny and nz subcells
      * @param subdivisions Specify the number (nx, ny, nz) of subcells
      * @throws std::logic_error When the grid is already subdivided into a number of cells.
@@ -83,10 +75,17 @@ struct Grid
      * @param grid_coordinates Cell location provided in terms of grid coordinates (i, j, k).
      * @throws std::out_of_range when the grid coordinates are outside of this grid subdivisions (nx, ny, nz).
      */
-    Grid & cell(const VecInt & grid_coordinates);
+    Grid & query(const VecInt & grid_coordinates);
 
     /** Alias to caribou::topology::cell(const VecInt & grid_coordinates) **/
-    inline Grid & cell(const VecInt::ValueType i, const VecInt::ValueType j, const VecInt::ValueType k) {return cell({i, j, k});};
+    inline Grid & query(const VecInt::ValueType i, const VecInt::ValueType j, const VecInt::ValueType k) {return query(VecInt({i, j, k}));};
+
+    /**
+     * Get the cells that contains the query position.
+     * If the position is inside a cell, only this cell is returned.
+     * If the position is on the boundary of the cell, the cells that share this boundary will be returned.
+     */
+    std::vector<Grid*> query(const VecFloat & position);
 
     /** True if the grid is a leaf (it contains no sub-cells) **/
     inline bool is_a_leaf() const {return cells.empty();};
@@ -101,6 +100,15 @@ struct Grid
 //    std::vector<VecFloat> positions(bool include_subcells = false) const;
 
 protected:
+
+    /**
+     * Constructor of a sub-cell grid.
+     * @param parent Parent grid of this new grid.
+     * @param anchor The anchor point position vector (x, y, z). This is the position of the node id #0 on a hexahedron (see caribou::geometry::LinearHexahedron).
+     * @param dimensions Vector of 3 float (sx, sy, sz) which specify the dimension of the grid from the anchor point in the x, y and z directions respectively
+     */
+    Grid(Grid* parent, VecFloat anchor, VecFloat dimensions);
+
     Grid* parent; ///< The parent grid of this grid. It should be null for the top-level grid.
     VecFloat anchor; ///< The anchor point position. This is the position of the node id #0 on a hexahedron.
     VecFloat dimensions; ///< The anchor point position. This is the position of the node id #0 on a hexahedron.

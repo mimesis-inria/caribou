@@ -12,7 +12,7 @@ TEST(Geometry, Topology) {
     const auto hx = H[0];
     ASSERT_FLOAT_EQ(100/9., hx);
 
-    Grid & cell = grid.cell(4, 4, 4);
+    Grid & cell = grid.query(4, 4, 4);
     ASSERT_TRUE(cell.is_a_leaf());
     cell.subdivide();
     ASSERT_FALSE(cell.is_a_leaf());
