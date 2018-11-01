@@ -3,6 +3,12 @@
 
 #include <Caribou/Geometry/Point.h>
 
+#ifdef CARIBOU_USE_DOUBLE
+#define FLOATING_POINT_TYPE double
+#else
+#define FLOATING_POINT_TYPE float
+#endif
+
 namespace caribou
 {
 namespace geometry
@@ -69,10 +75,32 @@ public:
         return Segment<Dimension>(second_node(), first_node());
     }
 
+    /** Get the length of the segment **/
     inline typename VectorType::ValueType
     length() const
     {
         return direction().length();
+    }
+
+    /** Test if the segment contains the position x **/
+    inline bool
+    contains(const VectorType & x, FLOATING_POINT_TYPE tolerance = 0.00001 ) const
+    {
+        const auto & p0 = first_node().coordinates;
+        const auto & p1 = second_node().coordinates;
+
+        if (((x-p0)^(x-p1)).length_squared() > tolerance*tolerance) {
+            // The point isn't on the line made by the segment
+            return false;
+        }
+
+        const auto c = (p1 - p0) * (x - p0);
+        if (c < 0 || c > (p1 - p0) * (p1 - p0)) {
+            // The point is on the line, but isn't between the two nodes of the segment
+            return false;
+        }
+
+        return true;
     }
 
     /**

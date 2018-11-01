@@ -58,7 +58,6 @@ TEST(Geometry, Segment) {
 
     auto s3 = make_segment({0, 0, 0}, {1, 1, 1});
     ASSERT_EQ(s1, s3);
-
     // Make sure a segment have minimal space taken in the memory
     Point3D p5;
     Point3D p6;
@@ -67,6 +66,15 @@ TEST(Geometry, Segment) {
         sizeof(s4),
         (sizeof(p5) + sizeof(p6) + 1)
     );
+
+    // Test the segment contains point
+    auto s5 = make_segment({0, 0, 0}, {1, 1, 1});
+    ASSERT_TRUE(s5.contains({0, 0, 0}));
+    ASSERT_TRUE(s5.contains({1, 1, 1}));
+    ASSERT_TRUE(s5.contains({0.5, 0.5, 0.5}));
+
+    ASSERT_FALSE(s5.contains({1.1, 1.1, 1.1}));
+    ASSERT_FALSE(s5.contains({-0.1, -0.1, -0.1}));
 }
 
 TEST(Geometry, Polygon) {
