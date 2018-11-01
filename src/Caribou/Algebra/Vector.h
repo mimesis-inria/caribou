@@ -249,6 +249,32 @@ struct Vector : public std::array<TValueType, Dim>
     }
 
     /**
+     * Compute the direct multiplication with another vector (multiplication between each scalar components).
+     * @return The resulting vector
+     */
+    template <typename OtherValueType>
+    constexpr Vector<Dimension, ValueType>
+    direct_mult(const Vector<Dimension, OtherValueType> & other) const
+    {
+        Vector<Dimension, ValueType> result(false);
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::multiplies<ValueType >());
+        return result;
+    }
+
+    /**
+     * Compute the direct division with another vector (division between each scalar components).
+     * @return The resulting vector
+     */
+    template <typename OtherValueType>
+    constexpr Vector<Dimension, ValueType>
+    direct_division(const Vector<Dimension, OtherValueType> & other) const
+    {
+        Vector<Dimension, ValueType> result(false);
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::divides<ValueType >());
+        return result;
+    }
+
+    /**
      * Compute the scalar multiplication (not to be confused by the scalar product).
      * @tparam TScalar The data type of the scalar (ex float, double, int,...)
      * @param scalar The scalar value
@@ -292,6 +318,13 @@ struct Vector : public std::array<TValueType, Dim>
     length() const
     {
         return sqrt((*this).dot(*this));
+    };
+
+    /** Compute the length^2 of the vector. **/
+    constexpr ValueType
+    length_squared() const
+    {
+        return (*this).dot(*this);
     };
 
     /** Get the unit vector (current vector normalized to unit length) **/
