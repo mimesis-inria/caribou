@@ -270,7 +270,7 @@ struct Vector : public std::array<TValueType, Dim>
     direct_division(const Vector<Dimension, OtherValueType> & other) const
     {
         Vector<Dimension, ValueType> result(false);
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::divides<ValueType >());
+        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::divides<ValueType >());
         return result;
     }
 
