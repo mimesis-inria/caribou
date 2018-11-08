@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(Algebra)
+project(Caribou.Algebra)
 
 set(HEADER_FILES
         Vector.h

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(Topology)
+project(Caribou.Topology)
 
 set(HEADER_FILES
     Grid.h

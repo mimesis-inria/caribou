@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(Geometry)
+project(Caribou.Geometry.Python)
 
 set(DIRECTORY Caribou/Geometry)
 

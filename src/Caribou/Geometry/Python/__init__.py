@@ -1,1 +1,1 @@
-from Geometry import *
+from Caribou.Geometry.Python import *

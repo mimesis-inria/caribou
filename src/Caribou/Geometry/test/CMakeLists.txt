@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-project(GeometryTest)
+project(Caribou.Geometry.Test)
 
 set(SOURCE_FILES
         main.cpp)
