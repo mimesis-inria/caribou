@@ -1,5 +1,5 @@
-#ifndef CARIBOU_TOPOLOGY_GRID_H
-#define CARIBOU_TOPOLOGY_GRID_H
+#ifndef CARIBOU_TOPOLOGY_ENGINE_GRID_GRID_H
+#define CARIBOU_TOPOLOGY_ENGINE_GRID_GRID_H
 
 #include <vector>
 #include <memory>
@@ -19,6 +19,9 @@ namespace caribou
 using namespace geometry;
 
 namespace topology
+{
+
+namespace engine
 {
 
 template <char Dimension>
@@ -143,6 +146,9 @@ struct Grid
      */
     std::array<Index, NumberOfNodes> nodes(const VecInt & grid_coordinates) const;
 
+    /** Get the position of the node node_id **/
+    VecFloat position(const Index & node_id) const;
+
 protected:
     ///< The anchor point position. It should be positioned at the center of the grid.
     VecFloat anchor;
@@ -161,10 +167,12 @@ protected:
 using Grid2D = Grid<2>;
 using Grid3D = Grid<3>;
 
+} // namespace engine
+
 } // namespace topology
 
 } // namespace caribou
 
-#include <Caribou/Topology/Grid.inl>
+#include <Caribou/Topology/Engine/Grid/Grid.inl>
 
-#endif //CARIBOU_TOPOLOGY_GRID_H
+#endif //CARIBOU_TOPOLOGY_ENGINE_GRID_GRID_H
