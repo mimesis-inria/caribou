@@ -146,7 +146,8 @@ struct Grid
     CellType & get(const VecInt & grid_coordinates);
 
     /**
-     * Get the indices of the nodes forming the cell located at grid_index (i, j, k).
+     * Get the indices of the nodes forming the cell located at grid_index (i, j, k). The indices of the nodes will be return
+     * following caribou::geometry::LinearHexahedron::node node numbering.
      * @param grid_coordinates Cell location provided in terms of grid coordinates (i, j, k).
      * @throws std::out_of_range when the grid coordinates are outside of this grid subdivisions (nx, ny, nz).
      */

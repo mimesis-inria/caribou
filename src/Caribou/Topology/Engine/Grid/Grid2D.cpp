@@ -11,8 +11,8 @@ namespace engine
 
 
 template <>
-Grid<2>::Index
-Grid<2>::cell_index(const VecInt & grid_coordinates) const
+Grid2D::Index
+Grid2D::cell_index(const VecInt & grid_coordinates) const
 {
     const VecInt::ValueType & i = grid_coordinates[0];
     const VecInt::ValueType & j = grid_coordinates[1];
@@ -32,8 +32,8 @@ Grid<2>::cell_index(const VecInt & grid_coordinates) const
 };
 
 template <>
-Grid<2>::VecInt
-Grid<2>::grid_coordinates(const Index & cell_index) const
+Grid2D::VecInt
+Grid2D::grid_coordinates(const Index & cell_index) const
 {
     const auto & n = number_of_subdivision();
     const auto & nx = n[0];
@@ -45,44 +45,43 @@ Grid<2>::grid_coordinates(const Index & cell_index) const
 };
 
 template <>
-std::array<typename Grid<2>::Index, Grid<2>::NumberOfNodes>
-Grid<2>::nodes(const VecInt & grid_coordinates) const
+std::array<typename Grid2D::Index, Grid2D::NumberOfNodes>
+Grid2D::nodes(const VecInt & grid_coordinates) const
 {
     const VecInt::ValueType & i = grid_coordinates[0];
     const VecInt::ValueType & j = grid_coordinates[1];
 
     const auto & n = number_of_subdivision();
-    const auto & nx = n[0];
-    const auto & ny = n[1];
+    const auto & nx = n[0]+1; // Number of nodes in the x direction
+    const auto & ny = n[1]+1; // Number of nodes in the y direction
 
-    if (i > nx-1 || j > ny-1) {
+    if (i > nx || j > ny) {
         throw std::out_of_range(
                 "Trying to access a cell at an invalid grid coordinate (" + std::to_string(i) + ", " + std::to_string(j) + ")"
         );
     }
 
     return {
-            j*(nx + 1) + i,
-            j*(nx + 1) + i + 1,
-            (j+1)*(nx + 1) + i,
-            (j+1)*(nx + 1) + i + 1
+            (j+0)*nx + (i+0),
+            (j+0)*nx + (i+1),
+            (j+1)*nx + (i+1),
+            (j+1)*nx + (i+0)
     };
 };
 
 template <>
-Grid<2>::VecFloat
-Grid<2>::position(const Index & node_id) const
+Grid2D::VecFloat
+Grid2D::position(const Index & node_id) const
 {
     const auto & n = number_of_subdivision();
     const auto & nx = n[0]+1; // Number of nodes in the x direction
-    const auto & ny = n[1]+1; // Number of nodes in the y direction
 
     const Index j = node_id / nx;     // Node indice in the x direction
     const Index i = node_id - (j*nx); // Node indice in the y direction
 
     const auto & h = cell_size();
     const auto & hx = h[0]; // Width of a cell
-    const auto & hy = h[0]; // Height of a cell
+    const auto & hy = h[1]; // Height of a cell
 
     // Relative position of the node within the grid
     const VecFloat p = {
@@ -94,7 +93,7 @@ Grid<2>::position(const Index & node_id) const
 };
 
 template <>
-Grid<2>::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
+Grid2D::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
         : anchor(anchor), nSubdivisions(subdivisions), dimensions(dimensions)
 {
     const auto & nx = subdivisions[0];
@@ -106,7 +105,7 @@ Grid<2>::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
     for (size_t j = 0; j < ny; ++j) {
         for (size_t i = 0; i < nx; ++i) {
             Index index = cell_index({i, j});
-            cells[index].reset(new Cell<2> (this, index));
+            cells[index].reset(new CellType (this, index));
         }
     }
 };

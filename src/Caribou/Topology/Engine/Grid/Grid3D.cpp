@@ -11,8 +11,8 @@ namespace engine
 
 
 template <>
-Grid<3>::Index
-Grid<3>::cell_index(const VecInt & grid_coordinates) const
+Grid3D::Index
+Grid3D::cell_index(const VecInt & grid_coordinates) const
 {
     const VecInt::ValueType & i = grid_coordinates[0];
     const VecInt::ValueType & j = grid_coordinates[1];
@@ -34,8 +34,8 @@ Grid<3>::cell_index(const VecInt & grid_coordinates) const
 };
 
 template <>
-Grid<3>::VecInt
-Grid<3>::grid_coordinates(const Index & cell_index) const
+Grid3D::VecInt
+Grid3D::grid_coordinates(const Index & cell_index) const
 {
     const auto & n = number_of_subdivision();
     const auto & nx = n[0];
@@ -49,7 +49,65 @@ Grid<3>::grid_coordinates(const Index & cell_index) const
 };
 
 template <>
-Grid<3>::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
+std::array<typename Grid3D::Index, Grid3D::NumberOfNodes>
+Grid3D::nodes(const VecInt & grid_coordinates) const
+{
+    const VecInt::ValueType & i = grid_coordinates[0];
+    const VecInt::ValueType & j = grid_coordinates[1];
+    const VecInt::ValueType & k = grid_coordinates[2];
+
+    const auto & n = number_of_subdivision();
+    const auto & nx = n[0]+1; // Number of nodes in the x direction
+    const auto & ny = n[1]+1; // Number of nodes in the y direction
+    const auto & nz = n[2]+1; // Number of nodes in the z direction
+
+    if (i > nx || j > ny || k > nz) {
+        throw std::out_of_range(
+                "Trying to access a cell at an invalid grid coordinate (" + std::to_string(i) + ", " + std::to_string(j) + ", " + std::to_string(k) + ")"
+        );
+    }
+
+    return {
+            (k+0)*ny*nx + (j+0)*nx + (i+0),
+            (k+0)*ny*nx + (j+0)*nx + (i+1),
+            (k+0)*ny*nx + (j+1)*nx + (i+1),
+            (k+0)*ny*nx + (j+1)*nx + (i+0),
+            (k+1)*ny*nx + (j+0)*nx + (i+0),
+            (k+1)*ny*nx + (j+0)*nx + (i+1),
+            (k+1)*ny*nx + (j+1)*nx + (i+1),
+            (k+1)*ny*nx + (j+1)*nx + (i+0)
+    };
+};
+
+template <>
+Grid3D::VecFloat
+Grid3D::position(const Index & node_id) const
+{
+    const auto & n = number_of_subdivision();
+    const auto & nx = n[0]+1; // Number of nodes in the x direction
+    const auto & ny = n[1]+1; // Number of nodes in the y direction
+
+    const Index k = node_id / (nx*ny); // Node indice in the z direction
+    const Index j = (node_id - (k*nx*ny)) / nx; // Node indice in the y direction
+    const Index i = node_id - ((k*nx*ny) + (j*nx)); // Node indice in the x direction
+
+    const auto & h = cell_size();
+    const auto & hx = h[0]; // Width of a cell
+    const auto & hy = h[1]; // Height of a cell
+    const auto & hz = h[2]; // Dept of a cell
+
+    // Relative position of the node within the grid
+    const VecFloat p = {
+            i*hx,
+            j*hy,
+            k*hz
+    };
+
+    return anchor + p; // World position
+};
+
+template <>
+Grid3D::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
         : anchor(anchor), nSubdivisions(subdivisions), dimensions(dimensions)
 {
     const auto & nx = subdivisions[0];
@@ -63,7 +121,7 @@ Grid<3>::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
         for (size_t j = 0; j < ny; ++j) {
             for (size_t i = 0; i < nx; ++i) {
                 Index index = cell_index({i, j, k});
-                cells[index].reset(new Cell<3> (this, index));
+                cells[index].reset(new CellType (this, index));
             }
         }
     }
