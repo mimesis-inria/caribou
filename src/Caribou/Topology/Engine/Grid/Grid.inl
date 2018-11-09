@@ -13,26 +13,37 @@ namespace topology
 
 namespace engine
 {
-
-template <char Dimension>
+// ########################
+// Cell template functions
+// ########################
+template <unsigned char Dimension>
 Grid<Dimension>*
 Cell<Dimension>::subdivide (VecInt subdivisions)
 {
     if (!is_a_leaf()) {
         throw std::logic_error("Trying to subdivide an already subdivided cell.");
     }
-
 };
 
-template <char Dimension>
+template <unsigned char Dimension>
 typename Cell<Dimension>::VecFloat
 Cell<Dimension>::size () const
 {
     return m_parent->cell_size();
 };
 
-template <char Dimension>
-Cell<Dimension> &
+template <unsigned char Dimension>
+std::array<typename Cell<Dimension>::Index, Cell<Dimension>::NumberOfNodes>
+Cell<Dimension>::nodes () const
+{
+    return m_parent->nodes(m_parent->grid_coordinates(m_index));
+};
+
+// ########################
+// Grid template functions
+// ########################
+template <unsigned char Dimension>
+typename Grid<Dimension>::CellType &
 Grid<Dimension>::get (const VecInt &grid_coordinates)
 {
     return *(cells[cell_index(grid_coordinates)]);

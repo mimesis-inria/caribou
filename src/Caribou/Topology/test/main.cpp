@@ -5,7 +5,7 @@ TEST(Topology, Grid2D) {
     using namespace caribou::topology::engine;
 
     Grid2D grid(
-            {0, 0} /* anchor */,
+            {0.75, 0.5} /* anchor */,
             {4, 4} /* subdivision */,
             {100, 100} /* size */
     );
@@ -20,21 +20,12 @@ TEST(Topology, Grid2D) {
     ASSERT_EQ((Grid2D::Index)24, grid.nodes({3,3})[3]);
     ASSERT_EQ(Grid2D::VecInt ({2,1,2}), grid.grid_coordinates(grid.cell_index({2,1,2})));
 
+    using Cell = Grid2D::CellType;
 
-//    auto H = grid.cell_size();
-//    const auto hx = H[0];
-//    ASSERT_FLOAT_EQ(100/9., hx);
-//
-//    Grid & cell = grid.query(4, 4, 4);
-//    ASSERT_TRUE(cell.is_a_leaf());
-//    cell.subdivide();
-//    ASSERT_FALSE(cell.is_a_leaf());
-//
-//    H = cell.cell_size();
-//    ASSERT_FLOAT_EQ(hx/2., H[0]);
-//
-//    VecFloat middle = cell.position({0, 0, 0});
-//    ASSERT_EQ(VecFloat(50, 50, 50), middle);
+    const Cell & cell = grid.get({1,2});
+    const Grid2D::Index node_id = cell.nodes()[0];
+    ASSERT_EQ((Grid2D::Index)11, node_id);
+    ASSERT_EQ(Grid2D::VecFloat({25.75, 50.5}), grid.position(node_id));
 }
 
 TEST(Topology, Grid3D) {

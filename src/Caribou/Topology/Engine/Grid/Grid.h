@@ -24,7 +24,7 @@ namespace topology
 namespace engine
 {
 
-template <char Dimension>
+template <unsigned char Dimension>
 struct Grid;
 
 /**
@@ -34,7 +34,7 @@ struct Grid;
  *
  * @tparam Dimension The dimension (2D or 3D) of the cell.
  */
-template <char Dimension>
+template <unsigned char Dimension>
 struct Cell
 {
     static_assert(Dimension == 2 or Dimension == 3, "A grid cell must be in two or three dimension.");
@@ -42,6 +42,8 @@ struct Cell
     using VecFloat = algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using Index = size_t;
     using VecInt = algebra::Vector<Dimension, Index>;
+
+    static constexpr size_t NumberOfNodes = (unsigned char) (1 << Dimension);
 
     explicit Cell() = delete;
 
@@ -70,6 +72,9 @@ struct Cell
     /** Get the index of the cell (relative to its parent grid). **/
     inline Index index() const {return m_index;};
 
+    /** Get the indices of the nodes forming the cell. */
+    std::array<Index, NumberOfNodes> nodes() const;
+
 protected:
     std::unique_ptr<Grid<Dimension>> m_grid = nullptr;
     Grid<Dimension>* m_parent = nullptr;
@@ -80,16 +85,17 @@ protected:
  * A Grid is a rectangular 2D quad (resp. 3D hexahedron) that contain multiple Cell entities aligned in the x, y (and z in 3D) axis.
  * @tparam Dimension The dimension (2D or 3D) of the grid.
  */
-template <char Dimension>
+template <unsigned char Dimension>
 struct Grid
 {
     static_assert(Dimension == 2 or Dimension == 3, "A grid must be in two or three dimension.");
 
-    using VecFloat = typename Cell<Dimension>::VecFloat ;
-    using Index = typename Cell<Dimension>::Index;
-    using VecInt = typename Cell<Dimension>::VecInt;
+    using CellType = Cell<Dimension>;
+    using VecFloat = typename CellType::VecFloat ;
+    using Index = typename CellType::Index;
+    using VecInt = typename CellType::VecInt;
 
-    static constexpr size_t NumberOfNodes = 1 << Dimension;
+    static constexpr size_t NumberOfNodes = CellType::NumberOfNodes;
 
     /** Default constructor is not permitted **/
     Grid() = delete;
@@ -137,7 +143,7 @@ struct Grid
      * @param grid_coordinates Cell location provided in terms of grid coordinates (i, j, k).
      * @throws std::out_of_range when the grid coordinates are outside of this grid subdivisions (nx, ny, nz).
      */
-    Cell<Dimension> & get(const VecInt & grid_coordinates);
+    CellType & get(const VecInt & grid_coordinates);
 
     /**
      * Get the indices of the nodes forming the cell located at grid_index (i, j, k).
@@ -160,7 +166,7 @@ protected:
     const VecFloat dimensions;
 
     ///< This grid can be subdivided into a set of sub-cells where a sub-cell can be a leaf (no further subdivisions) or a grid.
-    std::vector<std::unique_ptr<Cell<Dimension>>> cells;
+    std::vector<std::unique_ptr<CellType>> cells;
 };
 
 

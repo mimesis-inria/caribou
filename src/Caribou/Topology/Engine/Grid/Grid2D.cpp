@@ -73,7 +73,24 @@ template <>
 Grid<2>::VecFloat
 Grid<2>::position(const Index & node_id) const
 {
-    
+    const auto & n = number_of_subdivision();
+    const auto & nx = n[0]+1; // Number of nodes in the x direction
+    const auto & ny = n[1]+1; // Number of nodes in the y direction
+
+    const Index j = node_id / nx;     // Node indice in the x direction
+    const Index i = node_id - (j*nx); // Node indice in the y direction
+
+    const auto & h = cell_size();
+    const auto & hx = h[0]; // Width of a cell
+    const auto & hy = h[0]; // Height of a cell
+
+    // Relative position of the node within the grid
+    const VecFloat p = {
+        i*hx,
+        j*hy
+    };
+
+    return anchor + p; // World position
 };
 
 template <>
