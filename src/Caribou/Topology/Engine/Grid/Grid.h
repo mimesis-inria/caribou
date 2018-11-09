@@ -42,6 +42,7 @@ struct Cell
     using VecFloat = algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using Index = size_t;
     using VecInt = algebra::Vector<Dimension, Index>;
+    using GridType = Grid<Dimension>;
 
     static constexpr size_t NumberOfNodes = (unsigned char) (1 << Dimension);
 
@@ -59,7 +60,7 @@ struct Cell
      * @throws std::logic_error When the cell is already subdivided.
      * @return The created grid containing the sub-cells
      */
-    Grid<Dimension>* subdivide(VecInt subdivisions);
+    GridType * subdivide(VecInt subdivisions);
 
     /** This cell size (hx, hy, hz) **/
     VecFloat size() const;
@@ -76,8 +77,8 @@ struct Cell
     std::array<Index, NumberOfNodes> nodes() const;
 
 protected:
-    std::unique_ptr<Grid<Dimension>> m_grid = nullptr;
-    Grid<Dimension>* m_parent = nullptr;
+    std::unique_ptr<GridType> m_grid = nullptr;
+    GridType* m_parent = nullptr;
     const Index m_index;
 };
 
@@ -91,7 +92,7 @@ struct Grid
     static_assert(Dimension == 2 or Dimension == 3, "A grid must be in two or three dimension.");
 
     using CellType = Cell<Dimension>;
-    using VecFloat = typename CellType::VecFloat ;
+    using VecFloat = typename CellType::VecFloat;
     using Index = typename CellType::Index;
     using VecInt = typename CellType::VecInt;
 

@@ -21,10 +21,13 @@ TEST(Topology, Grid2D) {
     ASSERT_EQ((Grid2D::Index)24, grid.nodes({3,3})[2]);
     ASSERT_EQ(Grid2D::VecInt ({2,1,2}), grid.grid_coordinates(grid.cell_index({2,1,2})));
 
-    const Cell & cell = grid.get({1,2});
+    Cell & cell = grid.get({1,2});
     const Grid2D::Index node_id = cell.nodes()[0];
     ASSERT_EQ((Grid2D::Index)11, node_id);
     ASSERT_EQ(Grid2D::VecFloat({25.75, 50.5}), grid.position(node_id));
+
+    Grid2D & sub_grid = *cell.subdivide({2,2});
+    
 }
 
 TEST(Topology, Grid3D) {

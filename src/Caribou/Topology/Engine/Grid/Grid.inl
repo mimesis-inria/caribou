@@ -23,6 +23,12 @@ Cell<Dimension>::subdivide (VecInt subdivisions)
     if (!is_a_leaf()) {
         throw std::logic_error("Trying to subdivide an already subdivided cell.");
     }
+
+    Index anchor_index = nodes()[0];
+    VecFloat anchor_position = m_parent->position(anchor_index);
+    VecFloat cell_dimensions = size();
+
+    m_grid.reset(new GridType(anchor_position, subdivisions, cell_dimensions));
 };
 
 template <unsigned char Dimension>
