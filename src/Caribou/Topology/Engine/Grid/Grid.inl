@@ -29,6 +29,8 @@ Cell<Dimension>::subdivide (VecInt subdivisions)
     VecFloat cell_dimensions = size();
 
     m_grid.reset(new GridType(anchor_position, subdivisions, cell_dimensions));
+
+    return m_grid.get();
 };
 
 template <unsigned char Dimension>
