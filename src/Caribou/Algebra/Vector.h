@@ -67,7 +67,7 @@ struct Vector : public std::array<TValueType, Dim>
         for (size_t i = 0; i < Dimension; ++i) {
             (*this)[i] = static_cast<ValueType>(components[i]);
         }
-    };
+    }
 
     /**
      * Copy constructor
@@ -78,7 +78,7 @@ struct Vector : public std::array<TValueType, Dim>
          for (size_t i = 0; i < Dimension; ++i) {
              (*this)[i] = static_cast<ValueType> (other[i]);
          }
-    };
+    }
 
     /**
      * Constructor by variadic arguments.
@@ -131,7 +131,7 @@ struct Vector : public std::array<TValueType, Dim>
         static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
 
         return cross_product(other);
-    };
+    }
 
     /** Alias for scalar_multiplication **/
     template <class TScalar>
@@ -212,7 +212,7 @@ struct Vector : public std::array<TValueType, Dim>
                 a[2]*b[0] -a[0]*b[2],
                 a[0]*b[1] -a[1]*b[0],
         };
-    };
+    }
 
     /** Alias for cross_product **/
     template <typename OtherValueType>
@@ -220,7 +220,7 @@ struct Vector : public std::array<TValueType, Dim>
     cross(const Vector<Dimension, OtherValueType> & other) const
     {
         return cross_product(other);
-    };
+    }
 
     /**
      * Compute the direct sum with another vector (sum between each scalar components).
@@ -325,14 +325,14 @@ struct Vector : public std::array<TValueType, Dim>
     length_squared() const
     {
         return (*this).dot(*this);
-    };
+    }
 
     /** Get the unit vector (current vector normalized to unit length) **/
     constexpr Vector<Dimension, ValueType>
     unit() const
     {
         return (*this)/length();
-    };
+    }
 
 
 private:
