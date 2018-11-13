@@ -3,11 +3,14 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
+#include <Caribou/Geometry/Hexahedron.h>
 
 #include <memory>
 
 namespace caribou
 {
+
+using namespace geometry;
 
 namespace topology
 {
@@ -15,13 +18,10 @@ namespace topology
 namespace engine
 {
 
-template <unsigned char Dim, class TCell>
-struct Grid;
-
 /**
- * A Cell represents a 2D quad (resp. 3D hexahedron) entity in a rectangular Grid made of multiple cells. It is always
- * contained in a parent grid, and it can also be subdivided in sub-cells by adding it a grid. Otherwise, if no grid is
- * added, the cell is said to be a leaf of its parent grid.
+ * A Cell represents a 2D rectangle quad (resp. 3D rectangle hexahedron) entity. It can be
+ * contained in a parent cell, and it can also be subdivided in 4 sub-cells in 2D (resp. 8 sub-cells in 3D).
+ * Otherwise, if no subdivision is done, the cell is said to be a leaf cell.
  *
  * @tparam Dimension The dimension (2D or 3D) of the cell.
  */
@@ -29,71 +29,130 @@ template <unsigned char Dim>
 struct Cell
 {
     static constexpr size_t Dimension = Dim;
-    static_assert(Dimension == 2 or Dimension == 3, "A grid cell must be in two or three dimension.");
+    static_assert(Dimension == 2 or Dimension == 3, "A cell must be in two or three dimension.");
+
+    static constexpr size_t NumberOfNodes = (unsigned char) (1 << Dimension);
+    static constexpr size_t NumberOfSubcells = (unsigned char) (1 << Dimension);
 
     using VecFloat = algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using Index = size_t;
     using VecInt = algebra::Vector<Dimension, Index>;
-    using GridType = Grid<Dimension, Cell<Dimension>>;
 
-    static constexpr size_t NumberOfNodes = (unsigned char) (1 << Dimension);
+    using Subcells = std::array<Cell<Dimension>, NumberOfSubcells>;
 
-    /** Default constructor is not permitted **/
-    explicit Cell() = delete;
-
-    Cell(GridType* parent, Index index) : m_grid(nullptr), m_parent(parent), m_index (index) {
-        if (!parent) {
-            throw std::logic_error("A cell must be contained in a parent grid.");
-        }
-    };
+    /** Default constructor */
+    Cell() {};
 
     /**
-     * Subdivide the cell into nx, ny and nz sub-cells
-     * @param subdivisions Specify the number (nx, ny, nz) of sub-cells
-     * @throws std::logic_error When the cell is already subdivided.
-     * @return The created grid containing the sub-cells
+     * Constructor with index assignment
+     * @param index The index of this cell in its parent container
      */
-    GridType *
-    subdivide(VecInt subdivisions)
+    Cell(Index index) : m_index (index) {};
+
+    /**
+     * Subdivide the cell into 4 sub-cells in 2D (resp. 8 sub-cells in 3D)
+     * @throws std::logic_error When the cell is already subdivided.
+     * @return The current cell containing the sub-cells
+     */
+    Cell<Dimension> &
+    subdivide()
     {
         if (!is_a_leaf()) {
             throw std::logic_error("Trying to subdivide an already subdivided cell.");
         }
 
-        Index anchor_index = nodes()[0];
-        VecFloat anchor_position = m_parent->position(anchor_index);
-        VecFloat cell_dimensions = size();
+        m_subcells.reset(new Subcells);
+        for (Index subcell_index = 0; subcell_index < NumberOfSubcells; ++subcell_index) {
+            Cell<Dimension> & cell = (*m_subcells)[subcell_index];
+            cell.m_parent = this;
+            cell.m_index = subcell_index;
+            cell.m_level = m_level+1;
+        }
 
-        m_grid.reset(new GridType(anchor_position, subdivisions, cell_dimensions));
-
-        return m_grid.get();
-    };
-
-    /** This cell size (hx, hy, hz) **/
-    inline VecFloat
-    size() const {
-        return m_parent->cell_size();
+        return *this;
     };
 
     /** True if the cell is a leaf (it contains no sub-cells) **/
     inline bool
     is_a_leaf() const
-    {return (m_grid == nullptr);};
+    {return (m_subcells == nullptr);};
 
-    /** Get the index of the cell (relative to its parent grid). **/
+    /** True if the cell got a parent cell **/
+    inline bool
+    has_parent() const
+    {return (m_parent != nullptr);};
+
+    /** Get the index of the cell (relative to its parent cell). **/
     inline Index
     index() const {return m_index;};
 
-    /** Get the indices of the nodes forming the cell. */
-    inline std::array<Index, NumberOfNodes>
-    nodes() const {
-        return m_parent->nodes(m_parent->grid_coordinates(m_index));
+    /** Get the index of the cell (relative to its parent cell). **/
+    inline Index
+    level() const {return m_level;};
+
+    /** Get the parent cell. **/
+    inline const Cell<Dimension> &
+    parent() const
+    {
+        if (not m_parent)
+            throw std::logic_error("This cell does not contain a parent cell.");
+        return *m_parent;
     };
 
+    /** Get the child cell at specified index. **/
+    inline Cell<Dimension> &
+    child(Index index)
+    {
+        if (is_a_leaf())
+            throw std::logic_error("This cell is a leaf cell, hence it does not contain any child cells.");
+
+        if (index >= NumberOfSubcells)
+            throw std::logic_error(
+                    "Trying to access the " + std::to_string(index + 1)+ "th child cell, but this cell only have "
+                    + std::to_string(NumberOfSubcells) + " child cells."
+            );
+
+        return *((*m_subcells)[index]);
+    };
+
+    /** Get the child cell at specified index. **/
+    inline const Cell<Dimension> &
+    child(Index index) const
+    { return child(index); };
+
+    /** Get the child cell at specified grid coordinate. **/
+    inline Cell<Dimension> &
+    child (const VecInt & grid_coordinates)
+    {
+        constexpr size_t nx = 2;
+
+        const typename VecInt::ValueType i = grid_coordinates[0];
+        const typename VecInt::ValueType j = grid_coordinates[1];
+
+        // Note: The following condition block will be simplified by the compiler
+        // since Dimension is a constexpr
+
+        if (Dimension == 2) {
+            // Dimension == 2
+            return child(j*nx + i);
+        } else {
+            // Dimension == 3
+            constexpr size_t ny = 2;
+            const typename VecInt::ValueType k = grid_coordinates[2];
+            return child(k*ny*nx + j*nx + i);
+        }
+    };
+
+    /** Get the child cell at specified grid coordinate. **/
+    inline const Cell<Dimension> &
+    child (const VecInt & grid_coordinates) const
+    { return child(grid_coordinates); };
+
 protected:
-    std::unique_ptr<GridType> m_grid = nullptr;
-    GridType* m_parent = nullptr;
-    const Index m_index;
+    std::unique_ptr<Subcells> m_subcells = nullptr;
+    Cell<Dimension> * m_parent = nullptr;
+    Index m_index = 0;
+    Index m_level = 0;
 };
 
 } // namespace engine

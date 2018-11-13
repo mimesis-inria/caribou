@@ -9,11 +9,7 @@
 #include <numeric>
 #include <cmath>
 
-#ifdef CARIBOU_USE_DOUBLE
-#define FLOATING_POINT_TYPE double
-#else
-#define FLOATING_POINT_TYPE float
-#endif
+#include <Caribou/config.h>
 
 namespace caribou
 {
@@ -334,6 +330,19 @@ struct Vector : public std::array<TValueType, Dim>
         return (*this)/length();
     }
 
+    /////////////////////////////////
+    ////      Tool functions     ////
+    /////////////////////////////////
+    inline std::string
+    to_string() const
+    {
+        return std::string("(") +
+               std::accumulate(std::next(this->begin()), this->end(), std::to_string(this->at(0)), [](const std::string & s, const ValueType & component) -> std::string {
+                   return s + std::string(", ") + std::to_string(component);
+               }) +
+               std::string(")");
+    }
+
 
 private:
     template<size_t current_index, typename... Args>
@@ -348,8 +357,13 @@ private:
     }
 };
 
+} // namespace algebra
+
+} // namespace caribou
+
 template <size_t Dim, typename TComponent=float>
-std::ostream& operator<<(std::ostream& os, const Vector<Dim, TComponent>& v)
+inline std::ostream&
+operator<<(std::ostream& os, const caribou::algebra::Vector<Dim, TComponent>& v)
 {
     os << std::string("(");
     os << std::accumulate(std::next(std::begin(v)), std::end(v), std::to_string(v[0]), [](const std::string & s, const TComponent & component) -> std::string {
@@ -358,9 +372,5 @@ std::ostream& operator<<(std::ostream& os, const Vector<Dim, TComponent>& v)
     os << std::string(")");
     return os;
 }
-
-} // namespace algebra
-
-} // namespace caribou
 
 #endif //CARIBOU_ALGEBRA_VECTOR_H
