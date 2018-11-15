@@ -28,7 +28,7 @@ namespace engine
 template <unsigned char Dim>
 struct Cell
 {
-    static constexpr size_t Dimension = Dim;
+    static constexpr char Dimension = Dim;
     static_assert(Dimension == 2 or Dimension == 3, "A cell must be in two or three dimension.");
 
     static constexpr size_t NumberOfNodes = (unsigned char) (1 << Dimension);

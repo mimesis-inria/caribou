@@ -1,9 +1,16 @@
 cmake_minimum_required(VERSION 3.1)
-project(Caribou.Plugin)
+project(Caribou.SofaPlugin)
+
+set(HEADER_FILES
+    Components/Topology/MultilevelSparseGridTopology.h)
+
+set(TEMPLATE_FILES
+        Components/Topology/MultilevelSparseGridTopology.inl
+    )
 
 set(SOURCE_FILES
-    init.cpp
-)
+    Components/Topology/MultilevelSparseGridTopology.cpp
+    init.cpp)
 
 # Try to find Sofa's cmake prefix
 # First, make sure it isn't already been manually set by the user's cmake variables
@@ -31,10 +38,14 @@ else()
     endif()
 endif()
 
-add_subdirectory(Components)
+
+find_package(SofaBase REQUIRED)
+find_package(SofaFramework REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
-
-target_link_libraries(${PROJECT_NAME} Caribou.Plugin.Components.Topology)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SofaCore)
+target_link_libraries(${PROJECT_NAME} SofaCore SofaBaseTopology)
+target_link_libraries(${PROJECT_NAME} Caribou.Topology)

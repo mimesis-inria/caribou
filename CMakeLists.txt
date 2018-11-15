@@ -41,6 +41,6 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 
 add_subdirectory(src/Caribou)
-add_subdirectory(src/SofaCaribou)
+add_subdirectory(src/SofaPlugin)
 #add_subdirectory(plugin)
 #add_subdirectory(python)

@@ -27,6 +27,8 @@ struct Grid
     using VecFloat = typename CellType::VecFloat;
     using Index = typename CellType::Index;
     using VecInt = typename CellType::VecInt;
+    using Int = typename VecInt::ValueType;
+    using Float = typename VecFloat::ValueType;
 
     static constexpr size_t Dimension = CellType::Dimension;
     static constexpr size_t NumberOfNodes = CellType::NumberOfNodes;
@@ -82,10 +84,21 @@ struct Grid
      * @param grid_coordinates Cell location provided in terms of grid coordinates (i, j, k).
      * @throws std::out_of_range when the grid coordinates are outside of this grid subdivisions (nx, ny, nz).
      */
+    inline CellType &
+    get(const VecInt & grid_coordinates)
+    {
+        return m_cells[cell_index(grid_coordinates)];
+    }
+
+    /**
+     * Get the cell located at grid_index (i, j, k).
+     * @param grid_coordinates Cell location provided in terms of grid coordinates (i, j, k).
+     * @throws std::out_of_range when the grid coordinates are outside of this grid subdivisions (nx, ny, nz).
+     */
     inline const CellType &
     get(const VecInt & grid_coordinates) const
     {
-        return m_cells[cell_index(grid_coordinates)];
+        return get(grid_coordinates);
     }
 
     /**
@@ -109,6 +122,14 @@ struct Grid
     /** Get the position of the node node_id **/
     virtual VecFloat position(const Index & node_id) const;
 
+    /**
+     * Subdivide the cell at location cell_index
+     * @param cell_index The index of the cell.
+     * @throws std::logic_error when the cell to be subdivided is not a leaf-cell (is already subdivided).
+     * @throws std::out_of_range when the cell_index doesn't point to any cell within this grid (subdivided cells indices included).
+     */
+    virtual void subdivide(const Index & cell_index);
+
 protected:
     ///< The anchor point position. It should be positioned at the center of the grid.
     VecFloat m_anchor;
@@ -121,49 +142,14 @@ protected:
 
     ///< The cells this grid contains
     std::vector<CellType> m_cells;
-};
 
-///** 2D derivation of caribou::topology::engine::BaseGrid */
-//template <class TCell>
-//struct Grid2D : public BaseGrid<TCell>
-//{
-//    static_assert(TCell::Dimension == 2, "The dimension of the cell type must be two in a 2D grid.");
-//
-//    using Base = BaseGrid<TCell>;
-//    using typename Base::VecFloat;
-//    using typename Base::VecInt;
-//    using typename Base::Index;
-//    using typename Base::CellType;
-//
-//    using Base::number_of_subdivision;
-//    using Base::cell_size;
-//    using Base::NumberOfNodes;
-//    using Base::m_anchor;
-//    using Base::m_number_of_subdivisions;
-//    using Base::m_cells;
-//
-//};
-//
-///** 3D derivation of caribou::topology::engine::BaseGrid */
-//template <class TCell>
-//struct Grid3D : public BaseGrid<TCell>
-//{
-//    static_assert(TCell::Dimension == 3, "The dimension of the cell type must be two in a 2D grid.");
-//
-//    using Base = BaseGrid<TCell>;
-//    using typename Base::VecFloat;
-//    using typename Base::VecInt;
-//    using typename Base::Index;
-//    using typename Base::CellType;
-//
-//    using Base::number_of_subdivision;
-//    using Base::cell_size;
-//    using Base::NumberOfNodes;
-//    using Base::m_anchor;
-//    using Base::m_number_of_subdivisions;
-//    using Base::m_cells;
-//
-//};
+    ///< Contain the number of cells in a given level of subdivision. If the grid contains only leaf-cells, than only
+    ///< the level 0 of subdivision exists and the number cells of this level is the number of cells of this grid.
+    ///< If two cells within this grid are subdivided, and one of them is again
+    ///< subdivided, than the level 1 contains 2*CellType::NumberOfSubcells and the level 2 contains 1*CellType::NumberOfSubcells.
+    ///< This counter will be used to assign numbers to every cell, nodes, edges and faces of this grid.
+    std::vector<Int> m_number_of_cells_per_level;
+};
 
 } // namespace engine
 

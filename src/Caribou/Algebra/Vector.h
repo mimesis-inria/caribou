@@ -66,7 +66,7 @@ struct Vector : public std::array<TValueType, Dim>
     }
 
     /**
-     * Copy constructor
+     * Copy constructor from another vector of a different data type
      */
     template <typename OtherValueType>
     Vector(const Vector<Dimension, OtherValueType> & other)
@@ -74,6 +74,17 @@ struct Vector : public std::array<TValueType, Dim>
          for (size_t i = 0; i < Dimension; ++i) {
              (*this)[i] = static_cast<ValueType> (other[i]);
          }
+    }
+
+    /**
+     * Copy constructor from another type of vector (it must implement the [] operator and its data type must match ValueType)
+     */
+    template <typename OtherVectorType>
+    Vector(const OtherVectorType & other)
+    {
+        for (size_t i = 0; i < Dimension; ++i) {
+            (*this)[i] = static_cast<ValueType> (other[i]);
+        }
     }
 
     /**

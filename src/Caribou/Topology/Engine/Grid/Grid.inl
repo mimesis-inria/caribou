@@ -13,6 +13,29 @@ namespace engine
 {
 
 template <class TCell>
+Grid<TCell>::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
+        : m_anchor(anchor), m_number_of_subdivisions(subdivisions), m_dimensions(dimensions)
+{
+    using Int = typename VecInt::ValueType;
+
+    const Int & nx = subdivisions[0];
+    const Int & ny = subdivisions[1];
+    const Int   nz = (Dimension == 3) ? subdivisions[2] : 1;
+
+    // Here we loop on the z, y and x order to proper align in memory cells so that when loping in the inverse
+    // order (x, y and z), the cells are closer to each other in the memory
+    m_cells.resize(nz*ny*nx);
+    for (size_t k = 0; k < nz; ++k) {
+        for (size_t j = 0; j < ny; ++j) {
+            for (size_t i = 0; i < nx; ++i) {
+                Index index = cell_index({i, j, k});
+                m_cells[index] = CellType (index);
+            }
+        }
+    }
+}
+
+template <class TCell>
 typename Grid<TCell>::Index
 Grid<TCell>::cell_index(const typename Grid<TCell>::VecInt & grid_coordinates) const
 {
@@ -119,26 +142,10 @@ Grid<TCell>::position(const Index & node_id) const
 }
 
 template <class TCell>
-Grid<TCell>::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
-        : m_anchor(anchor), m_number_of_subdivisions(subdivisions), m_dimensions(dimensions)
+void
+Grid<TCell>::subdivide(const Index & cell_index)
 {
-    using Int = typename VecInt::ValueType;
 
-    const Int & nx = subdivisions[0];
-    const Int & ny = subdivisions[1];
-    const Int   nz = (Dimension == 3) ? subdivisions[2] : 1;
-
-    // Here we loop on the z, y and x order to proper align in memory cells so that when loping in the inverse
-    // order (x, y and z), the cells are closer to each other in the memory
-    m_cells.resize(nz*ny*nx);
-    for (size_t k = 0; k < nz; ++k) {
-        for (size_t j = 0; j < ny; ++j) {
-            for (size_t i = 0; i < nx; ++i) {
-                Index index = cell_index({i, j, k});
-                m_cells[index] = CellType (index);
-            }
-        }
-    }
 }
 
 } // namespace engine

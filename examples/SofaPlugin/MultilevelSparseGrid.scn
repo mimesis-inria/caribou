@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<Node name="root" gravity="0 -9 1" dt="0.05">
+    <VisualStyle displayFlags="showBehaviorModels showWireframe" />
+    <Node name="Grid">
+        <MultilevelSparseGridTopology n="2 2 2"/>
+    </Node>
+</Node>
