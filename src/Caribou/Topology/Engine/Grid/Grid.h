@@ -6,6 +6,9 @@
 #include <cmath>
 
 #include <Caribou/config.h>
+#include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/Quad.h>
+
 
 namespace caribou
 {
@@ -33,6 +36,8 @@ struct Grid
     static constexpr size_t Dimension = CellType::Dimension;
     static constexpr size_t NumberOfNodes = CellType::NumberOfNodes;
 
+    struct CellRange;
+
     /** Default constructor is not permitted **/
     Grid() = delete;
 
@@ -55,7 +60,7 @@ struct Grid
     size() const
     { return m_dimensions;};
 
-    /** Get dimensions (hx, hy, hz) of a cell in this grid. **/
+    /** Get dimensions (hx, hy, hz) of a top-cell in this grid. **/
     inline VecFloat
     cell_size() const
     {
@@ -66,17 +71,13 @@ struct Grid
         return H;
     };
 
-    /** Get dimensions (hx, hy, hz) of a cell in this grid. **/
+    /** Get dimensions (hx, hy, hz) of a given (sub or top) cell in this grid. **/
     inline VecFloat
     cell_size(const CellType & cell) const
     {
-        const auto & N = number_of_subdivision();
-        const auto & S = size();
-        const auto   H = S.direct_division(N);
-
-        const auto & level = cell.level();
-
-        return H / std::pow(2, level);
+        const auto H = cell_size(); // Top-cell size
+        const auto l = cell.level(); // Cell level
+        return H / std::pow(2, cell.level());
     };
 
     /**
@@ -99,6 +100,30 @@ struct Grid
     get(const VecInt & grid_coordinates) const
     {
         return get(grid_coordinates);
+    }
+
+    /**
+     * Get the cell located at a given index.
+     * @throws std::out_of_range when the index is outside of this grid range of cells.
+     */
+    inline CellType &
+    get(const Int & index)
+    {
+        if (index >= m_cells.size())
+            throw std::out_of_range(
+                    "Trying to access a cell at index " + std::to_string(index) +
+                    " where this grid contains only " << std::to_string(m_cells.size()) << " outer cells.");
+        return m_cells[index];
+    }
+
+    /**
+     * Get the cell located at a given index.
+     * @throws std::out_of_range when the index is outside of this grid range of cells.
+     */
+    inline const CellType &
+    get(const Int & index) const
+    {
+        return get(index);
     }
 
     /**
@@ -130,6 +155,14 @@ struct Grid
      */
     virtual void subdivide(const Index & cell_index);
 
+    /** Get an regular hexahedron geometric representation (in space) of the given cell */
+    geometry::RegularLinearHexahedron hexahedron_from_cell(const CellType & cell);
+
+    /** Get an iterator over this grid leaf-cells. */
+    CellRange leaf_cells() const {
+        return CellRange(this);
+    }
+
 protected:
     ///< The anchor point position. It should be positioned at the center of the grid.
     VecFloat m_anchor;
@@ -149,6 +182,53 @@ protected:
     ///< subdivided, than the level 1 contains 2*CellType::NumberOfSubcells and the level 2 contains 1*CellType::NumberOfSubcells.
     ///< This counter will be used to assign numbers to every cell, nodes, edges and faces of this grid.
     std::vector<Int> m_number_of_cells_per_level;
+};
+
+
+template <class TCell>
+struct Grid<TCell>::CellRange
+{
+    using GridType = Grid<TCell>;
+    using CellType = TCell;
+    using VecFloat = typename CellType::VecFloat;
+    using Index = typename CellType::Index;
+    using VecInt = typename CellType::VecInt;
+    using Int = typename VecInt::ValueType;
+    using Float = typename VecFloat::ValueType;
+
+    struct CellIterator;
+
+    explicit CellRange(const GridType * const grid) : p_grid(grid) {}
+
+    CellIterator begin() const {
+        return CellIterator(p_grid, 0, p_grid->get(0));
+    }
+
+private:
+    const GridType * const p_grid;
+};
+
+template <class TCell>
+struct Grid<TCell>::CellRange::CellIterator
+{
+    using GridType = Grid<TCell>;
+    using CellType = TCell;
+    using Int = typename CellType::VecInt::ValueType;
+
+    explicit CellIterator(const GridType * const grid, const Int outer_cell_index, const CellType * current_cell)
+    : p_grid(grid), p_outer_cell_index(outer_cell_index), p_current_cell(current_cell)
+    {}
+
+private:
+    ///< The grid on which we are iterating over its leaf cells.
+    const GridType * const p_grid;
+
+    ///< This represent the index of the outer cell (in the level 0 of the grid) that contains p_current_cell
+    ///< (which can be the outer cell itself if it is a leaf, or one of its sub-cells if it is subdivided)
+    Int p_outer_cell_index;
+
+    ///< The current cell (or sub-cell) pointing by the iterator. It will always be a leaf-cell.
+    const CellType * p_current_cell;
 };
 
 } // namespace engine

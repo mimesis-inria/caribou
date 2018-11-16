@@ -142,6 +142,23 @@ Grid<TCell>::position(const Index & node_id) const
 }
 
 template <class TCell>
+geometry::RegularLinearHexahedron
+Grid<TCell>::hexahedron_from_cell(const CellType & cell)
+{
+    static_assert(Dimension == 3, "3D geometric representation can only be made from a 3D cell.");
+
+    // Position of the anchor node (node #0 in a hexa) of the cell relative to its outer cell (the top-cell without parent that contains it)
+    VecFloat anchor_node_position = {0, 0, 0};
+
+    // To find the anchor node position in the outer cell, we first need to compute its relative position in each of its parent cell
+    const CellType * current_cell = *cell;
+    while (current_cell->has_parent()) {
+        Index cell_index_in_parent = current_cell->index();
+
+    }
+}
+
+template <class TCell>
 void
 Grid<TCell>::subdivide(const Index & cell_index)
 {

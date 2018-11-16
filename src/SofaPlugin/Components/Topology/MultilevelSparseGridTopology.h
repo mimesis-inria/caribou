@@ -47,6 +47,9 @@ public:
 
     MultilevelSparseGridTopology();
     void init() override;
+    void draw(const sofa::core::visual::VisualParams* vparams) override;
+
+
 
     void update() override {};
     void setDirtyValue(const sofa::core::ExecParams* params = 0) override {
@@ -63,11 +66,10 @@ public:
     /// This method is needed by DDGNode
     BaseData* getData() const override { return nullptr; };
 
+    /// This method is needed to avoid ambiguity between DDGNode and BaseObject
     const std::string & getName() const override {
         return BaseObject::getName();
     }
-
-    void draw(const sofa::core::visual::VisualParams* vparams) override;
 
 private:
     void onUpdate();
