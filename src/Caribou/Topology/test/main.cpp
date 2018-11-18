@@ -6,6 +6,7 @@ TEST(Topology, Grid2D) {
     using namespace caribou::topology::engine;
     using Cell = Cell<2>;
     using Grid = Grid<Cell>;
+    using Coord = Grid::VecFloat;
 
     Grid grid(
             {0.75, 0.5} /* anchor */,
@@ -34,18 +35,24 @@ TEST(Topology, Grid2D) {
     ASSERT_EQ((Grid::Index)11, node_id);
     ASSERT_EQ(Grid::VecFloat({25.75, 50.5}), grid.position(node_id));
 
-//    // Subdivision test
-//    Grid2D & sub_grid = *cell.subdivide({2,2});
-//    Cell & sub_cell = sub_grid.get({1, 0});
-//    node_id = sub_cell.nodes()[1];
-//    ASSERT_EQ((Grid2D::Index)2, node_id);
-//    ASSERT_EQ(Grid2D::VecFloat({50.75, 50.5}), sub_grid.position(node_id));
+    // Subdivision test
+    Cell & outer_cell = grid.get({2,1});
+    outer_cell.subdivide();
+    Cell & inner_cell = outer_cell.child({1,0});
+
+    std::array<Coord, 4> p = grid.positions(inner_cell);
+
+    ASSERT_EQ(p[0], Coord({    63.25,      25.5         }));
+    ASSERT_EQ(p[1], Coord({    63.25+12.5, 25.5         }));
+    ASSERT_EQ(p[2], Coord({    63.25+12.5, 25.5+12.5    }));
+    ASSERT_EQ(p[3], Coord({    63.25,      25.5+12.5    }));
 }
 
 TEST(Topology, Grid3D) {
     using namespace caribou::topology::engine;
     using Cell = Cell<3>;
     using Grid = Grid<Cell>;
+    using Coord = Grid::VecFloat;
 
     Grid grid(
             {0.25, 0.5, 0.75} /* anchor */,
@@ -74,12 +81,21 @@ TEST(Topology, Grid3D) {
     // Positioning test
     ASSERT_EQ(Grid::VecFloat({50.25, 0.5, 50.75}), grid.position(node_id));
 
-//    // Subdivision test
-//    Grid3D & sub_grid = *cell.subdivide({2,2,2});
-//    Cell & sub_cell = sub_grid.get({0,1,1});
-//    node_id = sub_cell.nodes()[7];
-//    ASSERT_EQ((Grid3D::Index)24, node_id);
-//    ASSERT_EQ(Grid3D::VecFloat({50.25, 50.5, 100.75}), sub_grid.position(node_id));
+    // Subdivision test
+    Cell & outer_cell = grid.get({1,0,1});
+    outer_cell.subdivide();
+    Cell & inner_cell = outer_cell.child({0,1,0});
+
+    std::array<Coord, 8> p = grid.positions(inner_cell);
+
+    ASSERT_EQ(p[0], Coord({    50.25,    25.5,    50.75       }));
+    ASSERT_EQ(p[1], Coord({    50.25+25, 25.5,    50.75       }));
+    ASSERT_EQ(p[2], Coord({    50.25+25, 25.5+25, 50.75       }));
+    ASSERT_EQ(p[3], Coord({    50.25,    25.5+25, 50.75       }));
+    ASSERT_EQ(p[4], Coord({    50.25,    25.5,    50.75+25    }));
+    ASSERT_EQ(p[5], Coord({    50.25+25, 25.5,    50.75+25    }));
+    ASSERT_EQ(p[6], Coord({    50.25+25, 25.5+25, 50.75+25    }));
+    ASSERT_EQ(p[7], Coord({    50.25,    25.5+25, 50.75+25    }));
 }
 
 int main(int argc, char **argv) {

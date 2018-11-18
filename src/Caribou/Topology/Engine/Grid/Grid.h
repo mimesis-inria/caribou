@@ -6,9 +6,6 @@
 #include <cmath>
 
 #include <Caribou/config.h>
-#include <Caribou/Geometry/Hexahedron.h>
-#include <Caribou/Geometry/Quad.h>
-
 
 namespace caribou
 {
@@ -77,7 +74,7 @@ struct Grid
     {
         const auto H = cell_size(); // Top-cell size
         const auto l = cell.level(); // Cell level
-        return H / std::pow(2, cell.level());
+        return H / (1 << l); // H / 2^l
     };
 
     /**
@@ -131,10 +128,10 @@ struct Grid
      * @param grid_coordinates Cell location provided in terms of grid coordinates (i, j, k).
      * @throws std::out_of_range when the grid coordinates are outside of this grid subdivisions (nx, ny, nz).
      */
-    virtual Index cell_index(const VecInt & grid_coordinates) const;
+    Index cell_index(const VecInt & grid_coordinates) const;
 
     /** Get the grid location (i, j, k) at index cell_index */
-    virtual VecInt grid_coordinates(const Index & cell_index) const;
+    VecInt grid_coordinates(const Index & cell_index) const;
 
     /**
      * Get the indices of the nodes forming the cell located at grid_index (i, j, k). The indices of the nodes will be return
@@ -142,10 +139,10 @@ struct Grid
      * @param grid_coordinates Cell location provided in terms of grid coordinates (i, j, k).
      * @throws std::out_of_range when the grid coordinates are outside of this grid subdivisions (nx, ny, nz).
      */
-    virtual std::array<Index, NumberOfNodes> nodes(const VecInt & grid_coordinates) const;
+    std::array<Index, NumberOfNodes> nodes(const VecInt & grid_coordinates) const;
 
     /** Get the position of the node node_id **/
-    virtual VecFloat position(const Index & node_id) const;
+    VecFloat position(const Index & node_id) const;
 
     /**
      * Subdivide the cell at location cell_index
@@ -153,10 +150,10 @@ struct Grid
      * @throws std::logic_error when the cell to be subdivided is not a leaf-cell (is already subdivided).
      * @throws std::out_of_range when the cell_index doesn't point to any cell within this grid (subdivided cells indices included).
      */
-    virtual void subdivide(const Index & cell_index);
+    void subdivide(const Index & cell_index);
 
-    /** Get an regular hexahedron geometric representation (in space) of the given cell */
-    geometry::RegularLinearHexahedron hexahedron_from_cell(const CellType & cell);
+    /** Get a geometric representation (in space) of the given cell by returning the position in space of its node */
+    std::array<VecFloat, CellType::NumberOfNodes> positions(const CellType & cell);
 
     /** Get an iterator over this grid leaf-cells. */
     CellRange leaf_cells() const {

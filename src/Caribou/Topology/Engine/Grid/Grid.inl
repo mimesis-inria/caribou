@@ -2,6 +2,7 @@
 #define CARIBOU_TOPOLOGY_ENGINE_GRID_GRID_INL
 
 #include <Caribou/Topology/Engine/Grid/Grid.h>
+#include <array>
 
 namespace caribou
 {
@@ -142,27 +143,81 @@ Grid<TCell>::position(const Index & node_id) const
 }
 
 template <class TCell>
-geometry::RegularLinearHexahedron
-Grid<TCell>::hexahedron_from_cell(const CellType & cell)
+std::array<typename Grid<TCell>::VecFloat, TCell::NumberOfNodes>
+Grid<TCell>::positions(const CellType & cell)
 {
-    static_assert(Dimension == 3, "3D geometric representation can only be made from a 3D cell.");
-
-    // Position of the anchor node (node #0 in a hexa) of the cell relative to its outer cell (the top-cell without parent that contains it)
-    VecFloat anchor_node_position = {0, 0, 0};
+    // Position of the anchor node (node #0 in a hexa) of the sub-cell relative to its outer cell position
+    // (the top-cell without parent that contains it)
+    VecFloat anchor_subcell_node_position = (Dimension == 2) ? VecFloat({0, 0}) : VecFloat({0, 0, 0});
 
     // To find the anchor node position in the outer cell, we first need to compute its relative position in each of its parent cell
-    const CellType * current_cell = *cell;
+    const CellType * current_cell = &cell;
     while (current_cell->has_parent()) {
-        Index cell_index_in_parent = current_cell->index();
+        Index index = current_cell->index();
+        Index L = current_cell->level();
+        // The width (resp. height, resp. depth) of a sub-cell at level L is the width (resp. height, resp. depth)
+        // of the outer cell at level 0 divided by 2^L. We use this to accumulate the position of the node 0 in the current cell's parent.
 
+        // First, let's find the "grid" position of the node 0 in its parent cell
+        const Index nx = CellType::Nx; // Number of cells in the x direction
+        const Index ny = CellType::Ny; // Number of cells in the y direction
+
+        const Index k = (Dimension == 3) ? (index / (nx*ny)) : 0; // Node indice in the z direction
+        const Index j = (index - (k*nx*ny)) / nx; // Node indice in the y direction
+        const Index i = index - ((k*nx*ny) + (j*nx)); // Node indice in the x direction
+
+        // Next, we got two choice per axis. If the node 0 of the current cell is placed on the node 0 of its parent
+        // cell, we add nothing to anchor_node_position. If it is position on the second node, we add cell-width / 2
+        // which is equal to outer cell width / (2^L)
+
+        anchor_subcell_node_position[0] += (i==0) ? 0. : 1. / (1 << L); // 1 / 2^L
+        anchor_subcell_node_position[1] += (j==0) ? 0. : 1. / (1 << L); // 1 / 2^L
+
+        if (Dimension == 3)
+            anchor_subcell_node_position[2] += (k==0) ? 0. : 1. / (1 << L); // 1 / 2^L
+
+        current_cell = &current_cell->parent();
     }
+
+    const VecFloat H = cell_size(); // Width, height and depth of the outer cell
+    const VecInt D = grid_coordinates(current_cell->index()); // Outer cell's coordinate in the grid
+
+    // Scale the anchor position of the inner-cell with the real dimension of its outer-cell
+    anchor_subcell_node_position = anchor_subcell_node_position.direct_mult(H);
+
+    // Position of the anchor node of the outer-cell relative to the grid'anchor
+    VecFloat anchor_cell_node_position = H.direct_mult(D);
+
+    // Compute the world position of the anchor node of the sub-cell
+    anchor_subcell_node_position = m_anchor + anchor_cell_node_position + anchor_subcell_node_position;
+
+    // Finally, compute the remaining nodes of the sub-cell from its anchor node and its width, height and depth
+    std::array<VecFloat, CellType::NumberOfNodes> nodes;
+
+    const VecFloat h = H / (1 << cell.level()); // sub-cell dimension = outer-cell dimension / 2^L
+    const VecFloat dx = (Dimension == 3) ? VecFloat(h[0],  0,   0) :  VecFloat(h[0],  0);
+    const VecFloat dy = (Dimension == 3) ? VecFloat(  0, h[1],  0) :  VecFloat(  0, h[1]);
+    const VecFloat dz = (Dimension == 3) ? VecFloat(  0,   0, h[2]) : VecFloat(  0,   0);
+
+    nodes[0] = anchor_subcell_node_position;
+    nodes[1] = anchor_subcell_node_position + dx;
+    nodes[2] = anchor_subcell_node_position + dx + dy;
+    nodes[3] = anchor_subcell_node_position + dy;
+
+    if (Dimension == 3) {
+        nodes[4] = nodes[0] + dz;
+        nodes[5] = nodes[1] + dz;
+        nodes[6] = nodes[2] + dz;
+        nodes[7] = nodes[3] + dz;
+    }
+    return nodes;
 }
 
 template <class TCell>
 void
 Grid<TCell>::subdivide(const Index & cell_index)
 {
-
+    (void) (cell_index);
 }
 
 } // namespace engine

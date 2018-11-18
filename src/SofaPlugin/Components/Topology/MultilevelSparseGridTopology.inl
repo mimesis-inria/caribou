@@ -2,6 +2,7 @@
 #define SOFACARIBOU_COMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_INL
 
 #include <SofaPlugin/Components/Topology/MultilevelSparseGridTopology.h>
+#include <Caribou/Topology/Engine/Grid/Grid.inl>
 #include <sofa/core/visual/VisualParams.h>
 
 namespace caribou {

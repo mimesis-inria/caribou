@@ -34,6 +34,13 @@ struct Cell
     static constexpr size_t NumberOfNodes = (unsigned char) (1 << Dimension);
     static constexpr size_t NumberOfSubcells = (unsigned char) (1 << Dimension);
 
+    static constexpr char Nx = 2; // Number of sub-cells in the x direction
+    static constexpr char Ny = 2; // Number of sub-cells in the y direction
+    static constexpr char Nz = (char) ((Dimension == 2) ? 1 : 2); // Number of sub-cells in the z direction
+
+    static_assert(NumberOfNodes == Nx*Ny*Nz, "The total number of nodes doesn't match the number of nodes in each axis directions.");
+    static_assert(NumberOfNodes == NumberOfSubcells, "The total number of sub-cells doesn't match the number of sub-cells in each axis directions.");
+
     using VecFloat = algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using Index = size_t;
     using VecInt = algebra::Vector<Dimension, Index>;
@@ -112,7 +119,7 @@ struct Cell
                     + std::to_string(NumberOfSubcells) + " child cells."
             );
 
-        return *((*m_subcells)[index]);
+        return m_subcells->at(index);
     };
 
     /** Get the child cell at specified index. **/
