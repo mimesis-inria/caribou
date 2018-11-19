@@ -214,10 +214,12 @@ Grid<TCell>::positions(const CellType & cell)
 }
 
 template <class TCell>
-void
-Grid<TCell>::subdivide(const Index & cell_index)
+typename Grid<TCell>::CellType *
+Grid<TCell>::right_cell_of(const CellType & cell)
 {
-    (void) (cell_index);
+    if (cell.has_parent()) {
+        
+    }
 }
 
 } // namespace engine

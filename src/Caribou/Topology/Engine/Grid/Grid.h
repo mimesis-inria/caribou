@@ -144,16 +144,14 @@ struct Grid
     /** Get the position of the node node_id **/
     VecFloat position(const Index & node_id) const;
 
-    /**
-     * Subdivide the cell at location cell_index
-     * @param cell_index The index of the cell.
-     * @throws std::logic_error when the cell to be subdivided is not a leaf-cell (is already subdivided).
-     * @throws std::out_of_range when the cell_index doesn't point to any cell within this grid (subdivided cells indices included).
-     */
-    void subdivide(const Index & cell_index);
-
     /** Get a geometric representation (in space) of the given cell by returning the position in space of its node */
     std::array<VecFloat, CellType::NumberOfNodes> positions(const CellType & cell);
+
+    /** Get the cell directly at the right (x axis) of the given cell. If there are no cells at the right (we reach the
+     * boundary of the grid), null is returned. If there is multiple cells, only the cell of the same level (therefore
+     * of the same dimension) as the one given is returned. If there are no cell at the same level of the given one, the
+     * cell at the closest level is returned (this cell will therefore be larger than the given one). */
+    CellType * right_cell_of(const CellType & cell);
 
     /** Get an iterator over this grid leaf-cells. */
     CellRange leaf_cells() const {
@@ -178,7 +176,7 @@ protected:
     ///< If two cells within this grid are subdivided, and one of them is again
     ///< subdivided, than the level 1 contains 2*CellType::NumberOfSubcells and the level 2 contains 1*CellType::NumberOfSubcells.
     ///< This counter will be used to assign numbers to every cell, nodes, edges and faces of this grid.
-    std::vector<Int> m_number_of_cells_per_level;
+//    std::vector<Int> m_number_of_cells_per_level;
 };
 
 
@@ -198,7 +196,19 @@ struct Grid<TCell>::CellRange
     explicit CellRange(const GridType * const grid) : p_grid(grid) {}
 
     CellIterator begin() const {
-        return CellIterator(p_grid, 0, p_grid->get(0));
+        // Get the bottom-left most outer-cell of the grid
+        const CellType * bottom_left_cell = &p_grid->get(0);
+
+        // Go down its sub-cells tree until we get its bottom-left most leaf sub-cell
+        while (not bottom_left_cell->is_a_leaf()) {
+            bottom_left_cell = &bottom_left_cell->child(0);
+        }
+
+        return CellIterator(p_grid, 0, bottom_left_cell);
+    }
+
+    CellIterator end() const {
+        return CellIterator(p_grid, CellType::Nx * CellType::Ny * CellType::Nz, nullptr);
     }
 
 private:
@@ -208,6 +218,7 @@ private:
 template <class TCell>
 struct Grid<TCell>::CellRange::CellIterator
 {
+    using Self = Grid<TCell>::CellRange::CellIterator;
     using GridType = Grid<TCell>;
     using CellType = TCell;
     using Int = typename CellType::VecInt::ValueType;
@@ -215,6 +226,29 @@ struct Grid<TCell>::CellRange::CellIterator
     explicit CellIterator(const GridType * const grid, const Int outer_cell_index, const CellType * current_cell)
     : p_grid(grid), p_outer_cell_index(outer_cell_index), p_current_cell(current_cell)
     {}
+
+    Self& operator++() {
+//        num = TO >= FROM ? num + 1: num - 1;
+//        return *this;
+    }
+
+    Self operator++(int) {
+        Self retval = *this;
+        ++(*this);
+        return retval;
+    }
+
+    bool operator==(Self other) const {
+//        return num == other.num;
+    }
+
+    bool operator!=(Self other) const {
+        return !(*this == other);
+    }
+
+    const CellType * operator*() const {
+        return p_current_cell;
+    }
 
 private:
     ///< The grid on which we are iterating over its leaf cells.

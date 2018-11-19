@@ -36,6 +36,9 @@ void MultilevelSparseGridTopology<VecType>::init() {
     );
 
     const auto leaf_cells = p_grid->leaf_cells();
+    for (const auto & cell : leaf_cells) {
+
+    }
 }
 
 template <typename VecType>
