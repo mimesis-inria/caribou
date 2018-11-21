@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include <Caribou/config.h>
+#include <Caribou/Algebra/Vector.h>
 
 namespace caribou
 {
@@ -23,23 +24,21 @@ namespace algebra
  * to be used as a heap memory structure and is based on std::array for its storage.
  *
  *
- * @tparam N_ The number of lines
- * @tparam M_ The number of columns
- * @tparam TransposedData_ If true, the data will be stored by columns ([c1, c2, ..., cm]) instead of rows ([r1, r2, ..., rn]).
- *                        Set this to true if you are doing a lot of matrix*vector operations.
+ * @tparam R_ The number of rows
+ * @tparam C_ The number of columns
  * @tparam ValueType_ The data type of the matrix's components (default to float)
  */
-template <size_t N_, size_t M_, bool TransposedData_ = true, typename ValueType_=FLOATING_POINT_TYPE>
-struct Matrix : public std::array<ValueType_, N_*M_>
+template <size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+struct Matrix : public std::array<ValueType_, R_*C_>
 {
-    static constexpr size_t N = N_; ///< Number of rows
-    static constexpr size_t M = M_; ///< Number of columns per line
-    static constexpr bool TransposedData = TransposedData_; ///< Internal data stored by columns
+    static constexpr size_t R = R_; ///< Number of rows
+    static constexpr size_t C = C_; ///< Number of columns per row
+    static constexpr size_t N = R*C; ///< Number of elements
 
     using ValueType = ValueType_;
-    using Self = Matrix<N, M, TransposedData, ValueType>;
-    using Line = Matrix<1, M, TransposedData, ValueType>;
-    using Column = Matrix<N, 1, TransposedData, ValueType>;
+    using Self = Matrix<R, C, ValueType>;
+    using Row = Matrix<1, C, ValueType>;
+    using Column = Matrix<R, 1, ValueType>;
     using Index = size_t;
 
     //////////////////////
@@ -69,18 +68,10 @@ struct Matrix : public std::array<ValueType_, N_*M_>
      * );.
      */
     template <typename OtherValueType>
-    Matrix(OtherValueType const (&components)[N][M]) {
-        if (TransposedData) {
-            for (size_t column = 0; column < M; ++column) {
-                for (size_t row = 0; row < N; ++row) {
-                    (*this)[column*N + row] = static_cast<ValueType>(components[row][column]);
-                }
-            }
-        } else {
-            for (size_t row = 0; row < N; ++row) {
-                for (size_t column = 0; column < M; ++column) {
-                    (*this)[row*M + column] = static_cast<ValueType>(components[row][column]);
-                }
+    Matrix(OtherValueType const (&components)[R][C]) {
+        for (size_t row = 0; row < R; ++row) {
+            for (size_t column = 0; column < C; ++column) {
+                (*this)[row*C + column] = static_cast<ValueType>(components[row][column]);
             }
         }
     }
@@ -88,19 +79,11 @@ struct Matrix : public std::array<ValueType_, N_*M_>
     /**
      * Copy constructor from another matrix of a different data type
      */
-    template <typename OtherValueType, bool OtherTransposedData>
-    Matrix(const Matrix<N, M, OtherTransposedData, OtherValueType> & other) {
-        if (TransposedData) {
-            for (size_t column = 0; column < M; ++column) {
-                for (size_t row = 0; row < N; ++row) {
-                    (*this)[column*N + row] = static_cast<ValueType>(other(row, column));
-                }
-            }
-        } else {
-            for (size_t row = 0; row < N; ++row) {
-                for (size_t column = 0; column < M; ++column) {
-                    (*this)[row*M + column] = static_cast<ValueType>(other(row, column));
-                }
+    template <typename OtherValueType>
+    Matrix(const Matrix<R, C, OtherValueType> & other) {
+        for (size_t row = 0; row < R; ++row) {
+            for (size_t column = 0; column < C; ++column) {
+                (*this)[row*C + column] = static_cast<ValueType>(other(row, column));
             }
         }
     }
@@ -112,50 +95,111 @@ struct Matrix : public std::array<ValueType_, N_*M_>
     inline ValueType &
     operator () (const Index & row, const Index & column)
     {
-        return (TransposedData ? (*this)[column*N + row] : (*this)[row*M + column]);
+        return (*this)[row*C + column];
     }
 
     inline const ValueType &
     operator () (const Index & row, const Index & column) const
     {
-        return (TransposedData ? (*this)[column*N + row] : (*this)[row*M + column]);
+        return (*this)[row*C + column];
     }
 
     ///////////////////
     //// Operators ////
     ///////////////////
 
-    /** Comparison operator with a matrix of a same dimension and with component data type of OtherValueType **/
-    template<bool OtherTransposedData, typename OtherValueType>
-    constexpr bool
-    operator==(const Matrix<M, N, OtherTransposedData, OtherValueType> & other) const
+    /** Assignment operator **/
+    template<typename OtherValueType>
+    Matrix &
+    operator = (const Matrix<R, C, OtherValueType> & other)
     {
-        if (TransposedData == OtherTransposedData)
-            return std::equal(this->begin(), this->end(), other.begin());
-        else
-            return std::equal(this->begin(), this->end(), other.transposed().begin());
+        for (size_t i = 0; i < N; ++i)
+            (*this)[i] = other[i];
+        return (*this);
     }
+
+
+    /** Comparison operator with a matrix of a same dimension and with component data type of OtherValueType **/
+    template<typename OtherValueType>
+    bool
+    operator==(const Matrix<C, R, OtherValueType> & other) const
+    {
+        return std::equal(this->begin(), this->end(), other.begin());
+    }
+
+    /** Matrix multiplication **/
+    template<size_t M, typename OtherValueType>
+    Matrix<R, M, ValueType>
+    operator*(const Matrix<C, M, OtherValueType> & other) const
+    {
+        Matrix<R, M, ValueType> r;
+        for (size_t i = 0; i < R; ++i) {
+            for (size_t j = 0; j < M; ++j) {
+                r(i, j)=(*this)(i,0) * other(0, j);
+                for(size_t k=1; k<C; k++)
+                    r(i, j) += (*this)(i, k) * other(k, j);
+            }
+        }
+        return r;
+    }
+
+    /** Matrix-vector multiplication **/
+    template<typename OtherValueType>
+    Matrix<R, 1, ValueType>
+    operator*(const Vector<C, OtherValueType> & other) const
+    {
+        Matrix<R, 1, ValueType> r;
+        for (size_t i = 0; i < R; ++i) {
+            r[i] = (*this)(i,0) * other[0];
+            for (size_t j = 1; j < C; ++j) {
+                r[i]+=(*this)(i,j) * other[j];
+            }
+        }
+        return r;
+    }
+
+    /** Matrix addition **/
+    template<typename OtherValueType>
+    Matrix<R, C, ValueType>
+    operator+ (const Matrix<R, C, OtherValueType> & other) const
+    {
+        Matrix<R, C, ValueType> result;
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::plus<ValueType>());
+        return result;
+    }
+
+    template<typename OtherValueType>
+    Matrix<R, C, ValueType> &
+    operator+= (const Matrix<R, C, OtherValueType> & other)
+    {
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(*this), std::plus<ValueType>());
+        return *this;
+    }
+
+    /** Matrix subtraction **/
+    template<typename OtherValueType>
+    Matrix<R, C, ValueType>
+    operator- (const Matrix<R, C, OtherValueType> & other) const
+    {
+        Matrix<R, C, ValueType> result;
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ValueType>());
+        return result;
+    }
+
+
 
     /////////////////////////////////
     //// Mathematical operations ////
     /////////////////////////////////
 
     /** Get the transposed matrix */
-    inline Matrix<M, N, TransposedData, ValueType>
+    inline Matrix<C, R, ValueType>
     transposed() const
     {
-        Matrix<M, N, TransposedData, ValueType> Mt;
-        if (TransposedData) {
-            for (size_t column = 0; column < N; ++column) {
-                for (size_t row = 0; row < M; ++row) {
-                    Mt[column*M + row] = (*this)(column, row);
-                }
-            }
-        } else {
-            for (size_t row = 0; row < M; ++row) {
-                for (size_t column = 0; column < N; ++column) {
-                    Mt[row*N + column] = (*this)(column, row);
-                }
+        Matrix<C, R, ValueType> Mt;
+        for (size_t row = 0; row < C; ++row) {
+            for (size_t column = 0; column < R; ++column) {
+                Mt[row*R + column] = (*this)(column, row);
             }
         }
 
@@ -163,14 +207,14 @@ struct Matrix : public std::array<ValueType_, N_*M_>
     }
 
     /** Returns the identity matrix */
-    static Matrix<N,M,TransposedData, ValueType> Identity()
+    static Matrix<R,C, ValueType> Identity()
     {
-        Matrix<N,M,TransposedData, ValueType> id(true /*initialize to zero*/);
+        Matrix<R,C, ValueType> id(true /*initialize to zero*/);
 
-        if (N != M)
+        if (R != C)
             return id;
 
-        for (Index i = 0; i < M; i++)
+        for (Index i = 0; i < C; i++)
             id(i, i) = 1;
 
         return id;
@@ -188,28 +232,21 @@ struct Matrix : public std::array<ValueType_, N_*M_>
  * Compute the inverse of a matrix
  * @throws std::overflow_error when the matrix is singular
  */
-template <size_t N_, size_t M_, bool TransposedData_ = true, typename ValueType_=FLOATING_POINT_TYPE>
-Matrix<N_, M_, TransposedData_, ValueType_> inverse(const Matrix<N_, M_, TransposedData_, ValueType_> & m);
+template <size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+Matrix<R_, C_, ValueType_> inverse(const Matrix<R_, C_, ValueType_> & m);
 
 /**
  * Compute the determinant of a matrix
  */
-template <size_t N_, size_t M_, bool TransposedData_ = true, typename ValueType_=FLOATING_POINT_TYPE>
-ValueType_ determinant(const Matrix<N_, M_, TransposedData_, ValueType_> & m);
+template <size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+ValueType_ determinant(const Matrix<R_, C_, ValueType_> & m);
 
 // The following templates will be instantiated in the algebra library. If you are using only those, you don't need to
 // include the matrix.inl in your code, simply link the algebra library to your program/library.
-extern template struct Matrix<3, 3, true, FLOATING_POINT_TYPE>;
-extern template struct Matrix<3, 3, false, FLOATING_POINT_TYPE>;
-
-extern template struct Matrix<2, 2, true, FLOATING_POINT_TYPE>;
-extern template struct Matrix<2, 2, false, FLOATING_POINT_TYPE>;
-
-extern template struct Matrix<3, 1, true, FLOATING_POINT_TYPE>;
-extern template struct Matrix<3, 1, false, FLOATING_POINT_TYPE>;
-
-extern template struct Matrix<1, 3, true, FLOATING_POINT_TYPE>;
-extern template struct Matrix<1, 3, false, FLOATING_POINT_TYPE>;
+extern template struct Matrix<3, 3, FLOATING_POINT_TYPE>;
+extern template struct Matrix<2, 2, FLOATING_POINT_TYPE>;
+extern template struct Matrix<3, 1, FLOATING_POINT_TYPE>;
+extern template struct Matrix<1, 3, FLOATING_POINT_TYPE>;
 
 } // namespace algebra
 

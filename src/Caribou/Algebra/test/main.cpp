@@ -84,6 +84,49 @@ TEST(Algebra, Matrix) {
 
     ASSERT_EQ(m2_inverted, m2.inverted());
 
+    // Operation
+    Matrix<3,3> m3 (
+            {
+                    {1,2,3},  // Row 0
+                    {4,5,6},  // Row 1
+                    {7,8,9},  // Row 2
+            }
+    );
+
+    Matrix<3,1> v1 ({
+        {10},
+        {11},
+        {12}
+    });
+
+    Vector<3> v2 {10, 11, 12};
+
+    Matrix<3,1> res ({
+        {10*1 + 11*2 + 12*3},
+        {10*4 + 11*5 + 12*6},
+        {10*7 + 11*8 + 12*9}
+    });
+
+    ASSERT_EQ(res, m3*v1);
+    ASSERT_EQ(res, m3*v2);
+
+    Matrix<3,3> res2 = {{
+        {2,4,6},  // Row 0
+        {8,10,12},  // Row 1
+        {14,16,18},  // Row 2
+    }};
+
+    Matrix<3,3> m4 = {{
+        {1,2,3},  // Row 0
+        {4,5,6},  // Row 1
+        {7,8,9},  // Row 2
+    }};
+
+    ASSERT_EQ(res2, m4+m4);
+    m4 += m4;
+    ASSERT_EQ(res2, m4);
+
+
 }
 
 int main(int argc, char **argv) {
