@@ -17,7 +17,7 @@ namespace algebra
 {
 
 /**
- * A simple representation of an Euclidean vector.
+ * A simple representation of a vector.
  *
  * This class is a minimum memory container of a vector that offers many operations and tool functions. It is designed
  * to be used as a heap memory structure and is based on std::array for its storage.
@@ -372,7 +372,7 @@ private:
 
 } // namespace caribou
 
-template <size_t Dim, typename TComponent=float>
+template <size_t Dim, typename TComponent=FLOATING_POINT_TYPE>
 inline std::ostream&
 operator<<(std::ostream& os, const caribou::algebra::Vector<Dim, TComponent>& v)
 {
@@ -382,6 +382,13 @@ operator<<(std::ostream& os, const caribou::algebra::Vector<Dim, TComponent>& v)
     });
     os << std::string(")");
     return os;
+}
+
+template <size_t Dim, typename TOtherType, typename TComponent=FLOATING_POINT_TYPE>
+inline caribou::algebra::Vector<Dim, TComponent>
+operator * (const TOtherType & a, const caribou::algebra::Vector<Dim, TComponent> & v)
+{
+    return v*a;
 }
 
 #endif //CARIBOU_ALGEBRA_VECTOR_H

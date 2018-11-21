@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 #include <Caribou/Algebra/Vector.h>
+#include <Caribou/Algebra/Matrix.h>
 
-TEST(Geometry, Vector) {
+TEST(Algebra, Vector) {
     using namespace caribou::algebra;
 
     // Constructor and assigments tests
@@ -44,6 +45,46 @@ TEST(Geometry, Vector) {
     ASSERT_EQ(v10.unit(), v11);
 }
 
+TEST(Algebra, Matrix) {
+    using namespace caribou::algebra;
+
+    // Constructor
+    Matrix<4,3> m1 (
+        {
+            {1,2,3},  // Row 0
+            {4,5,6},  // Row 1
+            {7,8,9},  // Row 2
+            {10,11,12}  // Row 3
+        }
+    );
+    ASSERT_EQ(8, m1(2,1));
+
+    Matrix<3,4> m1_t = m1.transposed();
+    ASSERT_EQ(m1(1,2), m1_t(2,1));
+
+    // Determinant
+    Matrix<3,3> m2 (
+            {
+                    {4,2,67},  // Row 0
+                    {4,55,6},  // Row 1
+                    {7,8,90},  // Row 2
+            }
+    );
+
+    ASSERT_EQ(-4679, m2.determinant());
+
+    // Inverse
+    Matrix<3,3> m2_inverted (
+            {
+                    {-1.0476597563581964,-0.07608463346868989,0.784996794186792},  // Row 0
+                    {0.06796324000854884,	0.023295575977773028,-0.052147894849326776},  // Row 1
+                    {0.0754434708270998,0.0038469758495405,-0.04530882667236589},  // Row 2
+            }
+    );
+
+    ASSERT_EQ(m2_inverted, m2.inverted());
+
+}
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
