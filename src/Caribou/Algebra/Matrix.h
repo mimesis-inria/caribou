@@ -168,6 +168,7 @@ struct Matrix : public std::array<ValueType_, R_*C_>
         return result;
     }
 
+    /** Matrix addition-assignment **/
     template<typename OtherValueType>
     Matrix<R, C, ValueType> &
     operator+= (const Matrix<R, C, OtherValueType> & other)
@@ -184,6 +185,38 @@ struct Matrix : public std::array<ValueType_, R_*C_>
         Matrix<R, C, ValueType> result;
         std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ValueType>());
         return result;
+    }
+
+    /** Matrix subtraction-assignment **/
+    template<typename OtherValueType>
+    Matrix<R, C, ValueType> &
+    operator-= (const Matrix<R, C, OtherValueType> & other)
+    {
+        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(*this), std::minus<ValueType>());
+        return *this;
+    }
+
+    /** Compute the exponent of a matrix. If the exponent is negative, we first inverse the matrix. **/
+    template<typename Integer>
+    Matrix<R, C, ValueType>
+    operator^ (const Integer & exponent)
+    {
+        static_assert(std::is_integral<Integer>::value, "The exponent must be of integral type (ex. int, char, long, ...)");
+
+        if (R != C)
+            throw std::logic_error("Only the exponent of squared matrix can be computed.");
+
+        if (exponent == 0)
+            return Matrix<R, C, ValueType>::Identity();
+
+        Integer N = (exponent < 0 ? -exponent : exponent);
+        Matrix<R, C, ValueType> M = (exponent < 0 ? (*this).inverted() : (*this));
+        Matrix<R, C, ValueType> res = M;
+
+        for (Integer i = 1; i < N; ++i)
+            res = res*M;
+
+        return res;
     }
 
 

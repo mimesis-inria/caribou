@@ -83,6 +83,7 @@ TEST(Algebra, Matrix) {
     );
 
     ASSERT_EQ(m2_inverted, m2.inverted());
+    ASSERT_EQ(m2_inverted, m2^-1);
 
     // Operation
     Matrix<3,3> m3 (
