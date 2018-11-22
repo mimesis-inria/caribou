@@ -164,6 +164,7 @@ TEST(Geometry, Quad) {
 
 TEST(Geometry, Hexahedron) {
     using namespace caribou::geometry;
+    using Vector = Point3D::VectorType;
 
     // Constructors test
     Point3D p1, p2, p3, p4, p5, p6, p7, p8;
@@ -181,7 +182,11 @@ TEST(Geometry, Hexahedron) {
     ASSERT_EQ(2, edge_0.length());
 
     auto face_0 = base_hexa.face(0);
-    ASSERT_EQ(Point3D::VectorType(0, 0, 1), face_0.normal());
+    ASSERT_EQ(Vector(0, 0, 1), face_0.normal());
+
+    // Shape functions
+    // World coordinates should be equal to local coordinates if the hexahedron is elemental (-1 to 1 for x, y and z axis)
+    ASSERT_EQ(Vector(0, 0, 0), LinearHexahedron().from_local_coordinate(Vector(0, 0, 0)));
 }
 
 int main(int argc, char **argv) {

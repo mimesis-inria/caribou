@@ -1,13 +1,15 @@
 #ifndef CARIBOU_GEOMETRY_POINT_H
 #define CARIBOU_GEOMETRY_POINT_H
 
-#include <Caribou/Algebra/Vector.h>
 #include <cassert>
 #include <numeric>
 #include <cstddef>
 #include <array>
 #include <initializer_list>
 #include <algorithm>
+
+#include <Caribou/config.h>
+#include <Caribou/Algebra/Vector.h>
 
 namespace caribou
 {
@@ -24,7 +26,7 @@ class BasePoint
 {
 public:
     static constexpr size_t Dimension = Dim;
-    using VectorType = caribou::algebra::Vector<Dimension>;
+    using VectorType = caribou::algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using ValueType = typename VectorType::ValueType;
 
     BasePoint() = default;

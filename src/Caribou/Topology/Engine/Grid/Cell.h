@@ -3,14 +3,11 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
-#include <Caribou/Geometry/Hexahedron.h>
 
 #include <memory>
 
 namespace caribou
 {
-
-using namespace geometry;
 
 namespace topology
 {

@@ -5,6 +5,8 @@
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Quad.h>
 
+#include <Caribou/Algebra/Matrix.h>
+
 namespace caribou
 {
 namespace geometry
@@ -26,6 +28,7 @@ struct Hexahedron
     using VectorType = typename PointType::VectorType;
     using ValueType = typename VectorType::ValueType;
     using SegmentType = Segment<3>;
+    using Mat33 = algebra::Matrix<3,3>;
 
     static_assert(NumberOfNodes >= 8, "A hexahedron must have at least eight nodes.");
 
@@ -103,6 +106,8 @@ struct LinearHexahedron : public Hexahedron<8>
     using PointType = typename Base::PointType;
     using SegmentType = typename Base::SegmentType;
     using FaceType = Quad<3>;
+    using Float = typename VectorType::ValueType;
+    using Index = size_t;
 
     LinearHexahedron() : Base ({
        //  {xi, eta, zeta}
@@ -138,7 +143,7 @@ struct LinearHexahedron : public Hexahedron<8>
      *     0----------------1
      *
      */
-    PointType node(size_t index) const {
+    PointType node(Index index) const {
         return Base::nodes[index];
     };
 
@@ -158,13 +163,13 @@ struct LinearHexahedron : public Hexahedron<8>
      *     |    |           |......... 1
      * 3 ..|    +-----------|----+
      *     |   /      4     |   /
-     *     |  /             |  /...... 9
-     * 8 ..../              | /
+     * 8 ..|../             |  /...... 9
+     *     | /              | /
      *     |/        0      |/
      *     +----------------+
      *
      */
-    SegmentType edge(size_t index) const {
+    SegmentType edge(Index index) const {
         static constexpr std::array<std::array<unsigned char, 2>, 12> edges {{
             {0, 1}, // 0
             {1, 2}, // 1
@@ -209,7 +214,7 @@ struct LinearHexahedron : public Hexahedron<8>
      *               .
      *               4
      */
-    FaceType face(size_t index) const {
+    FaceType face(Index index) const {
         static const std::array<std::array<unsigned char, 4>, 6> nodes_of_face = {{
             {0, 1, 2, 3}, // 0 ; Edges = {0, 1, 2, 3,}
             {3, 7, 4, 0}, // 1 ; Edges = {11, 7, 8, 3}
@@ -225,6 +230,109 @@ struct LinearHexahedron : public Hexahedron<8>
                 Base::nodes[nodes_of_face[index][2]],
                 Base::nodes[nodes_of_face[index][3]]
          };
+    };
+
+    /**
+     * Compute the shape value of the hexa's node i evaluated at local coordinates {xi, eta, zeta}.
+     */
+    inline Float
+    N(const Index i, const Float & xi, const Float & eta, const Float & zeta) const
+    {
+        const VectorType Xi_i = LinearHexahedron().node(i); // Local coordinates of each node
+        const Float & xi_i =   Xi_i[0];
+        const Float & eta_i =  Xi_i[1];
+        const Float & zeta_i = Xi_i[2];
+
+        return Float(1/8.) * (1 + xi_i*xi) * (1 + eta_i*eta) * (1 + zeta_i*zeta);
+    }
+
+    /**
+     * Compute the shape (N) derivatives w.r.t the local frame Xi {dN/dxi, dN/deta, dN/dzeta} of the hexa's node i evaluated
+     * at local coordinates {xi, eta, zeta}.
+     */
+    inline VectorType
+    dN_dXi(const Index i, const Float & xi, const Float & eta, const Float & zeta) const
+    {
+        const VectorType Xi_i = LinearHexahedron().node(i); // Local coordinates of each node
+        const Float & xi_i =   Xi_i[0];
+        const Float & eta_i =  Xi_i[1];
+        const Float & zeta_i = Xi_i[2];
+
+        return VectorType({
+           1./8 * (        xi_i     * (1 + eta_i*eta) * (1 + zeta_i*zeta)   ),
+           1./8 * (   (1 + xi_i*xi) *      eta_i      * (1 + zeta_i*zeta)   ),
+           1./8 * (   (1 + xi_i*xi) * (1 + eta_i*eta) *      zeta_i         )
+        });
+    }
+
+    /**
+     * Compute the shape (N) derivatives w.r.t. the global frame X (dN/dx, dN/dy, dN/dz) of the hexa's node i evaluated
+     * at local coordinates {xi, eta, zeta}.
+     */
+    inline VectorType
+    dN_dX(const Index i, const Float & xi, const Float & eta, const Float & zeta) const
+    {
+        Mat33 J = Jacobian(xi, eta, zeta);
+        const VectorType dNdXi = dN_dXi(i, xi, eta, zeta);
+
+        return (J^-1) * dNdXi;
+    }
+
+    /**
+     * Compute the Jacobian matrix of the shape function N evaluated at local coordinates {xi, eta, zeta}.
+     *
+     * The Jacobian is defined as:
+     *
+     *     | dx/dXi    dy/dXi   dz/dXi   |   | sum dNi/dXi   xi    sum dNi/dXi   yi    sum dNi/dXi   zi |
+     * J = | dx/dEta   dy/dEta  dz/dEta  | = | sum dNi/dEta  xi    sum dNi/dEta  yi    sum dNi/dEta  zi |
+     *     | dx/dZeta  dy/dZeta dz/dZeta |   | sum dNi/dZeta xi    sum dNi/dZeta yi    sum dNi/dZeta zi |
+     *
+     * where dN/dxi (resp. deta, dzeta) is the partial derivative of the shape function at node i (xi, yi, zi)
+     * w.r.t the local frame Xi {Xi, Eta, Zeta} evaluated at local coordinate  {xi, eta, zeta}
+     */
+    inline Mat33
+    Jacobian(const Float & xi, const Float & eta, const Float & zeta) const
+    {
+        Mat33 result (true /* initizalise_to_zero */);
+
+        for (Index i = 0; i < NumberOfNodes; ++i) {
+            VectorType coordinates = node(i).coordinates;
+            const Float & x = coordinates[0];
+            const Float & y = coordinates[1];
+            const Float & z = coordinates[2];
+            const VectorType dNi_dXi = dN_dXi(i, xi, eta, zeta);
+            Mat33 j = {{
+                {dNi_dXi[0]*x, dNi_dXi[0]*y, dNi_dXi[0]*z},
+                {dNi_dXi[1]*x, dNi_dXi[1]*y, dNi_dXi[1]*z},
+                {dNi_dXi[2]*x, dNi_dXi[2]*y, dNi_dXi[2]*z}
+            }};
+            result += j;
+        };
+
+        return result;
+    }
+
+    /** Get the global (world) coordinates (x, y, z) of a point inside the hexa from its local coordinates (xi, eta, zeta). */
+    inline VectorType
+    from_local_coordinate(const VectorType & local_coordinate) {
+        const Float & xi =   local_coordinate[0];
+        const Float & eta =  local_coordinate[1];
+        const Float & zeta = local_coordinate[2];
+        std::array<VectorType, 8> x = {
+                node(0).coordinates, node(1).coordinates, node(2).coordinates, node(3).coordinates,
+                node(4).coordinates, node(5).coordinates, node(6).coordinates, node(7).coordinates
+        };
+
+        return (
+            N(0, xi, eta, zeta) * x[0] +
+            N(1, xi, eta, zeta) * x[1] +
+            N(2, xi, eta, zeta) * x[2] +
+            N(3, xi, eta, zeta) * x[3] +
+            N(4, xi, eta, zeta) * x[4] +
+            N(5, xi, eta, zeta) * x[5] +
+            N(6, xi, eta, zeta) * x[6] +
+            N(7, xi, eta, zeta) * x[7]
+        );
     };
 
     inline FaceType
