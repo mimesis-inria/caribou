@@ -10,14 +10,14 @@ namespace algebra
 {
 
 
-template <size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+template <size_t R_, size_t C_, typename ValueType_>
 Matrix<R_, C_, ValueType_>
 inverse(const Matrix<R_, C_, ValueType_> & /* m */)
 {
     throw std::logic_error("Inverse of Matrix " + std::to_string(R_) + "x" + std::to_string(C_) + " isn't implemented.");
 }
 
-template <typename ValueType_=FLOATING_POINT_TYPE>
+template <typename ValueType_>
 Matrix<2, 2, ValueType_>
 inverse(const Matrix<2, 2, ValueType_> & from)
 {
@@ -38,7 +38,7 @@ inverse(const Matrix<2, 2, ValueType_> & from)
     return dest;
 }
 
-template <typename ValueType_=FLOATING_POINT_TYPE>
+template <typename ValueType_>
 Matrix<3, 3, ValueType_>
 inverse(const Matrix<3, 3, ValueType_> & from)
 {
@@ -64,21 +64,21 @@ inverse(const Matrix<3, 3, ValueType_> & from)
     return dest;
 }
 
-template <size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+template <size_t R_, size_t C_, typename ValueType_>
 ValueType_
 determinant(const Matrix<R_, C_, ValueType_> & /* m */)
 {
     throw std::logic_error("Determinant of Matrix " + std::to_string(R_) + "x" + std::to_string(C_) + " isn't implemented.");
 }
 
-template <typename ValueType_=FLOATING_POINT_TYPE>
+template <typename ValueType_>
 ValueType_
 determinant(const Matrix<2, 2, ValueType_> & m)
 {
     return m(0,0)*m(1,1) - m(1,0)*m(0,1);
 }
 
-template <typename ValueType_=FLOATING_POINT_TYPE>
+template <typename ValueType_>
 ValueType_
 determinant(const Matrix<3, 3, ValueType_> & m)
 {

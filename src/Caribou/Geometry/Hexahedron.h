@@ -259,9 +259,9 @@ struct LinearHexahedron : public Hexahedron<8>
         const Float & zeta_i = Xi_i[2];
 
         return VectorType({
-           1./8 * (        xi_i     * (1 + eta_i*eta) * (1 + zeta_i*zeta)   ),
-           1./8 * (   (1 + xi_i*xi) *      eta_i      * (1 + zeta_i*zeta)   ),
-           1./8 * (   (1 + xi_i*xi) * (1 + eta_i*eta) *      zeta_i         )
+           1./8 * (        xi_i     * (1 + eta_i*eta) * (1 + zeta_i*zeta)   ), // dN / dxi
+           1./8 * (   (1 + xi_i*xi) *      eta_i      * (1 + zeta_i*zeta)   ), // dN / deta
+           1./8 * (   (1 + xi_i*xi) * (1 + eta_i*eta) *      zeta_i         )  // dN / dzeta
         });
     }
 

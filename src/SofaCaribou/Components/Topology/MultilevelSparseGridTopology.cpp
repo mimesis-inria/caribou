@@ -1,15 +1,12 @@
 #include <sofa/core/ObjectFactory.h>
 #include "MultilevelSparseGridTopology.inl"
 
-namespace caribou {
-namespace SofaPlugin {
+namespace SofaCaribou {
 namespace components {
 namespace topology {
 
 using sofa::defaulttype::Vec2Types;
 using sofa::defaulttype::Vec3Types;
-
-
 
 // This will force the compiler to compile the class with some template type
 template class MultilevelSparseGridTopology<Vec2Types>;
@@ -23,5 +20,4 @@ int MultilevelSparseGridTopologyClass = sofa::core::RegisterObject("Caribou Mult
 
 } // namespace topology
 } // namespace components
-} // namespace SofaPlugin
-} // namespace caribou
+} // namespace SofaCaribou

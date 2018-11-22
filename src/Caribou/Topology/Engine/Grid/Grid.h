@@ -238,8 +238,9 @@ struct Grid<TCell>::CellRange::CellIterator
         return retval;
     }
 
-    bool operator==(Self other) const {
+    bool operator==(Self /*other*/) const {
 //        return num == other.num;
+        return true;
     }
 
     bool operator!=(Self other) const {

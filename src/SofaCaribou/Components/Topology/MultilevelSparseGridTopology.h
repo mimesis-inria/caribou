@@ -13,8 +13,7 @@
 #include <array>
 #include <memory>
 
-namespace caribou {
-namespace SofaPlugin {
+namespace SofaCaribou {
 namespace components {
 namespace topology {
 
@@ -34,8 +33,8 @@ public:
     using CellType = caribou::topology::engine::Cell<Dimension>;
     using GridType = caribou::topology::engine::Grid<CellType>;
     using Index = size_t;
-    using VecFloat = algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
-    using VecInt   = algebra::Vector<Dimension, Index>;
+    using VecFloat = caribou::algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
+    using VecInt   = caribou::algebra::Vector<Dimension, Index>;
     using Int   = typename VecInt::ValueType;
     using Float = typename VecFloat::ValueType;
 
@@ -87,7 +86,6 @@ extern template class MultilevelSparseGridTopology<Vec3Types>;
 
 } // namespace topology
 } // namespace components
-} // namespace SofaPlugin
-} // namespace caribou
+} // namespace SofaCaribou
 
 #endif //SOFACARIBOU_COMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_H
