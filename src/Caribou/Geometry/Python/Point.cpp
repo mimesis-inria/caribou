@@ -17,15 +17,15 @@ namespace python
 
 void create_point(py::module & m) {
 
-    py::class_<Point1D>(m, "Point1D")
-            .def(py::init<>())
-            .def(py::init<float>())
-            .def(py::init<double>())
-            .def_property("x",
-                          [](const Point1D &p) { return p.x(); },
-                          [](Point1D &p, const float & x) { p.x() = x; }
-            )
-            ;
+//    py::class_<Point1D>(m, "Point1D")
+//            .def(py::init<>())
+//            .def(py::init<float>())
+//            .def(py::init<double>())
+//            .def_property("x",
+//                          [](const Point1D &p) { return p.x(); },
+//                          [](Point1D &p, const float & x) { p.x() = x; }
+//            )
+//            ;
 
     py::class_<Point2D>(m, "Point2D")
             .def(py::init<>())

@@ -4,7 +4,7 @@
 #include <Caribou/Geometry/Polygon.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
-#include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/LinearHexahedron.h>
 
 TEST(Geometry, Point) {
     using namespace caribou::geometry;
@@ -164,20 +164,21 @@ TEST(Geometry, Quad) {
 
 TEST(Geometry, Hexahedron) {
     using namespace caribou::geometry;
-    using Vector = Point3D::VectorType;
+    using Vector = LinearHexahedron::VectorType;
+    using Float = LinearHexahedron::Float;
 
     // Constructors test
     Point3D p1, p2, p3, p4, p5, p6, p7, p8;
-    Hexahedron<8> hexa_1 ({p1, p2, p3, p4, p5, p6, p7, p8});
+    LinearHexahedron hexa_1 ({p1, p2, p3, p4, p5, p6, p7, p8});
 
-    Point3D::VectorType v1, v2, v3, v4, v5, v6, v7, v8;
-    RegularLinearHexahedron hexa_2 ({v1, v2, v3, v4, v5, v6, v7, v8});
+    Vector v1, v2, v3, v4, v5, v6, v7, v8;
+    LinearHexahedron hexa_2 ({v1, v2, v3, v4, v5, v6, v7, v8});
 
     // Make sure a hexahedron does not take anymore space than 8 nodes
     ASSERT_EQ(8 * sizeof(p1), sizeof(hexa_1));
 
     // Create a base hexahedron by using the base constructor without any arguments
-    RegularLinearHexahedron base_hexa;
+    LinearHexahedron base_hexa;
     auto edge_0 = base_hexa.edge(0);
     ASSERT_EQ(2, edge_0.length());
 
@@ -187,6 +188,21 @@ TEST(Geometry, Hexahedron) {
     // Shape functions
     // World coordinates should be equal to local coordinates if the hexahedron is elemental (-1 to 1 for x, y and z axis)
     ASSERT_EQ(Vector(0, 0, 0), LinearHexahedron().from_local_coordinate(Vector(0, 0, 0)));
+
+    // Simple geometric tests
+    ASSERT_EQ(
+            (int) LinearHexahedron().Jacobian(-1./sqrt(3.0), -1./sqrt(3.0), -1./sqrt(3.0)).determinant(),
+            (int) LinearHexahedron().Jacobian(+1./sqrt(3.0), +1./sqrt(3.0), +1./sqrt(3.0)).determinant()
+    );
+    ASSERT_EQ(8*8*8, LinearHexahedron().scale(4).Jacobian(0,0,0).determinant()*8);
+
+    // Quadrature
+    Float volume = LinearHexahedron().gauss_quadrature((Float) 0,
+            [](const LinearHexahedron & /*h*/, const Float & /*xi*/, const Float & /*eta*/, const Float & /*zeta*/) -> Float {
+                return 1;
+            }
+    );
+    ASSERT_FLOAT_EQ(8, volume);
 }
 
 int main(int argc, char **argv) {

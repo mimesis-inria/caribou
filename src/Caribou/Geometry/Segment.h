@@ -57,7 +57,7 @@ public:
     inline VectorType
     direction() const
     {
-        return second_node().coordinates - first_node().coordinates;
+        return second_node() - first_node();
     }
 
     /** Get the unit vector (aka normalized direction vector)  **/
@@ -86,8 +86,8 @@ public:
     inline bool
     contains(const VectorType & x, FLOATING_POINT_TYPE tolerance = 0.00001 ) const
     {
-        const auto & p0 = first_node().coordinates;
-        const auto & p1 = second_node().coordinates;
+        const auto & p0 = first_node();
+        const auto & p1 = second_node();
 
         if (((x-p0)^(x-p1)).length_squared() > tolerance*tolerance) {
             // The point isn't on the line made by the segment

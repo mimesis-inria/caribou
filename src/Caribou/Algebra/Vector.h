@@ -116,6 +116,16 @@ struct Vector : public std::array<TValueType, Dim>
     //// Operators ////
     ///////////////////
 
+    /** Assignment operator **/
+    template<typename OtherValueType>
+    Vector &
+    operator = (const Vector<Dimension, OtherValueType> & other)
+    {
+        for (size_t i = 0; i < Dimension; ++i)
+            (*this)[i] = other[i];
+        return (*this);
+    }
+
     /** Comparison operator with a vector of a same dimension and with component data type of OtherValueType **/
     template<typename OtherValueType>
     constexpr bool

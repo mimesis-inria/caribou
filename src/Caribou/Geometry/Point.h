@@ -22,79 +22,43 @@ namespace geometry
  * @tparam PointType The derived point class
  */
 template<size_t Dim, typename PointType>
-class BasePoint
+class BasePoint : public caribou::algebra::Vector<Dim, FLOATING_POINT_TYPE>
 {
 public:
     static constexpr size_t Dimension = Dim;
     using VectorType = caribou::algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using ValueType = typename VectorType::ValueType;
 
-    BasePoint() = default;
+    using VectorType::VectorType;
 
-    template <typename OtherValueType>
-    BasePoint(std::initializer_list<OtherValueType> il) : coordinates(il) {}
+    BasePoint(const VectorType & v) : VectorType(v) {
 
-    BasePoint(const PointType & other) : coordinates(other.coordinates) {}
+    }
 
-    BasePoint(const VectorType & coordinates) : coordinates(coordinates) {}
-
-    template <typename OtherValueType>
-    BasePoint(OtherValueType const (&coordinates)[Dimension]) : coordinates(coordinates) {}
-
+    /**
+     * Scale each component of this point's coordinates by a corresponding scaling factor
+     * @param s Vector of scaling factors of the same size of this point's coordinates
+     */
     inline PointType
     scale(VectorType s) const
     {
-        VectorType scaled_coordinates;
+        PointType scaled_coordinates;
         for (size_t i = 0; i < Dimension; ++i) {
-            scaled_coordinates[i] = coordinates[i] * s[i];
+            scaled_coordinates[i] *=  (*this)[i] * s[i];
         }
 
-        return PointType(scaled_coordinates);
-
+        return scaled_coordinates;
     }
 
+    /**
+     * Scale this point's coordinate by a scalar scaling factor.
+     * @param s Scalar factor
+     */
     inline PointType
-    &operator=(const PointType & other)
+    scale(ValueType s) const
     {
-        // check for self-assignment
-        if(&other == this)
-            return *this;
-
-        coordinates = other.coordinates;
-
-        return *this;
+        return (*this) * s;
     }
-
-    inline PointType
-    &operator=(const VectorType & coordinates)
-    {
-        this->coordinates = coordinates;
-
-        return *this;
-    }
-
-    inline ValueType &
-    operator[] (std::size_t x)
-    {
-        return coordinates[x];
-    }
-
-    inline const ValueType &
-    operator[] (std::size_t x) const
-    {
-        return coordinates[x];
-    }
-
-    inline bool
-    operator==(const PointType & other) const
-    { return coordinates == other.coordinates; }
-
-    inline bool
-    operator!=(const PointType & other) const
-    { return !(*this == other); }
-
-
-    VectorType coordinates;
 };
 
 template<size_t Dim>
@@ -109,17 +73,26 @@ class Point : public BasePoint<Dim, Point<Dim>>
 class Point<1>  : public BasePoint<1, Point<1>>
 {
     using Self = Point<1>;
+    using Base = BasePoint<1, Point<1>>;
+
 public:
     static constexpr size_t Dimension = 1;
-    using ValueType = typename BasePoint<Dimension, Self>::ValueType;
-    Point() = default;
+    using ValueType = typename Base::ValueType;
 
-    explicit Point (const ValueType & x) {
-        Self::coordinates[0] = x;
+    using Base::Base; // Import constructors
+
+    /** Assignment operator **/
+    template<typename OtherValueType>
+    Point &
+    operator = (const caribou::algebra::Vector<Dimension, OtherValueType> & v)
+    {
+        for (size_t i = 0; i < Dimension; ++i)
+            (*this)[i] = v[i];
+        return (*this);
     }
 
-    inline const ValueType & x () const { return Self::coordinates[0]; }
-    inline ValueType & x () { return Self::coordinates[0]; }
+    inline const ValueType & x () const { return this->at(0); }
+    inline ValueType & x () { return this->at(0); }
 };
 
 /**
@@ -129,25 +102,29 @@ template<>
 class Point<2>  : public BasePoint<2, Point<2>>
 {
     using Self = Point<2>;
+    using Base = BasePoint<2, Point<2>>;
+
 public:
     static constexpr size_t Dimension = 2;
     using ValueType = typename BasePoint<Dimension, Self>::ValueType;
-    Point() = default;
 
-    Point (const ValueType & x, const ValueType & y) {
-        Self::coordinates[0] = x;
-        Self::coordinates[1] = y;
+    using Base::Base; // Import constructors
+
+    /** Assignment operator **/
+    template<typename OtherValueType>
+    Point &
+    operator = (const caribou::algebra::Vector<Dimension, OtherValueType> & v)
+    {
+        for (size_t i = 0; i < Dimension; ++i)
+            (*this)[i] = v[i];
+        return (*this);
     }
 
-    Point(std::initializer_list<ValueType> il) : BasePoint<Dimension, Self>() {
-        std::copy(std::begin(il), std::end(il), std::begin(Self::coordinates));
-    }
+    inline const ValueType & x () const { return this->at(0); }
+    inline ValueType & x () { return this->at(0); }
 
-    inline const ValueType & x () const { return Self::coordinates[0]; }
-    inline ValueType & x () { return Self::coordinates[0]; }
-
-    inline const ValueType & y () const { return Self::coordinates[1]; }
-    inline ValueType & y () { return Self::coordinates[1]; }
+    inline const ValueType & y () const { return this->at(1); }
+    inline ValueType & y () { return this->at(1); }
 };
 
 /**
@@ -157,27 +134,32 @@ template<>
 class Point<3>  : public BasePoint<3, Point<3>>
 {
     using Self = Point<3>;
+    using Base = BasePoint<3, Point<3>>;
+
 public:
     static constexpr size_t Dimension = 3;
     using ValueType = typename BasePoint<Dimension, Self>::ValueType;
-    Point() = default;
 
-    Point (const ValueType & x, const ValueType & y, const ValueType & z) {
-        Self::coordinates[0] = x;
-        Self::coordinates[1] = y;
-        Self::coordinates[2] = z;
+    using Base::Base;
+
+    /** Assignment operator **/
+    template<typename OtherValueType>
+    Point &
+    operator = (const caribou::algebra::Vector<Dimension, OtherValueType> & v)
+    {
+        for (size_t i = 0; i < Dimension; ++i)
+            (*this)[i] = v[i];
+        return (*this);
     }
 
-    using BasePoint<3, Point<3>>::BasePoint;
+    inline const ValueType & x () const { return this->at(0); }
+    inline ValueType & x () { return this->at(0); }
 
-    inline const ValueType & x () const { return Self::coordinates[0]; }
-    inline ValueType & x () { return Self::coordinates[0]; }
+    inline const ValueType & y () const { return this->at(1); }
+    inline ValueType & y () { return this->at(1); }
 
-    inline const ValueType & y () const { return Self::coordinates[1]; }
-    inline ValueType & y () { return Self::coordinates[1]; }
-
-    inline const ValueType & z () const { return Self::coordinates[2]; }
-    inline ValueType & z () { return Self::coordinates[2]; }
+    inline const ValueType & z () const { return this->at(2); }
+    inline ValueType & z () { return this->at(2); }
 };
 
 using Point1D = Point<1>;

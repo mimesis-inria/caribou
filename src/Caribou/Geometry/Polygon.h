@@ -36,8 +36,8 @@ public:
     }
 
     inline VectorType normal() const {
-        auto v1 = segment(0).direction();
-        auto v2 = segment(1).direction();
+        const auto v1 = segment(0).direction();
+        const auto v2 = segment(1).direction();
 
         return v1.cross(v2).unit();
     }
