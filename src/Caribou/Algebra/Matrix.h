@@ -158,6 +158,18 @@ struct Matrix : public std::array<ValueType_, R_*C_>
         return r;
     }
 
+    /** Matrix-scalar multiplication **/
+    template<typename ScalarType>
+    Matrix<R, C, ValueType>
+    operator*(const ScalarType & scalar) const
+    {
+        Matrix<R, C, ValueType> r = *this;
+        std::transform(std::begin(*this), std::end(*this), std::begin(r), [scalar] (const ValueType & component) {
+            return component*scalar;
+        });
+        return r;
+    }
+
     /** Matrix addition **/
     template<typename OtherValueType>
     Matrix<R, C, ValueType>

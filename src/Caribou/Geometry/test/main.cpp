@@ -5,6 +5,7 @@
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/LinearHexahedron.h>
+#include <Caribou/Geometry/LinearRegularHexahedron.h>
 
 TEST(Geometry, Point) {
     using namespace caribou::geometry;
@@ -164,6 +165,8 @@ TEST(Geometry, Quad) {
 
 TEST(Geometry, Hexahedron) {
     using namespace caribou::geometry;
+    using namespace caribou::algebra;
+
     using Vector = LinearHexahedron::VectorType;
     using Float = LinearHexahedron::Float;
 
@@ -174,8 +177,20 @@ TEST(Geometry, Hexahedron) {
     Vector v1, v2, v3, v4, v5, v6, v7, v8;
     LinearHexahedron hexa_2 ({v1, v2, v3, v4, v5, v6, v7, v8});
 
+    LinearRegularHexahedron hexa_3({1,1,1}, {5, 5, 5});
+
     // Make sure a hexahedron does not take anymore space than 8 nodes
     ASSERT_EQ(8 * sizeof(p1), sizeof(hexa_1));
+    ASSERT_EQ(2 * sizeof(p1), sizeof(hexa_3));
+
+    ASSERT_EQ(Vector({1,1,1}), hexa_3.node(0));
+    ASSERT_EQ(Vector({6,1,1}), hexa_3.node(1));
+    ASSERT_EQ(Vector({6,6,1}), hexa_3.node(2));
+    ASSERT_EQ(Vector({1,6,1}), hexa_3.node(3));
+    ASSERT_EQ(Vector({1,1,6}), hexa_3.node(4));
+    ASSERT_EQ(Vector({6,1,6}), hexa_3.node(5));
+    ASSERT_EQ(Vector({6,6,6}), hexa_3.node(6));
+    ASSERT_EQ(Vector({1,6,6}), hexa_3.node(7));
 
     // Create a base hexahedron by using the base constructor without any arguments
     LinearHexahedron base_hexa;
@@ -197,11 +212,13 @@ TEST(Geometry, Hexahedron) {
     ASSERT_EQ(8*8*8, LinearHexahedron().scale(4).Jacobian(0,0,0).determinant()*8);
 
     // Quadrature
-    Float volume = LinearHexahedron().gauss_quadrature((Float) 0,
+    Float volume = LinearHexahedron().gauss_quadrature(
+            (Float) 0,
             [](const LinearHexahedron & /*h*/, const Float & /*xi*/, const Float & /*eta*/, const Float & /*zeta*/) -> Float {
                 return 1;
             }
     );
+
     ASSERT_FLOAT_EQ(8, volume);
 }
 

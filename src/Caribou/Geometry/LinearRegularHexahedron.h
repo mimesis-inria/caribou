@@ -1,17 +1,19 @@
-#ifndef CARIBOU_GEOMETRY_LINEARHEXAHEDRON_H
-#define CARIBOU_GEOMETRY_LINEARHEXAHEDRON_H
+#ifndef CARIBOU_GEOMETRY_LINEARREGULARHEXAHEDRON_H
+#define CARIBOU_GEOMETRY_LINEARREGULARHEXAHEDRON_H
 
 #include <Caribou/Algebra/Matrix.h>
 #include <Caribou/Geometry/Point.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Quad.h>
 
+#include <Caribou/Geometry/LinearHexahedron.h>
+
 namespace caribou
 {
 namespace geometry
 {
 
-/* Linear hexahedron
+/* Regular Linear hexahedron
  *    7-------6
  *   /|      /|
  *  / |     / |
@@ -21,12 +23,11 @@ namespace geometry
  * 0-------1
  */
 
-struct LinearHexahedron
+struct LinearRegularHexahedron
 {
     using PointType = Point3D;
     using SegmentType = Segment<3>;
     using FaceType = Quad<3>;
-    using NodesContainer = std::array<PointType, 8>;
 
     using VectorType= typename PointType::VectorType;
     using Float = typename VectorType::ValueType;
@@ -39,18 +40,14 @@ struct LinearHexahedron
      * This will initialize a basis linear hexahedron ( -1 < x < 1, -1 < y < 1, -1 < z < 1) centered
      * on zero (0,0,0) and of dimension 2x2x2.
      */
-    LinearHexahedron() : m_nodes
-    ({
-        //        {xi, eta, zeta}
-        PointType({-1, -1, -1}), // 0
-        PointType({ 1, -1, -1}), // 1
-        PointType({ 1,  1, -1}), // 2
-        PointType({-1,  1, -1}), // 3
-        PointType({-1, -1,  1}), // 4
-        PointType({ 1, -1,  1}), // 5
-        PointType({ 1,  1,  1}), // 6
-        PointType({-1,  1,  1})  // 7
-    })
+    LinearRegularHexahedron() : m_anchor_node({-1, -1, -1}), m_H({2, 2, 2})
+    {};
+
+    /**
+     * Constructor by passing the anchor node (bottom-left-front most node).
+     * This will initialize a linear hexahedron of dimension H (hx, hy, hz)
+     */
+    LinearRegularHexahedron(const PointType & anchor_node, const VectorType & H) : m_anchor_node(anchor_node), m_H(H)
     {};
 
     /**
@@ -60,28 +57,52 @@ struct LinearHexahedron
      *
      * \code{.cpp}
      * Point3D p1, p2, p3, p4, p5, p6, p7, p8;
-     * LinearHexahedron hexahedron ({p1, p2, p3, p4, p5, p6, p7, p8});
+     * LinearRegularHexahedron hexahedron ({p1, p2, p3, p4, p5, p6, p7, p8});
      * \endcode
      *
      */
     template <typename OtherPointType>
-    LinearHexahedron (const std::initializer_list<OtherPointType> & il)
+    LinearRegularHexahedron (const std::initializer_list<OtherPointType> & il)
     {
-        std::copy(std::begin(il), std::end(il), std::begin(m_nodes));
+        // Create a temporary limear (non regular) hexa from the initializer list to compute the hx, hy and hz values
+        LinearHexahedron hexa (il);
+        m_anchor_node = hexa.node(0);
+        m_H = {
+                hexa.edge(0).length(), // hx
+                hexa.edge(1).length(), // hy
+                hexa.edge(8).length()  // hz
+        };
     }
 
     /** Constructor by an array of points **/
     template <typename OtherPointType>
-    LinearHexahedron (const std::array<OtherPointType, 8> & n)
+    LinearRegularHexahedron (const std::array<OtherPointType, 8> & n)
     {
-        for (Index i = 0; i < 8; ++i) {
-            m_nodes[i] = n[i];
-        }
+        // Create a temporary limear (non regular) hexa from the initializer list to compute the hx, hy and hz values
+        LinearHexahedron hexa (n);
+        m_anchor_node = hexa.node(0);
+        m_H = {
+                hexa.edge(0).length(), // hx
+                hexa.edge(1).length(), // hy
+                hexa.edge(8).length()  // hz
+        };
     }
 
     /** Copy constructor **/
-    explicit LinearHexahedron (const LinearHexahedron & other) {
-        std::copy(std::begin(other.m_nodes), std::end(other.m_nodes), std::begin(m_nodes));
+    LinearRegularHexahedron (const LinearHexahedron & other) {
+        m_anchor_node = other.node(0);
+        m_H = {
+                other.edge(0).length(), // hx
+                other.edge(1).length(), // hy
+                other.edge(8).length()  // hz
+        };
+    }
+
+    /** Copy constructor **/
+    LinearRegularHexahedron (const LinearRegularHexahedron & other)
+    : m_anchor_node(other.m_anchor_node)
+    , m_H(other.m_H)
+    {
     }
 
     /**
@@ -106,7 +127,22 @@ struct LinearHexahedron
      *
      */
     PointType node(Index index) const {
-        return m_nodes[index];
+        const auto & hx = m_H[0];
+        const auto & hy = m_H[1];
+        const auto & hz = m_H[2];
+
+        switch(index) {
+            case 0 : return m_anchor_node;
+            case 1 : return m_anchor_node + VectorType({hx, 0,  0});
+            case 2 : return m_anchor_node + VectorType({hx, hy, 0});
+            case 3 : return m_anchor_node + VectorType({0,  hy, 0});
+            case 4 : return m_anchor_node + VectorType({0,  0,  hz});
+            case 5 : return m_anchor_node + VectorType({hx, 0,  hz});
+            case 6 : return m_anchor_node + VectorType({hx, hy, hz});
+            case 7 : return m_anchor_node + VectorType({0,  hy, hz});
+        }
+
+        throw std::out_of_range("Trying to access the node #" + std::to_string(index) + " of a linear hexahedrons that only contains 8 nodes.");
     };
 
     /**
@@ -132,24 +168,25 @@ struct LinearHexahedron
      *
      */
     SegmentType edge(Index index) const {
-        static constexpr std::array<std::array<unsigned char, 2>, 12> edges {{
-                                                                                     {0, 1}, // 0
-                                                                                     {1, 2}, // 1
-                                                                                     {2, 3}, // 2
-                                                                                     {3, 0}, // 3
-                                                                                     {4, 5}, // 4
-                                                                                     {5, 6}, // 5
-                                                                                     {6, 7}, // 6
-                                                                                     {7, 4}, // 7
-                                                                                     {0, 4}, // 8
-                                                                                     {1, 5}, // 9
-                                                                                     {2, 6}, // 10
-                                                                                     {3, 7}, // 11
-                                                                             }};
+        static constexpr std::array<std::array<unsigned char, 2>, 12> edges
+        {{
+            {0, 1}, // 0
+            {1, 2}, // 1
+            {2, 3}, // 2
+            {3, 0}, // 3
+            {4, 5}, // 4
+            {5, 6}, // 5
+            {6, 7}, // 6
+            {7, 4}, // 7
+            {0, 4}, // 8
+            {1, 5}, // 9
+            {2, 6}, // 10
+            {3, 7}, // 11
+        }};
 
         return SegmentType (
-                m_nodes[edges[index][0]],
-                m_nodes[edges[index][1]]
+                node(edges[index][0]),
+                node(edges[index][1])
         );
     };
 
@@ -177,45 +214,42 @@ struct LinearHexahedron
      *               4
      */
     FaceType face(Index index) const {
-        static const std::array<std::array<unsigned char, 4>, 6> nodes_of_face = {{
-                                                                                          {0, 1, 2, 3}, // 0 ; Edges = {0, 1, 2, 3,}
-                                                                                          {3, 7, 4, 0}, // 1 ; Edges = {11, 7, 8, 3}
-                                                                                          {7, 6, 5, 4}, // 2 ; Edges = {6, 5, 4, 7}
-                                                                                          {5, 6, 2, 1}, // 3 ; Edges = {5, 10, 1, 9}
-                                                                                          {5, 1, 0, 4}, // 4 ; Edges = {9, 0, 8, 4}
-                                                                                          {2, 6, 7, 3}, // 5 ; Edges = {10, 6, 11, 2}
-                                                                                  }};
+        static const std::array<std::array<unsigned char, 4>, 6> nodes_of_face =
+        {{
+            {0, 1, 2, 3}, // 0 ; Edges = {0, 1, 2, 3,}
+            {3, 7, 4, 0}, // 1 ; Edges = {11, 7, 8, 3}
+            {7, 6, 5, 4}, // 2 ; Edges = {6, 5, 4, 7}
+            {5, 6, 2, 1}, // 3 ; Edges = {5, 10, 1, 9}
+            {5, 1, 0, 4}, // 4 ; Edges = {9, 0, 8, 4}
+            {2, 6, 7, 3}, // 5 ; Edges = {10, 6, 11, 2}
+        }};
 
         return FaceType {
-                m_nodes[nodes_of_face[index][0]],
-                m_nodes[nodes_of_face[index][1]],
-                m_nodes[nodes_of_face[index][2]],
-                m_nodes[nodes_of_face[index][3]]
+                node(nodes_of_face[index][0]),
+                node(nodes_of_face[index][1]),
+                node(nodes_of_face[index][2]),
+                node(nodes_of_face[index][3])
         };
     };
 
     /** Scale the hexahedron by s (sx, sy, sz) from the origin **/
-    LinearHexahedron
+    LinearRegularHexahedron
     inline scale(VectorType s) const
     {
-        std::array<PointType, 8> scaled_nodes;
-        for (size_t i = 0; i < 8; ++i) {
-            scaled_nodes[i] = m_nodes[i].scale(s);
-        }
+        const PointType anchor = m_anchor_node.scale(s);
+        const VectorType H = m_H.direct_mult(s);
 
-        return scaled_nodes;
+        return LinearRegularHexahedron (anchor, H);
     }
 
     /** Scale the hexahedron by s from the origin **/
-    LinearHexahedron
+    LinearRegularHexahedron
     inline scale(Float s) const
     {
-        std::array<PointType, 8> scaled_nodes;
-        for (size_t i = 0; i < 8; ++i) {
-            scaled_nodes[i] = m_nodes[i].scale(s);
-        }
+        const PointType anchor = m_anchor_node.scale(s);
+        const VectorType H = m_H * s;
 
-        return scaled_nodes;
+        return LinearRegularHexahedron (anchor, H);
     }
 
     /**
@@ -330,16 +364,16 @@ struct LinearHexahedron
     ValueType gauss_quadrature(const ValueType & initial_value, EvaluateFunctor evaluate) const
     {
         const static std::array<VectorType, 8> gauss_points =
-                {{
-                    {-1./sqrt(3.0), -1./sqrt(3.0), -1./sqrt(3.0)},
-                    {-1./sqrt(3.0), -1./sqrt(3.0),  1./sqrt(3.0)},
-                    {-1./sqrt(3.0),  1./sqrt(3.0), -1./sqrt(3.0)},
-                    {-1./sqrt(3.0),  1./sqrt(3.0),  1./sqrt(3.0)},
-                    { 1./sqrt(3.0), -1./sqrt(3.0), -1./sqrt(3.0)},
-                    { 1./sqrt(3.0), -1./sqrt(3.0),  1./sqrt(3.0)},
-                    { 1./sqrt(3.0),  1./sqrt(3.0), -1./sqrt(3.0)},
-                    { 1./sqrt(3.0),  1./sqrt(3.0),  1./sqrt(3.0)}
-                 }};
+        {{
+            {-1./sqrt(3.0), -1./sqrt(3.0), -1./sqrt(3.0)},
+            {-1./sqrt(3.0), -1./sqrt(3.0),  1./sqrt(3.0)},
+            {-1./sqrt(3.0),  1./sqrt(3.0), -1./sqrt(3.0)},
+            {-1./sqrt(3.0),  1./sqrt(3.0),  1./sqrt(3.0)},
+            { 1./sqrt(3.0), -1./sqrt(3.0), -1./sqrt(3.0)},
+            { 1./sqrt(3.0), -1./sqrt(3.0),  1./sqrt(3.0)},
+            { 1./sqrt(3.0),  1./sqrt(3.0), -1./sqrt(3.0)},
+            { 1./sqrt(3.0),  1./sqrt(3.0),  1./sqrt(3.0)}
+         }};
 
         ValueType result = initial_value;
 
@@ -393,10 +427,11 @@ struct LinearHexahedron
     front() const {return face(0);};
 
 protected:
-    NodesContainer m_nodes;
+    PointType m_anchor_node; ///< Anchor node of the hexahedron. This is the first (bottom-left-front) node.
+    VectorType m_H; ///< Dimensions (hx, hy and hz) of the hexahedron
 };
 
 } // namespace geometry
 
 } // namespace caribou
-#endif //CARIBOU_GEOMETRY_LINEARHEXAHEDRON_H
+#endif //CARIBOU_GEOMETRY_LINEARREGULARHEXAHEDRON_H
