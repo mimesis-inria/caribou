@@ -2,14 +2,13 @@ cmake_minimum_required(VERSION 3.1)
 project(SofaCaribou)
 
 set(HEADER_FILES
-    Components/Topology/MultilevelSparseGridTopology.h)
+    GraphComponents/Topology/MultilevelSparseGridTopology.h)
 
 set(TEMPLATE_FILES
-        Components/Topology/MultilevelSparseGridTopology.inl
-    )
+    GraphComponents/Topology/MultilevelSparseGridTopology.inl)
 
 set(SOURCE_FILES
-    Components/Topology/MultilevelSparseGridTopology.cpp
+    GraphComponents/Topology/MultilevelSparseGridTopology.cpp
     init.cpp)
 
 # Try to find Sofa's cmake prefix

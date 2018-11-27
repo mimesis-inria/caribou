@@ -1,5 +1,5 @@
-#ifndef SOFACARIBOU_COMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_H
-#define SOFACARIBOU_COMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_H
+#ifndef SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_H
+#define SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_H
 
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/defaulttype/Vec.h>
@@ -14,7 +14,7 @@
 #include <memory>
 
 namespace SofaCaribou {
-namespace components {
+namespace GraphComponents {
 namespace topology {
 
 using namespace sofa::core::objectmodel;
@@ -85,7 +85,7 @@ extern template class MultilevelSparseGridTopology<Vec2Types>;
 extern template class MultilevelSparseGridTopology<Vec3Types>;
 
 } // namespace topology
-} // namespace components
+} // namespace GraphComponents
 } // namespace SofaCaribou
 
-#endif //SOFACARIBOU_COMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_H
+#endif //SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_H

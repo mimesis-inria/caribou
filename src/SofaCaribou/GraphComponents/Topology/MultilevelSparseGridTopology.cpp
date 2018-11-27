@@ -2,7 +2,7 @@
 #include "MultilevelSparseGridTopology.inl"
 
 namespace SofaCaribou {
-namespace components {
+namespace GraphComponents {
 namespace topology {
 
 using sofa::defaulttype::Vec2Types;
@@ -19,5 +19,5 @@ int MultilevelSparseGridTopologyClass = sofa::core::RegisterObject("Caribou Mult
 ;
 
 } // namespace topology
-} // namespace components
+} // namespace GraphComponents
 } // namespace SofaCaribou

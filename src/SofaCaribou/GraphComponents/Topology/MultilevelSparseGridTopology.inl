@@ -1,12 +1,12 @@
-#ifndef SOFACARIBOU_COMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_INL
-#define SOFACARIBOU_COMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_INL
+#ifndef SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_INL
+#define SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_INL
 
-#include <SofaCaribou/Components/Topology/MultilevelSparseGridTopology.h>
+#include <SofaCaribou/GraphComponents/Topology/MultilevelSparseGridTopology.h>
 #include <Caribou/Topology/Engine/Grid/Grid.inl>
 #include <sofa/core/visual/VisualParams.h>
 
 namespace SofaCaribou {
-namespace components {
+namespace GraphComponents {
 namespace topology {
 
 template <typename VecType>
@@ -54,7 +54,7 @@ void MultilevelSparseGridTopology<VecType>::draw(const sofa::core::visual::Visua
 }
 
 } // namespace topology
-} // namespace components
+} // namespace GraphComponents
 } // namespace SofaCaribou
 
-#endif //SOFACARIBOU_COMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_INL
+#endif //SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_INL

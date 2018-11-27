@@ -205,10 +205,13 @@ TEST(Geometry, Hexahedron) {
     ASSERT_EQ(Vector(0, 0, 0), LinearHexahedron().from_local_coordinate(Vector(0, 0, 0)));
 
     // Simple geometric tests
+    // Makes sure the jacobian of any position inside a linear hexahedron is the same
     ASSERT_EQ(
             (int) LinearHexahedron().Jacobian(-1./sqrt(3.0), -1./sqrt(3.0), -1./sqrt(3.0)).determinant(),
             (int) LinearHexahedron().Jacobian(+1./sqrt(3.0), +1./sqrt(3.0), +1./sqrt(3.0)).determinant()
     );
+
+    // Makes sure the 8 times the determinant of the jacobian of a linear hexahedron is equal to the volume
     ASSERT_EQ(8*8*8, LinearHexahedron().scale(4).Jacobian(0,0,0).determinant()*8);
 
     // Quadrature
@@ -219,6 +222,7 @@ TEST(Geometry, Hexahedron) {
             }
     );
 
+    // Makes sure the integral of "1" on the hexahedron equals its volume
     ASSERT_FLOAT_EQ(8, volume);
 }
 

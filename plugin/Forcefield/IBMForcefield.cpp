@@ -148,7 +148,7 @@ void IBMForcefield<DataTypes>::update()
     // Make sure that the hexahedrons are rectangular and that their nodes are contained in the initial positions vector
     for (const Hexahedron & nodes : hexahedrons) {
 
-        // Step 1 (/2) : Check that all nodes are contain in the initial positions vector
+        // Step 1 (/2) : Check that all nodes are contained in the initial positions vector
         for (const PointID & node : nodes) {
             if (node > initial_positions.size()) {
                 msg_error() << "Some of the hexahedron's nodes don't match the size of the initial positions vector.";
