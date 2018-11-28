@@ -2,13 +2,17 @@ cmake_minimum_required(VERSION 3.1)
 project(SofaCaribou)
 
 set(HEADER_FILES
-    GraphComponents/Topology/MultilevelSparseGridTopology.h)
+    GraphComponents/Forcefield/TractionForcefield.h
+    GraphComponents/Topology/MultilevelSparseGridTopology.h
+    GraphComponents/Ode/StaticSolver.h)
 
 set(TEMPLATE_FILES
     GraphComponents/Topology/MultilevelSparseGridTopology.inl)
 
 set(SOURCE_FILES
+    GraphComponents/Forcefield/TractionForcefield.cpp
     GraphComponents/Topology/MultilevelSparseGridTopology.cpp
+    GraphComponents/Ode/StaticSolver.cpp
     init.cpp)
 
 # Try to find Sofa's cmake prefix

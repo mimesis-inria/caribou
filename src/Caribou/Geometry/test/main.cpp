@@ -132,10 +132,17 @@ TEST(Geometry, Triangle) {
     // Creates the same triangle with a list initializer of 3 lists initializer
     auto t3 = make_triangle({{0,0,0}, {1,0,0}, {0,1,0}});
 
+    Triangle<3> t4 = t3;
+
     // Makes sure they are all equals
     ASSERT_EQ(t1, t2);
     ASSERT_EQ(t1, t3);
+    ASSERT_EQ(t1, t4);
 
+    // Test the center of a triangle
+    ASSERT_GT(0.0001, (t4.center() - make_point(0.333333, 0.333333, 0)).length());
+
+    // Test the normal of a triangle
     ASSERT_EQ(t3.normal(), caribou::algebra::Vector<3>(0, 0, 1));
 }
 

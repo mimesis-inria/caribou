@@ -56,6 +56,12 @@ public:
         return make_segment(nodes[i1], nodes[i2]);
     }
 
+    inline PointType
+    node(size_t index) const noexcept
+    {
+        return nodes[index];
+    }
+
     inline bool operator==(const Polygon<NumberOfNodes, Dimension> & other) const {
         return (
                 std::equal(std::begin(nodes), std::end(nodes), std::begin(other.nodes), [](const PointType& a, const PointType &b) -> bool {

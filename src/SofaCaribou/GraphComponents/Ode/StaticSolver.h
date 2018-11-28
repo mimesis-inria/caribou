@@ -1,42 +1,30 @@
-#ifndef SOFA_CARIBOU_NEWTONRAPHSONSOLVER_H
-#define SOFA_CARIBOU_NEWTONRAPHSONSOLVER_H
+#ifndef SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICSOLVER_H
+#define SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICSOLVER_H
 
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
 #include <sofa/core/behavior/MultiVec.h>
 
-namespace sofa {
+namespace SofaCaribou {
+namespace GraphComponents {
+namespace ode {
 
-namespace caribou {
+using sofa::core::objectmodel::Data;
 
-namespace odesolver {
-
-class NewtonRaphsonSolver : public sofa::core::behavior::OdeSolver
+class StaticSolver : public sofa::core::behavior::OdeSolver
 {
 public:
-    SOFA_CLASS(NewtonRaphsonSolver, sofa::core::behavior::OdeSolver);
-
-    typedef core::behavior::BaseMechanicalState::VMultiOp VMultiOp;
-    NewtonRaphsonSolver();
+    SOFA_CLASS(StaticSolver, sofa::core::behavior::OdeSolver);
+    StaticSolver();
 
 public:
-
-
-    Data<unsigned> f_maxit;
-    Data<double> f_corrTolerance;
-    Data<double> f_resTolerance;
-    Data<bool> f_convergeOnResidual;
-    Data<bool> f_cutoff;
-
-    void cleanup() override {}
-
-    void solve (const core::ExecParams* params /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
+    void solve (const sofa::core::ExecParams* params /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
 
     /// Given a displacement as computed by the linear system inversion, how much will it affect the velocity
     ///
     /// This method is used to compute the compliance for contact corrections
     /// For Euler methods, it is typically dt.
-    virtual double getVelocityIntegrationFactor() const override
+    double getVelocityIntegrationFactor() const override
     {
         return 1.0; // getContext()->getDt();
     }
@@ -45,7 +33,7 @@ public:
     ///
     /// This method is used to compute the compliance for contact corrections
     /// For Euler methods, it is typically dt².
-    virtual double getPositionIntegrationFactor() const override
+    double getPositionIntegrationFactor() const override
     {
         return getPositionIntegrationFactor(getContext()->getDt());
     }
@@ -108,13 +96,17 @@ public:
 protected:
 
     /// the solution vector is stored for warm-start
-    core::behavior::MultiVecDeriv dx;
+    sofa::core::behavior::MultiVecDeriv dx;
+    Data<unsigned> d_newton_iterations;
+    Data<double> d_correction_tolerance_threshold;
+    Data<double> d_residual_tolerance_threshold;
+    Data<bool> d_should_converge_on_residual_tolerance_threshold;
+    Data<bool> d_shoud_diverge_when_residual_is_growing;
 };
 
-} // namespace odesolver
 
-} // namespace caribou
+} // namespace ode
+} // namespace GraphComponents
+} // namespace SofaCaribou
 
-} // namespace sofa
-
-#endif //SOFA_CARIBOU_NEWTONRAPHSONSOLVER_H
+#endif //SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICSOLVER_H
