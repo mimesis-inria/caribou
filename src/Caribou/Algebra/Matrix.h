@@ -88,6 +88,15 @@ struct Matrix : public std::array<ValueType_, R_*C_>
         }
     }
 
+    /**
+     * Copy constructor from a vector Rx1
+     */
+    template <typename OtherValueType>
+    Matrix(const Vector<R, OtherValueType> & v) {
+        static_assert(C == 1, "Matrix constructor from a vector must be of dimension Rx1.");
+        std::copy(std::begin(v), std::end(v), std::begin(*this));
+    }
+
     ///////////////////
     //// Accessors ////
     ///////////////////
@@ -124,7 +133,12 @@ struct Matrix : public std::array<ValueType_, R_*C_>
     bool
     operator==(const Matrix<C, R, OtherValueType> & other) const
     {
-        return std::equal(this->begin(), this->end(), other.begin());
+        return std::equal(this->begin(), this->end(), other.begin(), [](const ValueType & v1, const OtherValueType & v2) -> bool {
+            if (-EPSILON <= (v1 - v2) and (v1 - v2) <= +EPSILON)
+                return true;
+            else
+                return false;
+        });
     }
 
     /** Matrix multiplication **/
@@ -211,7 +225,7 @@ struct Matrix : public std::array<ValueType_, R_*C_>
     /** Compute the exponent of a matrix. If the exponent is negative, we first inverse the matrix. **/
     template<typename Integer>
     Matrix<R, C, ValueType>
-    operator^ (const Integer & exponent)
+    operator^ (const Integer & exponent) const
     {
         static_assert(std::is_integral<Integer>::value, "The exponent must be of integral type (ex. int, char, long, ...)");
 
@@ -285,6 +299,33 @@ Matrix<R_, C_, ValueType_> inverse(const Matrix<R_, C_, ValueType_> & m);
  */
 template <size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
 ValueType_ determinant(const Matrix<R_, C_, ValueType_> & m);
+
+template <size_t R, size_t C, typename TComponent=FLOATING_POINT_TYPE>
+inline std::ostream&
+operator<<(std::ostream& os, const caribou::algebra::Matrix<R, C, TComponent>& m)
+{
+    const auto precision = os.precision();
+    const auto width = os.width();
+    os << std::string("[\n");
+    for (size_t i = 0; i < R; ++i) {
+        os << std::string("  [");
+
+        for (size_t j = 0; j < C; ++j) {
+            os.width(precision+1);
+            os << m(i, j);
+            os.width(width);
+            if (j < C-1)
+                os << ", ";
+        }
+
+        os << std::string("]");
+        if (i < R-1)
+            os << std::string(",");
+        os << '\n';
+    }
+    os << std::string("]\n");
+    return os;
+}
 
 // The following templates will be instantiated in the algebra library. If you are using only those, you don't need to
 // include the matrix.inl in your code, simply link the algebra library to your program/library.

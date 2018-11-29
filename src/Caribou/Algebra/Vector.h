@@ -394,11 +394,11 @@ template <size_t Dim, typename TComponent=FLOATING_POINT_TYPE>
 inline std::ostream&
 operator<<(std::ostream& os, const caribou::algebra::Vector<Dim, TComponent>& v)
 {
-    os << std::string("(");
+    os << std::string("[");
     os << std::accumulate(std::next(std::begin(v)), std::end(v), std::to_string(v[0]), [](const std::string & s, const TComponent & component) -> std::string {
         return s + std::string(", ") + std::to_string(component);
     });
-    os << std::string(")");
+    os << std::string("]");
     return os;
 }
 
