@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(Caribou)
 
-option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." ON)
-
-
 ## Default build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "RelWithDebInfo")
@@ -12,13 +9,14 @@ endif()
 
 # OPTIONS
 
+option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." ON)
 option(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON)
 
 find_package(PythonLibs 2 QUIET)
 option(CARIBOU_WITH_PYTHON_2 "Compile the plugin with python 2 support" ${PYTHONLIBS_FOUND})
 
-#find_package(PythonLibs 3 QUIET)
-#option(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ${PYTHONLIBS_FOUND})
+find_package(PythonLibs 3 QUIET)
+option(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ${PYTHONLIBS_FOUND})
 
 
 ## Change default install prefix
