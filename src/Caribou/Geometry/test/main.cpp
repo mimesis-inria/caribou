@@ -41,6 +41,14 @@ TEST(Geometry, Point) {
         sizeof(p8),
         (3 * sizeof(Point3D::ValueType))
     );
+
+    // Transformations test
+    Point3D p9 = p1.scaled(2).translated({5,5,5}); // Does not change the value of p1
+    ASSERT_EQ(make_point(1, 2, 3), p1);
+    ASSERT_EQ(make_point(2+5, 4+5, 6+5), p9);
+
+    p1.scale(2).translate({5,5,5});
+    ASSERT_EQ(make_point(2+5, 4+5, 6+5), p1);
 }
 
 TEST(Geometry, Segment) {

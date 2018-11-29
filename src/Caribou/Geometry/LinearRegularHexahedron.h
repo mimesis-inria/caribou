@@ -232,24 +232,44 @@ struct LinearRegularHexahedron
         };
     };
 
-    /** Scale the hexahedron by s (sx, sy, sz) from the origin **/
-    LinearRegularHexahedron
-    inline scale(VectorType s) const
+    /** Return a scaled copy of this hexahedron by s (sx, sy, sz) from the origin **/
+    inline LinearRegularHexahedron
+    scaled(VectorType s) const
     {
-        const PointType anchor = m_anchor_node.scale(s);
+        const PointType anchor = m_anchor_node.scaled(s);
         const VectorType H = m_H.direct_mult(s);
+
+        return LinearRegularHexahedron (anchor, H);
+    };
+
+    /** Return a scaled copy of this hexahedron by s from the origin **/
+    inline LinearRegularHexahedron
+    scaled(Float s) const
+    {
+        const PointType anchor = m_anchor_node.scaled(s);
+        const VectorType H = m_H * s;
 
         return LinearRegularHexahedron (anchor, H);
     }
 
-    /** Scale the hexahedron by s from the origin **/
-    LinearRegularHexahedron
-    inline scale(Float s) const
+    /** Scale this hexahedron by s (sx, sy, sz) from the origin **/
+    inline LinearRegularHexahedron &
+    scale(VectorType s)
     {
-        const PointType anchor = m_anchor_node.scale(s);
-        const VectorType H = m_H * s;
+        m_anchor_node.scale(s);
+        m_H = m_H.direct_mult(s);
 
-        return LinearRegularHexahedron (anchor, H);
+        return (*this);
+    }
+
+    /** Scale this hexahedron by s from the origin **/
+    inline LinearRegularHexahedron &
+    scale(Float s)
+    {
+        m_anchor_node.scale(s);
+        m_H = m_H * s;
+
+        return (*this);
     }
 
     /**

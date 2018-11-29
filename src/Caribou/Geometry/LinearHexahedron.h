@@ -23,6 +23,8 @@ namespace geometry
 
 struct LinearHexahedron
 {
+    static constexpr size_t NumberOfNodes = 8;
+
     using PointType = Point3D;
     using SegmentType = Segment<3>;
     using FaceType = Quad<3>;
@@ -105,7 +107,13 @@ struct LinearHexahedron
      *     0----------------1
      *
      */
-    PointType node(Index index) const {
+    inline PointType
+    node(Index index) const {
+        return m_nodes[index];
+    };
+
+    inline PointType &
+    node(Index index) {
         return m_nodes[index];
     };
 
@@ -194,29 +202,52 @@ struct LinearHexahedron
         };
     };
 
-    /** Scale the hexahedron by s (sx, sy, sz) from the origin **/
-    LinearHexahedron
-    inline scale(VectorType s) const
+    /** Return a scaled copy of this hexahedron by s (sx, sy, sz) from the origin **/
+    inline LinearHexahedron
+    scaled(VectorType s) const
     {
         std::array<PointType, 8> scaled_nodes;
         for (size_t i = 0; i < 8; ++i) {
-            scaled_nodes[i] = m_nodes[i].scale(s);
+            scaled_nodes[i] = m_nodes[i].scaled(s);
         }
 
         return LinearHexahedron(scaled_nodes);
     }
 
-    /** Scale the hexahedron by s from the origin **/
-    LinearHexahedron
-    inline scale(Float s) const
+    /** Return a scaled copy of this hexahedron by s from the origin **/
+    inline LinearHexahedron
+    scaled(Float s) const
     {
         std::array<PointType, 8> scaled_nodes;
         for (size_t i = 0; i < 8; ++i) {
-            scaled_nodes[i] = m_nodes[i].scale(s);
+            scaled_nodes[i] = m_nodes[i].scaled(s);
         }
 
         return LinearHexahedron(scaled_nodes);
     }
+
+    /** Scale this hexahedron by s (sx, sy, sz) from the origin **/
+    inline LinearHexahedron &
+    scale(VectorType s)
+    {
+        for (size_t i = 0; i < 8; ++i) {
+            m_nodes[i].scale(s);
+        }
+
+        return (*this);
+    }
+
+    /** Scale this hexahedron by s from the origin **/
+    inline LinearHexahedron &
+    scale(Float s)
+    {
+        for (size_t i = 0; i < 8; ++i) {
+            m_nodes[i].scale(s);
+        }
+
+        return (*this);
+    }
+
 
     /**
      * Compute the shape value of the hexa's node i evaluated at local coordinates {xi, eta, zeta}.
@@ -254,6 +285,10 @@ struct LinearHexahedron
     /**
      * Compute the shape (N) derivatives w.r.t. the global frame X (dN/dx, dN/dy, dN/dz) of the hexa's node i evaluated
      * at local coordinates {xi, eta, zeta}.
+     *
+     * Note: If you are going to call this function for each nodes of the hexahedron with the same local coordinates,
+     * it may be a better idea to pre-compute the jacobian inverse and simply multiply it with dN_dXi instead since the
+     * jacobian at {xi, eta, zeta} do not depend on the node.
      */
     inline VectorType
     dN_dX(const Index i, const Float & xi, const Float & eta, const Float & zeta) const

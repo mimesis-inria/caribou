@@ -32,17 +32,41 @@ public:
     using VectorType::VectorType;
 
     BasePoint() : VectorType() {}
-
     BasePoint(bool initialize_to_zero) : VectorType(initialize_to_zero) {}
-
     BasePoint(const VectorType & v) : VectorType(v) {}
+    BasePoint(const PointType & p) {
+        for (size_t i = 0; i < Dimension; ++i)
+            (*this)[i] = static_cast<ValueType> (p[i]);
+    }
 
     /**
-     * Scale each component of this point's coordinates by a corresponding scaling factor
-     * @param s Vector of scaling factors of the same size of this point's coordinates
+     * Return a copy of this point translated by the vector t
      */
     inline PointType
-    scale(VectorType s) const
+    translated(const VectorType & t) const
+    {
+        return PointType(*this).translate(t);
+    }
+
+
+    /**
+     * Translate this point by the vector t
+     */
+    inline PointType &
+    translate(const VectorType & t)
+    {
+        for (size_t i = 0; i < Dimension; ++i) {
+            (*this)[i] += t[i];
+        }
+
+        return static_cast<PointType&>(*this);
+    }
+
+    /**
+     * Return a copy of this point where each component are scaled by the corresponding scaling factor in s
+     */
+    inline PointType
+    scaled(const VectorType & s) const
     {
         PointType scaled_coordinates;
         for (size_t i = 0; i < Dimension; ++i) {
@@ -53,13 +77,37 @@ public:
     }
 
     /**
-     * Scale this point's coordinate by a scalar scaling factor.
-     * @param s Scalar factor
+     * Return a copy of this point with its coordinates scaled by the scalar s.
      */
     inline PointType
-    scale(ValueType s) const
+    scaled(const ValueType & s) const
     {
         return (*this) * s;
+    }
+
+    /**
+     * Scale each component of this point's coordinates by the corresponding scaling factor in s
+     */
+    inline PointType &
+    scale(const VectorType & s)
+    {
+        for (size_t i = 0; i < Dimension; ++i) {
+            (*this)[i] *= s[i];
+        }
+
+        return static_cast<PointType&>(*this);
+    }
+
+    /**
+     * Scale this point's coordinate by the scalar s.
+     */
+    inline PointType &
+    scale(const ValueType & s)
+    {
+        for (size_t i = 0; i < Dimension; ++i) {
+            (*this)[i] *= s;
+        }
+        return static_cast<PointType&>(*this);
     }
 };
 
