@@ -118,46 +118,47 @@ struct LinearHexahedron
     };
 
     /**
-     * Get the edge at index
-     *
-     *      7            6
-     *       .           .
-     *        . +----------------+
-     *         /|               /|
-     * 11 ..../ |              / |
-     *       /  |  2          /....... 10
-     *      /   |  .         /   |
-     *     +----------------+    |.... 5
-     *     |    |           |    |
-     *     |    |           |    |
-     *     |    |           |......... 1
-     * 3 ..|    +-----------|----+
-     *     |   /      4     |   /
-     * 8 ..|../             |  /...... 9
-     *     | /              | /
-     *     |/        0      |/
-     *     +----------------+
-     *
-     */
+    * Get the edge at index
+    *
+    *      7            6
+    *       .           .
+    *        . +----------------+
+    *         /|               /|
+    * 11 ..../ |              / |
+    *       /  |  2          /....... 10
+    *      /   |  .         /   |
+    *     +----------------+    |.... 5
+    *     |    |           |    |
+    *     |    |           |    |
+    *     |    |           |......... 1
+    * 3 ..|    +-----------|----+
+    *     |   /      4     |   /
+    * 8 ..|../             |  /...... 9
+    *     | /              | /
+    *     |/        0      |/
+    *     +----------------+
+    *
+    */
     SegmentType edge(Index index) const {
-        static constexpr std::array<std::array<unsigned char, 2>, 12> edges {{
-                                                                                     {0, 1}, // 0
-                                                                                     {1, 2}, // 1
-                                                                                     {2, 3}, // 2
-                                                                                     {3, 0}, // 3
-                                                                                     {4, 5}, // 4
-                                                                                     {5, 6}, // 5
-                                                                                     {6, 7}, // 6
-                                                                                     {7, 4}, // 7
-                                                                                     {0, 4}, // 8
-                                                                                     {1, 5}, // 9
-                                                                                     {2, 6}, // 10
-                                                                                     {3, 7}, // 11
-                                                                             }};
+        static constexpr std::array<std::array<unsigned char, 2>, 12> edges
+                {{
+                         {0, 1}, // 0
+                         {1, 2}, // 1
+                         {2, 3}, // 2
+                         {3, 0}, // 3
+                         {4, 5}, // 4
+                         {5, 6}, // 5
+                         {6, 7}, // 6
+                         {7, 4}, // 7
+                         {0, 4}, // 8
+                         {1, 5}, // 9
+                         {2, 6}, // 10
+                         {3, 7}, // 11
+                 }};
 
         return SegmentType (
-                m_nodes[edges[index][0]],
-                m_nodes[edges[index][1]]
+                node(edges[index][0]),
+                node(edges[index][1])
         );
     };
 
@@ -185,20 +186,21 @@ struct LinearHexahedron
      *               4
      */
     FaceType face(Index index) const {
-        static const std::array<std::array<unsigned char, 4>, 6> nodes_of_face = {{
-                                                                                          {0, 1, 2, 3}, // 0 ; Edges = {0, 1, 2, 3,}
-                                                                                          {3, 7, 4, 0}, // 1 ; Edges = {11, 7, 8, 3}
-                                                                                          {7, 6, 5, 4}, // 2 ; Edges = {6, 5, 4, 7}
-                                                                                          {5, 6, 2, 1}, // 3 ; Edges = {5, 10, 1, 9}
-                                                                                          {5, 1, 0, 4}, // 4 ; Edges = {9, 0, 8, 4}
-                                                                                          {2, 6, 7, 3}, // 5 ; Edges = {10, 6, 11, 2}
-                                                                                  }};
+        static const std::array<std::array<unsigned char, 4>, 6> nodes_of_face =
+                {{
+                         {0, 1, 2, 3}, // 0 ; Edges = {0, 1, 2, 3,}
+                         {3, 7, 4, 0}, // 1 ; Edges = {11, 7, 8, 3}
+                         {7, 6, 5, 4}, // 2 ; Edges = {6, 5, 4, 7}
+                         {5, 6, 2, 1}, // 3 ; Edges = {5, 10, 1, 9}
+                         {5, 1, 0, 4}, // 4 ; Edges = {9, 0, 8, 4}
+                         {2, 6, 7, 3}, // 5 ; Edges = {10, 6, 11, 2}
+                 }};
 
         return FaceType {
-                m_nodes[nodes_of_face[index][0]],
-                m_nodes[nodes_of_face[index][1]],
-                m_nodes[nodes_of_face[index][2]],
-                m_nodes[nodes_of_face[index][3]]
+                node(nodes_of_face[index][0]),
+                node(nodes_of_face[index][1]),
+                node(nodes_of_face[index][2]),
+                node(nodes_of_face[index][3])
         };
     };
 

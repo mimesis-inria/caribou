@@ -9,7 +9,7 @@ namespace caribou
 namespace geometry
 {
 
-/** A triangle is an alias to a polygon of three nodes. **/
+/** A triangle is a polygon of three nodes. **/
 template<size_t Dimension>
 class Triangle : public Polygon<3, Dimension>
 {
