@@ -18,7 +18,7 @@ namespace geometry
 
 /**
  * A point in space (independent of the space dimension).
- * @tparam Dim Dimension of the current space (default to 3D).
+ * @tparam Dim Dimension of the current space.
  * @tparam PointType The derived point class
  */
 template<size_t Dim, typename PointType>

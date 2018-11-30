@@ -1,57 +1,59 @@
 #ifndef CARIBOU_ALGEBRA_VECTOR_H
 #define CARIBOU_ALGEBRA_VECTOR_H
 
-#include <ostream>
-#include <cstddef>
-#include <array>
-#include <initializer_list>
-#include <algorithm>
-#include <numeric>
-#include <cmath>
-
 #include <Caribou/config.h>
+#include <Caribou/Algebra/Matrix.h>
 
-namespace caribou
-{
-namespace algebra
-{
+namespace caribou {
+namespace algebra {
 
 /**
- * A simple representation of a vector.
+ * Vector Rx1 matrix.
  *
- * This class is a minimum memory container of a vector that offers many operations and tool functions. It is designed
- * to be used as a heap memory structure and is based on std::array for its storage.
+ * ** Do not use this class directly. Use instead caribou::algebra::Vector<R> which is an alias to matrix<R,1>. **
  *
+ * This class extend the BaseMatrix by adding functions only available on vectors. It is meant to be derived by
+ * a partial specialization of the class Matrix<R, C> (see later in this file for the row-vector, column-vector
+ * and 3D specializations).
  *
- * @tparam Dim The dimension of the vector
- * @tparam TValueType The data type of the vector's components (default to float)
+ * The functions declared in this class ca be used with any type of vectors (1D, 2D, 3D, ...).
+ *
+ * @tparam MatrixType_ <R_, C_, ValueType_> See BaseMatrix template MatrixType_.
+ * @tparam R_ The dimension of the vector (number of rows in a Rx1 vector-matrix).
+ * @tparam C_ The dimension of the vector (number of columns in a 1xC vector-matrix).
+ * @tparam ValueType_ The data type of the vector's components (default to float)/
  */
-template <size_t Dim, typename TValueType=FLOATING_POINT_TYPE>
-struct Vector : public std::array<TValueType, Dim>
+template <template <size_t, size_t, typename> class MatrixType_, size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
 {
-    static constexpr size_t Dimension = Dim;
-    using ValueType = TValueType;
+    static constexpr size_t R = R_; ///< Number of rows in a Rx1 vector-matrix
+    static constexpr size_t C = C_; ///< Number of columns in a 1xC vector-matrix
+    static constexpr size_t N = R*C; ///< Number of elements
+
+    static_assert((R >= 1 and C == 1) or (R == 1 and C >= 1), "A vector must be of dimension Rx1 (row vector) or 1xC (column vector).");
+
+    template<size_t R__ = R, size_t C__ = C, typename ValueType__= ValueType_>
+    using MatrixType = MatrixType_<R__, C__, ValueType__>;
+
+    using ValueType = ValueType_;
+
+    using Base = BaseMatrix<MatrixType_, R_, C_, ValueType_>;
+    using Index = typename Base::Index;
+
+    using Base::Base;
 
     //////////////////////
     //// Constructors ////
     //////////////////////
 
-    /**
-     * Main constructor
-     * @param initialize_to_zero If true, initialize the scalar components of the vector to zero
-     */
-    explicit
-    Vector() {
-    }
 
     /**
-     * Main constructor
-     * @param initialize_to_zero If true, initialize the scalar components of the vector to zero
+     * Constructor by c-array or initializer list
      */
-    explicit
-    Vector(bool initialize_to_zero) {
-        if (initialize_to_zero) {
-            this->fill(0);
+    template <typename OtherValueType>
+    BaseVector(OtherValueType const (&components)[N]) {
+        for (size_t i = 0; i < N; ++i) {
+            (*this)[i] = static_cast<ValueType>(components[i]);
         }
     }
 
@@ -59,40 +61,19 @@ struct Vector : public std::array<TValueType, Dim>
      * Constructor by a list initializer (ex. Vector<3> A {0, 100, 0}).
      */
     template <typename OtherValueType>
-    Vector(std::initializer_list<OtherValueType> il) {
+    BaseVector(std::initializer_list<OtherValueType> il) {
         std::copy(il.begin(), il.end(), this->begin());
     }
 
     /**
-     * Constructor by c-array or initializer list
+     * Constructor by another vector type. The vector type must implements the [] operator to access its components.
+     * It must also have a template signature of vector<N, ValueType> where N is its dimension (number of components) and
+     * ValueType is the type of its components.
      */
-    template <typename OtherValueType>
-    Vector(OtherValueType const (&components)[Dimension]) {
-        for (size_t i = 0; i < Dimension; ++i) {
-            (*this)[i] = static_cast<ValueType>(components[i]);
-        }
-    }
-
-    /**
-     * Copy constructor from another vector of a different data type
-     */
-    template <typename OtherValueType>
-    Vector(const Vector<Dimension, OtherValueType> & other)
-    {
-         for (size_t i = 0; i < Dimension; ++i) {
-             (*this)[i] = static_cast<ValueType> (other[i]);
-         }
-    }
-
-    /**
-     * Copy constructor from another type of vector (it must implement the [] operator and its data type must match ValueType)
-     */
-    template <typename OtherVectorType>
-    Vector(const OtherVectorType & other)
-    {
-        for (size_t i = 0; i < Dimension; ++i) {
+    template <template <int, typename> class OtherVectorType, typename OtherValueType>
+    BaseVector(const OtherVectorType<N, OtherValueType> & other) {
+        for (size_t i = 0; i < N; ++i)
             (*this)[i] = static_cast<ValueType> (other[i]);
-        }
     }
 
     /**
@@ -115,248 +96,78 @@ struct Vector : public std::array<TValueType, Dim>
      * will have its coordinates as char values, and not as float values.
      */
     template<typename... Args>
-    Vector(ValueType first_component, Args&&... other_components)
+    BaseVector(ValueType first_component, Args&&... other_components)
     {
         recursive_set<0> (first_component, std::forward<Args>(other_components)...);
     }
 
-    ///////////////////
-    //// Operators ////
-    ///////////////////
-
-    /** Assignment operator **/
-    template<typename OtherValueType>
-    Vector &
-    operator = (const Vector<Dimension, OtherValueType> & other)
-    {
-        for (size_t i = 0; i < Dimension; ++i)
-            (*this)[i] = other[i];
-        return (*this);
-    }
-
-    /** Comparison operator with a vector of a same dimension and with component data type of OtherValueType **/
-    template<typename OtherValueType>
-    constexpr bool
-    operator==(const Vector<Dimension, OtherValueType> & other) const
-    { return std::equal(this->begin(), this->end(), other.begin()); }
-
-    /** Alias for inner_product **/
-    template <typename OtherValueType>
-    constexpr ValueType
-    operator*(const Vector<Dimension, OtherValueType> & other) const
-    {
-        return inner_product(other);
-    }
-
-    /** Alias for cross_product **/
-    template <typename OtherValueType>
-    constexpr Vector<Dimension, ValueType>
-    operator^(const Vector<Dimension, OtherValueType> & other) const
-    {
-        static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
-
-        return cross_product(other);
-    }
-
-    /** Alias for scalar_multiplication **/
-    template <class TScalar>
-    constexpr Vector<Dimension, ValueType>
-    operator*(const TScalar & scalar) const
-    {
-        return scalar_multiplication(scalar);
-    }
-
-    /** Alias for scalar_division **/
-    template <class TScalar>
-    constexpr Vector<Dimension, ValueType>
-    operator/(const TScalar & scalar) const
-    {
-        return scalar_division(scalar);
-    }
-
-    /** Alias for direct_sum **/
-    template <typename OtherValueType>
-    constexpr Vector<Dimension, ValueType>
-    operator+(const Vector<Dimension, OtherValueType> & other) const
-    {
-        return direct_sum(other);
-    }
-
-    /** Alias for direct_sub **/
-    template <typename OtherValueType=float>
-    constexpr Vector<Dimension, ValueType>
-    operator-(const Vector<Dimension, OtherValueType> & other) const
-    {
-        return direct_sub(other);
-    }
 
     /////////////////////////////////
     //// Mathematical operations ////
     /////////////////////////////////
 
-    /**
-     * Compute the inner product with another vector (aliases are dot, scalar_product and operator*).
-     */
-    template <typename OtherValueType>
-    constexpr ValueType
-    inner_product(const Vector<Dimension, OtherValueType> & other) const
+    /** Compute the inner product with another vector (aliases are dot, scalar_product and operator*). */
+    template <
+            template <size_t, size_t, typename> class OtherVectorType, size_t OtherR, size_t OtherC, typename OtherValueType,
+            typename std::enable_if<(OtherR == N and OtherC == 1) or (OtherC == N and OtherR == 1), int>::type = 0
+            >
+    inline constexpr ValueType
+    inner_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
     {
         return std::inner_product(std::begin(other), std::end(other), std::begin(*this), (ValueType) 0);
     }
 
-    /** Alias for inner_product **/
-    template <typename OtherValueType>
-    constexpr ValueType
-    dot(const Vector<Dimension, OtherValueType> & other) const
+    /** Alias for inner_product. */
+    template <
+            template <size_t, size_t, typename> class OtherVectorType, size_t OtherR, size_t OtherC, typename OtherValueType,
+            typename std::enable_if<(OtherR == N and OtherC == 1) or (OtherC == N and OtherR == 1), int>::type = 0
+    >
+    inline constexpr ValueType
+    dot(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
     {
         return inner_product(other);
     }
 
-    /** Alias for inner_product **/
-    template <typename OtherValueType>
-    constexpr ValueType
-    scalar_product(const Vector<Dimension, OtherValueType> & other) const
+    /** Alias for inner_product. */
+    template <
+            template <size_t, size_t, typename> class OtherVectorType, size_t OtherR, size_t OtherC, typename OtherValueType,
+            typename std::enable_if<(OtherR == N and OtherC == 1) or (OtherC == N and OtherR == 1), int>::type = 0
+    >
+    inline constexpr ValueType
+    scalar_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
     {
         return inner_product(other);
     }
-
-    /**
-     * Compute the cross product with another vector.
-     */
-    template <typename OtherValueType>
-    constexpr Vector<Dimension, ValueType>
-    cross_product(const Vector<Dimension, OtherValueType> & other) const
-    {
-        static_assert(Dimension == 3, "The cross product is only implemented for 3-dimensional vectors.");
-
-        const auto & a = *this;
-        const auto & b = other;
-
-        return {
-                a[1]*b[2] -a[2]*b[1],
-                a[2]*b[0] -a[0]*b[2],
-                a[0]*b[1] -a[1]*b[0],
-        };
-    }
-
-    /** Alias for cross_product **/
-    template <typename OtherValueType>
-    constexpr Vector<Dimension, ValueType>
-    cross(const Vector<Dimension, OtherValueType> & other) const
-    {
-        return cross_product(other);
-    }
-
-    /**
-     * Compute the direct sum with another vector (sum between each scalar components).
-     * @return The resulting vector
-     */
-    template <typename OtherValueType>
-    constexpr Vector<Dimension, ValueType>
-    direct_sum(const Vector<Dimension, OtherValueType> & other) const
-    {
-        Vector<Dimension, ValueType> result(false);
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::plus<ValueType >());
-        return result;
-    }
-
-    /**
-     * Compute the direct sub with another vector (subtraction between each scalar components).
-     * @return The resulting vector
-     */
-    template <typename OtherValueType>
-    constexpr Vector<Dimension, ValueType>
-    direct_sub(const Vector<Dimension, OtherValueType> & other) const
-    {
-        Vector<Dimension, ValueType> result(false);
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ValueType >());
-        return result;
-    }
-
-    /**
-     * Compute the direct multiplication with another vector (multiplication between each scalar components).
-     * @return The resulting vector
-     */
-    template <typename OtherValueType>
-    constexpr Vector<Dimension, ValueType>
-    direct_mult(const Vector<Dimension, OtherValueType> & other) const
-    {
-        Vector<Dimension, ValueType> result(false);
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::multiplies<ValueType >());
-        return result;
-    }
-
-    /**
-     * Compute the direct division with another vector (division between each scalar components).
-     * @return The resulting vector
-     */
-    template <typename OtherValueType>
-    constexpr Vector<Dimension, ValueType>
-    direct_division(const Vector<Dimension, OtherValueType> & other) const
-    {
-        Vector<Dimension, ValueType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::divides<ValueType >());
-        return result;
-    }
-
-    /**
-     * Compute the scalar multiplication (not to be confused by the scalar product).
-     * @tparam TScalar The data type of the scalar (ex float, double, int,...)
-     * @param scalar The scalar value
-     * @return The resulting vector
-     */
-    template <class TScalar>
-    constexpr Vector<Dimension, ValueType>
-    scalar_multiplication(const TScalar & scalar) const
-    {
-        Vector<Dimension, ValueType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
-            return component*scalar;
-        });
-        return result;
-    }
-
-    /**
-    * Compute the scalar division.
-    * @tparam TScalar The data type of the scalar (ex float, double, int,...)
-    * @param scalar The scalar value
-    * @return The resulting vector
-    */
-    template <class TScalar>
-    constexpr Vector<Dimension, ValueType>
-    scalar_division(const TScalar & scalar) const
-    {
-        Vector<Dimension, ValueType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
-            return component/scalar;
-        });
-        return result;
-    }
-
 
     /////////////////////////////////
     //// Mathematical properties ////
     /////////////////////////////////
 
     /** Compute the length of the vector. **/
-    constexpr ValueType
+    inline constexpr ValueType
     length() const
     {
-        return sqrt((*this).dot(*this));
+        return sqrt(length_squared());
     };
 
     /** Compute the length^2 of the vector. **/
-    constexpr ValueType
+    inline constexpr ValueType
     length_squared() const
     {
-        return (*this).dot(*this);
+        using Vec = const MatrixType<R,C,ValueType>&;
+        const auto & self = static_cast<Vec>(*this);
+
+        return self.T() * self;
     }
 
     /** Get the unit vector (current vector normalized to unit length) **/
-    constexpr Vector<Dimension, ValueType>
+    inline constexpr MatrixType<R, C>
     unit() const
     {
-        return (*this)/length();
+        using Vec = const MatrixType<R,C,ValueType>&;
+        const auto & self = static_cast<Vec>(*this);
+
+        return self/length();
     }
 
     /////////////////////////////////
@@ -372,7 +183,6 @@ struct Vector : public std::array<TValueType, Dim>
                std::string(")");
     }
 
-
 private:
     template<size_t current_index, typename... Args>
     void recursive_set(ValueType component, Args&&... other_components) {
@@ -384,29 +194,142 @@ private:
     void recursive_set(ValueType component) {
         (*this)[current_index] = component;
     }
+
 };
 
+/** 3-dimensional vectors */
+template <template <size_t, size_t, typename> class MatrixType_, size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+struct BaseVector3D : public BaseVector<MatrixType_, R_, C_, ValueType_>
+{
+    static constexpr size_t R = R_; ///< Number of rows in a Rx1 vector-matrix
+    static constexpr size_t C = C_; ///< Number of columns in a 1xC vector-matrix
+    static constexpr size_t N = R * C; ///< Number of elements
+
+    static_assert((R == 3 and C == 1) or (R == 1 and C == 3),
+                  "A 3D vector must be of dimension 3x1 (row vector) or 1x3 (column vector).");
+
+    template<size_t R__ = R, size_t C__ = C, typename ValueType__= ValueType_>
+    using MatrixType = MatrixType_<R__, C__, ValueType__>;
+    using ValueType = ValueType_;
+    using Base = BaseVector<MatrixType_, R_, C_, ValueType_>;
+    using Base::Base;
+
+    /** Compute the cross product with another vector. Only supported for vectors of dimension 3. */
+    template <
+            template <size_t, size_t, typename> class OtherVectorType, size_t OtherR, size_t OtherC, typename OtherValueType,
+            typename std::enable_if<(OtherR == 3 and OtherC == 1) or (OtherR == 1 and OtherC == 3), int>::type = 0
+    >
+    inline constexpr MatrixType<3, 1>
+    cross_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & b) const
+    {
+        return {
+                (*this)[1]*b[2] -(*this)[2]*b[1],
+                (*this)[2]*b[0] -(*this)[0]*b[2],
+                (*this)[0]*b[1] -(*this)[1]*b[0],
+        };
+    }
+
+    /** Alias for cross_product **/
+    template <
+            template <size_t, size_t, typename> class OtherVectorType, size_t OtherR, size_t OtherC, typename OtherValueType,
+            typename std::enable_if<(OtherR == 3 and OtherC == 1) or (OtherR == 1 and OtherC == 3), int>::type = 0
+    >
+    inline constexpr MatrixType<3, 1>
+    cross(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    {
+        return cross_product(other);
+    }
+
+    /** Alias for cross_product */
+    template <
+            template <size_t, size_t, typename> class OtherVectorType, size_t OtherR, size_t OtherC, typename OtherValueType,
+            typename std::enable_if<(OtherR == 3 and OtherC == 1) or (OtherR == 1 and OtherC == 3), int>::type = 0
+    >
+    inline constexpr MatrixType<3, 1>
+    operator^(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    {
+        return cross_product(other);
+    }
+
+};
+
+/**
+ * Row vector (Rx1 matrix).
+ */
+template <size_t R_, typename ValueType>
+struct Matrix<R_,1, ValueType> : public BaseVector<Matrix, R_, 1, ValueType>
+{
+    using Base = BaseVector<Matrix, R_, 1, ValueType>;
+    using Base::Base;
+};
+
+/**
+ * Column vector (1xC matrix).
+ */
+template <size_t C_, typename ValueType>
+struct Matrix<1,C_, ValueType> : public BaseVector<Matrix, 1, C_, ValueType>
+{
+    using Base = BaseVector<Matrix, 1, C_, ValueType>;
+    using Base::Base;
+
+    /** Alias for inner_product (dot product). */
+    using Base::operator*;
+    template <typename OtherValueType>
+    constexpr ValueType
+    operator*(const Matrix<C_, 1, OtherValueType> & other) const
+    {
+        return this->inner_product(other);
+    }
+};
+
+/**
+ * Row vector (3x1 matrix).
+ */
+template <typename ValueType>
+struct Matrix<3,1, ValueType> : public BaseVector3D<Matrix, 3, 1, ValueType>
+{
+    using Base = BaseVector3D<Matrix, 3, 1, ValueType>;
+    using Base::Base;
+};
+
+/**
+ * Column vector (1x3 matrix).
+ */
+template <typename ValueType>
+struct Matrix<1,3, ValueType> : public BaseVector3D<Matrix, 1, 3, ValueType>
+{
+    using Base = BaseVector3D<Matrix, 1, 3, ValueType>;
+    using Base::Base;
+
+    /** Alias for inner_product (dot product). */
+    using Base::operator*;
+    template <typename OtherValueType>
+    constexpr ValueType
+    operator*(const Matrix<3, 1, OtherValueType> & other) const
+    {
+        return this->inner_product(other);
+    }
+};
+
+/**
+ * 1D vector (1x1 matrix).
+ */
+template <typename ValueType>
+struct Matrix<1,1, ValueType> : public BaseVector<Matrix, 1, 1, ValueType>
+{
+    using Base = BaseVector<Matrix, 1, 1, ValueType>;
+    using Index = typename Base::Index;
+
+    using Base::Base;
+};
+
+/**
+ * Vector Alias for Rx1 matrix.
+ */
+template <size_t Dimension, typename ValueType = FLOATING_POINT_TYPE>
+using Vector = Matrix<Dimension, 1, ValueType>;
+
 } // namespace algebra
-
 } // namespace caribou
-
-template <size_t Dim, typename TComponent=FLOATING_POINT_TYPE>
-inline std::ostream&
-operator<<(std::ostream& os, const caribou::algebra::Vector<Dim, TComponent>& v)
-{
-    os << std::string("[");
-    os << std::accumulate(std::next(std::begin(v)), std::end(v), std::to_string(v[0]), [](const std::string & s, const TComponent & component) -> std::string {
-        return s + std::string(", ") + std::to_string(component);
-    });
-    os << std::string("]");
-    return os;
-}
-
-template <size_t Dim, typename TOtherType, typename TComponent=FLOATING_POINT_TYPE>
-inline caribou::algebra::Vector<Dim, TComponent>
-operator * (const TOtherType & a, const caribou::algebra::Vector<Dim, TComponent> & v)
-{
-    return v*a;
-}
 
 #endif //CARIBOU_ALGEBRA_VECTOR_H

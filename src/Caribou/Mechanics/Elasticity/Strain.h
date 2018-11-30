@@ -15,7 +15,7 @@ using Mat33 = algebra::Matrix<3,3, FLOATING_POINT_TYPE>;
 using Vec3  = algebra::Matrix<3,1, FLOATING_POINT_TYPE>;
 
 /**
- * Deformation gradient tensor evaluated at local coordinates {xi, eta, zeta}.
+ * Deformation gradient tensor F evaluated at local coordinates {xi, eta, zeta}.
  *
  * This function computes the deformation gradient tensor which regroups the partial derivative of the displacement
  * vector with respect to the material coordinates (initial or undeformed configuration).
@@ -59,6 +59,24 @@ F (const ElementType & initial_element, const ElementType & deformed_element,
 }
 
 /**
+ * Deformation gradient tensor F evaluated at local coordinates {xi, eta, zeta}.
+ *
+ * see caribou::mechanics::elasticity::strain::F( const ElementType & initial_element, const ElementType & deformed_element,
+   const Float & xi, const Float & eta, const Float & zeta)
+ *
+ */
+template <typename ElementType>
+inline Mat33
+F (const ElementType & initial_element, const ElementType & deformed_element, const Vec3 & local_coordinates)
+{
+    const auto & xi   = local_coordinates[0];
+    const auto & eta  = local_coordinates[1];
+    const auto & zeta = local_coordinates[2];
+
+    return strain::F(initial_element, deformed_element, xi, eta, zeta);
+}
+
+/**
  * Small (infinitesimal) strain tensor evaluated at local coordinates {xi, eta, zeta}.
  *
  * This function computes the small strain tensor epsilon :
@@ -75,11 +93,28 @@ inline Mat33
 small_strain (const ElementType & initial_element, const ElementType & deformed_element,
               const Float & xi, const Float & eta, const Float & zeta)
 {
-    const auto F = F(initial_element, deformed_element, xi, eta, zeta);
+    const auto F = strain::F(initial_element, deformed_element, xi, eta, zeta);
     const auto Ft = F.transposed();
     const auto I = Mat33::Identity();
 
     return 1./2 * (Ft + F) - I;
+}
+
+/**
+ * Small (infinitesimal) strain tensor evaluated at local coordinates {xi, eta, zeta}.
+ *
+ * see caribou::mechanics::elasticity::strain::small_strain( const ElementType & initial_element, const ElementType & deformed_element,
+   const Float & xi, const Float & eta, const Float & zeta)
+ */
+template <typename ElementType>
+inline Mat33
+small_strain (const ElementType & initial_element, const ElementType & deformed_element, const Vec3 & local_coordinates)
+{
+    const auto & xi   = local_coordinates[0];
+    const auto & eta  = local_coordinates[1];
+    const auto & zeta = local_coordinates[2];
+
+    return small_strain(initial_element, deformed_element, xi, eta, zeta);
 }
 
 /**
@@ -102,12 +137,30 @@ inline Mat33
 strain (const ElementType & initial_element, const ElementType & deformed_element,
         const Float & xi, const Float & eta, const Float & zeta)
 {
-    const auto F = F(initial_element, deformed_element, xi, eta, zeta);
+    const auto F = strain::F(initial_element, deformed_element, xi, eta, zeta);
     const auto Ft = F.transposed();
     const auto I = Mat33::Identity();
     const auto C = Ft*F; // right Cauchy–Green deformation tensor
 
     return 1./2 * (C - I);
+}
+
+/**
+ * Lagrangian finite strain tensor (also called the Green-Lagrangian strain tensor or Green – St-Venant strain tensor)
+ * evaluated at local coordinates {xi, eta, zeta}.
+ *
+ * see caribou::mechanics::elasticity::strain::strain( const ElementType & initial_element, const ElementType & deformed_element,
+   const Float & xi, const Float & eta, const Float & zeta)
+ */
+template <typename ElementType>
+inline Mat33
+strain (const ElementType & initial_element, const ElementType & deformed_element, const Vec3 & local_coordinates)
+{
+    const auto & xi   = local_coordinates[0];
+    const auto & eta  = local_coordinates[1];
+    const auto & zeta = local_coordinates[2];
+
+    return strain(initial_element, deformed_element, xi, eta, zeta);
 }
 
 } // namespace strain

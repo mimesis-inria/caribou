@@ -18,10 +18,15 @@ TEST(Mechanics, Strain) {
     }
 
     LinearHexahedron deformed_hexahedron = initial_hexahedron;
-    deformed_hexahedron.node(8).translate({1,1,1});
+    deformed_hexahedron.node(7).translate({1,1,1});
     {
         const Mat33 F = elasticity::strain::F(initial_hexahedron, deformed_hexahedron, 0, 0, 0);
-        ASSERT_EQ(Mat33 ({{0.7999999523, -0.2000000179, -0.2000000179}, {-0.2000000179, 0.7999999523, -0.2000000179}, {-0.200000003, -0.200000003, 0.8000000119}}), F);
+        ASSERT_EQ(Mat33 ({{1.125, 0.125, 0.125}, {-0.125, 0.875, -0.125}, {-0.125, -0.125, 0.875}}), F);
+
+        const Mat33 e = elasticity::strain::small_strain(initial_hexahedron, deformed_hexahedron, LinearHexahedron().node(7));
+        std::cout << e;
+        std::cout << Vector<3>({1,1,1}).unit() << "\n";
+//        std::cout << (e * Vector<3>({1,1,1}).unit()) * Vector<3>({1,1,1}).unit();
     }
 
 }

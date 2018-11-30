@@ -4,14 +4,14 @@ project(Caribou.Algebra)
 set(HEADER_FILES
         Vector.h
         Matrix.h
+        SquareMatrix.h
         )
 
 set(TEMPLATE_FILES
-        Matrix.inl)
+        )
 
 set(SOURCE_FILES
-        Algebra.cpp
-        )
+        Algebra.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${TEMPLATE_FILES} ${SOURCE_FILES})
 

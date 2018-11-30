@@ -38,6 +38,8 @@ public:
     using Int   = typename VecInt::ValueType;
     using Float = typename VecFloat::ValueType;
 
+    using SofaVecInt = sofa::defaulttype::Vec<VecType::spatial_dimensions>;
+
     using BaseObject::className;
     using BaseObject::templateName;
     using BaseObject::namespaceName;
@@ -74,7 +76,7 @@ private:
     void onUpdate();
 
 private:
-    Data<sofa::defaulttype::Vec3i> d_n;
+    Data<SofaVecInt> d_n;
     Data<unsigned char> d_number_of_subdivision;
 
     std::unique_ptr<GridType> p_grid;

@@ -84,7 +84,7 @@ public:
 
     /** Test if the segment contains the position x **/
     inline bool
-    contains(const VectorType & x, FLOATING_POINT_TYPE tolerance = 0.00001 ) const
+    contains(const VectorType & x, FLOATING_POINT_TYPE tolerance = EPSILON ) const
     {
         const auto & p0 = first_node();
         const auto & p1 = second_node();
@@ -94,8 +94,8 @@ public:
             return false;
         }
 
-        const auto c = (p1 - p0) * (x - p0);
-        if (c < 0 || c > (p1 - p0) * (p1 - p0)) {
+        const auto c = (p1 - p0).T() * (x - p0);
+        if (c < 0 || c > (p1 - p0).T() * (p1 - p0)) {
             // The point is on the line, but isn't between the two nodes of the segment
             return false;
         }

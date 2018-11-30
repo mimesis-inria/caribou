@@ -12,7 +12,7 @@ namespace topology {
 template <typename VecType>
 MultilevelSparseGridTopology<VecType>::MultilevelSparseGridTopology()
         : DDGNode()
-        , d_n(initData(&d_n, sofa::defaulttype::Vec3i(2,2,2),"n","Grid resolution. (default = 2 2 2)."))
+        , d_n(initData(&d_n, SofaVecInt(),"n","Grid resolution."))
         , d_number_of_subdivision(initData(&d_number_of_subdivision, "maximum_number_of_subdivision_levels", 0,
                                            "Number of subdivision levels of the boundary cells (one level split the cell in 8 subcells)."))
 {
