@@ -12,7 +12,7 @@ namespace strain {
 using Float = FLOATING_POINT_TYPE;
 
 using Mat33 = algebra::Matrix<3,3, FLOATING_POINT_TYPE>;
-using Vec3 = algebra::Matrix<3,1, FLOATING_POINT_TYPE>;
+using Vec3  = algebra::Matrix<3,1, FLOATING_POINT_TYPE>;
 
 /**
  * Deformation gradient tensor evaluated at local coordinates {xi, eta, zeta}.
@@ -56,6 +56,58 @@ F (const ElementType & initial_element, const ElementType & deformed_element,
     }
 
     return GradU + I;
+}
+
+/**
+ * Small (infinitesimal) strain tensor evaluated at local coordinates {xi, eta, zeta}.
+ *
+ * This function computes the small strain tensor epsilon :
+ *
+ * epsilon = 1/2 (F^T + F) - I
+ *
+ * where F is the deformation gradient tensor.
+ *
+ * @tparam ElementType
+ *    see caribou::mechanics::elasticity::strain::F::ElementType
+ */
+template <typename ElementType>
+inline Mat33
+small_strain (const ElementType & initial_element, const ElementType & deformed_element,
+              const Float & xi, const Float & eta, const Float & zeta)
+{
+    const auto F = F(initial_element, deformed_element, xi, eta, zeta);
+    const auto Ft = F.transposed();
+    const auto I = Mat33::Identity();
+
+    return 1./2 * (Ft + F) - I;
+}
+
+/**
+ * Lagrangian finite strain tensor (also called the Green-Lagrangian strain tensor or Green – St-Venant strain tensor)
+ * evaluated at local coordinates {xi, eta, zeta}.
+ *
+ * This function computes the strain tensor E :
+ *
+ * E = 1/2 (C - I)
+ *
+ * C = F^T * F
+ *
+ * where C is the right Cauchy–Green deformation tensor and F is the deformation gradient tensor.
+ *
+ * @tparam ElementType
+ *    see caribou::mechanics::elasticity::strain::F::ElementType
+ */
+template <typename ElementType>
+inline Mat33
+strain (const ElementType & initial_element, const ElementType & deformed_element,
+        const Float & xi, const Float & eta, const Float & zeta)
+{
+    const auto F = F(initial_element, deformed_element, xi, eta, zeta);
+    const auto Ft = F.transposed();
+    const auto I = Mat33::Identity();
+    const auto C = Ft*F; // right Cauchy–Green deformation tensor
+
+    return 1./2 * (C - I);
 }
 
 } // namespace strain
