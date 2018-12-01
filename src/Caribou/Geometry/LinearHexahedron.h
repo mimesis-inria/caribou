@@ -80,7 +80,7 @@ struct LinearHexahedron
     }
 
     /** Copy constructor **/
-    explicit LinearHexahedron (const LinearHexahedron & other) {
+    LinearHexahedron (const LinearHexahedron & other) {
         std::copy(std::begin(other.m_nodes), std::end(other.m_nodes), std::begin(m_nodes));
     }
 
@@ -203,7 +203,7 @@ struct LinearHexahedron
             scaled_nodes[i] = m_nodes[i].scale(s);
         }
 
-        return scaled_nodes;
+        return LinearHexahedron(scaled_nodes);
     }
 
     /** Scale the hexahedron by s from the origin **/
@@ -215,7 +215,7 @@ struct LinearHexahedron
             scaled_nodes[i] = m_nodes[i].scale(s);
         }
 
-        return scaled_nodes;
+        return LinearHexahedron(scaled_nodes);
     }
 
     /**
