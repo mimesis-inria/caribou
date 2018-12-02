@@ -430,11 +430,4 @@ operator * (const TScalar & s, const caribou::algebra::Matrix<R, C, TComponent>&
     return m*s;
 }
 
-// The following templates will be instantiated in the algebra library. If you are using only those, you don't need to
-// include the matrix.inl in your code, simply link the algebra library to your program/library.
-//extern template struct Matrix<3, 3, FLOATING_POINT_TYPE>;
-//extern template struct Matrix<2, 2, FLOATING_POINT_TYPE>;
-//extern template struct Matrix<3, 1, FLOATING_POINT_TYPE>;
-//extern template struct Matrix<1, 3, FLOATING_POINT_TYPE>;
-
 #endif //CARIBOU_ALGEBRA_MATRIX_H
