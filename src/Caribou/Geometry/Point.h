@@ -31,9 +31,11 @@ public:
 
     using VectorType::VectorType;
 
-    BasePoint(const VectorType & v) : VectorType(v) {
+    BasePoint() : VectorType() {}
 
-    }
+    BasePoint(bool initialize_to_zero) : VectorType(initialize_to_zero) {}
+
+    BasePoint(const VectorType & v) : VectorType(v) {}
 
     /**
      * Scale each component of this point's coordinates by a corresponding scaling factor

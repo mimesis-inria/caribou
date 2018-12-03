@@ -41,7 +41,15 @@ struct Vector : public std::array<TValueType, Dim>
      * @param initialize_to_zero If true, initialize the scalar components of the vector to zero
      */
     explicit
-    Vector(bool initialize_to_zero = false) {
+    Vector() {
+    }
+
+    /**
+     * Main constructor
+     * @param initialize_to_zero If true, initialize the scalar components of the vector to zero
+     */
+    explicit
+    Vector(bool initialize_to_zero) {
         if (initialize_to_zero) {
             this->fill(0);
         }
