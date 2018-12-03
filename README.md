@@ -28,7 +28,7 @@ to help cmake find the required binaries:
 **Qt5_DIR** : The Qt's installation path (usually '~/Qt5/version/os/lib/cmake/Qt5')
 
 Launch the compilation process with\
-cmake\
+cmake -DCMAKE_PREFIX_PATH=$SOFA_ROOT\
 make\
 make install (optional)
  
