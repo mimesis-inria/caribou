@@ -19,6 +19,11 @@ output is usually found at the 'sofa_path'/build/install directory.
 
 If your SOFA binaries support Qt5, the Qt's library must also be found.
 
+### Optional dependencies
+- The Caribou library also provides python bindings, generated with pybind11.
+pybind11 can either be compiled from sources or installed using pip (`sudo python -m pip install pybind11`)
+- The unit tests for Caribou depend on the gtest suite (`apt install libgtest-dev` on debian-based linux distros)
+
 ## Building
 
 If you are compiling the **Sofa caribou library**, you can set the following environmnent variable
