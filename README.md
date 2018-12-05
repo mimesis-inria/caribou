@@ -27,8 +27,9 @@ to help cmake find the required binaries:
 **SOFA_ROOT** : The sofa's installation path (usually 'sofa_path'/build/install). It should contain the directory lib/cmake.\
 **Qt5_DIR** : The Qt's installation path (usually '~/Qt5/version/os/lib/cmake/Qt5')
 
-Launch the compilation process with\
-cmake -DCMAKE_PREFIX_PATH=$SOFA_ROOT\
-make\
-make install (optional)
-
+Launch the compilation process with
+```
+cmake
+make
+make install #(optional)
+```
