@@ -24,6 +24,23 @@ namespace algebra {
  * Do to so, it uses the Curiously recurring template pattern (CRTP) :
  *    https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
  *
+ * In the following tree, the Matrix<R, C> are specific implementations of this base class following the R and C template
+ * arguments choosen.
+ *
+ * BaseMatrix
+ * ├── Matrix<R, C> ................Implementation of general matrix RxC
+ * ├── BaseSquareMatrix
+ * │         ├─ Matrix<R, R> .......Implementation of square matrix RxR
+ * │         ├─ Matrix<2, 2> .......Implementation of square matrix 2x2
+ * │         └─ Matrix<3, 3> .......Implementation of square matrix 3x3
+ * └── BaseVector
+ *           ├─Matrix<R, 1> ........Implementation of row-vector matrix Rx1
+ *           ├─Matrix<1, C> ........Implementation of col-vector matrix 1xC
+ *           ├─Matrix<1, 1> ........Implementation of unit matrix 1x1
+ *           └─BaseVector3D
+ *                ├─ Matrix<3, 1> ..Implementation of row-vector matrix 3x1
+ *                └─ Matrix<1, 3> ..Implementation of col-vector matrix 1x3
+ *
  * @tparam MatrixType_ <R_, C_, ValueType_> The class type that will specialize or add more functions to this class.
  * @tparam R_ The number of rows
  * @tparam C_ The number of columns
@@ -366,12 +383,11 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>
 };
 
 /**
- * A simple representation of a matrix.
+ * Generic RxC matrix.
  *
- * This class can be extended by partial specializations for special matrices :
- *    Square matrix, rectangular matrix or vector matrix.
- *
- * It derives BaseMatrix to get its core functionalities (operations and functions that apply to all types of matrices).
+ * This class is the generic implementation, which means that any R and C values that aren't specialized elsewhere will
+ * fall into this class implementation. It derives BaseMatrix to get its core functionalities (operations and functions
+ * that apply to all types of matrices).
  *
  * @tparam R_ The number of rows
  * @tparam C_ The number of columns
@@ -391,7 +407,7 @@ struct Matrix : public BaseMatrix<Matrix, R, C, ValueType>
 #include <Caribou/Algebra/Vector.h>
 
 /**
- * Stream format of a matrix
+ * Output stream of a generic RxC matrix.
  */
 template <size_t R, size_t C, typename TComponent=FLOATING_POINT_TYPE>
 inline std::ostream&
@@ -421,7 +437,7 @@ operator<<(std::ostream& os, const caribou::algebra::Matrix<R, C, TComponent>& m
 }
 
 /**
- * Multiplication of a scalar s with a matrix m : s * m
+ * Multiplication of a scalar s with a generic RxC matrix m : s * m
  */
 template <size_t R, size_t C, typename TComponent, typename TScalar, typename std::enable_if<std::is_arithmetic<TScalar>::value, int>::type = 0>
 inline caribou::algebra::Matrix<R, C, TComponent>

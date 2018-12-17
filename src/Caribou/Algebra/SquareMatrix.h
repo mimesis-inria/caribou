@@ -21,7 +21,7 @@ namespace algebra {
  * ** Do not use this class directly. Use instead caribou::algebra::Matrix<R, C> with R == C. **
  *
  * This class extend the BaseMatrix by adding functions only available on square matrices. It is meant to be derived by
- * a partial specialization of the class Matrix<R, C> (see later in this file for the 2x2 and 3x3 specializations)
+ * a partial specialization of the class Matrix<R, C> (see later in this file for the 2x2 and 3x3 implementations)
  *
  * The functions declared in this class ca be used with any type of square matrices (2x2, 3x3, ...).
  *
@@ -79,7 +79,7 @@ struct BaseSquareMatrix : public BaseMatrix<MatrixType_, R_, R_, ValueType_>
 };
 
 /**
- * Square NxN matrix.
+ * Generic square NxN matrix.
  */
  template <size_t N, typename ValueType>
 struct Matrix<N,N, ValueType> : public BaseSquareMatrix<Matrix, N, ValueType>

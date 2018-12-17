@@ -14,7 +14,7 @@ namespace algebra {
  *
  * This class extend the BaseMatrix by adding functions only available on vectors. It is meant to be derived by
  * a partial specialization of the class Matrix<R, C> (see later in this file for the row-vector, column-vector
- * and 3D specializations).
+ * and 3D implementations).
  *
  * The functions declared in this class ca be used with any type of vectors (1D, 2D, 3D, ...).
  *
@@ -254,7 +254,7 @@ struct BaseVector3D : public BaseVector<MatrixType_, R_, C_, ValueType_>
 };
 
 /**
- * Row vector (Rx1 matrix).
+ * Generic row vector (Rx1 matrix).
  */
 template <size_t R_, typename ValueType>
 struct Matrix<R_,1, ValueType> : public BaseVector<Matrix, R_, 1, ValueType>
@@ -264,7 +264,7 @@ struct Matrix<R_,1, ValueType> : public BaseVector<Matrix, R_, 1, ValueType>
 };
 
 /**
- * Column vector (1xC matrix).
+ * Generic column vector (1xC matrix).
  */
 template <size_t C_, typename ValueType>
 struct Matrix<1,C_, ValueType> : public BaseVector<Matrix, 1, C_, ValueType>

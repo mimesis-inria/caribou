@@ -9,4 +9,10 @@
 #define EPSILON  ((float) 1.0e-20)
 #endif
 
+#ifdef __cpp_if_constexpr
+#define CONSTEXPR_IF constexpr
+#else
+#define CONSTEXPR_IF
+#endif
+
 #endif //CARIBOU_CONFIG_H
