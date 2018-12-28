@@ -6,7 +6,10 @@ TEST(Algebra, Vector) {
     using namespace caribou::algebra;
 
     // Constructor and assigments tests
-    Vector<3> v1 {1, 2, 3};
+    constexpr Vector<3> v1 {1, 2, 3};
+
+    static_assert(v1[1] == 2, "Static assert for constexpr assertion.");
+
     Vector<3> v2 ({1,2,3});
     Vector<3> v3 (1, 2, 3);
     Vector<3> v4 (0,0,0);
