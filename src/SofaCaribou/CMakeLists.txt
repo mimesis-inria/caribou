@@ -13,7 +13,7 @@ set(SOURCE_FILES
     GraphComponents/Forcefield/TractionForcefield.cpp
     GraphComponents/Topology/MultilevelSparseGridTopology.cpp
     GraphComponents/Ode/StaticSolver.cpp
-    init.cpp)
+    init.cpp Traits.h)
 
 # Try to find Sofa's cmake prefix
 # First, make sure it isn't already been manually set by the user's cmake variables

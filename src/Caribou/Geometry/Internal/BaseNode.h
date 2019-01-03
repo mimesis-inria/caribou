@@ -43,10 +43,23 @@ public:
     /** Copy constructor from another Node **/
     template<
             typename OtherNodeType,
-            REQUIRES(std::is_base_of_v<BaseNode, OtherNodeType>)
+            REQUIRES(std::is_base_of_v<algebra::internal::CaribouMatrix, OtherNodeType>)
     >
-    constexpr BaseNode(const NodeType & p) : VectorType (p) {
+    constexpr BaseNode(const OtherNodeType & p) : VectorType (p) {
         static_assert(OtherNodeType::Dimension == Dimension, "Cannot construct a Node from another Node of different dimension.");
+    }
+
+    /**
+     * Forwarding constructor
+     * This constructor can be used to construct a Node from any class that does not inherits Node
+     * via specialisation of the OtherNodeType template.
+     */
+    template <
+            typename AnyType,
+            REQUIRES(not std::is_base_of_v<algebra::internal::CaribouMatrix, AnyType>)
+    >
+    BaseNode(AnyType && anything) : VectorType (anything) {
+
     }
 
     /**

@@ -7,17 +7,7 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Triangle.h>
-
-namespace caribou::geometry {
-template <>
-template <>
-constexpr
-Triangle <3, interpolation::Triangle3>::Triangle(const sofa::defaulttype::Vec3dTypes::Coord & p0, const sofa::defaulttype::Vec3dTypes::Coord & p1, const sofa::defaulttype::Vec3dTypes::Coord & p2)
-: p_nodes {Node<3>{p0[0], p0[1], p0[2]}, Node<3>{p1[0], p1[1], p1[2]}, Node<3>{p2[0], p2[1], p2[2]}}
-{
-
-}
-}
+#include <SofaCaribou/Traits.h>
 
 namespace SofaCaribou {
 namespace GraphComponents {

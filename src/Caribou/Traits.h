@@ -86,7 +86,7 @@ template<class T>
 using is_vector = is_detected<subscript_t, T, std::size_t>;
 
 template<class T>
-_LIBCPP_INLINE_VAR _LIBCPP_CONSTEXPR bool is_vector_v = is_vector<T>::value;
+inline constexpr bool is_vector_v = is_vector<T>::value;
 /**
  * remove_extent_of_vector
  * Similar to std::remove_extent with c-arrays, this will return the type contained in a vector-like class

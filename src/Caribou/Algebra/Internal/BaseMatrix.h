@@ -10,6 +10,9 @@ namespace caribou {
 namespace algebra {
 namespace internal {
 
+// Can be used to statically detect if a BaseMatrix is base of any type
+struct CaribouMatrix {};
+
 /**
  * A simple representation of a matrix.
  *
@@ -26,7 +29,7 @@ namespace internal {
  * @tparam ValueType_ The data type of the matrix's components (default to float)
  */
 template <template <size_t, size_t, typename> class MatrixType_, size_t R_, size_t C_, typename ValueType_>
-struct BaseMatrix : public std::array<ValueType_, R_*C_>
+struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
 {
     static constexpr size_t R = R_; ///< Number of rows
     static constexpr size_t C = C_; ///< Number of columns per row

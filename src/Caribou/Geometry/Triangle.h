@@ -29,11 +29,6 @@ struct Triangle <Dim, interpolation::Triangle3> : public internal::BaseTriangle<
     {
     }
 
-    template <typename OtherNodeType>
-    constexpr Triangle(const OtherNodeType & /*p0*/, const OtherNodeType & /*p1*/, const OtherNodeType & /*p2*/)
-    {
-    }
-
     constexpr
     NodeType
     node(Index index) const
