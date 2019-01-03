@@ -22,7 +22,7 @@ namespace internal {
  * @tparam R_ The number of rows and columns
  * @tparam ValueType_ The data type of the matrix's components (default to float)
  */
-template <template <size_t, size_t, typename> class MatrixType_, size_t R_, typename ValueType_=FLOATING_POINT_TYPE>
+template <template <size_t, size_t, typename> class MatrixType_, size_t R_, typename ValueType_>
 struct BaseSquareMatrix : public BaseMatrix<MatrixType_, R_, R_, ValueType_>
 {
     static constexpr size_t R = R_; ///< Number of rows

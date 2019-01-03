@@ -16,6 +16,33 @@ struct Matrix<R_,1, ValueType> : public internal::BaseVector<Matrix, R_, 1, Valu
 {
     using Base = internal::BaseVector<Matrix, R_, 1, ValueType>;
     using Base::Base;
+
+    /**
+     * Constructor by c-array or initializer list.
+     */
+    constexpr
+    Matrix(ValueType const (&components)[R_]) : Base (components) {}
+
+    /**
+     * Copy constructor from another column-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<R_, 1, ValueType> & other) : Base(other) {}
+
+    /**
+     * Copy constructor from another row-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<1, R_, ValueType> & other) : Base(other) {}
+
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            typename std::enable_if<R_ == sizeof...(Args) + 1, int>::type = 0,
+            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+            : Base(first_value, std::forward<Args>(e)...) {}
 };
 
 /**
@@ -26,6 +53,33 @@ struct Matrix<1,C_, ValueType> : public internal::BaseVector<Matrix, 1, C_, Valu
 {
     using Base = internal::BaseVector<Matrix, 1, C_, ValueType>;
     using Base::Base;
+
+    /**
+     * Constructor by c-array or initializer list.
+     */
+    constexpr
+    Matrix(ValueType const (&components)[C_]) : Base (components) {}
+
+    /**
+     * Copy constructor from another column-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<C_, 1, ValueType> & other) : Base(other) {}
+
+    /**
+     * Copy constructor from another row-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<1, C_, ValueType> & other) : Base(other) {}
+
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            typename std::enable_if<C_ == sizeof...(Args) + 1, int>::type = 0,
+            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+            : Base(first_value, std::forward<Args>(e)...) {}
 
     /** Alias for inner_product (dot product). */
     using Base::operator*;
@@ -45,6 +99,33 @@ struct Matrix<3,1, ValueType> : public internal::BaseVector3D<Matrix, 3, 1, Valu
 {
     using Base = internal::BaseVector3D<Matrix, 3, 1, ValueType>;
     using Base::Base;
+
+    /**
+     * Constructor by c-array or initializer list.
+     */
+    constexpr
+    Matrix(ValueType const (&components)[3]) : Base (components) {}
+
+    /**
+     * Copy constructor from another column-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<3, 1, ValueType> & other) : Base(other) {}
+
+    /**
+     * Copy constructor from another row-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<1, 3, ValueType> & other) : Base(other) {}
+
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            typename std::enable_if<3 == sizeof...(Args) + 1, int>::type = 0,
+            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+            : Base(first_value, std::forward<Args>(e)...) {}
 };
 
 /**
@@ -55,6 +136,33 @@ struct Matrix<1,3, ValueType> : public internal::BaseVector3D<Matrix, 1, 3, Valu
 {
     using Base = internal::BaseVector3D<Matrix, 1, 3, ValueType>;
     using Base::Base;
+
+    /**
+     * Constructor by c-array or initializer list.
+     */
+    constexpr
+    Matrix(ValueType const (&components)[3]) : Base (components) {}
+
+    /**
+     * Copy constructor from another column-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<3, 1, ValueType> & other) : Base(other) {}
+
+    /**
+     * Copy constructor from another row-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<1, 3, ValueType> & other) : Base(other) {}
+
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            typename std::enable_if<3 == sizeof...(Args) + 1, int>::type = 0,
+            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+            : Base(first_value, std::forward<Args>(e)...) {}
 
     /** Alias for inner_product (dot product). */
     using Base::operator*;
@@ -81,8 +189,20 @@ struct Matrix<1,1, ValueType> : public internal::BaseVector<Matrix, 1, 1, ValueT
 /**
  * Vector Alias for Rx1 matrix.
  */
-template <size_t Dimension, typename ValueType = FLOATING_POINT_TYPE>
+template <size_t Dimension, typename ValueType=FLOATING_POINT_TYPE>
 using Vector = Matrix<Dimension, 1, ValueType>;
+
+/**
+ * Vector Alias for Rx1 column vector.
+ */
+template <size_t Dimension, typename ValueType=FLOATING_POINT_TYPE>
+using ColumnVector = Matrix<Dimension, 1, ValueType>;
+
+/**
+ * Vector Alias for Rx1 column vector.
+ */
+template <size_t Dimension, typename ValueType=FLOATING_POINT_TYPE>
+using RowVector = Matrix<1, Dimension, ValueType>;
 
 } // namespace algebra
 } // namespace caribou

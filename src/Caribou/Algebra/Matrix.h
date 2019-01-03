@@ -2,13 +2,6 @@
 #define CARIBOU_ALGEBRA_MATRIX_H
 
 #include <ostream>
-#include <cstddef>
-#include <array>
-#include <initializer_list>
-#include <algorithm>
-#include <numeric>
-#include <cmath>
-
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Internal/BaseMatrix.h>
 
@@ -45,10 +38,58 @@ namespace algebra {
  * @tparam C_ The number of columns
  * @tparam ValueType_ The data type of the matrix's components (default to float)
  */
-template <size_t R, size_t C, typename ValueType = double>
+template <size_t R, size_t C, typename ValueType = FLOATING_POINT_TYPE>
 struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
 {
-    using internal::BaseMatrix<Matrix, R, C, ValueType>::BaseMatrix;
+    using Base = internal::BaseMatrix<Matrix, R, C, ValueType>;
+    using Base::Base;
+
+    /**
+     * Constructor by c-array or initializer list.
+     * @example
+     * \code{.cpp}
+     * Matrix<3,3> A (
+     *   {
+     *     {1,2,3}, // Row 0
+     *     {4,5,6}, // Row 1
+     *     {7,8,9} //  Row 2
+     *   }
+     * );
+     * \endcode
+     */
+    constexpr
+    Matrix(ValueType const (&components)[R][C]) : Base (components) {}
+
+    /**
+     * Constructor by c-array or initializer list.
+     * @example
+     * \code{.cpp}
+     * Matrix<3,3> A (
+     *   {
+     *     1,2,3, // Row 0
+     *     4,5,6, // Row 1
+     *     7,8,9 //  Row 2
+     *   }
+     * );
+     * \endcode
+     */
+    constexpr
+    Matrix(ValueType const (&components)[R*C]) : Base (components) {}
+
+    /**
+     * Copy constructor from another matrix of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<R, C, ValueType> & other) : Base(other) {}
+
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            typename std::enable_if<R*C == sizeof...(Args) + 1, int>::type = 0,
+            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+    : Base(first_value, std::forward<Args>(e)...) {}
 };
 
 } // namespace algebra
@@ -59,7 +100,7 @@ struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
 /**
  * Output stream of a generic RxC matrix.
  */
-template <size_t R, size_t C, typename TComponent=FLOATING_POINT_TYPE>
+template <size_t R, size_t C, typename TComponent>
 inline std::ostream&
 operator<<(std::ostream& os, const caribou::algebra::Matrix<R, C, TComponent>& m)
 {

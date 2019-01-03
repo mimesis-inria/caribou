@@ -2,6 +2,7 @@
 #define CARIBOU_ALGEBRA_INTERNAL_BASEVECTOR_H
 
 #include <numeric>
+#include <cmath>
 
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Internal/BaseMatrix.h>
@@ -26,7 +27,7 @@ namespace internal {
  * @tparam C_ The dimension of the vector (number of columns in a 1xC vector-matrix).
  * @tparam ValueType_ The data type of the vector's components (default to float)/
  */
-template <template <size_t, size_t, typename> class MatrixType_, size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+template <template <size_t, size_t, typename> class MatrixType_, size_t R_, size_t C_, typename ValueType_>
 struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
 {
     static constexpr size_t R = R_; ///< Number of rows in a Rx1 vector-matrix
@@ -48,28 +49,6 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
     //////////////////////
     //// Constructors ////
     //////////////////////
-
-
-    /**
-     * Constructor by c-array or initializer list
-     */
-    template <typename OtherValueType>
-    BaseVector(OtherValueType const (&components)[N]) {
-        for (size_t i = 0; i < N; ++i) {
-            (*this)[i] = static_cast<ValueType>(components[i]);
-        }
-    }
-
-    /**
-     * Constructor by another vector type. The vector type must implements the [] operator to access its components.
-     * It must also have a template signature of vector<N, ValueType> where N is its dimension (number of components) and
-     * ValueType is the type of its components.
-     */
-    template <template <int, typename> class OtherVectorType, typename OtherValueType>
-    BaseVector(const OtherVectorType<N, OtherValueType> & other) {
-        for (size_t i = 0; i < N; ++i)
-            (*this)[i] = static_cast<ValueType> (other[i]);
-    }
 
     /**
      * Constructor by variadic arguments.
@@ -99,6 +78,22 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
     {
     }
 
+    ///////////////////
+    //// Operators ////
+    ///////////////////
+
+    /** Comparison operator with a vector of a same dimension and with component data type of OtherValueType **/
+    template <
+            template <size_t, size_t, typename> class OtherVectorType, size_t OtherR, size_t OtherC, typename OtherValueType,
+            typename std::enable_if<(OtherR == N and OtherC == 1) or (OtherC == N and OtherR == 1), int>::type = 0
+    >
+    inline constexpr bool
+    operator==(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    {
+        return std::equal(this->begin(), this->end(), other.begin(), [](const ValueType & v1, const OtherValueType & v2) -> bool {
+            return (-EPSILON <= (v1 - v2) and (v1 - v2) <= +EPSILON);
+        });
+    }
 
     /////////////////////////////////
     //// Mathematical operations ////
@@ -192,11 +187,10 @@ private:
     void recursive_set(ValueType component) {
         (*this)[current_index] = component;
     }
-
 };
 
 /** 3-dimensional vectors */
-template <template <size_t, size_t, typename> class MatrixType_, size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
+template <template <size_t, size_t, typename> class MatrixType_, size_t R_, size_t C_, typename ValueType_>
 struct BaseVector3D : public internal::BaseVector<MatrixType_, R_, C_, ValueType_>
 {
     static constexpr size_t R = R_; ///< Number of rows in a Rx1 vector-matrix
