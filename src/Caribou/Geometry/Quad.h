@@ -1,84 +1,53 @@
 #ifndef CARIBOU_GEOMETRY_QUAD_H
 #define CARIBOU_GEOMETRY_QUAD_H
 
-#include <Caribou/Geometry/Polygon.h>
+#include <Caribou/config.h>
+#include <Caribou/Algebra/Vector.h>
+#include <Caribou/Geometry/Internal/BaseQuad.h>
+#include <Caribou/Geometry/Node.h>
+#include <Caribou/Geometry/Interpolation/Quad.h>
 
-namespace caribou
+namespace caribou {
+namespace geometry {
+
+template <size_t Dim, typename Interpolation_ = interpolation::Quad4>
+struct Quad : public internal::BaseQuad<Dim, Interpolation_, Quad<Dim, Interpolation_>>
 {
-namespace geometry
+};
+
+template <size_t Dim>
+struct Quad <Dim, interpolation::Quad4> : public internal::BaseQuad<Dim, interpolation::Quad4, Quad<Dim, interpolation::Quad4>>
 {
 
-/** A quad is an alias to a polygon of four nodes. **/
-template<size_t Dimension>
-using Quad = Polygon<4, Dimension>;
+    using NodeType = caribou::geometry::Node<Dim>;
+    using Index = std::size_t ;
 
-/**
- * Create a quad from four points.
- *
- * Example:
- * \code{.cpp}
- * auto p1 = make_point(1,-1,0);
- * auto p2 = make_point(-1,-1,0);
- * auto p3 = make_point(1,1,0);
- * auto p4 = make_point(-1,1,0);
- *
- * auto q = make_quad(p1, p2, p3, p4);
- * \endcode
- * @return
- */
-template<size_t Dimension>
-Quad<Dimension>
-make_quad(const Point<Dimension> & p1, const Point<Dimension> & p2, const Point<Dimension> & p3, const Point<Dimension> & p4) {
-    return make_polygon(p1, p2, p3, p4);
-}
+    constexpr Quad() {};
 
-/**
- * Create a quad from a list of lists.
- *
- * Example:
- * \code{.cpp}
- * auto q = make_quad(
- *   {{1, -1, 0}, {-1, -1, 0}, {1, 1, 0}, {-1, 1, 0}}
- * );
- * \endcode
- * @return
- */
-template<size_t Dimension, typename ValueType>
-auto
-make_quad(ValueType const (&arg)[4][Dimension])
-{
-    return make_polygon(arg);
-}
+    constexpr Quad(const NodeType & p0, const NodeType & p1, const NodeType & p2, const NodeType & p3)
+    : p_nodes {p0, p1, p2, p3}
+    {
 
-/**
- * Create a quad from four lists.
- *
- * Example:
- * \code{.cpp}
- * auto q = make_quad(
- *   {1, -1, 0}, {-1, -1, 0}, {1, 1, 0}, {-1, 1, 0}
- * );
- * \endcode
- * @return
- */
-template<size_t Dimension, typename ValueType>
-auto
-make_quad(const ValueType (&arg1)[Dimension], const ValueType (&arg2)[Dimension], const ValueType (&arg3)[Dimension], const ValueType (&arg4)[Dimension])
-{
-    ValueType nodes[4][Dimension];
-
-    for (size_t i = 0; i < Dimension; ++i) {
-        nodes[0][i] = arg1[i];
-        nodes[1][i] = arg2[i];
-        nodes[2][i] = arg3[i];
-        nodes[3][i] = arg4[i];
     }
 
-    return make_polygon(nodes);
-}
+    constexpr
+    NodeType
+    node(Index index) const
+    {
+        return p_nodes[index];
+    }
+
+    constexpr
+    NodeType &
+    node(Index index)
+    {
+        return p_nodes[index];
+    }
+
+private:
+    std::array<NodeType, 4> p_nodes;
+};
 
 } // namespace geometry
-
 } // namespace caribou
-
 #endif //CARIBOU_GEOMETRY_QUAD_H

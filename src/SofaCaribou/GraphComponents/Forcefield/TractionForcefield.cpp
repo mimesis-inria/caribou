@@ -5,7 +5,19 @@
 #include <sofa/simulation/AnimateBeginEvent.h>
 #include <sofa/helper/AdvancedTimer.h>
 
+#include <Caribou/config.h>
 #include <Caribou/Geometry/Triangle.h>
+
+namespace caribou::geometry {
+template <>
+template <>
+constexpr
+Triangle <3, interpolation::Triangle3>::Triangle(const sofa::defaulttype::Vec3dTypes::Coord & p0, const sofa::defaulttype::Vec3dTypes::Coord & p1, const sofa::defaulttype::Vec3dTypes::Coord & p2)
+: p_nodes {Node<3>{p0[0], p0[1], p0[2]}, Node<3>{p1[0], p1[1], p1[2]}, Node<3>{p2[0], p2[1], p2[2]}}
+{
+
+}
+}
 
 namespace SofaCaribou {
 namespace GraphComponents {
@@ -180,7 +192,7 @@ void TractionForcefield<DataTypes>::increment_load(Deriv traction_increment_per_
         const auto & p2 = rest_positions[triangle_node_indices[1]];
         const auto & p3 = rest_positions[triangle_node_indices[2]];
 
-        const auto triangle = caribou::geometry::make_triangle<3>(p1, p2, p3);
+        const auto triangle = caribou::geometry::Triangle<3>(p1, p2, p3);
 
         // Integration of the traction increment over the element.
         const auto area = triangle.area();
@@ -233,7 +245,7 @@ void TractionForcefield<DataTypes>::draw(const sofa::core::visual::VisualParams*
         const auto & p2 = positions[triangle_node_indices[1]];
         const auto & p3 = positions[triangle_node_indices[2]];
 
-        const auto triangle = caribou::geometry::make_triangle<3>(p1, p2, p3);
+        const auto triangle = caribou::geometry::Triangle<3>(p1, p2, p3);
 
         const auto c = triangle.center();
         const Vector3 center(c[0], c[1], c[2]);

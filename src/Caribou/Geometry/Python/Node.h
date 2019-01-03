@@ -12,7 +12,7 @@ namespace geometry
 namespace python
 {
 
-void create_point(pybind11::module & m);
+void create_node(pybind11::module & m);
 
 } // namespace python
 

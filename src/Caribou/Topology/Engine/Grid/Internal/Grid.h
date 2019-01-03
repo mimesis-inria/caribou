@@ -46,13 +46,13 @@ struct BaseGrid
     {
         const auto & n = Self().number_of_subdivision();
 
-        if (CONSTEXPR_IF(Dimension == 1))
+        if CONSTEXPR_IF(Dimension == 1)
             return n;
 
-        if (CONSTEXPR_IF(Dimension == 2))
+        if CONSTEXPR_IF(Dimension == 2)
             return n[0] * n[1];
 
-        if (CONSTEXPR_IF(Dimension == 3))
+        if CONSTEXPR_IF(Dimension == 3)
             return n[0] * n[2] * n[3];
 
         return 0;
@@ -64,13 +64,13 @@ struct BaseGrid
     {
         const auto & n = Self().number_of_subdivision();
 
-        if (CONSTEXPR_IF(Dimension == 1))
+        if CONSTEXPR_IF(Dimension == 1)
             return n+1;
 
-        if (CONSTEXPR_IF(Dimension == 2))
+        if CONSTEXPR_IF(Dimension == 2)
             return (n[0]+1) * (n[1]+1);
 
-        if (CONSTEXPR_IF(Dimension == 3))
+        if CONSTEXPR_IF(Dimension == 3)
             return (n[0]+1) * (n[2]+1) * (n[3]+1);
 
         return 0;
@@ -82,13 +82,13 @@ struct BaseGrid
     {
         const auto & n = Self().number_of_subdivision();
 
-        if (CONSTEXPR_IF(Dimension == 1))
+        if CONSTEXPR_IF(Dimension == 1)
             return n;
 
-        if (CONSTEXPR_IF(Dimension == 2))
+        if CONSTEXPR_IF(Dimension == 2)
             return n[0] * (n[1]+1) + n[1] * (n[0]+1); // nx * (ny+1)  +  ny * (nx+1)
 
-        if (CONSTEXPR_IF(Dimension == 3))
+        if CONSTEXPR_IF(Dimension == 3)
             return (n[0] * (n[1]+1) + n[1] * (n[0]+1)) * (n[2]+1) +  // Number of edges in a 2D grid * (nz+1)
                    (n[0]+1) * (n[1]+1); // Plus the number of edges in between 2D grids
 

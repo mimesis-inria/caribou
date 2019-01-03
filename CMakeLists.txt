@@ -35,7 +35,7 @@ message(STATUS "Library prefix: ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 message(STATUS "Runtime prefix: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 # Compiler options
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 if ("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1}" MATCHES ".*[cC][lL][aA][nN][gG]")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcolor-diagnostics")
 endif()

@@ -136,7 +136,7 @@ struct Cell
         // Note: The following condition block will be simplified by the compiler
         // since Dimension is a constexpr
 
-        if (CONSTEXPR_IF(Dimension == 2)) {
+        if CONSTEXPR_IF(Dimension == 2) {
             // Dimension == 2
             return child(j*nx + i);
         } else {
