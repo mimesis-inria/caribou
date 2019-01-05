@@ -96,37 +96,6 @@ struct Triangle3 : public InterpolationElement<2, 3, Triangle3>
             };
 
     }
-
-    /**
-     * Get the shape values evaluated at local coordinates {u, v}.
-     */
-    inline
-    algebra::Vector <NumberOfNodes, Real>
-    N (const Real &u, const Real &v) const
-    {
-        return {
-                L<0>(u, v),
-                L<1>(u, v),
-                L<2>(u, v)
-        };
-    }
-
-    /**
-     * Get the shape derivatives w.r.t the local frame {dN/du, dN/dv} evaluated at local coordinates {u, v}.
-     */
-    inline
-    algebra::Matrix<NumberOfNodes, 2, Real>
-    dN (const Real &u, const Real &v) const
-    {
-        const auto dL_n0 = dL<0>(u, v);
-        const auto dL_n1 = dL<1>(u, v);
-        const auto dL_n2 = dL<2>(u, v);
-        return {
-                dL_n0[0], dL_n0[1],
-                dL_n1[0], dL_n1[1],
-                dL_n2[0], dL_n2[1]
-        };
-    }
 };
 
 } // namespace interpolation

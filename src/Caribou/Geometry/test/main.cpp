@@ -52,6 +52,7 @@ TEST(Geometry, Node) {
 
 TEST(Geometry, Triangle) {
     using namespace caribou::geometry;
+    using namespace caribou::algebra;
 
     Triangle<2> triangle ({0,0}, {1, 0}, {0, 1});
     std::array<float, 2> node {{1, 0}};
@@ -64,11 +65,21 @@ TEST(Geometry, Triangle) {
     ASSERT_EQ(triangle.L<1>(1, 0), 1);
     ASSERT_EQ(triangle.L<2>(0, 1), 1);
 
+    Vector <3, float> shapes {triangle.L<0>(0, 0), triangle.L<1>(0, 0), triangle.L<2>(0, 0)};
+    ASSERT_EQ(triangle.N(0,0), shapes);
+
     // Shape function derivatives
     caribou::algebra::Vector<2, float> derivatives[3] {{-1, -1}, {1, 0}, {0, 1}};
     ASSERT_EQ(triangle.dL<0>(0, 0), derivatives[0]);
     ASSERT_EQ(triangle.dL<1>(1, 0), derivatives[1]);
     ASSERT_EQ(triangle.dL<2>(0, 1), derivatives[2]);
+
+    Matrix sderivatives  {
+            triangle.dL<0>(0, 0),
+            triangle.dL<1>(0, 0),
+            triangle.dL<2>(0, 0),
+    };
+    ASSERT_EQ(triangle.dN(0,0), sderivatives);
 
     // Some properties
     caribou::algebra::Vector<2, float> center {1/3., 1/3.};

@@ -26,6 +26,8 @@ struct InterpolationElement
     using ElementType = ElementType_;
     static constexpr INTEGER_TYPE Dimension = Dim;
     static constexpr INTEGER_TYPE NumberOfNodes = NNodes;
+    using Real = FLOATING_POINT_TYPE;
+    using LocalCoordinates = algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
 
     /**
      * Compute the Jacobian matrix evaluated at local coordinates.
@@ -67,7 +69,7 @@ struct InterpolationElement
     auto
     Jacobian (Coordinates &&...e) const
     {
-        const auto local_coordinates = caribou::algebra::Vector<Dimension> {std::forward<Coordinates>(e)...};
+        const auto local_coordinates = LocalCoordinates {std::forward<Coordinates>(e)...};
         const auto shape_derivatives = self().dN(std::forward<Coordinates>(e)...);
 
         auto sum_of_derivatives = shape_derivatives.row(0);
@@ -97,10 +99,20 @@ struct InterpolationElement
     }
 
     /**
-     * Get the shape values evaluated at local coordinates {u, v}.
+     * Get the shape values for each nodes evaluated at local coordinates {u, v}.
      */
-    inline
-    auto
+    constexpr
+    algebra::Vector <NumberOfNodes, Real>
+    N (const Real &u, const Real &v) const
+    {
+        return get_N_shapes(u, v, std::make_index_sequence<NumberOfNodes>{});
+    }
+
+    /**
+     * Get the shape values for each nodes evaluated at local coordinates {u, v}.
+     */
+    constexpr
+    algebra::Vector <NumberOfNodes, Real>
     N (const algebra::Vector<Dimension, FLOATING_POINT_TYPE> & coordinates) const
     {
         if CONSTEXPR_IF (Dimension == 1)
@@ -112,10 +124,21 @@ struct InterpolationElement
     }
 
     /**
-     * Get the shape derivatives w.r.t the local frame {dN/du, dN/dv} evaluated at local coordinates {u, v}.
+     * Get the shape derivatives for each nodes  w.r.t the local frame {dN/du, dN/dv} evaluated at local coordinates {u, v}.
      */
-    inline
-    auto
+    constexpr
+    algebra::Matrix<NumberOfNodes, 2, Real>
+    dN (const Real &u, const Real &v) const
+    {
+        return get_N_shape_derivatives(u,v, std::make_index_sequence<NumberOfNodes>{});
+    }
+
+
+    /**
+     * Get the shape derivatives for each nodes  w.r.t the local frame {dN/du, dN/dv} evaluated at local coordinates {u, v}.
+     */
+    constexpr
+    algebra::Matrix<NumberOfNodes, 2, Real>
     dN (const algebra::Vector<Dimension, FLOATING_POINT_TYPE> & coordinates) const
     {
         if CONSTEXPR_IF (Dimension == 1)
@@ -134,9 +157,9 @@ struct InterpolationElement
     template <typename ValueType>
     inline
     auto
-    interpolate_at_local_position (algebra::Vector<Dimension, FLOATING_POINT_TYPE> && coordinates, const algebra::Vector<NumberOfNodes, ValueType> & values) const
+    interpolate_at_local_position (LocalCoordinates && position, const algebra::Vector<NumberOfNodes, ValueType> & values) const
     {
-        const auto shapes = N(std::forward<algebra::Vector<Dimension, FLOATING_POINT_TYPE>>(coordinates));
+        const auto shapes = N(std::forward<LocalCoordinates>(position));
         return  shapes.dot(values);
     }
 
@@ -148,9 +171,9 @@ struct InterpolationElement
     template <typename ValueType, typename ...Values, REQUIRES(NumberOfNodes == sizeof...(Values)+1)>
     inline
     auto
-    interpolate_at_local_position (algebra::Vector<Dimension, FLOATING_POINT_TYPE> && coordinates, ValueType && v0, Values &&... v) const
+    interpolate_at_local_position (LocalCoordinates && position, ValueType && v0, Values &&... v) const
     {
-        const auto shapes = N(std::forward<algebra::Vector<Dimension, FLOATING_POINT_TYPE>>(coordinates));
+        const auto shapes = N(std::forward<LocalCoordinates>(position));
         const algebra::Vector<NumberOfNodes, ValueType> values {std::forward<ValueType>(v0), std::forward<Values>(v)...};
         return  shapes.dot(values);
     }
@@ -159,6 +182,43 @@ private:
     const ElementType &self () const
     {
         return static_cast<const ElementType &>(*this);
+    }
+
+
+    /**
+     * Gather the N first shape functions (L) into a vector.
+     * @example
+     * \code{.cpp}
+     * // Get the shape values at indices 0, 1, 2 and 3 into a vector.
+     * Vector<4> shapes = LagrangeElement::get_N_shapes(u, v, 0, 1, 2, 3);
+     * \endcode
+     */
+    template <std::size_t... Ix>
+    constexpr
+    algebra::Vector <NumberOfNodes, Real>
+    get_N_shapes (const Real &u, const Real &v, std::index_sequence<Ix...>) const
+    {
+        return algebra::Vector <NumberOfNodes, Real> {
+             self(). template L<Ix>(u, v)...
+        };
+    }
+
+    /**
+     * Gather the N first shape derivatives (dL) into a Matrix.
+     * @example
+     * \code{.cpp}
+     * // Get the shape derivatives at indices 0, 1, 2 and 3 into a vector.
+     * Matrix<4,2> shapes_derivatives = LagrangeElement::get_N_shape_derivatives(u, v, 0, 1, 2, 3);
+     * \endcode
+     */
+    template <std::size_t... Ix>
+    constexpr
+    algebra::Matrix<NumberOfNodes, 2, Real>
+    get_N_shape_derivatives (const Real &u, const Real &v, std::index_sequence<Ix...>) const
+    {
+        return algebra::Matrix<NumberOfNodes, 2, Real> {
+                self(). template dL<Ix>(u, v)...
+        };
     }
 };
 
