@@ -85,12 +85,25 @@ struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
             typename ...Args,
-            typename std::enable_if<R*C == sizeof...(Args) + 1, int>::type = 0,
-            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+            REQUIRES(R*C == sizeof...(Args) + 1)
+    >
     constexpr
     Matrix(ValueType first_value, Args&&...e)
     : Base(first_value, std::forward<Args>(e)...) {}
 };
+
+
+// Deduction guides
+
+/** Constructor of a matrix RxC from a list of R rows (each parameter is a vector of size Cx1) **/
+template <
+        template <size_t, size_t, typename> class OtherMatrixType,
+        size_t C,
+        typename OtherValueType,
+        typename ...Args,
+        REQUIRES(std::is_arithmetic_v<OtherValueType>)
+>
+Matrix(const OtherMatrixType<C, 1, OtherValueType> & first_row, Args&&...rows) -> Matrix<sizeof...(rows)+1, C, OtherValueType>;
 
 } // namespace algebra
 } // namespace caribou

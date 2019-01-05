@@ -97,6 +97,18 @@ TEST(Algebra, Matrix) {
     );
     ASSERT_EQ(8, m1(2,1));
 
+    // Constructor from a list of rows
+    {
+        Vector<3, int> r1{1, 2, 3};
+        Vector<3, int> r2{4, 5, 6};
+        Vector<3, int> r3{7, 8, 9};
+        Vector<3, int> r4{10, 11, 12};
+        auto m2 = Matrix(r1, r2, r3, r4);
+        ASSERT_EQ(8, m2(2,1));
+    }
+
+
+    // Transposed
     Matrix m1_t = m1.transposed();
     ASSERT_EQ(m1(1,2), m1_t(2,1));
 

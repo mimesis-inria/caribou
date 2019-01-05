@@ -121,6 +121,20 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     }}
     {}
 
+    /** Constructor from a list of rows (each parameter is a vector of size Rx1) **/
+    template <
+            template <size_t, size_t, typename> class OtherMatrixType,
+            typename OtherValueType,
+            typename ...Args,
+            REQUIRES(std::is_arithmetic_v<OtherValueType>),
+            REQUIRES(sizeof...(Args)+1 == R_)
+    >
+    constexpr
+    BaseMatrix(const OtherMatrixType<C_, 1, OtherValueType> & first_vector, Args&&...remaining_vectors)
+    {
+        copy_from<0>(std::make_index_sequence<C_>{}, first_vector, std::forward<Args>(remaining_vectors)...);
+    }
+
     ///////////////////
     //// Accessors ////
     ///////////////////
@@ -584,6 +598,23 @@ private:
             copy_from<row_index, column_index+1, OtherValueType>(components);
         else if CONSTEXPR_IF (row_index+1 < R)
             copy_from<row_index+1, 0, OtherValueType>(components);
+    }
+
+    /** Static copying from a set of rows (vectors of size Cx1) */
+    template <
+            size_t row_id,
+            std::size_t... Ix,
+            template <size_t, size_t, typename> class OtherMatrixType,
+            typename OtherValueType,
+            typename ...Args
+    >
+    constexpr
+    void
+    copy_from( const std::index_sequence<Ix...> & indices, const OtherMatrixType<C_, 1, OtherValueType> & current_vector, Args&&...remaining_vectors)
+    {
+        (void ((*this)[C*row_id + Ix] = static_cast<ValueType> (current_vector[Ix])), ...);
+        if constexpr (row_id< R-1)
+            copy_from<row_id+1>(indices, std::forward<Args>(remaining_vectors)...);
     }
 };
 
