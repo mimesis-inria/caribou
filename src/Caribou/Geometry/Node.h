@@ -37,6 +37,19 @@ public:
 
     using Base::Base; // Import constructors
 
+    /**
+     * Forwarding constructor
+     * This constructor can be used to construct a Node from any class that does not inherits Node
+     * via specialisation of the OtherNodeType template.
+     */
+    template <
+            typename AnyType,
+            REQUIRES(not std::is_base_of_v<algebra::internal::CaribouMatrix, AnyType>)
+    >
+    Node(AnyType && anything) : Base (anything) {
+
+    }
+
     /** Assignment operator **/
     template<typename OtherValueType>
     Node &
@@ -65,6 +78,19 @@ public:
     using ValueType = typename Base::ValueType;
 
     using Base::Base; // Import constructors
+
+    /**
+     * Forwarding constructor
+     * This constructor can be used to construct a Node from any class that does not inherits Node
+     * via specialisation of the OtherNodeType template.
+     */
+    template <
+            typename AnyType,
+            REQUIRES(not std::is_base_of_v<algebra::internal::CaribouMatrix, AnyType>)
+    >
+    Node(AnyType && anything) : Base (anything) {
+
+    }
 
     /** Assignment operator **/
     template<typename OtherValueType>
@@ -97,6 +123,19 @@ public:
     using ValueType = typename Base::ValueType;
 
     using Base::Base;
+
+    /**
+     * Forwarding constructor
+     * This constructor can be used to construct a Node from any class that does not inherits Node
+     * via specialisation of the OtherNodeType template.
+     */
+    template <
+            typename AnyType,
+            REQUIRES(not std::is_base_of_v<algebra::internal::CaribouMatrix, AnyType>)
+    >
+    Node(AnyType && anything) : Base (anything) {
+
+    }
 
     /** Assignment operator **/
     template<typename OtherValueType>
