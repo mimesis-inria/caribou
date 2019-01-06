@@ -157,7 +157,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     {
         MatrixType<1, C, ValueType> r;
         for (std::size_t c = 0; c < C; ++c)
-            r(0, c) = static_cast<Self&>(*this) (row, c);
+            r(0, c) = static_cast<const Self&>(*this) (row, c);
         return r;
     }
 
@@ -167,7 +167,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     {
         MatrixType<R, 1, ValueType> c;
         for (std::size_t r = 0; r < R; ++r)
-            c(r, 0) = static_cast<Self&>(*this) (r, column);
+            c(r, 0) = static_cast<const Self&>(*this) (r, column);
         return c;
     }
 
@@ -364,14 +364,14 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
             // Direct operation with a row-vector
             for (std::size_t r = 0; r < R; ++r) {
                 for (std::size_t c = 0; c < C; ++c) {
-                    result[r][c] = static_cast<Self&>(*this) (r, c) + other(0, c);
+                    result(r,c) = static_cast<const Self&>(*this) (r, c) + other(0, c);
                 }
             }
         } else if CONSTEXPR_IF(R == OtherR and OtherC == 1) {
             // Direct operation with a column-vector
             for (std::size_t r = 0; r < R; ++r) {
                 for (std::size_t c = 0; c < C; ++c) {
-                    result[r][c] = static_cast<Self&>(*this) (r, c) + other(r, 0);
+                    result(r,c) = static_cast<const Self&>(*this) (r, c) + other(r, 0);
                 }
             }
         }
@@ -420,14 +420,14 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
             // Direct operation with a row-vector
             for (std::size_t r = 0; r < R; ++r) {
                 for (std::size_t c = 0; c < C; ++c) {
-                    result[r][c] = static_cast<Self&>(*this) (r, c) - other(0, c);
+                    result(r,c) = static_cast<const Self&>(*this) (r, c) - other(0, c);
                 }
             }
         } else if CONSTEXPR_IF(R == OtherR and OtherC == 1) {
             // Direct operation with a column-vector
             for (std::size_t r = 0; r < R; ++r) {
                 for (std::size_t c = 0; c < C; ++c) {
-                    result[r][c] = static_cast<Self&>(*this) (r, c) - other(r, 0);
+                    result(r,c) = static_cast<const Self&>(*this) (r, c) - other(r, 0);
                 }
             }
         }
@@ -476,14 +476,14 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
             // Direct operation with a row-vector
             for (std::size_t r = 0; r < R; ++r) {
                 for (std::size_t c = 0; c < C; ++c) {
-                    result[r][c] = static_cast<Self&>(*this) (r, c) * other(0, c);
+                    result(r,c) = static_cast<const Self&>(*this) (r, c) * other(0, c);
                 }
             }
         } else if CONSTEXPR_IF(R == OtherR and OtherC == 1) {
             // Direct operation with a column-vector
             for (std::size_t r = 0; r < R; ++r) {
                 for (std::size_t c = 0; c < C; ++c) {
-                    result[r][c] = static_cast<Self&>(*this) (r, c) * other(r, 0);
+                    result(r,c) = static_cast<const Self&>(*this) (r, c) * other(r, 0);
                 }
             }
         }
@@ -532,14 +532,14 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
             // Direct operation with a row-vector
             for (std::size_t r = 0; r < R; ++r) {
                 for (std::size_t c = 0; c < C; ++c) {
-                    result[r][c] = static_cast<Self&>(*this) (r, c) / other(0, c);
+                    result(r,c) = static_cast<const Self&>(*this) (r, c) / other(0, c);
                 }
             }
         } else if CONSTEXPR_IF(R == OtherR and OtherC == 1) {
             // Direct operation with a column-vector
             for (std::size_t r = 0; r < R; ++r) {
                 for (std::size_t c = 0; c < C; ++c) {
-                    result[r][c] = static_cast<Self&>(*this) (r, c) / other(r, 0);
+                    result(r,c) = static_cast<const Self&>(*this) (r, c) / other(r, 0);
                 }
             }
         }
