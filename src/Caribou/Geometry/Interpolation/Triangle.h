@@ -25,11 +25,12 @@ namespace interpolation {
  * 0----------1 --> u      0-----3----1         0---3---4---1          0---3---4---5---1
  *
  */
-struct Triangle3 : public InterpolationElement<2, 3, Triangle3>
+struct Triangle3
 {
     using Index = INTEGER_TYPE;
     using Real = FLOATING_POINT_TYPE;
 
+    static constexpr INTEGER_TYPE Dimension = 2;
     static constexpr INTEGER_TYPE NumberOfNodes = 3;
 
     /**
@@ -44,9 +45,9 @@ struct Triangle3 : public InterpolationElement<2, 3, Triangle3>
      * @tparam interpolation_node_index The interpolation node id
      */
     template<INTEGER_TYPE interpolation_node_index>
-    constexpr
+    static constexpr
     Real
-    L (const Real &u, const Real &v) const
+    L (const Real &u, const Real &v)
     {
         static_assert(interpolation_node_index >= 0 and interpolation_node_index < NumberOfNodes,
                       "The shape value can only be computed at the interpolation nodes (indices 0, 1 and 2).");
@@ -72,9 +73,9 @@ struct Triangle3 : public InterpolationElement<2, 3, Triangle3>
      * @tparam interpolation_node_index The interpolation node id
      */
     template<INTEGER_TYPE interpolation_node_index>
-    constexpr
+    static constexpr
     algebra::Vector<2, Real>
-    dL (const Real & /*u*/, const Real & /*v*/) const
+    dL (const Real & /*u*/, const Real & /*v*/)
     {
         static_assert(interpolation_node_index >= 0 and interpolation_node_index < NumberOfNodes,
                       "The shape derivatives can only be computed at the interpolation nodes (indices 0, 1 and 2).");

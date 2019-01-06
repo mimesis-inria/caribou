@@ -5,19 +5,20 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
+#include <Caribou/Geometry/Interpolation/InterpolationElement.h>
 
 namespace caribou {
 namespace geometry {
 namespace internal {
 
-template<size_t Dim, typename Interpolation, typename TriangleType>
-struct BaseTriangle : Interpolation
+template<size_t Dim, typename CanonicalElementType, typename TriangleType>
+struct BaseTriangle : interpolation::InterpolationElement<TriangleType, CanonicalElementType>
 {
     static_assert(Dim == 2 or Dim == 3, "Triangle can only be made in dimension 2 or 3.");
 };
 
-template<typename Interpolation, typename TriangleType>
-struct BaseTriangle<2, Interpolation, TriangleType> : Interpolation
+template<typename CanonicalElementType, typename TriangleType>
+struct BaseTriangle<2, CanonicalElementType, TriangleType> : interpolation::InterpolationElement<TriangleType, CanonicalElementType>
 {
     /** Compute the surface area **/
     inline auto area() const noexcept {
@@ -52,8 +53,8 @@ private:
     }
 };
 
-template<typename Interpolation, typename TriangleType>
-struct BaseTriangle<3, Interpolation, TriangleType> : Interpolation
+template<typename CanonicalElementType, typename TriangleType>
+struct BaseTriangle<3, CanonicalElementType, TriangleType> : interpolation::InterpolationElement<TriangleType, CanonicalElementType>
 {
     /** Compute the surface area **/
     inline auto area() const noexcept {

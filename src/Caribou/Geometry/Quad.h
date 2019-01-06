@@ -13,25 +13,22 @@ namespace geometry {
 template <size_t Dim, typename Interpolation_ = interpolation::Quad4>
 struct Quad : public internal::BaseQuad<Dim, Interpolation_, Quad<Dim, Interpolation_>>
 {
-};
-
-template <size_t Dim>
-struct Quad <Dim, interpolation::Quad4> : public internal::BaseQuad<Dim, interpolation::Quad4, Quad<Dim, interpolation::Quad4>>
-{
-
+    static constexpr INTEGER_TYPE NumberOfNodes = Interpolation_::NumberOfNodes;
     using NodeType = caribou::geometry::Node<Dim>;
     using Index = std::size_t ;
 
-    constexpr Quad() {};
-
-    constexpr Quad(const NodeType & p0, const NodeType & p1, const NodeType & p2, const NodeType & p3)
-    : p_nodes {p0, p1, p2, p3}
-    {
-
-    }
+    template <
+            typename ...Nodes,
+            REQUIRES(NumberOfNodes == sizeof...(Nodes)),
+            REQUIRES(std::conjunction_v<std::is_same<NodeType, Nodes>...>)
+    >
+    constexpr
+    Quad(Nodes&&...remaining_nodes)
+    : p_nodes {std::forward<Nodes>(remaining_nodes)...}
+    {}
 
     constexpr
-    NodeType
+    const NodeType &
     node(Index index) const
     {
         return p_nodes[index];
@@ -45,7 +42,7 @@ struct Quad <Dim, interpolation::Quad4> : public internal::BaseQuad<Dim, interpo
     }
 
 private:
-    std::array<NodeType, 4> p_nodes;
+    std::array<NodeType, Interpolation_::NumberOfNodes> p_nodes;
 };
 
 } // namespace geometry

@@ -11,21 +11,23 @@ namespace interpolation {
 
 /**
  * This is a base class that should be inherited by a explicit interpolation element types (example, a Lagrange element
- * such as a linear Quad). All the positions used in this element are specified by local coordinates (such as
- * barycentric coordinates) relative to the element frame axis.
+ * such as a linear Quad). All the positions used in this element are specified by local coordinates relative to the
+ * canonical element frame axis.
  *
- * @tparam Dim The dimension of the interpolation element (this is the dimension of the local frame. If the element is a
- * 3D triangle, the dimension is still 2D as the local frame of the element is in 2D.
+ * @tparam Dim The dimension of the canonical element (this is the dimension of the local frame. If the element is a
+ * 3D triangle, the dimension is still 2D since the canonical triangle is in 2D.
  * @tparam NNodes The number of interpolation nodes of the element. Usually, a linear element will only have an
  * interpolation node per corners. Higher degree elements will usually have additional nodes between its corners.
  * @tparam ElementType_ The explicit element type (that will inherit this base class).
  */
-template<INTEGER_TYPE Dim, INTEGER_TYPE NNodes, typename ElementType_>
+template<typename ElementType_, typename CanonicalElementType_>
 struct InterpolationElement
 {
     using ElementType = ElementType_;
-    static constexpr INTEGER_TYPE Dimension = Dim;
-    static constexpr INTEGER_TYPE NumberOfNodes = NNodes;
+    using CanonicalElementType = CanonicalElementType_;
+    static constexpr INTEGER_TYPE Dimension = CanonicalElementType::Dimension;
+    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
+
     using Real = FLOATING_POINT_TYPE;
     using LocalCoordinates = algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
 
@@ -34,34 +36,64 @@ struct InterpolationElement
      *
      * The Jacobian is defined as:
      *
-     * In 1D:
+     * 1D canonical element
+     * --------------------
      *
-     * J(u) = dx/du = sum dNi/du * u
+     * 1D manifold:    J(u) = dx/du = sum_i dNi/du * xi
      *
-     * In 2D:
+     * 2D manifold:    J(u) = | dx/du | = | sum dNi/du xi |
+     *                        | dy/du | = | sum dNi/du yi |
      *
-     *          | dx/dXi    dy/dXi  |   | sum dNi/dXi   u    sum dNi/dXi   v |
-     * J(u,v) = | dx/dEta   dy/dEta | = | sum dNi/dEta  u    sum dNi/dEta  v |
+     *                        | dx/du | = | sum dNi/du xi |
+     * 3D manifold:    J(u) = | dy/du | = | sum dNi/du yi |
+     *                        | dz/du | = | sum dNi/du zi |
      *
-     * In 3D:
      *
-     *            | dx/dXi    dy/dXi   dz/dXi   |   | sum dNi/dXi   u    sum dNi/dXi   v    sum dNi/dXi   w |
-     * J(u,v,w) = | dx/dEta   dy/dEta  dz/dEta  | = | sum dNi/dEta  u    sum dNi/dEta  v    sum dNi/dEta  w |
-     *            | dx/dZeta  dy/dZeta dz/dZeta |   | sum dNi/dZeta u    sum dNi/dZeta v    sum dNi/dZeta w |
+     * 2D canonical element
+     * --------------------
      *
-     * where dNi/dXi (resp. dEta and dZeta) is the partial derivative of the shape function at node i (ui, vi, wi)
-     * w.r.t the local frame Xi {Xi, Eta, Zeta} evaluated at local coordinate  {u, v, w}.
+     * 1D manifold:    N/A
+     *
+     * 2D manifold:    J(u,v) = | dx/du   dx/dv |   | sum dNi/du  xi    sum dNi/dv  xi |
+     *                          | dy/du   dy/dv | = | sum dNi/du  yi    sum dNi/dv  yi |
+     *
+     *                          | dx/du   dx/dv |   | sum dNi/du  xi    sum dNi/dv  xi |
+     * 3D manifold:    J(u,v) = | dy/du   dy/dv | = | sum dNi/du  yi    sum dNi/dv  yi |
+     *                          | dz/du   dz/dv | = | sum dNi/du  zi    sum dNi/dv  zi |
+     *
+     *
+     * 3D canonical element
+     * --------------------
+     *
+     * 1D manifold:    N/A
+     * 2D manifold:    N/A
+     *                            | dx/du   dx/dv   dx/dw |   | sum dNi/du xi   sum dNi/dv xi    sum dNi/dw xi |
+     * 3D manifold:    J(u,v,w) = | dy/du   dy/dv   dy/dw | = | sum dNi/du yi   sum dNi/dv yi    sum dNi/dw yi |
+     *                            | dz/du   dz/dv   dz/dw |   | sum dNi/du zi   sum dNi/dv zi    sum dNi/dw zi |
+     *
+     *
+     *
+     *
+     * where dNi/du (resp. dv and dw) is the partial derivative of the shape function at node i
+     * w.r.t the local frame of the canonical element evaluated at local coordinate  {u, v, w} and
+     * where {xi, yi and zi} are the world coordinates of the position of node i on its element manifold.
      *
      * @example
      * \code{.cpp}
-     * // Computes the 1D Jacobian evaluated at local coordinates 0.5
-     * double J = LagrangeElement::Jacobian (0.5);
+     * // Computes the Jacobian of a 3D segment and its determinant evaluated at local coordinates 0.5 (half-way through the segment)
+     * Segment<3> segment {{5, 5, 5}, {10, 5,0}};
+     * Matrix<3,1> J = segment.Jacobian (0.5);
+     * double detJ = (J^T * J).determinant() ^ 1/2;
      *
-     * // Computes the 2D Jacobian evaluated at local coordinates {-0.4, 0.2}
-     * Matrix<2,2> J = LagrangeElement::Jacobian (-0.4, 0.2);
+     * // Computes the Jacobian of a 3D triangle and its determinant evaluated at local coordinates {1/3, 1/3} (on its center point)
+     * Triangle<3> triangle {{5,5,5}, {15, 5, 5}, {10, 10, 10}};
+     * Matrix<3,2> J = triangle.Jacobian(1/3., 1/3.);
+     * double detJ = (J^T * J).determinant() ^ 1/2;
      *
-     * // Computes the 3D Jacobian evaluated at local coordinates {-0.4, 0.2, 0.1}
-     * Matrix<3,3> J = LagrangeElement::Jacobian (-0.4, 0.2, 0.1);
+     * // Computes the Jacobian of a 3D tetrahedron and its determinant evaluated at local coordinates {1/3, 1/3, 1/3} (on its center point)
+     * Tetrahedron<3> tetra {{5,5,5}, {15, 5, 5}, {10, 10, 10}};
+     * Matrix<3,3> J = tetra.Jacobian(1/3., 1/3., 1/3.);
+     * double detJ = J.determinant();
      * \endcode
      */
     template<typename ...Coordinates, REQUIRES(Dimension == sizeof...(Coordinates))>
@@ -69,41 +101,62 @@ struct InterpolationElement
     auto
     Jacobian (Coordinates &&...e) const
     {
-        const auto local_coordinates = LocalCoordinates {std::forward<Coordinates>(e)...};
-        const auto shape_derivatives = self().dN(std::forward<Coordinates>(e)...);
+        using namespace caribou::algebra;
 
-        auto sum_of_derivatives = shape_derivatives.row(0);
-        for (std::size_t i = 1; i < NumberOfNodes; ++i)
-            sum_of_derivatives += shape_derivatives.row(i);
+        const auto shape_derivatives = dN(std::forward<Coordinates>(e)...);
 
-        if CONSTEXPR_IF (Dimension == 1) {
-            return local_coordinates[0] * sum_of_derivatives[0];
-        } else if CONSTEXPR_IF (Dimension == 2) {
-            const auto D = caribou::algebra::Matrix {
-                    sum_of_derivatives[0], sum_of_derivatives[0],
-                    sum_of_derivatives[1], sum_of_derivatives[1]
-            };
-            return D.direct_multiplication(caribou::algebra::RowVector<2>{
-                    local_coordinates[0], local_coordinates[1]
-            });
+        if CONSTEXPR_IF (Dimension == 1) { // Canonical element of dimension 1
+            auto sum = self().node(0) * shape_derivatives.row(0).transposed();
+            for (std::size_t i = 1; i < NumberOfNodes; ++i)
+                sum += self().node(0) * shape_derivatives.row(i).transposed();
+            return sum;
+        } else if CONSTEXPR_IF (Dimension == 2) { // Canonical element of dimension 2
+            Matrix positions (
+                    self().node(0), // [x, y, z]
+                    self().node(0)  // [x, y, z]
+            );
+            auto sum =
+                    positions
+                    .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv]^T
+                    .transposed();
+            for (std::size_t i = 1; i < NumberOfNodes; ++i) {
+                positions = Matrix(
+                        self().node(i), // [x, y, z]
+                        self().node(i)  // [x, y, z]
+                );
+                sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv]^T
+                        .transposed();
+            }
+            return sum;
         } else { // Dimension == 3
-            const auto D = caribou::algebra::Matrix {
-                    sum_of_derivatives[0], sum_of_derivatives[0], sum_of_derivatives[0],
-                    sum_of_derivatives[1], sum_of_derivatives[1], sum_of_derivatives[1],
-                    sum_of_derivatives[2], sum_of_derivatives[2], sum_of_derivatives[2]
-            };
-            return D.direct_multiplication(caribou::algebra::RowVector<3>{
-                    local_coordinates[0], local_coordinates[1], local_coordinates[2]
-            });
+            Matrix positions (
+                    self().node(0), // [x, y, z]
+                    self().node(0), // [x, y, z]
+                    self().node(0)  // [x, y, z]
+            );
+            auto sum = positions
+                    .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv, dw]^T
+                    .transposed();
+
+            for (std::size_t i = 1; i < NumberOfNodes; ++i) {
+                positions = Matrix(
+                        self().node(i), // [x, y, z]
+                        self().node(i), // [x, y, z]
+                        self().node(i)  // [x, y, z]
+                );
+                sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv, dw]^T
+                        .transposed();
+            }
+            return sum;
         }
     }
 
     /**
      * Get the shape values for each nodes evaluated at local coordinates {u, v}.
      */
-    constexpr
+    static constexpr
     algebra::Vector <NumberOfNodes, Real>
-    N (const Real &u, const Real &v) const
+    N (const Real &u, const Real &v)
     {
         return get_N_shapes(u, v, std::make_index_sequence<NumberOfNodes>{});
     }
@@ -111,24 +164,24 @@ struct InterpolationElement
     /**
      * Get the shape values for each nodes evaluated at local coordinates {u, v}.
      */
-    constexpr
+    static constexpr
     algebra::Vector <NumberOfNodes, Real>
-    N (const algebra::Vector<Dimension, FLOATING_POINT_TYPE> & coordinates) const
+    N (const algebra::Vector<Dimension, FLOATING_POINT_TYPE> & coordinates)
     {
         if CONSTEXPR_IF (Dimension == 1)
-            return self().N(coordinates[0]);
+            return N(coordinates[0]);
         else if CONSTEXPR_IF (Dimension == 2)
-            return self().N(coordinates[0], coordinates[1]);
+            return N(coordinates[0], coordinates[1]);
         else if CONSTEXPR_IF (Dimension == 3)
-            return self().N(coordinates[0], coordinates[1], coordinates[2]);
+            return N(coordinates[0], coordinates[1], coordinates[2]);
     }
 
     /**
      * Get the shape derivatives for each nodes  w.r.t the local frame {dN/du, dN/dv} evaluated at local coordinates {u, v}.
      */
-    constexpr
+    static constexpr
     algebra::Matrix<NumberOfNodes, 2, Real>
-    dN (const Real &u, const Real &v) const
+    dN (const Real &u, const Real &v)
     {
         return get_N_shape_derivatives(u,v, std::make_index_sequence<NumberOfNodes>{});
     }
@@ -137,16 +190,16 @@ struct InterpolationElement
     /**
      * Get the shape derivatives for each nodes  w.r.t the local frame {dN/du, dN/dv} evaluated at local coordinates {u, v}.
      */
-    constexpr
+    static constexpr
     algebra::Matrix<NumberOfNodes, 2, Real>
-    dN (const algebra::Vector<Dimension, FLOATING_POINT_TYPE> & coordinates) const
+    dN (const algebra::Vector<Dimension, FLOATING_POINT_TYPE> & coordinates)
     {
         if CONSTEXPR_IF (Dimension == 1)
-            return self().dN(coordinates[0]);
+            return dN(coordinates[0]);
         else if CONSTEXPR_IF (Dimension == 2)
-            return self().dN(coordinates[0], coordinates[1]);
+            return dN(coordinates[0], coordinates[1]);
         else if CONSTEXPR_IF (Dimension == 3)
-            return self().dN(coordinates[0], coordinates[1], coordinates[2]);
+            return dN(coordinates[0], coordinates[1], coordinates[2]);
     }
 
     /**
@@ -194,12 +247,12 @@ private:
      * \endcode
      */
     template <std::size_t... Ix>
-    constexpr
+    static constexpr
     algebra::Vector <NumberOfNodes, Real>
-    get_N_shapes (const Real &u, const Real &v, std::index_sequence<Ix...>) const
+    get_N_shapes (const Real &u, const Real &v, std::index_sequence<Ix...>)
     {
         return algebra::Vector <NumberOfNodes, Real> {
-             self(). template L<Ix>(u, v)...
+            CanonicalElementType::template L<Ix>(u, v)...
         };
     }
 
@@ -212,12 +265,12 @@ private:
      * \endcode
      */
     template <std::size_t... Ix>
-    constexpr
+    static constexpr
     algebra::Matrix<NumberOfNodes, 2, Real>
-    get_N_shape_derivatives (const Real &u, const Real &v, std::index_sequence<Ix...>) const
+    get_N_shape_derivatives (const Real &u, const Real &v, std::index_sequence<Ix...>)
     {
         return algebra::Matrix<NumberOfNodes, 2, Real> {
-                self(). template dL<Ix>(u, v)...
+            CanonicalElementType::template dL<Ix>(u, v)...
         };
     }
 };
