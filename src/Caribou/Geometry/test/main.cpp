@@ -57,7 +57,7 @@ TEST(Geometry, Triangle) {
     using namespace caribou::geometry::interpolation;
     using namespace caribou::algebra;
 
-    Triangle<2> triangle ({0,0}, {1, 0}, {0, 1});
+    Triangle<2> triangle (Node<2> {0,0}, Node<2> {1, 0}, Node<2> {0, 1});
     std::array<float, 2> node {{1, 0}};
     ASSERT_EQ( triangle.node(1), node);
 
@@ -69,7 +69,7 @@ TEST(Geometry, Triangle) {
     ASSERT_EQ(Triangle3::L<2>(0, 1), 1);
 
     Vector <3, float> shapes {Triangle3::L<0>(0, 0), Triangle3::L<1>(0, 0), Triangle3::L<2>(0, 0)};
-    ASSERT_EQ(triangle.N(0,0), shapes);
+    ASSERT_EQ(Triangle3::N(0,0), shapes);
 
     // Shape function derivatives
     caribou::algebra::Vector<2, float> derivatives[3] {{-1, -1}, {1, 0}, {0, 1}};
@@ -86,7 +86,7 @@ TEST(Geometry, Triangle) {
 
     // Jacobian
     Triangle<2> triangle2D (Node<2>{50, 50}, Node<2>{60, 50}, Node<2>{55, 55});
-    Matrix J = triangle2D.Jacobian(1/3, 1/3);
+    Matrix J = triangle2D.jacobian(1/3, 1/3);
     ASSERT_EQ(J.determinant()*0.5, 25);
 
     // Some properties
@@ -95,7 +95,7 @@ TEST(Geometry, Triangle) {
 
     ASSERT_EQ(triangle.area(), 0.5);
 
-    Triangle<3> triangle1 ({10,10,10}, {20, 10, 10}, {15, 20, 10});
+    Triangle<3> triangle1 (Node<3> {10,10,10}, Node<3> {20, 10, 10}, Node<3> {15, 20, 10});
     ASSERT_EQ(triangle1.area(), 50);
 
 }
@@ -128,7 +128,7 @@ TEST(Geometry, Quad) {
 
     // Jacobian
     Quad<2> quad2D (Node<2>{50, 50}, Node<2>{55, 50}, Node<2>{55, 55}, Node<2>{50, 55});
-    Matrix J = quad2D.Jacobian(-sqrt(3)/3, sqrt(3)/3);
+    Matrix J = quad2D.jacobian(-sqrt(3)/3, sqrt(3)/3);
     ASSERT_EQ(J.determinant()*4, 25);
 
 

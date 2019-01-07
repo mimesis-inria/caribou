@@ -3,7 +3,7 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
-#include <Caribou/Geometry/Interpolation/InterpolationElement.h>
+#include <Caribou/Geometry/Interpolation/CanonicalElement.h>
 #include <Caribou/Geometry/Node.h>
 
 namespace caribou {
@@ -24,7 +24,7 @@ namespace interpolation {
  * |           |          |           |           |           |
  * 0-----------1          0-----4-----1           0-----4-----1
  */
-struct Quad4
+struct Quad4 : public CanonicalElement<2, 4, Quad4>
 {
     using Index = INTEGER_TYPE;
     using Real = FLOATING_POINT_TYPE;

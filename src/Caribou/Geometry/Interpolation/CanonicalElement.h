@@ -1,5 +1,7 @@
-#ifndef CARIBOU_GEOMETRY_INTERPOLATION_INTERPOLATIONELEMENT_H
-#define CARIBOU_GEOMETRY_INTERPOLATION_INTERPOLATIONELEMENT_H
+#ifndef CARIBOU_GEOMETRY_INTERPOLATION_CANONICALELEMENT_H
+#define CARIBOU_GEOMETRY_INTERPOLATION_CANONICALELEMENT_H
+
+#include <array>
 
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Matrix.h>
@@ -20,16 +22,15 @@ namespace interpolation {
  * interpolation node per corners. Higher degree elements will usually have additional nodes between its corners.
  * @tparam ElementType_ The explicit element type (that will inherit this base class).
  */
-template<typename ElementType_, typename CanonicalElementType_>
-struct InterpolationElement
+template<INTEGER_TYPE Dim, INTEGER_TYPE NNodes, typename CanonicalElementType_>
+struct CanonicalElement
 {
-    using ElementType = ElementType_;
     using CanonicalElementType = CanonicalElementType_;
-    static constexpr INTEGER_TYPE Dimension = CanonicalElementType::Dimension;
-    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
+    static constexpr INTEGER_TYPE CanonicalDimension = Dim;
+    static constexpr INTEGER_TYPE NumberOfNodes = NNodes;
 
     using Real = FLOATING_POINT_TYPE;
-    using LocalCoordinates = algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
+    using LocalCoordinates = algebra::Vector<CanonicalDimension, FLOATING_POINT_TYPE>;
 
     /**
      * Compute the Jacobian matrix evaluated at local coordinates.
@@ -96,24 +97,24 @@ struct InterpolationElement
      * double detJ = J.determinant();
      * \endcode
      */
-    template<typename ...Coordinates, REQUIRES(Dimension == sizeof...(Coordinates))>
-    inline
+    template<typename NodeType>
+    static inline
     auto
-    Jacobian (Coordinates &&...e) const
+    Jacobian (const LocalCoordinates & coordinates, const std::array<NodeType, NumberOfNodes> & nodes)
     {
         using namespace caribou::algebra;
 
-        const auto shape_derivatives = dN(std::forward<Coordinates>(e)...);
+        const auto shape_derivatives = dN(coordinates);
 
-        if CONSTEXPR_IF (Dimension == 1) { // Canonical element of dimension 1
-            auto sum = self().node(0) * shape_derivatives.row(0).transposed();
+        if CONSTEXPR_IF (CanonicalDimension == 1) { // Canonical element of dimension 1
+            auto sum = nodes[0] * shape_derivatives.row(0).transposed();
             for (std::size_t i = 1; i < NumberOfNodes; ++i)
-                sum += self().node(0) * shape_derivatives.row(i).transposed();
+                sum += nodes[i] * shape_derivatives.row(i).transposed();
             return sum;
-        } else if CONSTEXPR_IF (Dimension == 2) { // Canonical element of dimension 2
+        } else if CONSTEXPR_IF (CanonicalDimension == 2) { // Canonical element of dimension 2
             Matrix positions (
-                    self().node(0), // [x, y, z]
-                    self().node(0)  // [x, y, z]
+                    nodes[0], // [x, y, z]
+                    nodes[0]  // [x, y, z]
             );
             auto sum =
                     positions
@@ -121,8 +122,8 @@ struct InterpolationElement
                     .transposed();
             for (std::size_t i = 1; i < NumberOfNodes; ++i) {
                 positions = Matrix(
-                        self().node(i), // [x, y, z]
-                        self().node(i)  // [x, y, z]
+                        nodes[i], // [x, y, z]
+                        nodes[i]  // [x, y, z]
                 );
                 sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv]^T
                         .transposed();
@@ -130,9 +131,9 @@ struct InterpolationElement
             return sum;
         } else { // Dimension == 3
             Matrix positions (
-                    self().node(0), // [x, y, z]
-                    self().node(0), // [x, y, z]
-                    self().node(0)  // [x, y, z]
+                    nodes[0], // [x, y, z]
+                    nodes[0], // [x, y, z]
+                    nodes[0]  // [x, y, z]
             );
             auto sum = positions
                     .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv, dw]^T
@@ -140,9 +141,9 @@ struct InterpolationElement
 
             for (std::size_t i = 1; i < NumberOfNodes; ++i) {
                 positions = Matrix(
-                        self().node(i), // [x, y, z]
-                        self().node(i), // [x, y, z]
-                        self().node(i)  // [x, y, z]
+                        nodes[i], // [x, y, z]
+                        nodes[i], // [x, y, z]
+                        nodes[i]  // [x, y, z]
                 );
                 sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv, dw]^T
                         .transposed();
@@ -166,13 +167,13 @@ struct InterpolationElement
      */
     static constexpr
     algebra::Vector <NumberOfNodes, Real>
-    N (const algebra::Vector<Dimension, FLOATING_POINT_TYPE> & coordinates)
+    N (const algebra::Vector<CanonicalDimension, FLOATING_POINT_TYPE> & coordinates)
     {
-        if CONSTEXPR_IF (Dimension == 1)
+        if CONSTEXPR_IF (CanonicalDimension == 1)
             return N(coordinates[0]);
-        else if CONSTEXPR_IF (Dimension == 2)
+        else if CONSTEXPR_IF (CanonicalDimension == 2)
             return N(coordinates[0], coordinates[1]);
-        else if CONSTEXPR_IF (Dimension == 3)
+        else if CONSTEXPR_IF (CanonicalDimension == 3)
             return N(coordinates[0], coordinates[1], coordinates[2]);
     }
 
@@ -192,13 +193,13 @@ struct InterpolationElement
      */
     static constexpr
     algebra::Matrix<NumberOfNodes, 2, Real>
-    dN (const algebra::Vector<Dimension, FLOATING_POINT_TYPE> & coordinates)
+    dN (const algebra::Vector<CanonicalDimension, FLOATING_POINT_TYPE> & coordinates)
     {
-        if CONSTEXPR_IF (Dimension == 1)
+        if CONSTEXPR_IF (CanonicalDimension == 1)
             return dN(coordinates[0]);
-        else if CONSTEXPR_IF (Dimension == 2)
+        else if CONSTEXPR_IF (CanonicalDimension == 2)
             return dN(coordinates[0], coordinates[1]);
-        else if CONSTEXPR_IF (Dimension == 3)
+        else if CONSTEXPR_IF (CanonicalDimension == 3)
             return dN(coordinates[0], coordinates[1], coordinates[2]);
     }
 
@@ -208,9 +209,9 @@ struct InterpolationElement
      * This type must implement the multiplication operator with a floating point value (scalar) : ValueType * scalar.
      */
     template <typename ValueType>
-    inline
+    static inline
     auto
-    interpolate_at_local_position (LocalCoordinates && position, const algebra::Vector<NumberOfNodes, ValueType> & values) const
+    interpolate_at_local_position (LocalCoordinates && position, const algebra::Vector<NumberOfNodes, ValueType> & values)
     {
         const auto shapes = N(std::forward<LocalCoordinates>(position));
         return  shapes.dot(values);
@@ -222,9 +223,9 @@ struct InterpolationElement
      * This type must implement the multiplication operator with a floating point value (scalar) : ValueType * scalar.
      */
     template <typename ValueType, typename ...Values, REQUIRES(NumberOfNodes == sizeof...(Values)+1)>
-    inline
+    static inline
     auto
-    interpolate_at_local_position (LocalCoordinates && position, ValueType && v0, Values &&... v) const
+    interpolate_at_local_position (LocalCoordinates && position, ValueType && v0, Values &&... v)
     {
         const auto shapes = N(std::forward<LocalCoordinates>(position));
         const algebra::Vector<NumberOfNodes, ValueType> values {std::forward<ValueType>(v0), std::forward<Values>(v)...};
@@ -232,11 +233,6 @@ struct InterpolationElement
     }
 
 private:
-    const ElementType &self () const
-    {
-        return static_cast<const ElementType &>(*this);
-    }
-
 
     /**
      * Gather the N first shape functions (L) into a vector.
@@ -278,4 +274,4 @@ private:
 } // namespace interpolation
 } // namespace geometry
 } // namespace caribou
-#endif //CARIBOU_GEOMETRY_INTERPOLATION_INTERPOLATIONELEMENT_H
+#endif //CARIBOU_GEOMETRY_INTERPOLATION_CANONICALELEMENT_H

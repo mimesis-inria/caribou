@@ -9,7 +9,7 @@ set(HEADER_FILES
     Internal/BaseNode.h
     Internal/BaseQuad.h
     Internal/BaseTriangle.h
-    Interpolation/InterpolationElement.h
+    Interpolation/CanonicalElement.h
     Interpolation/Quad.h )
 
 add_library(${PROJECT_NAME} INTERFACE)

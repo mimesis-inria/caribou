@@ -3,34 +3,34 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
-#include <Caribou/Geometry/Internal/BaseTriangle.h>
 #include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Interpolation/Triangle.h>
 
 namespace caribou {
 namespace geometry {
 
-template <size_t Dim, typename Interpolation_ = interpolation::Triangle3>
-struct Triangle : public internal::BaseTriangle<Dim, Interpolation_, Triangle<Dim, Interpolation_>>
+template <size_t Dim, typename CanonicalElementType = interpolation::Triangle3>
+struct Triangle : public CanonicalElementType
 {
-};
-
-template <size_t Dim>
-struct Triangle <Dim, interpolation::Triangle3> : public internal::BaseTriangle<Dim, interpolation::Triangle3, Triangle<Dim, interpolation::Triangle3>>
-{
-
+    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
     using NodeType = caribou::geometry::Node<Dim>;
     using Index = std::size_t ;
+    using Real = FLOATING_POINT_TYPE;
 
-    constexpr Triangle() {};
+    static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D triangles are supported.");
 
-    constexpr Triangle(const NodeType & p0, const NodeType & p1, const NodeType & p2)
-            : p_nodes {p0, p1, p2}
-    {
-    }
+    template <
+            typename ...Nodes,
+            REQUIRES(NumberOfNodes == sizeof...(Nodes)),
+            REQUIRES(std::conjunction_v<std::is_same<NodeType, Nodes>...>)
+    >
+    constexpr
+    Triangle(Nodes&&...remaining_nodes)
+    : p_nodes {std::forward<Nodes>(remaining_nodes)...}
+    {}
 
     constexpr
-    NodeType
+    const NodeType &
     node(Index index) const
     {
         return p_nodes[index];
@@ -43,8 +43,46 @@ struct Triangle <Dim, interpolation::Triangle3> : public internal::BaseTriangle<
         return p_nodes[index];
     }
 
+    /** Compute the center position **/
+    auto
+    center() const noexcept
+    {
+        return (node(0) + node(1) + node(2)) / 3.0;
+    }
+
+    /** Compute the surface area **/
+    FLOATING_POINT_TYPE
+    area() const noexcept
+    {
+        auto n1 = node(0);
+        auto n2 = node(1);
+        auto n3 = node(2);
+
+        if constexpr (Dim == 2) {
+            caribou::algebra::Matrix<3,3,Real> M ({
+                    {(Real) n1[0], (Real) n2[0], (Real) n3[0]},
+                    {(Real) n1[1], (Real) n2[1], (Real) n3[1]},
+                    {(Real)  1.,   (Real)  1.,   (Real)  1.}
+            });
+
+            return 1 / 2. * std::abs(M.determinant());
+        } else {
+            auto v1 = n3 - n1;
+            auto v2 = n2 - n1;
+
+            return v1.cross(v2).length() / 2.;
+        }
+    }
+
+    /** Compute the jacobian matrix evaluated at local position {u,v} */
+    algebra::Matrix<Dim, 2, Real>
+    jacobian (const Real & u, const Real & v) const
+    {
+        return CanonicalElementType::Jacobian({u,v}, p_nodes);
+    }
+
 private:
-    std::array<NodeType, 3> p_nodes;
+    std::array<NodeType, NumberOfNodes> p_nodes;
 };
 
 } // namespace geometry
