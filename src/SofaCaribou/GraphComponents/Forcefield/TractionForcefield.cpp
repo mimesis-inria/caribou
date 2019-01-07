@@ -5,7 +5,9 @@
 #include <sofa/simulation/AnimateBeginEvent.h>
 #include <sofa/helper/AdvancedTimer.h>
 
+#include <Caribou/config.h>
 #include <Caribou/Geometry/Triangle.h>
+#include <SofaCaribou/Traits.h>
 
 namespace SofaCaribou {
 namespace GraphComponents {
@@ -180,7 +182,7 @@ void TractionForcefield<DataTypes>::increment_load(Deriv traction_increment_per_
         const auto & p2 = rest_positions[triangle_node_indices[1]];
         const auto & p3 = rest_positions[triangle_node_indices[2]];
 
-        const auto triangle = caribou::geometry::make_triangle<3>(p1, p2, p3);
+        const auto triangle = caribou::geometry::Triangle<3>(p1, p2, p3);
 
         // Integration of the traction increment over the element.
         const auto area = triangle.area();
@@ -233,7 +235,7 @@ void TractionForcefield<DataTypes>::draw(const sofa::core::visual::VisualParams*
         const auto & p2 = positions[triangle_node_indices[1]];
         const auto & p3 = positions[triangle_node_indices[2]];
 
-        const auto triangle = caribou::geometry::make_triangle<3>(p1, p2, p3);
+        const auto triangle = caribou::geometry::Triangle<3>(p1, p2, p3);
 
         const auto c = triangle.center();
         const Vector3 center(c[0], c[1], c[2]);

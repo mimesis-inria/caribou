@@ -13,41 +13,16 @@ namespace topology
 namespace engine
 {
 
-template <class TCell>
-Grid<TCell>::Grid(VecFloat anchor, VecInt subdivisions, VecFloat dimensions)
-        : m_anchor(anchor), m_number_of_subdivisions(subdivisions), m_dimensions(dimensions)
+
+Grid::Index
+Grid::cell_index(const typename Grid::VecInt & grid_coordinates) const
 {
-    using Int = typename VecInt::ValueType;
-
-    const Int & nx = subdivisions[0];
-    const Int & ny = subdivisions[1];
-    const Int   nz = (Dimension == 3) ? subdivisions[2] : 1;
-
-    // Here we loop on the z, y and x order to proper align in memory cells so that when loping in the inverse
-    // order (x, y and z), the cells are closer to each other in the memory
-    m_cells.resize(nz*ny*nx);
-    for (size_t k = 0; k < nz; ++k) {
-        for (size_t j = 0; j < ny; ++j) {
-            for (size_t i = 0; i < nx; ++i) {
-                Index index = cell_index({i, j, k});
-                m_cells[index] = CellType (index);
-            }
-        }
-    }
-}
-
-template <class TCell>
-typename Grid<TCell>::Index
-Grid<TCell>::cell_index(const typename Grid<TCell>::VecInt & grid_coordinates) const
-{
-    using Int = typename VecInt::ValueType;
+    const VecInt & n = number_of_subdivision();
 
     const Int & i = grid_coordinates[0];
     const Int & j = grid_coordinates[1];
     const Int   k = (Dimension == 3) ? grid_coordinates[2] : 0;
 
-
-    const VecInt & n = number_of_subdivision();
     const Int & nx = n[0];
     const Int & ny = n[1];
     const Int   nz = (Dimension == 3) ? n[2] : 1;
@@ -74,7 +49,7 @@ Grid<TCell>::grid_coordinates(const Index & cell_index) const
     const Index j = (cell_index - (k*nx*ny)) / nx;
     const Index i = cell_index - ((k*nx*ny) + (j*nx));
 
-    if (Dimension == 2)
+    if (CONSTEXPR_IF(Dimension == 2))
         return {i, j};
     else // Dimension == 3
         return {i, j, k};
@@ -107,7 +82,7 @@ Grid<TCell>::nodes(const VecInt & grid_coordinates) const
     node_list[2] = (k+0)*ny*nx + (j+1)*nx + (i+1);
     node_list[3] = (k+0)*ny*nx + (j+1)*nx + (i+0);
 
-    if (Dimension == 3) {
+    if (CONSTEXPR_IF(Dimension == 3)) {
         node_list[4] = (k+1)*ny*nx + (j+0)*nx + (i+0);
         node_list[5] = (k+1)*ny*nx + (j+0)*nx + (i+1);
         node_list[6] = (k+1)*ny*nx + (j+1)*nx + (i+1);

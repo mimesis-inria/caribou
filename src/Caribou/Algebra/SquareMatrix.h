@@ -1,99 +1,125 @@
 #ifndef CARIBOU_ALGEBRA_SQUAREMATRIX_H
 #define CARIBOU_ALGEBRA_SQUAREMATRIX_H
 
-#include <ostream>
-#include <cstddef>
-#include <array>
-#include <initializer_list>
-#include <algorithm>
-#include <numeric>
-#include <cmath>
-
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Matrix.h>
+#include <Caribou/Algebra/Internal/BaseSquareMatrix.h>
 
 namespace caribou {
 namespace algebra {
 
 /**
- * Square RxR matrix.
- *
- * ** Do not use this class directly. Use instead caribou::algebra::Matrix<R, C> with R == C. **
- *
- * This class extend the BaseMatrix by adding functions only available on square matrices. It is meant to be derived by
- * a partial specialization of the class Matrix<R, C> (see later in this file for the 2x2 and 3x3 specializations)
- *
- * The functions declared in this class ca be used with any type of square matrices (2x2, 3x3, ...).
- *
- * @tparam MatrixType_ <R_, C_, ValueType_> See BaseMatrix template MatrixType_.
- * @tparam R_ The number of rows and columns
- * @tparam ValueType_ The data type of the matrix's components (default to float)
- */
-template <template <size_t, size_t, typename> class MatrixType_, size_t R_, typename ValueType_=FLOATING_POINT_TYPE>
-struct BaseSquareMatrix : public BaseMatrix<MatrixType_, R_, R_, ValueType_>
-{
-    static constexpr size_t R = R_; ///< Number of rows
-    static constexpr size_t C = R_; ///< Number of columns per row
-    static constexpr size_t N = R*C; ///< Number of elements
-
-    template<size_t R__ = R, size_t C__ = C, typename ValueType__= ValueType_>
-    using MatrixType = MatrixType_<R__, C__, ValueType__>;
-
-    using ValueType = ValueType_;
-
-    using Index = typename BaseMatrix<MatrixType_, R, R, ValueType>::Index;
-
-    using BaseMatrix<MatrixType_, R, R, ValueType>::BaseMatrix;
-
-    /** Returns the identity matrix */
-    static MatrixType<R, R, ValueType> Identity()
-    {
-        MatrixType<R, R, ValueType> id(true /*initialize to zero*/);
-
-        for (Index i = 0; i < R; i++)
-            id(i, i) = 1;
-
-        return id;
-    }
-
-    /** Compute the exponent of a matrix. If the exponent is negative, we first inverse the matrix. **/
-    template<typename Integer>
-    MatrixType<R, R, ValueType>
-    operator^ (const Integer & exponent) const
-    {
-        static_assert(std::is_integral<Integer>::value, "The exponent must be of integral type (ex. int, char, long, ...)");
-
-        if (exponent == 0)
-            return MatrixType<R, R, ValueType>::Identity();
-
-        auto self = static_cast<const MatrixType<R, R, ValueType>&>(*this);
-        Integer N = (exponent < 0 ? -exponent : exponent);
-        MatrixType<R, R, ValueType> M = (exponent < 0 ? self.inverted() : self);
-        MatrixType<R, R, ValueType> res = M;
-
-        for (Integer i = 1; i < N; ++i)
-            res = res*M;
-
-        return res;
-    }
-};
-
-/**
- * Square NxN matrix.
+ * Generic square NxN matrix.
  */
  template <size_t N, typename ValueType>
-struct Matrix<N,N, ValueType> : public BaseSquareMatrix<Matrix, N, ValueType>
+struct Matrix<N,N, ValueType> : public internal::BaseSquareMatrix<Matrix, N, ValueType>
 {
-    using BaseSquareMatrix<Matrix, N, ValueType>::BaseSquareMatrix;
+    using Base = internal::BaseSquareMatrix<Matrix, N, ValueType>;
+    using Base::Base;
+
+    /**
+     * Constructor by c-array or initializer list.
+     * @example
+     * \code{.cpp}
+     * Matrix<3,3> A (
+     *   {
+     *     {1,2,3}, // Row 0
+     *     {4,5,6}, // Row 1
+     *     {7,8,9} //  Row 2
+     *   }
+     * );.
+     * \endcode
+     */
+    constexpr
+    Matrix(ValueType const (&components)[N][N]) : Base (components) {}
+
+    /**
+     * Constructor by c-array or initializer list.
+     * @example
+     * \code{.cpp}
+     * Matrix<3,3> A (
+     *   {
+     *     1,2,3, // Row 0
+     *     4,5,6, // Row 1
+     *     7,8,9 //  Row 2
+     *   }
+     * );
+     * \endcode
+     */
+    constexpr
+    Matrix(ValueType const (&components)[N*N]) : Base (components) {}
+
+    /**
+     * Copy constructor from another matrix of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<N, N, ValueType> & other) : Base(other) {}
+
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            typename std::enable_if<N*N == sizeof...(Args) + 1, int>::type = 0,
+            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+            : Base(first_value, std::forward<Args>(e)...) {}
 };
 
 /**
  * Square 2x2 matrix.
  */
 template <typename ValueType>
-struct Matrix<2,2, ValueType> : public BaseSquareMatrix<Matrix, 2, ValueType>
+struct Matrix<2,2, ValueType> : public internal::BaseSquareMatrix<Matrix, 2, ValueType>
 {
-    using BaseSquareMatrix<Matrix, 2, ValueType>::BaseSquareMatrix;
+    using Base = internal::BaseSquareMatrix<Matrix, 2, ValueType>;
+    using Base::Base;
+
+    /**
+     * Constructor by c-array or initializer list.
+     * @example
+     * \code{.cpp}
+     * Matrix<3,3> A (
+     *   {
+     *     {1,2,3}, // Row 0
+     *     {4,5,6}, // Row 1
+     *     {7,8,9} //  Row 2
+     *   }
+     * );.
+     * \endcode
+     */
+    constexpr
+    Matrix(ValueType const (&components)[2][2]) : Base (components) {}
+
+    /**
+     * Constructor by c-array or initializer list.
+     * @example
+     * \code{.cpp}
+     * Matrix<3,3> A (
+     *   {
+     *     1,2,3, // Row 0
+     *     4,5,6, // Row 1
+     *     7,8,9 //  Row 2
+     *   }
+     * );
+     * \endcode
+     */
+    constexpr
+    Matrix(ValueType const (&components)[2*2]) : Base (components) {}
+
+    /**
+     * Copy constructor from another matrix of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<2, 2, ValueType> & other) : Base(other) {}
+
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            typename std::enable_if<3 == sizeof...(Args), int>::type = 0,
+            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+            : Base(first_value, std::forward<Args>(e)...) {}
 
     /** Returns the identity matrix */
     static constexpr Matrix<2,2, ValueType> Identity()
@@ -139,9 +165,57 @@ struct Matrix<2,2, ValueType> : public BaseSquareMatrix<Matrix, 2, ValueType>
  * Square 3x3 matrix.
  */
 template <typename ValueType>
-struct Matrix<3,3, ValueType> : public BaseSquareMatrix<Matrix, 3, ValueType>
+struct Matrix<3,3, ValueType> : public internal::BaseSquareMatrix<Matrix, 3, ValueType>
 {
-    using BaseSquareMatrix<Matrix, 3, ValueType>::BaseSquareMatrix;
+    using Base = internal::BaseSquareMatrix<Matrix, 3, ValueType>;
+    using Base::Base;
+
+    /**
+     * Constructor by c-array or initializer list.
+     * @example
+     * \code{.cpp}
+     * Matrix<3,3> A (
+     *   {
+     *     {1,2,3}, // Row 0
+     *     {4,5,6}, // Row 1
+     *     {7,8,9} //  Row 2
+     *   }
+     * );.
+     * \endcode
+     */
+    constexpr
+    Matrix(ValueType const (&components)[3][3]) : Base (components) {}
+
+    /**
+     * Constructor by c-array or initializer list.
+     * @example
+     * \code{.cpp}
+     * Matrix<3,3> A (
+     *   {
+     *     1,2,3, // Row 0
+     *     4,5,6, // Row 1
+     *     7,8,9 //  Row 2
+     *   }
+     * );
+     * \endcode
+     */
+    constexpr
+    Matrix(ValueType const (&components)[3*3]) : Base (components) {}
+
+    /**
+     * Copy constructor from another matrix of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<3, 3, ValueType> & other) : Base(other) {}
+
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            typename std::enable_if<8 == sizeof...(Args), int>::type = 0,
+            typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+            : Base(first_value, std::forward<Args>(e)...) {}
 
     /** Returns the identity matrix */
     static constexpr Matrix<3,3, ValueType> Identity()

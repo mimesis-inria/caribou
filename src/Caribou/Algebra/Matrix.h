@@ -2,398 +2,118 @@
 #define CARIBOU_ALGEBRA_MATRIX_H
 
 #include <ostream>
-#include <cstddef>
-#include <array>
-#include <initializer_list>
-#include <algorithm>
-#include <numeric>
-#include <cmath>
-
 #include <Caribou/config.h>
+#include <Caribou/Algebra/Internal/BaseMatrix.h>
 
 namespace caribou {
 namespace algebra {
 
+
+
 /**
- * A simple representation of a matrix.
+ * Generic RxC matrix.
  *
- * ** Do not use this class directly. Use instead caribou::algebra::Matrix. **
+ * This class is the generic implementation, which means that any R and C values that aren't specialized elsewhere will
+ * fall into this class implementation. It derives BaseMatrix to get its core functionalities (operations and functions
+ * that apply to all types of matrices).
  *
- * The functions declared in this class can be used with any type of matrices (squared, vectors, rectangular).
+ * In the following tree, the Matrix<R, C> are specific implementations of this base class following the R and C template
+ * arguments choosen.
  *
- * Do to so, it uses the Curiously recurring template pattern (CRTP) :
- *    https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
+ * BaseMatrix
+ * ├── Matrix<R, C> ................Implementation of general matrix RxC
+ * ├── BaseSquareMatrix
+ * │         ├─ Matrix<R, R> .......Implementation of square matrix RxR
+ * │         ├─ Matrix<2, 2> .......Implementation of square matrix 2x2
+ * │         └─ Matrix<3, 3> .......Implementation of square matrix 3x3
+ * └── BaseVector
+ *           ├─Matrix<R, 1> ........Implementation of row-vector matrix Rx1
+ *           ├─Matrix<1, C> ........Implementation of col-vector matrix 1xC
+ *           ├─Matrix<1, 1> ........Implementation of unit matrix 1x1
+ *           └─BaseVector3D
+ *                ├─ Matrix<3, 1> ..Implementation of row-vector matrix 3x1
+ *                └─ Matrix<1, 3> ..Implementation of col-vector matrix 1x3
  *
- * @tparam MatrixType_ <R_, C_, ValueType_> The class type that will specialize or add more functions to this class.
  * @tparam R_ The number of rows
  * @tparam C_ The number of columns
  * @tparam ValueType_ The data type of the matrix's components (default to float)
  */
-template <template <size_t, size_t, typename> class MatrixType_, size_t R_, size_t C_, typename ValueType_=FLOATING_POINT_TYPE>
-struct BaseMatrix : public std::array<ValueType_, R_*C_>
+template <size_t R, size_t C, typename ValueType = FLOATING_POINT_TYPE>
+struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
 {
-    static constexpr size_t R = R_; ///< Number of rows
-    static constexpr size_t C = C_; ///< Number of columns per row
-    static constexpr size_t N = R*C; ///< Number of elements
-
-
-    template<size_t R__ = R, size_t C__= C, typename ValueType__= ValueType_>
-    using MatrixType = MatrixType_<R__, C__, ValueType__>;
-
-    using ValueType = ValueType_;
-    using Self = MatrixType<R, C, ValueType>;
-    using Row = MatrixType<1, C, ValueType>;
-    using Column = MatrixType<R, 1, ValueType>;
-    using Index = size_t;
-
-    //////////////////////
-    //// Constructors ////
-    //////////////////////
-
-    /**
-     * Main constructor
-     * @param initialize_to_zero If true, initialize the scalar components of the vector to zero
-     */
-    explicit
-    BaseMatrix(bool initialize_to_zero = false) {
-        if (initialize_to_zero) {
-            this->fill(0);
-        }
-    }
+    using Base = internal::BaseMatrix<Matrix, R, C, ValueType>;
+    using Base::Base;
 
     /**
      * Constructor by c-array or initializer list.
-     * Ex:
+     * @example
+     * \code{.cpp}
      * Matrix<3,3> A (
      *   {
      *     {1,2,3}, // Row 0
      *     {4,5,6}, // Row 1
      *     {7,8,9} //  Row 2
      *   }
-     * );.
+     * );
+     * \endcode
      */
-    BaseMatrix(ValueType const (&components)[R][C]) {
-        for (size_t row = 0; row < R; ++row) {
-            for (size_t column = 0; column < C; ++column) {
-                (*this)[row*C + column] = components[row][column];
-            }
-        }
-    }
+    constexpr
+    Matrix(ValueType const (&components)[R][C]) : Base (components) {}
 
     /**
      * Constructor by c-array or initializer list.
-     * Ex:
+     * @example
+     * \code{.cpp}
      * Matrix<3,3> A (
      *   {
-     *     {1,2,3}, // Row 0
-     *     {4,5,6}, // Row 1
-     *     {7,8,9} //  Row 2
+     *     1,2,3, // Row 0
+     *     4,5,6, // Row 1
+     *     7,8,9 //  Row 2
      *   }
-     * );.
+     * );
+     * \endcode
      */
-    template <typename OtherValueType>
-    BaseMatrix(OtherValueType const (&components)[R][C]) {
-        for (size_t row = 0; row < R; ++row) {
-            for (size_t column = 0; column < C; ++column) {
-                (*this)[row*C + column] = static_cast<ValueType>(components[row][column]);
-            }
-        }
-    }
+    constexpr
+    Matrix(ValueType const (&components)[R*C]) : Base (components) {}
 
     /**
-     * Copy constructor from another matrix of a different data type
+     * Copy constructor from another matrix of the same data type
      */
-    template <template <size_t, size_t, typename> class OtherMatrixType, typename OtherValueType>
-    BaseMatrix(const OtherMatrixType<R, C, OtherValueType> & other) {
-        for (size_t row = 0; row < R; ++row) {
-            for (size_t column = 0; column < C; ++column) {
-                (*this)[row*C + column] = static_cast<ValueType>(other(row, column));
-            }
-        }
-    }
+    constexpr
+    Matrix(const Matrix<R, C, ValueType> & other) : Base(other) {}
 
-    ///////////////////
-    //// Accessors ////
-    ///////////////////
-
-    inline constexpr ValueType &
-    operator () (const Index & row, const Index & column)
-    {
-        return (*this)[row*C + column];
-    }
-
-    inline constexpr const ValueType &
-    operator () (const Index & row, const Index & column) const
-    {
-        return (*this)[row*C + column];
-    }
-
-    ///////////////////
-    //// Operators ////
-    ///////////////////
-
-    /** Assignment operator **/
-    template<typename OtherValueType>
-    inline Self &
-    operator = (const MatrixType<R, C, OtherValueType> & other)
-    {
-        for (size_t i = 0; i < N; ++i)
-            (*this)[i] = other[i];
-        return static_cast<Self&>(*this);
-    }
-
-
-    /** Comparison operator with a matrix of a same dimension and with component data type of OtherValueType **/
-    template<typename OtherValueType>
-    inline constexpr bool
-    operator==(const MatrixType<C, R, OtherValueType> & other) const
-    {
-        return std::equal(this->begin(), this->end(), other.begin(), [](const ValueType & v1, const OtherValueType & v2) -> bool {
-            return (-EPSILON <= (v1 - v2) and (v1 - v2) <= +EPSILON);
-        });
-    }
-
-    /** Matrix multiplication **/
-    template<size_t M, typename OtherValueType>
-    inline MatrixType<R, M, ValueType>
-    operator*(const MatrixType<C, M, OtherValueType> & other) const
-    {
-        MatrixType<R, M, ValueType> r;
-        for (size_t i = 0; i < R; ++i) {
-            for (size_t j = 0; j < M; ++j) {
-                r(i, j)=(*this)(i,0) * other(0, j);
-                for(size_t k=1; k<C; k++)
-                    r(i, j) += (*this)(i, k) * other(k, j);
-            }
-        }
-        return r;
-    }
-
-    /** Matrix-scalar multiplication **/
-    template<typename ScalarType>
-    inline MatrixType<R, C, ValueType>
-    operator*(const ScalarType & scalar) const
-    {
-        MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
-        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
-            return component*scalar;
-        });
-        return result;
-    }
-
-    /** Matrix multiplication-assignment **/
-    template<typename ScalarType>
-    inline MatrixType<R, C, ValueType> &
-    operator*= (const ScalarType & scalar)
-    {
-        std::transform(std::begin(*this), std::end(*this), std::begin(*this), [scalar] (const ValueType & component) {
-            return component*scalar;
-        });
-        return static_cast<MatrixType<R, C, ValueType> &> (*this);
-    }
-
-    /** Matrix-scalar division **/
-    template<typename ScalarType>
-    inline MatrixType<R, C, ValueType>
-    operator/(const ScalarType & scalar) const
-    {
-        MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
-        std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
-            return component/scalar;
-        });
-        return result;
-    }
-
-    /** Matrix division-assignment **/
-    template<typename ScalarType>
-    inline MatrixType<R, C, ValueType> &
-    operator/= (const ScalarType & scalar)
-    {
-        std::transform(std::begin(*this), std::end(*this), std::begin(*this), [scalar] (const ValueType & component) {
-            return component/scalar;
-        });
-        return static_cast<MatrixType<R, C, ValueType> &> (*this);
-    }
-
-    /** Matrix addition **/
-    template<typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    operator+ (const MatrixType<R, C, OtherValueType> & other) const
-    {
-        MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::plus<ValueType>());
-        return result;
-    }
-
-    /** Matrix addition-assignment **/
-    template<typename OtherValueType>
-    inline MatrixType<R, C, ValueType> &
-    operator+= (const MatrixType<R, C, OtherValueType> & other)
-    {
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(*this), std::plus<ValueType>());
-        return static_cast<MatrixType<R, C, ValueType> &> (*this);
-    }
-
-    /** Matrix subtraction **/
-    template<typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    operator- (const MatrixType<R, C, OtherValueType> & other) const
-    {
-        MatrixType<R, C, ValueType> result;
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ValueType>());
-        return result;
-    }
-
-    /** Matrix subtraction-assignment **/
-    template<typename OtherValueType>
-    inline MatrixType<R, C, ValueType> &
-    operator-= (const MatrixType<R, C, OtherValueType> & other)
-    {
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(*this), std::minus<ValueType>());
-        return static_cast<MatrixType<R, C, ValueType> &> (*this);
-    }
-
-
-    /////////////////////////////////
-    //// Mathematical operations ////
-    /////////////////////////////////
-
-    /** Get the transposed matrix */
-    inline MatrixType<C, R, ValueType>
-    T() const
-    {
-        const auto self = static_cast<const MatrixType<R, C, ValueType> &> (*this);
-        return self.transposed();
-    }
-
-    /** Get the transposed matrix */
-    inline MatrixType<C, R, ValueType>
-    transposed() const
-    {
-        MatrixType<C, R, ValueType> Mt;
-        for (size_t row = 0; row < C; ++row) {
-            for (size_t column = 0; column < R; ++column) {
-                Mt[row*R + column] = (*this)(column, row);
-            }
-        }
-
-        return Mt;
-    }
-
-    /**
-     * Compute the direct sum with another vector (sum between each scalar components).
-     * @return The resulting vector
-     */
-    template <typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    direct_summation(const MatrixType<R, C, OtherValueType> & other) const
-    {
-        MatrixType<R, C, ValueType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::plus<ValueType >());
-        return result;
-    }
-
-    /** Alias to direct_summation */
-    template <typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    direct_sum(const MatrixType<R, C, OtherValueType> & other) const
-    {
-        return direct_summation(other);
-    }
-
-    /**
-     * Compute the direct sub with another vector (subtraction between each scalar components).
-     * @return The resulting vector
-     */
-    template <typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    direct_substraction(const MatrixType<R, C, OtherValueType> & other) const
-    {
-        MatrixType<R, C, ValueType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::minus<ValueType >());
-        return result;
-    }
-
-    /** Alias to direct_substraction */
-    template <typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    direct_sub(const MatrixType<R, C, OtherValueType> & other) const
-    {
-        return direct_substraction(other);
-    }
-
-    /**
-     * Compute the direct multiplication with another vector (multiplication between each scalar components).
-     * @return The resulting vector
-     */
-    template <typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    direct_multiplication(const MatrixType<R, C, OtherValueType> & other) const
-    {
-        MatrixType<R, C, ValueType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::multiplies<ValueType >());
-        return result;
-    }
-
-    /** Alias to direct_multiplication */
-    template <typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    direct_mult(const MatrixType<R, C, OtherValueType> & other) const
-    {
-        return direct_multiplication(other);
-    }
-
-    /**
-     * Compute the direct division with another vector (division between each scalar components).
-     * @return The resulting vector
-     */
-    template <typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    direct_division(const MatrixType<R, C, OtherValueType> & other) const
-    {
-        MatrixType<R, C, ValueType> result(false);
-        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::divides<ValueType >());
-        return result;
-    }
-
-    /** Alias to direct_division */
-    template <typename OtherValueType>
-    inline MatrixType<R, C, ValueType>
-    direct_div(const MatrixType<R, C, OtherValueType> & other) const
-    {
-        return direct_division(other);
-    }
+    /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
+    template<
+            typename ...Args,
+            REQUIRES(R*C == sizeof...(Args) + 1)
+    >
+    constexpr
+    Matrix(ValueType first_value, Args&&...e)
+    : Base(first_value, std::forward<Args>(e)...) {}
 };
 
-/**
- * A simple representation of a matrix.
- *
- * This class can be extended by partial specializations for special matrices :
- *    Square matrix, rectangular matrix or vector matrix.
- *
- * It derives BaseMatrix to get its core functionalities (operations and functions that apply to all types of matrices).
- *
- * @tparam R_ The number of rows
- * @tparam C_ The number of columns
- * @tparam ValueType_ The data type of the matrix's components (default to float)
- */
-template <size_t R, size_t C, typename ValueType = double>
-struct Matrix : public BaseMatrix<Matrix, R, C, ValueType>
-{
-    using BaseMatrix<Matrix, R, C, ValueType>::BaseMatrix;
-};
+
+// Deduction guides
+
+/** Constructor of a matrix RxC from a list of R rows (each parameter is a vector of size Cx1) **/
+template <
+        template <size_t, size_t, typename> class OtherMatrixType,
+        size_t C,
+        typename OtherValueType,
+        typename ...Args,
+        REQUIRES(std::is_arithmetic_v<OtherValueType>)
+>
+Matrix(const OtherMatrixType<C, 1, OtherValueType> & first_row, Args&&...rows) -> Matrix<sizeof...(rows)+1, C, OtherValueType>;
 
 } // namespace algebra
-
 } // namespace caribou
 
 #include <Caribou/Algebra/SquareMatrix.h>
-#include <Caribou/Algebra/Vector.h>
 
 /**
- * Stream format of a matrix
+ * Output stream of a generic RxC matrix.
  */
-template <size_t R, size_t C, typename TComponent=FLOATING_POINT_TYPE>
+template <size_t R, size_t C, typename TComponent>
 inline std::ostream&
 operator<<(std::ostream& os, const caribou::algebra::Matrix<R, C, TComponent>& m)
 {
@@ -421,7 +141,7 @@ operator<<(std::ostream& os, const caribou::algebra::Matrix<R, C, TComponent>& m
 }
 
 /**
- * Multiplication of a scalar s with a matrix m : s * m
+ * Multiplication of a scalar s with a generic RxC matrix m : s * m
  */
 template <size_t R, size_t C, typename TComponent, typename TScalar, typename std::enable_if<std::is_arithmetic<TScalar>::value, int>::type = 0>
 inline caribou::algebra::Matrix<R, C, TComponent>

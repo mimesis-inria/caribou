@@ -2,7 +2,6 @@
 #define SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_MULTILEVELSPARSEGRIDTOPOLOGY_INL
 
 #include <SofaCaribou/GraphComponents/Topology/MultilevelSparseGridTopology.h>
-#include <Caribou/Topology/Engine/Grid/Grid.inl>
 #include <sofa/core/visual/VisualParams.h>
 
 namespace SofaCaribou {
@@ -22,17 +21,17 @@ MultilevelSparseGridTopology<VecType>::MultilevelSparseGridTopology()
 
 template <typename VecType>
 void MultilevelSparseGridTopology<VecType>::init() {
-    VecInt n = d_n.getValue();
+//    VecInt n = d_n.getValue();
 //    Int maximum_number_of_subdivision_levels = d_number_of_subdivision.getValue();
 
     // Initialize the grid engine
-    p_grid.reset(
-        new GridType(
-            {0, 0, 0},       // anchor
-            n,               // subdivisions
-            {100, 100, 100}  // dimensions
-        )
-    );
+//    p_grid.reset(
+//        new GridType(
+//            {0, 0, 0},       // anchor
+//            n,               // subdivisions
+//            {100, 100, 100}  // dimensions
+//        )
+//    );
 
 //    const auto leaf_cells = p_grid->leaf_cells();
 //    for (const auto & cell : leaf_cells) {

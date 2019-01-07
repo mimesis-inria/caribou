@@ -6,11 +6,14 @@ TEST(Algebra, Vector) {
     using namespace caribou::algebra;
 
     // Constructor and assigments tests
-    Vector<3> v1 {1, 2, 3};
-    Vector<3> v2 ({1,2,3});
-    Vector<3> v3 (1, 2, 3);
-    Vector<3> v4 (0,0,0);
-    Vector<3> v5(true); // Automatically fills the vector with 0 values
+    constexpr Vector<3, int> v1 {1, 2, 3};
+
+    static_assert(v1[1] == 2, "Static assert for constexpr assertion.");
+
+    Vector<3, int> v2 ({1,2,3});
+    Vector<3, int> v3 (1, 2, 3);
+    Vector<3, int> v4 (0,0,0);
+    Vector<3, int> v5(true); // Automatically fills the vector with 0 values
 
 
     ASSERT_EQ(v1, v2);
@@ -40,10 +43,11 @@ TEST(Algebra, Vector) {
 
     // Scalar multiplication
     auto mult = v2*3;
-    ASSERT_EQ(mult, Vector<3>(v2[0]*3, v2[1]*3, v2[2]*3));
+    auto res = Vector<3,int>(v2[0]*3, v2[1]*3, v2[2]*3);
+    ASSERT_EQ(mult, res);
 
     mult = 3*v2;
-    ASSERT_EQ(mult, Vector<3>(v2[0]*3, v2[1]*3, v2[2]*3));
+    ASSERT_EQ(mult, res);
 
     v2 *= 3;
     ASSERT_EQ(v2, mult);
@@ -52,29 +56,30 @@ TEST(Algebra, Vector) {
     ASSERT_EQ(v2, v1);
 
     auto sum = v2 + v3;
-    ASSERT_EQ(sum, Vector<3>(v2[0]+v3[0], v2[1]+v3[1], v2[2]+v3[2]));
+    res = Vector<3,int>(v2[0]+v3[0], v2[1]+v3[1], v2[2]+v3[2]);
+    ASSERT_EQ(sum, res);
 
     // Cross product
-    Vector<3> v9 {10, 0, 0};
-    Vector<3> v10 {0, 10, 0};
-    Vector<3> v11 {0, 0, 100};
+    Vector<3, float> v9 {10, 0, 0};
+    Vector<3, float> v10 {0, 10, 0};
+    Vector<3, float> v11 {0, 0, 100};
     ASSERT_EQ(v9.cross(v10), v11);
     ASSERT_EQ(v9^v10, v11);
 
     // Direct sum
-    v11 =  Vector<3>(10, 10, 0);
-    ASSERT_EQ(v9.direct_sum(v10), v11);
+    v11 =  Vector<3, float>(10, 10, 0);
+    ASSERT_EQ(v9.direct_summation(v10), v11);
 
     // Direct sub
-    v11 =  Vector<3>(10, -10, 0);
-    ASSERT_EQ(v9.direct_sub(v10), v11);
+    v11 =  Vector<3, float>(10, -10, 0);
+    ASSERT_EQ(v9.direct_substraction(v10), v11);
 
     // Direct mult
-    v11 =  Vector<3>(0, 0, 0);
-    ASSERT_EQ(v9.direct_mult(v10), v11);
+    v11 =  Vector<3, float>(0, 0, 0);
+    ASSERT_EQ(v9.direct_multiplication(v10), v11);
 
     // Unitary vector
-    Vector<3> v12 {0, 1, 0};
+    Vector<3, float> v12 {0, 1, 0};
     ASSERT_EQ(v10.unit(), v12);
 }
 
@@ -82,7 +87,7 @@ TEST(Algebra, Matrix) {
     using namespace caribou::algebra;
 
     // Constructor
-    Matrix<4,3> m1 (
+    Matrix m1 (
         {
             {1,2,3},  // Row 0
             {4,5,6},  // Row 1
@@ -92,11 +97,23 @@ TEST(Algebra, Matrix) {
     );
     ASSERT_EQ(8, m1(2,1));
 
-    Matrix<3,4> m1_t = m1.transposed();
+    // Constructor from a list of rows
+    {
+        Vector<3, int> r1{1, 2, 3};
+        Vector<3, int> r2{4, 5, 6};
+        Vector<3, int> r3{7, 8, 9};
+        Vector<3, int> r4{10, 11, 12};
+        auto m2 = Matrix(r1, r2, r3, r4);
+        ASSERT_EQ(8, m2(2,1));
+    }
+
+
+    // Transposed
+    Matrix m1_t = m1.transposed();
     ASSERT_EQ(m1(1,2), m1_t(2,1));
 
     // Identity
-    Matrix<4,4> I = {{{1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1}}};
+    Matrix I = {{{1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1}}};
     auto I_ = Matrix<4,4>::Identity();
     ASSERT_EQ(I, I_);
 
@@ -148,7 +165,7 @@ TEST(Algebra, Matrix) {
         {12}
     });
 
-    Vector<3> v2 {10, 11, 12};
+    Vector<3, int> v2 {10, 11, 12};
 
     Matrix<3,1> res ({
         {10*1 + 11*2 + 12*3},
@@ -175,7 +192,7 @@ TEST(Algebra, Matrix) {
     m4 += m4;
     ASSERT_EQ(res2, m4);
 
-    Vector <3> v3 {1, 2, 3};
+    Vector <3, int> v3 {1, 2, 3};
     Matrix<3,3> res3 {{
         {1, 2, 3},
         {2, 4, 6},

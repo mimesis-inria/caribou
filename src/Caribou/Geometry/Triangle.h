@@ -1,125 +1,90 @@
 #ifndef CARIBOU_GEOMETRY_TRIANGLE_H
 #define CARIBOU_GEOMETRY_TRIANGLE_H
 
-#include <Caribou/Geometry/Polygon.h>
-#include <Caribou/Geometry/Segment.h>
+#include <Caribou/config.h>
+#include <Caribou/Algebra/Vector.h>
+#include <Caribou/Geometry/Node.h>
+#include <Caribou/Geometry/Interpolation/Triangle.h>
 
-namespace caribou
-{
-namespace geometry
-{
+namespace caribou {
+namespace geometry {
 
-/** A triangle is a polygon of three nodes. **/
-template<size_t Dimension>
-class Triangle : public Polygon<3, Dimension>
+template <size_t Dim, typename CanonicalElementType = interpolation::Triangle3>
+struct Triangle : public CanonicalElementType
 {
-public:
-    using Base = Polygon<3, Dimension>;
-    using PointType = Point<Dimension>;
-    using VectorType = typename PointType::VectorType;
-    using SegmentType = Segment<Dimension>;
-    using Float = FLOATING_POINT_TYPE;
+    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
+    using NodeType = caribou::geometry::Node<Dim>;
+    using Index = std::size_t ;
+    using Real = FLOATING_POINT_TYPE;
 
-    /** Copy constructor from another 3 points polygon. */
-    Triangle(const Polygon<3, Dimension> & other) {
-        std::copy(std::begin(other.nodes), std::end(other.nodes), std::begin(this->nodes));
+    static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D triangles are supported.");
+
+    template <
+            typename ...Nodes,
+            REQUIRES(NumberOfNodes == sizeof...(Nodes)),
+            REQUIRES(std::conjunction_v<std::is_same<NodeType, Nodes>...>)
+    >
+    constexpr
+    Triangle(Nodes&&...remaining_nodes)
+    : p_nodes {std::forward<Nodes>(remaining_nodes)...}
+    {}
+
+    constexpr
+    const NodeType &
+    node(Index index) const
+    {
+        return p_nodes[index];
+    }
+
+    constexpr
+    NodeType &
+    node(Index index)
+    {
+        return p_nodes[index];
+    }
+
+    /** Compute the center position **/
+    auto
+    center() const noexcept
+    {
+        return (node(0) + node(1) + node(2)) / 3.0;
     }
 
     /** Compute the surface area **/
-    inline Float area() const noexcept {
-        const VectorType v1 = Base::segment(0).direction();
-        const VectorType v2 = Base::segment(1).direction();
+    FLOATING_POINT_TYPE
+    area() const noexcept
+    {
+        auto n1 = node(0);
+        auto n2 = node(1);
+        auto n3 = node(2);
 
-        return v1.cross(v2).length() / 2.;
+        if constexpr (Dim == 2) {
+            caribou::algebra::Matrix<3,3,Real> M ({
+                    {(Real) n1[0], (Real) n2[0], (Real) n3[0]},
+                    {(Real) n1[1], (Real) n2[1], (Real) n3[1]},
+                    {(Real)  1.,   (Real)  1.,   (Real)  1.}
+            });
+
+            return 1 / 2. * std::abs(M.determinant());
+        } else {
+            auto v1 = n3 - n1;
+            auto v2 = n2 - n1;
+
+            return v1.cross(v2).length() / 2.;
+        }
     }
 
-    /** Compute the surface area **/
-    inline PointType center() const noexcept {
-        const PointType & p1 = Base::node(0);
-        const PointType & p2 = Base::node(1);
-        const PointType & p3 = Base::node(2);
-
-        return (p1 + p2 + p3)/ (Float) 3.0;
+    /** Compute the jacobian matrix evaluated at local position {u,v} */
+    algebra::Matrix<Dim, 2, Real>
+    jacobian (const Real & u, const Real & v) const
+    {
+        return CanonicalElementType::Jacobian({u,v}, p_nodes);
     }
 
+private:
+    std::array<NodeType, NumberOfNodes> p_nodes;
 };
 
-/**
- * Create a triangle from three points.
- *
- * Example:
- * \code{.cpp}
- * auto p1 = make_point(0,0,0);
- * auto p2 = make_point(1,1,1);
- * auto p3 = make_point(0,1,0);
- *
- * auto t = make_triangle(p1, p2, p3);
- * \endcode
- * @return
- */
-template<size_t Dimension>
-Triangle<Dimension>
-make_triangle(const Point<Dimension> & p1, const Point<Dimension> & p2, const Point<Dimension> & p3) {
-    return make_polygon(p1, p2, p3);
-}
-
-/** Create a triangle from three points of type PointType. */
-template<size_t Dimension, typename PointType>
-Triangle<Dimension>
-make_triangle(const PointType & p1, const PointType& p2, const PointType & p3) {
-    const Point<Dimension> point1 = p1;
-    const Point<Dimension> point2 = p2;
-    const Point<Dimension> point3 = p3;
-
-    return make_triangle(point1, point2, point3);
-}
-
-/**
- * Create a triangle from a list of lists.
- *
- * Example:
- * \code{.cpp}
- * auto t = make_triangle(
- *   {{0, 0, 0}, {1, 1, 1}, {0, 1, 0}}
- * );
- * \endcode
- * @return
- */
-template<size_t Dimension, typename ValueType>
-auto
-make_triangle(ValueType const (&arg)[3][Dimension])
-{
-    return make_polygon(arg);
-}
-
-/**
- * Create a triangle from three lists.
- *
- * Example:
- * \code{.cpp}
- * auto t = make_triangle(
- *   {0, 0, 0}, {1, 1, 1}, {0, 1, 0}
- * );
- * \endcode
- * @return
- */
-template<size_t Dimension, typename ValueType>
-auto
-make_triangle(const ValueType (&arg1)[Dimension], const ValueType (&arg2)[Dimension], const ValueType (&arg3)[Dimension])
-{
-    ValueType nodes[3][Dimension];
-
-    for (size_t i = 0; i < Dimension; ++i) {
-        nodes[0][i] = arg1[i];
-        nodes[1][i] = arg2[i];
-        nodes[2][i] = arg3[i];
-    }
-
-    return make_polygon(nodes);
-}
-
 } // namespace geometry
-
 } // namespace caribou
-
 #endif //CARIBOU_GEOMETRY_TRIANGLE_H

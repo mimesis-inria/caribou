@@ -31,7 +31,7 @@ public:
 
     static constexpr char Dimension = VecType::spatial_dimensions;
     using CellType = caribou::topology::engine::Cell<Dimension>;
-    using GridType = caribou::topology::engine::Grid<CellType>;
+    using GridType = caribou::topology::engine::Grid<3, CellType>;
     using Index = size_t;
     using VecFloat = caribou::algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using VecInt   = caribou::algebra::Vector<Dimension, Index>;
