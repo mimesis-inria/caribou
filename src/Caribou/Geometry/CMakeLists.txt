@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(Caribou.Geometry)
 
 set(HEADER_FILES
+    Hexahedron.h
     Node.h
     Quad.h
     Segment.h
@@ -10,7 +11,9 @@ set(HEADER_FILES
     Internal/BaseQuad.h
     Internal/BaseTriangle.h
     Interpolation/CanonicalElement.h
-    Interpolation/Quad.h )
+    Interpolation/Hexahedron.h
+    Interpolation/Quad.h
+    Interpolation/Triangle.h)
 
 add_library(${PROJECT_NAME} INTERFACE)
 

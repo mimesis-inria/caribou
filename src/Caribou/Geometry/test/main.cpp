@@ -4,8 +4,10 @@
 #include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/Interpolation/Triangle.h>
 #include <Caribou/Geometry/Interpolation/Quad.h>
+#include <Caribou/Geometry/Interpolation/Hexahedron.h>
 
 TEST(Geometry, Node) {
     using namespace caribou::geometry;
@@ -139,6 +141,13 @@ TEST(Geometry, Quad) {
     };
 
     ASSERT_EQ(f(0,0), quad.interpolate_at_local_position({0, 0}, f(-1, -1), f(1, -1), f(1, 1), f(-1, 1)));
+
+}
+
+TEST(Geometry, Hexahedron) {
+    using namespace caribou::geometry;
+    using namespace caribou::geometry::interpolation;
+    using namespace caribou::algebra;
 
 }
 
