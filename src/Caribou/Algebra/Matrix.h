@@ -58,7 +58,8 @@ struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
      * \endcode
      */
     constexpr
-    Matrix(ValueType const (&components)[R][C]) : Base (components) {}
+    Matrix(ValueType const (&components)[R][C]) noexcept
+    : Base (components) {}
 
     /**
      * Constructor by c-array or initializer list.
@@ -74,13 +75,15 @@ struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
      * \endcode
      */
     constexpr
-    Matrix(ValueType const (&components)[R*C]) : Base (components) {}
+    Matrix(ValueType const (&components)[R*C]) noexcept
+    : Base (components) {}
 
     /**
      * Copy constructor from another matrix of the same data type
      */
     constexpr
-    Matrix(const Matrix<R, C, ValueType> & other) : Base(other) {}
+    Matrix(const Matrix<R, C, ValueType> & other) noexcept
+    : Base(other) {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -88,7 +91,7 @@ struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
             REQUIRES(R*C == sizeof...(Args) + 1)
     >
     constexpr
-    Matrix(ValueType first_value, Args&&...e)
+    Matrix(ValueType first_value, Args&&...e) noexcept
     : Base(first_value, std::forward<Args>(e)...) {}
 };
 

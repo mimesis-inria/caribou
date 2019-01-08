@@ -54,7 +54,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      * @param initialize_to_zero If true, initialize the scalar components of the vector to zero
      */
     explicit
-    BaseMatrix(bool initialize_to_zero = false) {
+    BaseMatrix(bool initialize_to_zero = false) noexcept {
         if (initialize_to_zero) {
             this->fill(0);
         }
@@ -75,7 +75,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      */
     template <typename OtherValueType, typename std::enable_if<std::is_integral<OtherValueType>::value or std::is_floating_point<OtherValueType>::value ,int>::type = 0>
     constexpr
-    BaseMatrix(OtherValueType const (&components)[R][C]) {
+    BaseMatrix(OtherValueType const (&components)[R][C]) noexcept {
         copy_from<0,0, OtherValueType>(components);
     }
 
@@ -94,7 +94,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      */
     template <typename OtherValueType, typename std::enable_if<std::is_integral<OtherValueType>::value or std::is_floating_point<OtherValueType>::value ,int>::type = 0>
     constexpr
-    BaseMatrix(OtherValueType const (&components)[R*C]) {
+    BaseMatrix(OtherValueType const (&components)[R*C]) noexcept {
         copy_from<0,0, OtherValueType>(components);
     }
 
@@ -103,7 +103,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      */
     template <template <size_t, size_t, typename> class OtherMatrixType, typename OtherValueType>
     constexpr
-    BaseMatrix(const OtherMatrixType<R, C, OtherValueType> & other) {
+    BaseMatrix(const OtherMatrixType<R, C, OtherValueType> & other) noexcept {
         copy_from<0, ValueType> (other);
     }
 
@@ -114,7 +114,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
             REQUIRES(std::is_arithmetic_v<OtherValueType>)
     >
     constexpr
-    BaseMatrix(OtherValueType first_value, Args&&...e)
+    BaseMatrix(OtherValueType first_value, Args&&...e) noexcept
     : std::array<ValueType, R_*C_> {{
         static_cast<ValueType>(first_value),
         static_cast<ValueType>(std::forward<Args>(e))...
@@ -130,7 +130,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
             REQUIRES(sizeof...(Args)+1 == R_)
     >
     constexpr
-    BaseMatrix(const OtherMatrixType<C_, 1, OtherValueType> & first_vector, Args&&...remaining_vectors)
+    BaseMatrix(const OtherMatrixType<C_, 1, OtherValueType> & first_vector, Args&&...remaining_vectors) noexcept
     {
         copy_from<0>(std::make_index_sequence<C_>{}, first_vector, std::forward<Args>(remaining_vectors)...);
     }
@@ -140,20 +140,20 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     ///////////////////
 
     inline constexpr ValueType &
-    operator () (const Index & row, const Index & column)
+    operator () (const Index & row, const Index & column) noexcept
     {
         return static_cast<Self&>(*this) [row*C + column];
     }
 
     inline constexpr const ValueType &
-    operator () (const Index & row, const Index & column) const
+    operator () (const Index & row, const Index & column) const noexcept
     {
         return static_cast<const Self &>(*this) [row*C + column];
     }
 
     inline
     MatrixType<1, C, ValueType>
-    row(const Index & row) const
+    row(const Index & row) const noexcept
     {
         MatrixType<1, C, ValueType> r;
         for (std::size_t c = 0; c < C; ++c)
@@ -163,7 +163,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
 
     inline
     MatrixType<R, 1, ValueType>
-    column(const Index & column) const
+    column(const Index & column) const noexcept
     {
         MatrixType<R, 1, ValueType> c;
         for (std::size_t r = 0; r < R; ++r)
@@ -179,7 +179,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     template<typename OtherValueType>
     constexpr
     Self &
-    operator = (const MatrixType<R, C, OtherValueType> & other)
+    operator = (const MatrixType<R, C, OtherValueType> & other) noexcept
     {
         copy_from<0> (other);
         return static_cast<Self&>(*this);
@@ -189,7 +189,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Comparison operator with a matrix of a same dimension and with component data type of OtherValueType **/
     template<typename OtherValueType>
     inline constexpr bool
-    operator==(const MatrixType<R, C, OtherValueType> & other) const
+    operator==(const MatrixType<R, C, OtherValueType> & other) const noexcept
     {
         return std::equal(this->begin(), this->end(), other.begin(), [](const ValueType & v1, const OtherValueType & v2) -> bool {
             return (-EPSILON <= (v1 - v2) and (v1 - v2) <= +EPSILON);
@@ -199,7 +199,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix multiplication **/
     template<size_t M, typename OtherValueType>
     inline MatrixType<R, M, ValueType>
-    operator*(const MatrixType<C, M, OtherValueType> & other) const
+    operator*(const MatrixType<C, M, OtherValueType> & other) const noexcept
     {
         MatrixType<R, M, ValueType> r;
         for (size_t i = 0; i < R; ++i) {
@@ -215,7 +215,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix-scalar multiplication **/
     template<typename ScalarType>
     inline MatrixType<R, C, ValueType>
-    operator*(const ScalarType & scalar) const
+    operator*(const ScalarType & scalar) const noexcept
     {
         MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
         std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
@@ -227,7 +227,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix multiplication-assignment **/
     template<typename ScalarType>
     inline MatrixType<R, C, ValueType> &
-    operator*= (const ScalarType & scalar)
+    operator*= (const ScalarType & scalar) noexcept
     {
         std::transform(std::begin(*this), std::end(*this), std::begin(*this), [scalar] (const ValueType & component) {
             return component*scalar;
@@ -238,7 +238,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix-scalar division **/
     template<typename ScalarType>
     inline MatrixType<R, C, ValueType>
-    operator/(const ScalarType & scalar) const
+    operator/(const ScalarType & scalar) const noexcept
     {
         MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
         std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
@@ -250,7 +250,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix division-assignment **/
     template<typename ScalarType>
     inline MatrixType<R, C, ValueType> &
-    operator/= (const ScalarType & scalar)
+    operator/= (const ScalarType & scalar) noexcept
     {
         std::transform(std::begin(*this), std::end(*this), std::begin(*this), [scalar] (const ValueType & component) {
             return component/scalar;
@@ -261,7 +261,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix addition **/
     template<typename OtherValueType>
     inline MatrixType<R, C, ValueType>
-    operator+ (const MatrixType<R, C, OtherValueType> & other) const
+    operator+ (const MatrixType<R, C, OtherValueType> & other) const noexcept
     {
         MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
         std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::plus<ValueType>());
@@ -271,7 +271,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix addition-assignment **/
     template<typename OtherValueType>
     inline MatrixType<R, C, ValueType> &
-    operator+= (const MatrixType<R, C, OtherValueType> & other)
+    operator+= (const MatrixType<R, C, OtherValueType> & other) noexcept
     {
         std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(*this), std::plus<ValueType>());
         return static_cast<MatrixType<R, C, ValueType> &> (*this);
@@ -280,7 +280,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix subtraction **/
     template<typename OtherValueType>
     inline MatrixType<R, C, ValueType>
-    operator- (const MatrixType<R, C, OtherValueType> & other) const
+    operator- (const MatrixType<R, C, OtherValueType> & other) const noexcept
     {
         MatrixType<R, C, ValueType> result;
         std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ValueType>());
@@ -290,7 +290,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     /** Matrix subtraction-assignment **/
     template<typename OtherValueType>
     inline MatrixType<R, C, ValueType> &
-    operator-= (const MatrixType<R, C, OtherValueType> & other)
+    operator-= (const MatrixType<R, C, OtherValueType> & other) noexcept
     {
         std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(*this), std::minus<ValueType>());
         return static_cast<MatrixType<R, C, ValueType> &> (*this);
@@ -303,7 +303,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
 
     /** Get the transposed matrix */
     inline MatrixType<C, R, ValueType>
-    T() const
+    T() const noexcept
     {
         const auto self = static_cast<const MatrixType<R, C, ValueType> &> (*this);
         return self.transposed();
@@ -311,7 +311,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
 
     /** Get the transposed matrix */
     inline MatrixType<C, R, ValueType>
-    transposed() const
+    transposed() const noexcept
     {
         MatrixType<C, R, ValueType> Mt;
         for (size_t row = 0; row < C; ++row) {
@@ -347,7 +347,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      */
     template <size_t OtherR, size_t OtherC, typename OtherValueType>
     inline MatrixType<R, C, ValueType>
-    direct_summation(const MatrixType<OtherR, OtherC, OtherValueType> & other) const
+    direct_summation(const MatrixType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         static_assert(
                 (R == OtherR and C == OtherC) or (R == OtherR and OtherC == 1) or (C == OtherC and OtherR == 1),
@@ -403,7 +403,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      */
     template <size_t OtherR, size_t OtherC, typename OtherValueType>
     inline MatrixType<R, C, ValueType>
-    direct_substraction(const MatrixType<OtherR, OtherC, OtherValueType> & other) const
+    direct_substraction(const MatrixType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         static_assert(
                 (R == OtherR and C == OtherC) or (R == OtherR and OtherC == 1) or (C == OtherC and OtherR == 1),
@@ -459,7 +459,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      */
     template <size_t OtherR, size_t OtherC, typename OtherValueType>
     inline MatrixType<R, C, ValueType>
-    direct_multiplication(const MatrixType<OtherR, OtherC, OtherValueType> & other) const
+    direct_multiplication(const MatrixType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         static_assert(
                 (R == OtherR and C == OtherC) or (R == OtherR and OtherC == 1) or (C == OtherC and OtherR == 1),
@@ -515,7 +515,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      */
     template <size_t OtherR, size_t OtherC, typename OtherValueType>
     inline MatrixType<R, C, ValueType>
-    direct_division(const MatrixType<OtherR, OtherC, OtherValueType> & other) const
+    direct_division(const MatrixType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         static_assert(
                 (R == OtherR and C == OtherC) or (R == OtherR and OtherC == 1) or (C == OtherC and OtherR == 1),
@@ -552,7 +552,7 @@ private:
     template<size_t index, typename OtherValueType>
     constexpr
     void
-    copy_from (const MatrixType<R, C, OtherValueType> & other)
+    copy_from (const MatrixType<R, C, OtherValueType> & other) noexcept
     {
         static_assert(index >= 0,  "Cannot copy a value from an index outside of the matrix data array.");
         static_assert(index < R*C, "Cannot copy a value from an index outside of the matrix data array.");
@@ -566,7 +566,7 @@ private:
     template<size_t row_index, size_t column_index, typename OtherValueType>
     constexpr
     void
-    copy_from (OtherValueType const (&components)[R][C])
+    copy_from (OtherValueType const (&components)[R][C]) noexcept
     {
         static_assert(row_index >= 0,     "Cannot copy a value from an index outside of the matrix data array.");
         static_assert(column_index >= 0,  "Cannot copy a value from an index outside of the matrix data array.");
@@ -585,7 +585,7 @@ private:
     template<size_t row_index, size_t column_index, typename OtherValueType>
     constexpr
     void
-    copy_from (OtherValueType const (&components)[R*C])
+    copy_from (OtherValueType const (&components)[R*C]) noexcept
     {
         static_assert(row_index >= 0,     "Cannot copy a value from an index outside of the matrix data array.");
         static_assert(column_index >= 0,  "Cannot copy a value from an index outside of the matrix data array.");
@@ -610,7 +610,7 @@ private:
     >
     constexpr
     void
-    copy_from( const std::index_sequence<Ix...> & indices, const OtherMatrixType<C_, 1, OtherValueType> & current_vector, Args&&...remaining_vectors)
+    copy_from( const std::index_sequence<Ix...> & indices, const OtherMatrixType<C_, 1, OtherValueType> & current_vector, Args&&...remaining_vectors) noexcept
     {
         (void ((*this)[C*row_id + Ix] = static_cast<ValueType> (current_vector[Ix])), ...);
         if constexpr (row_id< R-1)

@@ -184,6 +184,13 @@ struct Matrix<1,1, ValueType> : public internal::BaseVector<Matrix, 1, 1, ValueT
     using Index = typename Base::Index;
 
     using Base::Base;
+
+    operator ValueType() const noexcept { return (*this)[0]; }
+
+    constexpr
+    Matrix (const ValueType & value) noexcept {
+        (*this)[0] = value;
+    }
 };
 
 /**

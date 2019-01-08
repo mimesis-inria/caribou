@@ -39,7 +39,7 @@ struct BaseSquareMatrix : public BaseMatrix<MatrixType_, R_, R_, ValueType_>
     using BaseMatrix<MatrixType_, R, R, ValueType>::BaseMatrix;
 
     /** Returns the identity matrix */
-    static MatrixType<R, R, ValueType> Identity()
+    static MatrixType<R, R, ValueType> Identity() noexcept
     {
         MatrixType<R, R, ValueType> id(true /*initialize to zero*/);
 
@@ -52,7 +52,7 @@ struct BaseSquareMatrix : public BaseMatrix<MatrixType_, R_, R_, ValueType_>
     /** Compute the exponent of a matrix. If the exponent is negative, we first inverse the matrix. **/
     template<typename Integer>
     MatrixType<R, R, ValueType>
-    operator^ (const Integer & exponent) const
+    operator^ (const Integer & exponent) const noexcept
     {
         static_assert(std::is_integral<Integer>::value, "The exponent must be of integral type (ex. int, char, long, ...)");
 

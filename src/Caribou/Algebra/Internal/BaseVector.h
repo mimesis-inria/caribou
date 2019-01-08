@@ -73,7 +73,7 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
      */
     template<typename OtherValueType, typename... Args, typename std::enable_if<std::is_floating_point<OtherValueType>::value or std::is_integral<OtherValueType>::value, int>::type = 0>
     constexpr
-    BaseVector(OtherValueType first_component, Args&&... other_components)
+    BaseVector(OtherValueType first_component, Args&&... other_components) noexcept
     : Base {static_cast<ValueType>(first_component), static_cast<ValueType>(std::forward<Args>(other_components))...}
     {
     }
@@ -88,7 +88,7 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
             typename std::enable_if<(OtherR == N and OtherC == 1) or (OtherC == N and OtherR == 1), int>::type = 0
     >
     inline constexpr bool
-    operator==(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    operator==(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         return std::equal(this->begin(), this->end(), other.begin(), [](const ValueType & v1, const OtherValueType & v2) -> bool {
             return (-EPSILON <= (v1 - v2) and (v1 - v2) <= +EPSILON);
@@ -105,7 +105,7 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
             typename std::enable_if<(OtherR == N and OtherC == 1) or (OtherC == N and OtherR == 1), int>::type = 0
     >
     inline constexpr ValueType
-    inner_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    inner_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         return std::inner_product(std::begin(other), std::end(other), std::begin(*this), (ValueType) 0);
     }
@@ -116,7 +116,7 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
             typename std::enable_if<(OtherR == N and OtherC == 1) or (OtherC == N and OtherR == 1), int>::type = 0
     >
     inline constexpr ValueType
-    dot(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    dot(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         return inner_product(other);
     }
@@ -127,7 +127,7 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
             typename std::enable_if<(OtherR == N and OtherC == 1) or (OtherC == N and OtherR == 1), int>::type = 0
     >
     inline constexpr ValueType
-    scalar_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    scalar_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         return inner_product(other);
     }
@@ -138,14 +138,14 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
 
     /** Compute the length of the vector. **/
     inline constexpr ValueType
-    length() const
+    length() const noexcept
     {
         return sqrt(length_squared());
     };
 
     /** Compute the length^2 of the vector. **/
     inline constexpr ValueType
-    length_squared() const
+    length_squared() const noexcept
     {
         using Vec = const MatrixType<R,C,ValueType>&;
         const auto & self = static_cast<Vec>(*this);
@@ -155,7 +155,7 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
 
     /** Get the unit vector (current vector normalized to unit length) **/
     inline constexpr MatrixType<R, C>
-    unit() const
+    unit() const noexcept
     {
         using Vec = const MatrixType<R,C,ValueType>&;
         const auto & self = static_cast<Vec>(*this);
@@ -167,7 +167,7 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
     ////      Tool functions     ////
     /////////////////////////////////
     inline std::string
-    to_string() const
+    to_string() const noexcept
     {
         return std::string("(") +
                std::accumulate(std::next(this->begin()), this->end(), std::to_string(this->at(0)), [](const std::string & s, const ValueType & component) -> std::string {
@@ -178,13 +178,13 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
 
 private:
     template<size_t current_index, typename... Args>
-    void recursive_set(ValueType component, Args&&... other_components) {
+    void recursive_set(ValueType component, Args&&... other_components) noexcept {
         (*this)[current_index] = component;
         recursive_set<current_index+1>(std::forward<Args>(other_components)...);
     }
 
     template<size_t current_index>
-    void recursive_set(ValueType component) {
+    void recursive_set(ValueType component) noexcept {
         (*this)[current_index] = component;
     }
 };
@@ -212,7 +212,7 @@ struct BaseVector3D : public internal::BaseVector<MatrixType_, R_, C_, ValueType
             typename std::enable_if<(OtherR == 3 and OtherC == 1) or (OtherR == 1 and OtherC == 3), int>::type = 0
     >
     inline constexpr MatrixType<3, 1>
-    cross_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & b) const
+    cross_product(const OtherVectorType<OtherR, OtherC, OtherValueType> & b) const noexcept
     {
         return {
                 (*this)[1]*b[2] -(*this)[2]*b[1],
@@ -227,7 +227,7 @@ struct BaseVector3D : public internal::BaseVector<MatrixType_, R_, C_, ValueType
             typename std::enable_if<(OtherR == 3 and OtherC == 1) or (OtherR == 1 and OtherC == 3), int>::type = 0
     >
     inline constexpr MatrixType<3, 1>
-    cross(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    cross(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         return cross_product(other);
     }
@@ -238,7 +238,7 @@ struct BaseVector3D : public internal::BaseVector<MatrixType_, R_, C_, ValueType
             typename std::enable_if<(OtherR == 3 and OtherC == 1) or (OtherR == 1 and OtherC == 3), int>::type = 0
     >
     inline constexpr MatrixType<3, 1>
-    operator^(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const
+    operator^(const OtherVectorType<OtherR, OtherC, OtherValueType> & other) const noexcept
     {
         return cross_product(other);
     }
