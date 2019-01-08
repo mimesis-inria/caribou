@@ -5,12 +5,13 @@
 #include <Caribou/Algebra/Vector.h>
 #include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Interpolation/Triangle.h>
+#include <Caribou/Geometry/Internal/BaseTriangle.h>
 
 namespace caribou {
 namespace geometry {
 
 template <size_t Dim, typename CanonicalElementType = interpolation::Triangle3>
-struct Triangle : public CanonicalElementType
+struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Triangle<Dim, CanonicalElementType>>
 {
     static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
     using NodeType = caribou::geometry::Node<Dim>;
@@ -21,12 +22,11 @@ struct Triangle : public CanonicalElementType
 
     template <
             typename ...Nodes,
-            REQUIRES(NumberOfNodes == sizeof...(Nodes)),
-            REQUIRES(std::conjunction_v<std::is_same<NodeType, Nodes>...>)
+            REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
     >
     constexpr
-    Triangle(Nodes&&...remaining_nodes)
-    : p_nodes {std::forward<Nodes>(remaining_nodes)...}
+    Triangle(const NodeType & first_node, Nodes&&...remaining_nodes)
+    : p_nodes {first_node, std::forward<Nodes>(remaining_nodes)...}
     {}
 
     constexpr
