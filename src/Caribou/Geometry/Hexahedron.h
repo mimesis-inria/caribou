@@ -27,12 +27,14 @@ struct Hexahedron : public CanonicalElementType
     : p_nodes {std::forward<Nodes>(remaining_nodes)...}
     {}
 
+    /** Get the Node at given index */
     const NodeType &
     node(Index index) const
     {
         return p_nodes[index];
     }
 
+    /** Get the Node at given index */
     NodeType &
     node(Index index)
     {

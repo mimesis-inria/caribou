@@ -39,42 +39,8 @@ struct BaseUnidimensionalGrid : public BaseGrid<1, GridType_>
     using RelativePosition = Float;
     using Size = Float;
 
-    /** Default constructor **/
-    constexpr
-    BaseUnidimensionalGrid() = delete;
+    using BaseGrid<Dimension, GridType_>:: BaseGrid;
 
-    /**
-     * Constructor of a 1D grid (which is a consecutive set of same-length 1D segments along a line).
-     * @param subdivisions Number of sub-cells (same-length 1D segments) in the direction of the line.
-     * @param dimension Size of grid line from the anchor.
-     */
-    constexpr
-    BaseUnidimensionalGrid(const Int & subdivisions, const Size & dimensions)
-            : m_number_of_subdivisions(subdivisions), m_dimensions(dimensions)
-    {}
-
-    inline constexpr
-    Float
-    cell_size() const
-    {
-        return m_dimensions / m_number_of_subdivisions;
-    }
-
-    /** Get the position of the node node_id relative to the grid frame (bottom-left most node). **/
-    inline constexpr
-    RelativePosition
-    relative_position(const NodeIndex & index) const
-    {
-
-        return index * Self().cell_size(); // Relative position
-    }
-
-protected:
-    ///< Number of sub-cells in the x, y and z directions respectively.
-    const Int m_number_of_subdivisions;
-
-    ///<  Dimension of the grid from the anchor point in the x, y and z directions respectively.
-    const Size m_dimensions;
 
 private:
     inline constexpr
