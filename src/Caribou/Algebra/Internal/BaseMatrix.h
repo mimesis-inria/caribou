@@ -53,8 +53,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
      * Main constructor
      * @param initialize_to_zero If true, initialize the scalar components of the vector to zero
      */
-    explicit
-    BaseMatrix(bool initialize_to_zero = false) noexcept {
+    explicit BaseMatrix(bool initialize_to_zero = false) noexcept {
         if (initialize_to_zero) {
             this->fill(0);
         }
@@ -264,7 +263,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     operator+ (const MatrixType<R, C, OtherValueType> & other) const noexcept
     {
         MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::plus<ValueType>());
+        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::plus<ValueType>());
         return result;
     }
 
@@ -273,7 +272,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     inline MatrixType<R, C, ValueType> &
     operator+= (const MatrixType<R, C, OtherValueType> & other) noexcept
     {
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(*this), std::plus<ValueType>());
+        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(*this), std::plus<ValueType>());
         return static_cast<MatrixType<R, C, ValueType> &> (*this);
     }
 
@@ -283,7 +282,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     operator- (const MatrixType<R, C, OtherValueType> & other) const noexcept
     {
         MatrixType<R, C, ValueType> result;
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(result), std::minus<ValueType>());
+        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::minus<ValueType>());
         return result;
     }
 
@@ -292,7 +291,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     inline MatrixType<R, C, ValueType> &
     operator-= (const MatrixType<R, C, OtherValueType> & other) noexcept
     {
-        std::transform(std::begin(other), std::end(other), std::begin(*this), std::begin(*this), std::minus<ValueType>());
+        std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(*this), std::minus<ValueType>());
         return static_cast<MatrixType<R, C, ValueType> &> (*this);
     }
 

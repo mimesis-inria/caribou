@@ -44,39 +44,11 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
     using Base = BaseMatrix<MatrixType_, R_, C_, ValueType_>;
     using Index = typename Base::Index;
 
-    using Base::Base;
-
     //////////////////////
     //// Constructors ////
     //////////////////////
 
-    /**
-     * Constructor by variadic arguments.
-     *
-     * Example:
-     * \code{.cpp}
-     * Vector<3> v (0,1,0);
-     * \endcode
-     *
-     * Warning: The data type of the components will the one declared on the class template
-     * specifier (float if nothing is specified), hence it will not be the one of the arguments passed.
-     *
-     * For example, the following vector:
-     *
-     * \code{.cpp}
-     * Vector<3, char> v ((float) 0.2, (float) 1.1, (float) 1.4);
-     * \endcode
-     *
-     * will have its coordinates as char values, and not as float values.
-     *
-     * @tparam OtherValueType Any numeral type (integral or floating point).
-     */
-    template<typename OtherValueType, typename... Args, typename std::enable_if<std::is_floating_point<OtherValueType>::value or std::is_integral<OtherValueType>::value, int>::type = 0>
-    constexpr
-    BaseVector(OtherValueType first_component, Args&&... other_components) noexcept
-    : Base {static_cast<ValueType>(first_component), static_cast<ValueType>(std::forward<Args>(other_components))...}
-    {
-    }
+    using Base::Base; // Importing BaseMatrix constructors
 
     ///////////////////
     //// Operators ////

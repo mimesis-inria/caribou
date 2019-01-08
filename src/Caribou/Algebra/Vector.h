@@ -187,7 +187,7 @@ struct Matrix<1,1, ValueType> : public internal::BaseVector<Matrix, 1, 1, ValueT
 
     operator ValueType() const noexcept { return (*this)[0]; }
 
-    constexpr
+    explicit constexpr
     Matrix (const ValueType & value) noexcept {
         (*this)[0] = value;
     }
