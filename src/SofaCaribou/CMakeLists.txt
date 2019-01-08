@@ -2,18 +2,21 @@ cmake_minimum_required(VERSION 3.1)
 project(SofaCaribou)
 
 set(HEADER_FILES
-    GraphComponents/Forcefield/TractionForcefield.h
+        GraphComponents/Forcefield/ElasticForce.h
+        GraphComponents/Forcefield/TractionForce.h
     GraphComponents/Topology/MultilevelSparseGridTopology.h
-    GraphComponents/Ode/StaticSolver.h)
+    GraphComponents/Ode/StaticSolver.h
+    Traits.h)
 
 set(TEMPLATE_FILES
     GraphComponents/Topology/MultilevelSparseGridTopology.inl)
 
 set(SOURCE_FILES
-    GraphComponents/Forcefield/TractionForcefield.cpp
+        GraphComponents/Forcefield/ElasticForce.cpp
+        GraphComponents/Forcefield/TractionForce.cpp
     GraphComponents/Topology/MultilevelSparseGridTopology.cpp
     GraphComponents/Ode/StaticSolver.cpp
-    init.cpp Traits.h)
+    init.cpp)
 
 # Try to find Sofa's cmake prefix
 # First, make sure it isn't already been manually set by the user's cmake variables

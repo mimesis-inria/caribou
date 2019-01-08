@@ -1,4 +1,4 @@
-#include "TractionForcefield.h"
+#include "TractionForce.h"
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/visual/VisualParams.h>
@@ -14,7 +14,7 @@ namespace GraphComponents {
 namespace forcefield {
 
 template<class DataTypes>
-TractionForcefield<DataTypes>::TractionForcefield()
+TractionForce<DataTypes>::TractionForce()
     // Inputs
     : d_traction(initData(&d_traction,
             "traction",
@@ -53,7 +53,7 @@ TractionForcefield<DataTypes>::TractionForcefield()
 }
 
 template<class DataTypes>
-void TractionForcefield<DataTypes>::init()
+void TractionForce<DataTypes>::init()
 {
     // If no triangle container specified, but a link is set for the triangles, use the linked container
     if ( !  d_triangleContainer.get()
@@ -107,7 +107,7 @@ void TractionForcefield<DataTypes>::init()
 }
 
 template<class DataTypes>
-void TractionForcefield<DataTypes>::reset()
+void TractionForce<DataTypes>::reset()
 {
     // Do an increment on the first step of the simulation
     m_number_of_steps_since_last_increment = d_number_of_steps_before_increment.getValue();
@@ -120,7 +120,7 @@ void TractionForcefield<DataTypes>::reset()
 }
 
 template<class DataTypes>
-void TractionForcefield<DataTypes>::handleEvent(sofa::core::objectmodel::Event* event)
+void TractionForce<DataTypes>::handleEvent(sofa::core::objectmodel::Event* event)
 {
     if (!sofa::simulation::AnimateBeginEvent::checkEventType(event))
         return;
@@ -165,7 +165,7 @@ void TractionForcefield<DataTypes>::handleEvent(sofa::core::objectmodel::Event* 
 }
 
 template<class DataTypes>
-void TractionForcefield<DataTypes>::increment_load(Deriv traction_increment_per_unit_area)
+void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_area)
 {
     sofa::helper::WriteAccessor<Data<VecDeriv>> nodal_forces = d_nodal_forces;
     sofa::helper::WriteAccessor<Data<Real>> current_load = d_total_load;
@@ -199,11 +199,11 @@ void TractionForcefield<DataTypes>::increment_load(Deriv traction_increment_per_
 }
 
 template<class DataTypes>
-void TractionForcefield<DataTypes>::addForce(const sofa::core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& /*d_v*/)
+void TractionForce<DataTypes>::addForce(const sofa::core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& /*d_v*/)
 {
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_x);
-    sofa::helper::AdvancedTimer::stepBegin("TractionForcefield::addForce");
+    sofa::helper::AdvancedTimer::stepBegin("TractionForce::addForce");
     sofa::helper::ReadAccessor<Data<Real>> current_load = d_total_load;
     sofa::helper::ReadAccessor<Data<VecDeriv>> nodal_forces = d_nodal_forces;
     sofa::helper::WriteAccessor<Data<VecDeriv>> f = d_f;
@@ -212,11 +212,11 @@ void TractionForcefield<DataTypes>::addForce(const sofa::core::MechanicalParams*
         f[i] += nodal_forces[i];
 
     sofa::helper::AdvancedTimer::valSet("load", current_load);
-    sofa::helper::AdvancedTimer::stepEnd("TractionForcefield::addForce");
+    sofa::helper::AdvancedTimer::stepEnd("TractionForce::addForce");
 }
 
 template<class DataTypes>
-void TractionForcefield<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
+void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
 {
     using Color = sofa::core::visual::DrawTool::RGBAColor;
     using Vector3 = sofa::core::visual::DrawTool::Vector3;
@@ -251,9 +251,9 @@ void TractionForcefield<DataTypes>::draw(const sofa::core::visual::VisualParams*
 }
 
 
-SOFA_DECL_CLASS(TractionForcefield)
-static int TractionForcefieldClass = sofa::core::RegisterObject("Traction forcefield.")
-                                          .add< TractionForcefield<sofa::defaulttype::Vec3dTypes> >(true)
+SOFA_DECL_CLASS(TractionForce)
+static int TractionForceClass = sofa::core::RegisterObject("Traction forcefield.")
+                                          .add< TractionForce<sofa::defaulttype::Vec3dTypes> >(true)
 ;
 
 } // namespace forcefield

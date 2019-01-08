@@ -1,0 +1,16 @@
+<Node name="root" gravity="0 -9 0" dt="1">
+    <VisualStyle displayFlags="showBehaviorModels showForceFields" />
+    <Node name="cylinder">
+        <EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />
+        <CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />
+        <RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />
+        <MechanicalObject src="@mesh" />
+        <HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />
+        <HexahedronSetGeometryAlgorithms />
+        <MeshMatrixMass  massDensity="2.3"/>
+        <!--<HexahedronFEMForceField method="small" poissonRatio="0" youngModulus="100000" />-->
+        <ElasticForce poissonRatio="0" youngModulus="100000" printLog="true" />
+        <BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />
+        <FixedConstraint indices="@fixed_roi.indices" />
+    </Node>
+</Node>
