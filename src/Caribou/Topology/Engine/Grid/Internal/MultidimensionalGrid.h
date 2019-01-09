@@ -4,10 +4,7 @@
 #include <Caribou/Topology/Engine/Grid/Internal/Grid.h>
 #include <Caribou/Algebra/Vector.h>
 
-namespace caribou {
-namespace topology {
-namespace engine {
-namespace internal {
+namespace caribou::topology::engine::internal {
 
 /**
  * Simple representation of a multidimensional (2D or 3D) Grid in space.
@@ -71,11 +68,6 @@ struct BaseMultidimensionalGrid : public BaseGrid<Dim, GridType_>
         return p; // Relative position
     }
 
-    /** Query the cell that contains a given position */
-    inline VecInt query(const VecFloat & position) const {
-
-    }
-
 private:
     inline constexpr
     const GridType &
@@ -86,9 +78,6 @@ private:
 
 };
 
-} // namespace internal
-} // namespace engine
-} // namespace topology
-} // namespace caribou
+} // namespace caribou::topology::engine::internal
 
 #endif //CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_MULTIDIMENSIONALGRID_H

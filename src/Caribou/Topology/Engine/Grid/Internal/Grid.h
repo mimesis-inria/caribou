@@ -2,13 +2,11 @@
 #define CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_GRID_H
 
 #include <cstddef>
+#include <list>
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
 
-namespace caribou {
-namespace topology {
-namespace engine {
-namespace internal{
+namespace caribou::topology::engine::internal {
 
 /**
  * Simple representation of a Grid in space.
@@ -46,6 +44,10 @@ struct BaseGrid
     using LocalCoordinates = VecFloat;
     using WorldCoordinates = VecFloat;
     using GridCoordinates = VecInt;
+    using CellSet = std::list<CellIndex>;
+
+    static_assert(Dimension == 1 || Dimension == 2 || Dimension == 3, "Grids are only available in 1, 2 or 3 dimensions");
+
 
     /** Default constructor **/
     constexpr
@@ -161,6 +163,13 @@ struct BaseGrid
         }
     }
 
+    /** Get the index of the cell that contains the given world coordinates. */
+    inline CellIndex
+    cell_index_at(const WorldCoordinates & coordinates) const noexcept
+    {
+        return cell_index_at(grid_coordinates_at(coordinates));
+    }
+
     /** Get the grid location of the cell at index cell_index */
     inline GridCoordinates
     grid_coordinates_at(const CellIndex & index) const noexcept
@@ -224,6 +233,63 @@ struct BaseGrid
         return true;
     }
 
+    /** Returns the set of cells that enclose (in a bounding-box manner) the given world positions */
+    template<typename ...WorldCoordinatesTypes>
+    inline CellSet
+    cells_enclosing(WorldCoordinates && first_position, WorldCoordinatesTypes && ... remaining_positions) const noexcept
+    {
+        std::array<WorldCoordinates , sizeof...(remaining_positions)+1> positions {{
+            std::forward<WorldCoordinates>(first_position), std::forward<WorldCoordinates>(remaining_positions)...
+        }};
+
+        // First, find the grid coordinates bounding box of the cells that contain each nodes
+        GridCoordinates lower_cell = grid_coordinates_at(positions[0]);
+        GridCoordinates upper_cell = lower_cell;
+        for (size_t i = 1; i < positions.size(); ++ i) {
+            GridCoordinates coordinates = grid_coordinates_at(positions[i]);
+
+            // Dimension 1 and up
+            if (coordinates[0] < lower_cell[0])
+                lower_cell[0] = coordinates[0];
+            else if (coordinates[0] > upper_cell[0])
+                upper_cell[0] = coordinates[0];
+
+            // Dimension 2 and up
+            if constexpr (Dimension >= 2) {
+                if (coordinates[1] < lower_cell[1])
+                    lower_cell[1] = coordinates[1];
+                else if (coordinates[1] > upper_cell[1])
+                    upper_cell[1] = coordinates[1];
+            }
+
+            // Dimension 3 and up
+            if constexpr (Dimension == 3) {
+                if (coordinates[2] < lower_cell[2])
+                    lower_cell[2] = coordinates[2];
+                else if (coordinates[2] > upper_cell[2])
+                    upper_cell[2] = coordinates[2];
+            }
+        }
+
+        // Next, append all cells within the bounding-box
+        CellSet enclosing_cells;
+        if constexpr (Dimension ==1) {
+            for (CellIndex i = lower_cell[0]; i <= upper_cell[0]; ++i)
+                enclosing_cells.emplace_back(cell_index_at(GridCoordinates(i)));
+        } else if constexpr (Dimension == 2) {
+            for (CellIndex j = lower_cell[1]; j <= upper_cell[1]; ++j)
+                for (CellIndex i = lower_cell[0]; i <= upper_cell[0]; ++i)
+                    enclosing_cells.emplace_back(cell_index_at(GridCoordinates({i, j})));
+        } else { // Dimension == 3
+            for (CellIndex k = lower_cell[2]; k <= upper_cell[2]; ++k)
+                for (CellIndex j = lower_cell[1]; j <= upper_cell[1]; ++j)
+                    for (CellIndex i = lower_cell[0]; i <= upper_cell[0]; ++i)
+                        enclosing_cells.emplace_back(cell_index_at(GridCoordinates({i, j, k})));
+        }
+
+        return enclosing_cells;
+    }
+
 protected:
     ///< Position of the anchor point of this grid.
     const WorldCoordinates m_anchor_position;
@@ -243,9 +309,6 @@ private:
 
 };
 
-} // namespace internal
-} // namespace engine
-} // namespace topology
-} // namespace caribou
+} // namespace caribou::topology::engine::internal
 
 #endif //CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_GRID_H

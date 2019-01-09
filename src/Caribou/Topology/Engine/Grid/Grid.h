@@ -17,19 +17,12 @@ namespace engine {
 template <size_t Dim, class CellType_=void>
 struct Grid : public internal::BaseMultidimensionalGrid<Dim, Grid<Dim, CellType_>>
 {
-};
-
-template <size_t Dim>
-struct Grid<Dim, void> : public internal::BaseMultidimensionalGrid<Dim, Grid<Dim, void>>
-{
-    static constexpr size_t Dimension = Dim;
-
-    using Base = internal::BaseMultidimensionalGrid<Dimension, Grid<Dimension, void>>;
+    using Base = internal::BaseMultidimensionalGrid<Dim, Grid<Dim, void>>;
     using Base::Base;
 };
 
-template <>
-struct Grid<1, void> : public internal::BaseUnidimensionalGrid<Grid<1, void>>
+template <class CellType_>
+struct Grid<1, CellType_> : public internal::BaseUnidimensionalGrid<Grid<1, CellType_>>
 {
     static constexpr size_t Dimension = 1;
 
