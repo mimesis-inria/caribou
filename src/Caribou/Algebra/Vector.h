@@ -27,13 +27,9 @@ struct Matrix<R_,1, ValueType> : public internal::BaseVector<Matrix, R_, 1, Valu
      * Copy constructor from another column-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<R_, 1, ValueType> & other) : Base(other) {}
-
-    /**
-     * Copy constructor from another row-vector of the same data type
-     */
-    constexpr
-    Matrix(const Matrix<1, R_, ValueType> & other) : Base(other) {}
+    Matrix(const Matrix<R_, 1, ValueType> & other) {
+        Base::template copy_from<0>(other);
+    }
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -61,16 +57,12 @@ struct Matrix<1,C_, ValueType> : public internal::BaseVector<Matrix, 1, C_, Valu
     Matrix(ValueType const (&components)[C_]) : Base (components) {}
 
     /**
-     * Copy constructor from another column-vector of the same data type
-     */
-    constexpr
-    Matrix(const Matrix<C_, 1, ValueType> & other) : Base(other) {}
-
-    /**
      * Copy constructor from another row-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<1, C_, ValueType> & other) : Base(other) {}
+    Matrix(const Matrix<1, C_, ValueType> & other) {
+        Base::template copy_from<0>(other);
+    }
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -101,22 +93,12 @@ struct Matrix<3,1, ValueType> : public internal::BaseVector3D<Matrix, 3, 1, Valu
     using Base::Base;
 
     /**
-     * Constructor by c-array or initializer list.
-     */
-    constexpr
-    Matrix(ValueType const (&components)[3]) : Base (components) {}
-
-    /**
      * Copy constructor from another column-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<3, 1, ValueType> & other) : Base(other) {}
-
-    /**
-     * Copy constructor from another row-vector of the same data type
-     */
-    constexpr
-    Matrix(const Matrix<1, 3, ValueType> & other) : Base(other) {}
+    Matrix(const Matrix<3, 1, ValueType> & other) {
+        Base::template copy_from<0>(other);
+    }
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -138,22 +120,12 @@ struct Matrix<1,3, ValueType> : public internal::BaseVector3D<Matrix, 1, 3, Valu
     using Base::Base;
 
     /**
-     * Constructor by c-array or initializer list.
-     */
-    constexpr
-    Matrix(ValueType const (&components)[3]) : Base (components) {}
-
-    /**
-     * Copy constructor from another column-vector of the same data type
-     */
-    constexpr
-    Matrix(const Matrix<3, 1, ValueType> & other) : Base(other) {}
-
-    /**
      * Copy constructor from another row-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<1, 3, ValueType> & other) : Base(other) {}
+    Matrix(const Matrix<1, 3, ValueType> & other) {
+        Base::template copy_from<0>(other);
+    }
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -185,12 +157,21 @@ struct Matrix<1,1, ValueType> : public internal::BaseVector<Matrix, 1, 1, ValueT
 
     using Base::Base;
 
-    operator ValueType() const noexcept { return (*this)[0]; }
+    /**
+     * Copy constructor from another row-vector of the same data type
+     */
+    constexpr
+    Matrix(const Matrix<1, 1, ValueType> & other) {
+        Base::template copy_from<0>(other);
+    }
+
 
     explicit constexpr
     Matrix (const ValueType & value) noexcept {
         (*this)[0] = value;
     }
+
+    operator ValueType() const noexcept { return (*this)[0]; }
 };
 
 /**

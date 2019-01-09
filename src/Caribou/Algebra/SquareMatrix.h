@@ -56,7 +56,7 @@ struct Matrix<N,N, ValueType> : public internal::BaseSquareMatrix<Matrix, N, Val
      */
     constexpr
     Matrix(const Matrix<N, N, ValueType> & other) noexcept
-    : Base(other) {}
+    {Base::template copy_from<0>(other);}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -116,7 +116,7 @@ struct Matrix<2,2, ValueType> : public internal::BaseSquareMatrix<Matrix, 2, Val
      */
     constexpr
     Matrix(const Matrix<2, 2, ValueType> & other) noexcept
-    : Base(other) {}
+    {Base::template copy_from<0>(other);}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -151,7 +151,7 @@ struct Matrix<2,2, ValueType> : public internal::BaseSquareMatrix<Matrix, 2, Val
     inline Matrix<2,2, ValueType>
     inverted() const
     {
-        Matrix<2, 2, ValueType> dest( true /* initialize_to_zero */);
+        Matrix<2, 2, ValueType> dest;
         ValueType det=determinant();
 
         if ( -EPSILON<=det && det<=EPSILON)
@@ -217,7 +217,7 @@ struct Matrix<3,3, ValueType> : public internal::BaseSquareMatrix<Matrix, 3, Val
      */
     constexpr
     Matrix(const Matrix<3, 3, ValueType> & other) noexcept
-    : Base(other) {}
+    {Base::template copy_from<0>(other);}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -258,7 +258,7 @@ struct Matrix<3,3, ValueType> : public internal::BaseSquareMatrix<Matrix, 3, Val
     inline Matrix<3,3, ValueType>
     inverted() const
     {
-        Matrix<3, 3, ValueType> dest( true /* initialize_to_zero */);
+        Matrix<3, 3, ValueType> dest;
         ValueType det=determinant();
 
         if ( -EPSILON<=det && det<=EPSILON)

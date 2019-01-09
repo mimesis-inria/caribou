@@ -41,7 +41,8 @@ struct BaseSquareMatrix : public BaseMatrix<MatrixType_, R_, R_, ValueType_>
     /** Returns the identity matrix */
     static MatrixType<R, R, ValueType> Identity() noexcept
     {
-        MatrixType<R, R, ValueType> id(true /*initialize to zero*/);
+        MatrixType<R, R, ValueType> id;
+        id.fill(0);
 
         for (Index i = 0; i < R; i++)
             id(i, i) = 1;

@@ -83,7 +83,7 @@ struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
      */
     constexpr
     Matrix(const Matrix<R, C, ValueType> & other) noexcept
-    : Base(other) {}
+    {Base::template copy_from<0>(other);}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<

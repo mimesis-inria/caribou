@@ -51,13 +51,9 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
 
     /**
      * Main constructor
-     * @param initialize_to_zero If true, initialize the scalar components of the vector to zero
      */
-    explicit BaseMatrix(bool initialize_to_zero = false) noexcept {
-        if (initialize_to_zero) {
-            this->fill(0);
-        }
-    }
+    constexpr
+    BaseMatrix() noexcept {}
 
     /**
      * Constructor by c-array or initializer list of another type (must be an integral or floating-point).
@@ -98,12 +94,20 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     }
 
     /**
-     * Copy constructor from another matrix of a different data type
+     * Copy constructor from another matrix of a different type
      */
     template <template <size_t, size_t, typename> class OtherMatrixType, typename OtherValueType>
     constexpr
     BaseMatrix(const OtherMatrixType<R, C, OtherValueType> & other) noexcept {
-        copy_from<0, ValueType> (other);
+        copy_from<0> (other);
+    }
+
+    /**
+     * Copy constructor from another matrix of a same type
+     */
+    constexpr
+    explicit BaseMatrix(const MatrixType<R, C, ValueType> & other) noexcept {
+        copy_from<0> (other);
     }
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
@@ -216,7 +220,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     inline MatrixType<R, C, ValueType>
     operator*(const ScalarType & scalar) const noexcept
     {
-        MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
+        MatrixType<R, C, ValueType> result;
         std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
             return component*scalar;
         });
@@ -239,7 +243,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     inline MatrixType<R, C, ValueType>
     operator/(const ScalarType & scalar) const noexcept
     {
-        MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
+        MatrixType<R, C, ValueType> result;
         std::transform(std::begin(*this), std::end(*this), std::begin(result), [scalar] (const ValueType & component) {
             return component/scalar;
         });
@@ -262,7 +266,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     inline MatrixType<R, C, ValueType>
     operator+ (const MatrixType<R, C, OtherValueType> & other) const noexcept
     {
-        MatrixType<R, C, ValueType> result = static_cast<const MatrixType<R, C, ValueType> &> (*this);
+        MatrixType<R, C, ValueType> result;
         std::transform(std::begin(*this), std::end(*this), std::begin(other), std::begin(result), std::plus<ValueType>());
         return result;
     }
@@ -353,7 +357,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
                 "Direct operations must be done with a same sized matrix, or with a column or row vector."
         );
 
-        MatrixType<R, C, ValueType> result(false);
+        MatrixType<R, C, ValueType> result;
 
         if CONSTEXPR_IF (R == OtherR and C == OtherC) {
             // Direct operation with another matrix of the same size
@@ -409,7 +413,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
                 "Direct operations must be done with a same sized matrix, or with a column or row vector."
         );
 
-        MatrixType<R, C, ValueType> result(false);
+        MatrixType<R, C, ValueType> result;
 
         if CONSTEXPR_IF (R == OtherR and C == OtherC) {
             // Direct operation with another matrix of the same size
@@ -465,7 +469,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
                 "Direct operations must be done with a same sized matrix, or with a column or row vector."
         );
 
-        MatrixType<R, C, ValueType> result(false);
+        MatrixType<R, C, ValueType> result;
 
         if CONSTEXPR_IF (R == OtherR and C == OtherC) {
             // Direct operation with another matrix of the same size
@@ -521,7 +525,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
                 "Direct operations must be done with a same sized matrix, or with a column or row vector."
         );
 
-        MatrixType<R, C, ValueType> result(false);
+        MatrixType<R, C, ValueType> result;
 
         if CONSTEXPR_IF (R == OtherR and C == OtherC) {
             // Direct operation with another matrix of the same size
@@ -546,19 +550,19 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
         return result;
     }
 
-private:
+protected:
     /** Static copying the values of another Matrix. The copy will be done entirely during the compilation by using template recursion. */
-    template<size_t index, typename OtherValueType>
+    template<size_t index, template <size_t, size_t, typename> class OtherMatrixType, typename OtherValueType>
     constexpr
     void
-    copy_from (const MatrixType<R, C, OtherValueType> & other) noexcept
+    copy_from (const OtherMatrixType<R, C, OtherValueType> & other) noexcept
     {
         static_assert(index >= 0,  "Cannot copy a value from an index outside of the matrix data array.");
         static_assert(index < R*C, "Cannot copy a value from an index outside of the matrix data array.");
         (*this)[index] = static_cast<ValueType> (other[index]);
 
         if CONSTEXPR_IF (index+1 < R*C)
-            copy_from<index+1, OtherValueType>(other);
+            copy_from<index+1>(other);
     }
 
     /** Static copying the values of RxC C-array. The copy will be done entirely during the compilation by using template recursion. */

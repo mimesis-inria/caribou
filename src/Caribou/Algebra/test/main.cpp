@@ -12,8 +12,8 @@ TEST(Algebra, Vector) {
 
     Vector<3, int> v2 ({1,2,3});
     Vector<3, int> v3 (1, 2, 3);
-    Vector<3, int> v4 (0,0,0);
-    Vector<3, int> v5(true); // Automatically fills the vector with 0 values
+    Vector<3, int> v4 (1,1,1);
+    Vector<3, int> v5; v5.fill(1);
 
 
     ASSERT_EQ(v1, v2);
