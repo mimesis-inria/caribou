@@ -69,7 +69,7 @@ struct BaseGrid
     inline Int
     number_of_cells() const noexcept
     {
-        const auto & n = Self().number_of_subdivision();
+        const auto & n = m_number_of_subdivisions;
 
         if CONSTEXPR_IF(Dimension == 1)
             return n;
@@ -87,7 +87,7 @@ struct BaseGrid
     inline Int
     number_of_nodes() const noexcept
     {
-        const auto & n = Self().number_of_subdivision();
+        const auto & n = m_number_of_subdivisions;
 
         if CONSTEXPR_IF(Dimension == 1)
             return n+1;
@@ -105,7 +105,7 @@ struct BaseGrid
     inline Int
     number_of_edges() const noexcept
     {
-        const auto & n = Self().number_of_subdivision();
+        const auto & n = m_number_of_subdivisions;
 
         if CONSTEXPR_IF(Dimension == 1)
             return n;

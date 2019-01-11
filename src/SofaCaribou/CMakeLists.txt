@@ -4,17 +4,17 @@ project(SofaCaribou)
 set(HEADER_FILES
         GraphComponents/Forcefield/ElasticForce.h
         GraphComponents/Forcefield/TractionForce.h
-    GraphComponents/Topology/MultilevelSparseGridTopology.h
+        GraphComponents/Topology/FictitiousGrid.h
     GraphComponents/Ode/StaticSolver.h
     Traits.h)
 
 set(TEMPLATE_FILES
-    GraphComponents/Topology/MultilevelSparseGridTopology.inl)
+        GraphComponents/Topology/FictitiousGrid.inl)
 
 set(SOURCE_FILES
         GraphComponents/Forcefield/ElasticForce.cpp
         GraphComponents/Forcefield/TractionForce.cpp
-    GraphComponents/Topology/MultilevelSparseGridTopology.cpp
+        GraphComponents/Topology/FictitiousGrid.cpp
     GraphComponents/Ode/StaticSolver.cpp
     init.cpp)
 

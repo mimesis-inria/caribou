@@ -29,17 +29,24 @@ struct BaseUnidimensionalGrid : public BaseGrid<1, GridType_>
     static constexpr size_t Dimension = 1;
 
     using GridType = GridType_;
+    using Base = BaseGrid<1, GridType_>;
 
     using Int = size_t;
     using Float = FLOATING_POINT_TYPE;
 
-    using Index = Int;
-    using NodeIndex = Int;
-    using CellIndex = Int;
-    using RelativePosition = Float;
-    using Size = Float;
+    using VecFloat = caribou::algebra::Vector<Dimension, Float>;
+    using VecInt = caribou::algebra::Vector<Dimension, Int>;
 
-    using BaseGrid<Dimension, GridType_>:: BaseGrid;
+    using NodeIndex = typename Base::NodeIndex;
+    using CellIndex = typename Base::CellIndex;
+    using Dimensions = typename Base::Dimensions;
+    using Subdivisions = typename Base::Subdivisions;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+    using GridCoordinates = typename Base::GridCoordinates;
+    using CellSet = std::list<CellIndex>;
+
+    using Base::Base;
 
 
 private:

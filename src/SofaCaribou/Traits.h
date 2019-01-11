@@ -7,7 +7,7 @@
 namespace caribou::geometry {
 
 //
-// sofa Vec -> Node
+// sofa Vec -> caribou Node
 //
 
 /**

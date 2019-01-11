@@ -14,20 +14,40 @@ namespace caribou {
 namespace topology {
 namespace engine {
 
-template <size_t Dim, class CellType_=void>
-struct Grid : public internal::BaseMultidimensionalGrid<Dim, Grid<Dim, CellType_>>
+template <size_t Dim>
+struct Grid : public internal::BaseMultidimensionalGrid<Dim, Grid<Dim>>
 {
-    using Base = internal::BaseMultidimensionalGrid<Dim, Grid<Dim, void>>;
+    static constexpr size_t Dimension = Dim;
+
+    using Base = internal::BaseMultidimensionalGrid<Dimension, Grid<Dimension>>;
     using Base::Base;
+
+    using NodeIndex = typename Base::NodeIndex;
+    using CellIndex = typename Base::CellIndex;
+    using Dimensions = typename Base::Dimensions;
+    using Subdivisions = typename Base::Subdivisions;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+    using GridCoordinates = typename Base::GridCoordinates;
+    using CellSet = std::list<CellIndex>;
 };
 
-template <class CellType_>
-struct Grid<1, CellType_> : public internal::BaseUnidimensionalGrid<Grid<1, CellType_>>
+template <>
+struct Grid<1> : public internal::BaseUnidimensionalGrid<Grid<1>>
 {
     static constexpr size_t Dimension = 1;
 
-    using Base = internal::BaseUnidimensionalGrid<Grid<Dimension, void>>;
+    using Base = internal::BaseUnidimensionalGrid<Grid<Dimension>>;
     using Base::Base;
+
+    using NodeIndex = typename Base::NodeIndex;
+    using CellIndex = typename Base::CellIndex;
+    using Dimensions = typename Base::Dimensions;
+    using Subdivisions = typename Base::Subdivisions;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+    using GridCoordinates = typename Base::GridCoordinates;
+    using CellSet = std::list<CellIndex>;
 };
 
 } // namespace engine
