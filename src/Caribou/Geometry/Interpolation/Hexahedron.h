@@ -29,7 +29,7 @@ namespace interpolation {
  *     4----------5            4----16----5           4----16----5
  *
  */
-struct Hexahedron8 : public CanonicalElement<3, 8, Quad4>
+struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
 {
     using Index = INTEGER_TYPE;
     using Real = FLOATING_POINT_TYPE;
@@ -37,7 +37,7 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Quad4>
     static constexpr INTEGER_TYPE Dimension = 3;
     static constexpr INTEGER_TYPE NumberOfNodes = 8;
 
-    static constexpr std::array<algebra::Vector<3, Real>, 8> nodes {{
+    static constexpr std::array<caribou::geometry::Node<3>, 8> nodes {{
     //    u,  v,  w
         {-1, -1, -1}, // Node 0
         {+1, -1, -1}, // Node 1
@@ -48,6 +48,35 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Quad4>
         {+1, +1, +1}, // Node 6
         {-1, +1, +1}  // Node 7
     }};
+
+    static constexpr std::array<std::array<INTEGER_TYPE, 2>, 12> edges {{
+        {0, 1}, // Edge 0
+        {1, 2}, // Edge 1
+        {2, 3}, // Edge 2
+        {3, 0}, // Edge 3
+        {0, 4}, // Edge 4
+        {3, 7}, // Edge 5
+        {2, 6}, // Edge 6
+        {1, 5}, // Edge 7
+        {4, 5}, // Edge 8
+        {5, 6}, // Edge 9
+        {6, 7}, // Edge 10
+        {7, 4}  // Edge 11
+    }};
+
+    static constexpr std::array<caribou::geometry::Node<3>, 8> gauss_nodes {{
+    //    u,  v,  w
+        {-1/1.73205080757, -1/1.73205080757, -1/1.73205080757}, // Node 0
+        {+1/1.73205080757, -1/1.73205080757, -1/1.73205080757}, // Node 1
+        {+1/1.73205080757, +1/1.73205080757, -1/1.73205080757}, // Node 2
+        {-1/1.73205080757, +1/1.73205080757, -1/1.73205080757}, // Node 3
+        {-1/1.73205080757, -1/1.73205080757, +1/1.73205080757}, // Node 4
+        {+1/1.73205080757, -1/1.73205080757, +1/1.73205080757}, // Node 5
+        {+1/1.73205080757, +1/1.73205080757, +1/1.73205080757}, // Node 6
+        {-1/1.73205080757, +1/1.73205080757, +1/1.73205080757}  // Node 7
+    }};
+
+    static constexpr std::array<Real, 8> gauss_weights {{1, 1, 1, 1, 1, 1, 1, 1}};
 
     /**
      * Compute the ith Lagrange polynomial value evaluated at local coordinates {u, v, w} w.r.t the
@@ -101,9 +130,9 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Quad4>
         constexpr Real wi = nodes[interpolation_node_index][2];
 
         return {
-                (Real)1 / 8 *     1      * (1 + vi*v) * (1 + wi*w),
-                (Real)1 / 8 * (1 + ui*u) *     1      * (1 + wi*w),
-                (Real)1 / 8 * (1 + ui*u) * (1 + vi*v) *     1
+                (Real)1 / 8 *     ui     * (1 + vi*v) * (1 + wi*w),
+                (Real)1 / 8 * (1 + ui*u) *     vi     * (1 + wi*w),
+                (Real)1 / 8 * (1 + ui*u) * (1 + vi*v) *     wi
         };
     }
 };

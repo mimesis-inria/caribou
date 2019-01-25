@@ -3,11 +3,13 @@
 
 #include <cstdint>
 
+#define CARIBOU_USE_DOUBLE
+
 #ifdef CARIBOU_USE_DOUBLE
 #define FLOATING_POINT_TYPE double
 #define INTEGER_TYPE int64_t
 #define UNSIGNED_INTEGER_TYPE uint64_t
-#define EPSILON  ((float)1.0e-100)
+#define EPSILON  ((double)1.0e-100)
 #else
 #define FLOATING_POINT_TYPE float
 #define INTEGER_TYPE int32_t

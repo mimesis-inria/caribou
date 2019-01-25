@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <Caribou/config.h>
 #include <Caribou/Traits.h>
 #include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Triangle.h>
@@ -60,7 +61,7 @@ TEST(Geometry, Triangle) {
     using namespace caribou::algebra;
 
     Triangle<2> triangle (Node<2> {0,0}, Node<2> {1, 0}, Node<2> {0, 1});
-    std::array<float, 2> node {{1, 0}};
+    Node<2> node {{1, 0}};
     ASSERT_EQ( triangle.node(1), node);
 
     // Shape functions
@@ -70,21 +71,21 @@ TEST(Geometry, Triangle) {
     ASSERT_EQ(Triangle3::L<1>(1, 0), 1);
     ASSERT_EQ(Triangle3::L<2>(0, 1), 1);
 
-    Vector <3, float> shapes {Triangle3::L<0>(0, 0), Triangle3::L<1>(0, 0), Triangle3::L<2>(0, 0)};
-    ASSERT_EQ(Triangle3::N(0,0), shapes);
+    Vector <3, FLOATING_POINT_TYPE> shapes {Triangle3::L<0>(0, 0), Triangle3::L<1>(0, 0), Triangle3::L<2>(0, 0)};
+    ASSERT_EQ(Triangle3::N({0,0}), shapes);
 
     // Shape function derivatives
-    caribou::algebra::Vector<2, float> derivatives[3] {{-1, -1}, {1, 0}, {0, 1}};
+    caribou::algebra::Vector<2, FLOATING_POINT_TYPE> derivatives[3] {{-1, -1}, {1, 0}, {0, 1}};
     ASSERT_EQ(Triangle3::dL<0>(0, 0), derivatives[0]);
     ASSERT_EQ(Triangle3::dL<1>(1, 0), derivatives[1]);
     ASSERT_EQ(Triangle3::dL<2>(0, 1), derivatives[2]);
 
     Matrix sderivatives  {
-            Triangle3::dL<0>(0, 0),
-            Triangle3::dL<1>(0, 0),
-            Triangle3::dL<2>(0, 0),
+            Triangle3::dL<0>(0, 0).T(),
+            Triangle3::dL<1>(0, 0).T(),
+            Triangle3::dL<2>(0, 0).T(),
     };
-    ASSERT_EQ(triangle.dN(0,0), sderivatives);
+    ASSERT_EQ(triangle.dN({0,0}), sderivatives);
 
     // Jacobian
     Triangle<2> triangle2D (Node<2>{50, 50}, Node<2>{60, 50}, Node<2>{55, 55});
@@ -92,7 +93,7 @@ TEST(Geometry, Triangle) {
     ASSERT_EQ(J.determinant()*0.5, 25);
 
     // Some properties
-    caribou::algebra::Vector<2, float> center {1/3., 1/3.};
+    caribou::algebra::Vector<2, FLOATING_POINT_TYPE> center {1/3., 1/3.};
     ASSERT_EQ(triangle.center(), center);
 
     ASSERT_EQ(triangle.area(), 0.5);
@@ -109,7 +110,7 @@ TEST(Geometry, Quad) {
 
     Quad<2, interpolation::Quad4> quad (Node<2> {-1, -1}, Node<2> {+1, -1}, Node<2>{+1, +1}, Node<2>{-1, +1});
 
-    std::array<float, 2> node {{+1, +1}};
+    Node<2> node {{+1, +1}};
     ASSERT_EQ( quad.node(2), node);
 
     // Shape functions
@@ -122,7 +123,7 @@ TEST(Geometry, Quad) {
     ASSERT_EQ(Quad4::L<3>(-1, +1), 1);
 
     // Shape function derivatives
-    caribou::algebra::Vector<2, float> derivatives[4] {{-0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}, {-0.5, 0.5}};
+    caribou::algebra::Vector<2, FLOATING_POINT_TYPE> derivatives[4] {{-0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}, {-0.5, 0.5}};
     ASSERT_EQ(Quad4::dL<0>(-1, -1), derivatives[0]);
     ASSERT_EQ(Quad4::dL<1>(+1, -1), derivatives[1]);
     ASSERT_EQ(Quad4::dL<2>(+1, +1), derivatives[2]);
@@ -136,7 +137,7 @@ TEST(Geometry, Quad) {
 
     // Interpolation
 
-    auto f = [] (const auto & u, const auto & v) -> float {
+    auto f = [] (const auto & u, const auto & v) -> FLOATING_POINT_TYPE {
         return 5 + 2*u + 3*v;
     };
 
@@ -148,6 +149,17 @@ TEST(Geometry, Hexahedron) {
     using namespace caribou::geometry;
     using namespace caribou::geometry::interpolation;
     using namespace caribou::algebra;
+
+    Hexahedron<interpolation::Hexahedron8> hexa;
+
+    Node<3> node {{1, 1, -1}};
+    ASSERT_EQ(hexa.node(2), node);
+
+    double r = hexa.gauss_quadrature(0., [](const Hexahedron<Hexahedron8> & /*h*/, const auto & /*u*/, const auto & /*v*/, const auto & /*w*/) {
+        return 1.;
+    });
+
+    ASSERT_FLOAT_EQ(r, 8);
 
 }
 
