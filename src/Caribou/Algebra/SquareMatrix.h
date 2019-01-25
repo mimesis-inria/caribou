@@ -32,7 +32,8 @@ struct Matrix<N,N, ValueType> : public internal::BaseSquareMatrix<Matrix, N, Val
      */
     constexpr
     Matrix(ValueType const (&components)[N][N]) noexcept
-    : Base (components) {}
+    : Base (components)
+    {}
 
     /**
      * Constructor by c-array or initializer list.
@@ -49,14 +50,16 @@ struct Matrix<N,N, ValueType> : public internal::BaseSquareMatrix<Matrix, N, Val
      */
     constexpr
     Matrix(ValueType const (&components)[N*N]) noexcept
-    : Base (components) {}
+    : Base (components)
+    {}
 
     /**
      * Copy constructor from another matrix of the same data type
      */
     constexpr
     Matrix(const Matrix<N, N, ValueType> & other) noexcept
-    {Base::template copy_from<0>(other);}
+    :Base(other)
+    {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -65,7 +68,8 @@ struct Matrix<N,N, ValueType> : public internal::BaseSquareMatrix<Matrix, N, Val
             typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
     constexpr
     Matrix(ValueType first_value, Args&&...e) noexcept
-            : Base(first_value, std::forward<Args>(e)...) {}
+    : Base(first_value, std::forward<Args>(e)...)
+    {}
 };
 
 /**
@@ -116,7 +120,8 @@ struct Matrix<2,2, ValueType> : public internal::BaseSquareMatrix<Matrix, 2, Val
      */
     constexpr
     Matrix(const Matrix<2, 2, ValueType> & other) noexcept
-    {Base::template copy_from<0>(other);}
+    :Base(other)
+    {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -125,7 +130,8 @@ struct Matrix<2,2, ValueType> : public internal::BaseSquareMatrix<Matrix, 2, Val
             typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
     constexpr
     Matrix(ValueType first_value, Args&&...e) noexcept
-            : Base(first_value, std::forward<Args>(e)...) {}
+    : Base(first_value, std::forward<Args>(e)...)
+    {}
 
     /** Returns the identity matrix */
     static constexpr Matrix<2,2, ValueType> Identity() noexcept
@@ -193,7 +199,8 @@ struct Matrix<3,3, ValueType> : public internal::BaseSquareMatrix<Matrix, 3, Val
      */
     constexpr
     Matrix(ValueType const (&components)[3][3]) noexcept
-    : Base (components) {}
+    : Base (components)
+    {}
 
     /**
      * Constructor by c-array or initializer list.
@@ -210,14 +217,16 @@ struct Matrix<3,3, ValueType> : public internal::BaseSquareMatrix<Matrix, 3, Val
      */
     constexpr
     Matrix(ValueType const (&components)[3*3]) noexcept
-    : Base (components) {}
+    : Base (components)
+    {}
 
     /**
      * Copy constructor from another matrix of the same data type
      */
     constexpr
     Matrix(const Matrix<3, 3, ValueType> & other) noexcept
-    {Base::template copy_from<0>(other);}
+    : Base(other)
+    {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -226,7 +235,8 @@ struct Matrix<3,3, ValueType> : public internal::BaseSquareMatrix<Matrix, 3, Val
             typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
     constexpr
     Matrix(ValueType first_value, Args&&...e) noexcept
-            : Base(first_value, std::forward<Args>(e)...) {}
+    : Base(first_value, std::forward<Args>(e)...)
+    {}
 
     /** Returns the identity matrix */
     static constexpr Matrix<3,3, ValueType> Identity() noexcept
@@ -280,6 +290,16 @@ struct Matrix<3,3, ValueType> : public internal::BaseSquareMatrix<Matrix, 3, Val
         return dest;
     }
 };
+
+template <typename ValueType>
+inline FLOATING_POINT_TYPE tr(const Matrix<2,2, ValueType> & m) {
+    return m(0,0) + m(1,1);
+}
+
+template <typename ValueType>
+inline FLOATING_POINT_TYPE tr(const Matrix<3,3, ValueType> & m) {
+    return m(0,0) + m(1,1) + m(2,2);
+}
 
 } // namespace algebra
 } // namespace caribou

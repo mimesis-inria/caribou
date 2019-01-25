@@ -99,12 +99,23 @@ TEST(Algebra, Matrix) {
 
     // Constructor from a list of rows
     {
-        Vector<3, int> r1{1, 2, 3};
-        Vector<3, int> r2{4, 5, 6};
-        Vector<3, int> r3{7, 8, 9};
-        Vector<3, int> r4{10, 11, 12};
+        RowVector<3, int> r1{1, 2, 3};
+        RowVector<3, int> r2{4, 5, 6};
+        RowVector<3, int> r3{7, 8, 9};
+        RowVector<3, int> r4{10, 11, 12};
         auto m2 = Matrix(r1, r2, r3, r4);
         ASSERT_EQ(8, m2(2,1));
+        ASSERT_EQ(m1, m2);
+    }
+
+    // Constructor from a list of columns
+    {
+        ColumnVector<4, int> c1{1, 4, 7, 10};
+        ColumnVector<4, int> c2{2, 5, 8, 11};
+        ColumnVector<4, int> c3{3, 6, 9, 12};
+        auto m2 = Matrix(c1, c2, c3);
+        ASSERT_EQ(8, m2(2,1));
+        ASSERT_EQ(m1, m2);
     }
 
 

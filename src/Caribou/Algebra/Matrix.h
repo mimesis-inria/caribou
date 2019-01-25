@@ -76,14 +76,16 @@ struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
      */
     constexpr
     Matrix(ValueType const (&components)[R*C]) noexcept
-    : Base (components) {}
+    : Base (components)
+    {}
 
     /**
      * Copy constructor from another matrix of the same data type
      */
     constexpr
     Matrix(const Matrix<R, C, ValueType> & other) noexcept
-    {Base::template copy_from<0>(other);}
+    : Base(other)
+    {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -92,21 +94,42 @@ struct Matrix : public internal::BaseMatrix<Matrix, R, C, ValueType>
     >
     constexpr
     Matrix(ValueType first_value, Args&&...e) noexcept
-    : Base(first_value, std::forward<Args>(e)...) {}
+    : Base(first_value, std::forward<Args>(e)...)
+    {}
 };
 
 
 // Deduction guides
 
-/** Constructor of a matrix RxC from a list of R rows (each parameter is a vector of size Cx1) **/
+/**
+ * Constructor of a matrix RxC from a list of R rows (each parameter of this constructor is a row-vector, which is
+ * matrix of size 1xC)
+ **/
 template <
         template <size_t, size_t, typename> class OtherMatrixType,
         size_t C,
         typename OtherValueType,
         typename ...Args,
-        REQUIRES(std::is_arithmetic_v<OtherValueType>)
+        REQUIRES(std::is_arithmetic_v<OtherValueType>),
+        REQUIRES(C>1),
+        REQUIRES(sizeof...(Args) > 0)
 >
-Matrix(const OtherMatrixType<C, 1, OtherValueType> & first_row, Args&&...rows) -> Matrix<sizeof...(rows)+1, C, OtherValueType>;
+Matrix(const OtherMatrixType<1, C, OtherValueType> & first_row, Args&&...rows) -> Matrix<sizeof...(rows)+1, C, OtherValueType>;
+
+/**
+ * Constructor of a matrix RxC from a list of C columns (each parameter of this constructor is a column-vector,
+ * which is matrix of size Rx1)
+ **/
+template <
+        template <size_t, size_t, typename> class OtherMatrixType,
+        size_t R,
+        typename OtherValueType,
+        typename ...Args,
+        REQUIRES(std::is_arithmetic_v<OtherValueType>),
+        REQUIRES(R>1),
+        REQUIRES(sizeof...(Args) > 0)
+>
+Matrix(const OtherMatrixType<R, 1, OtherValueType> & first_row, Args&&...rows) -> Matrix<R, sizeof...(rows)+1, OtherValueType>;
 
 } // namespace algebra
 } // namespace caribou

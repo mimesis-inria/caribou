@@ -21,15 +21,17 @@ struct Matrix<R_,1, ValueType> : public internal::BaseVector<Matrix, R_, 1, Valu
      * Constructor by c-array or initializer list.
      */
     constexpr
-    Matrix(ValueType const (&components)[R_]) : Base (components) {}
+    Matrix(ValueType const (&components)[R_]) noexcept
+    : Base (components)
+    {}
 
     /**
      * Copy constructor from another column-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<R_, 1, ValueType> & other) {
-        Base::template copy_from<0>(other);
-    }
+    Matrix(const Matrix<R_, 1, ValueType> & other) noexcept
+    : Base(other)
+    {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -37,8 +39,9 @@ struct Matrix<R_,1, ValueType> : public internal::BaseVector<Matrix, R_, 1, Valu
             typename std::enable_if<R_ == sizeof...(Args) + 1, int>::type = 0,
             typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
     constexpr
-    Matrix(ValueType first_value, Args&&...e)
-            : Base(first_value, std::forward<Args>(e)...) {}
+    Matrix(ValueType first_value, Args&&...e) noexcept
+    : Base(first_value, std::forward<Args>(e)...)
+    {}
 };
 
 /**
@@ -54,15 +57,17 @@ struct Matrix<1,C_, ValueType> : public internal::BaseVector<Matrix, 1, C_, Valu
      * Constructor by c-array or initializer list.
      */
     constexpr
-    Matrix(ValueType const (&components)[C_]) : Base (components) {}
+    Matrix(ValueType const (&components)[C_]) noexcept
+    : Base (components)
+    {}
 
     /**
      * Copy constructor from another row-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<1, C_, ValueType> & other) {
-        Base::template copy_from<0>(other);
-    }
+    Matrix(const Matrix<1, C_, ValueType> & other) noexcept
+    : Base (other)
+    {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -70,14 +75,15 @@ struct Matrix<1,C_, ValueType> : public internal::BaseVector<Matrix, 1, C_, Valu
             typename std::enable_if<C_ == sizeof...(Args) + 1, int>::type = 0,
             typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
     constexpr
-    Matrix(ValueType first_value, Args&&...e)
-            : Base(first_value, std::forward<Args>(e)...) {}
+    Matrix(ValueType first_value, Args&&...e) noexcept
+    : Base(first_value, std::forward<Args>(e)...)
+    {}
 
     /** Alias for inner_product (dot product). */
     using Base::operator*;
     template <typename OtherValueType>
     constexpr ValueType
-    operator*(const Matrix<C_, 1, OtherValueType> & other) const
+    operator*(const Matrix<C_, 1, OtherValueType> & other) const noexcept
     {
         return this->inner_product(other);
     }
@@ -96,9 +102,9 @@ struct Matrix<3,1, ValueType> : public internal::BaseVector3D<Matrix, 3, 1, Valu
      * Copy constructor from another column-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<3, 1, ValueType> & other) {
-        Base::template copy_from<0>(other);
-    }
+    Matrix(const Matrix<3, 1, ValueType> & other) noexcept
+    : Base(other)
+    {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -106,8 +112,9 @@ struct Matrix<3,1, ValueType> : public internal::BaseVector3D<Matrix, 3, 1, Valu
             typename std::enable_if<3 == sizeof...(Args) + 1, int>::type = 0,
             typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
     constexpr
-    Matrix(ValueType first_value, Args&&...e)
-            : Base(first_value, std::forward<Args>(e)...) {}
+    Matrix(ValueType first_value, Args&&...e) noexcept
+    : Base(first_value, std::forward<Args>(e)...)
+    {}
 };
 
 /**
@@ -123,9 +130,9 @@ struct Matrix<1,3, ValueType> : public internal::BaseVector3D<Matrix, 1, 3, Valu
      * Copy constructor from another row-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<1, 3, ValueType> & other) {
-        Base::template copy_from<0>(other);
-    }
+    Matrix(const Matrix<1, 3, ValueType> & other) noexcept
+    : Base(other)
+    {}
 
     /** Constructor from a list of parameters (each parameter is a scalar component of the matrix) **/
     template<
@@ -133,14 +140,15 @@ struct Matrix<1,3, ValueType> : public internal::BaseVector3D<Matrix, 1, 3, Valu
             typename std::enable_if<3 == sizeof...(Args) + 1, int>::type = 0,
             typename std::enable_if<std::is_integral<ValueType>::value or std::is_floating_point<ValueType>::value ,int>::type = 0>
     constexpr
-    Matrix(ValueType first_value, Args&&...e)
-            : Base(first_value, std::forward<Args>(e)...) {}
+    Matrix(ValueType first_value, Args&&...e) noexcept
+    : Base(first_value, std::forward<Args>(e)...)
+    {}
 
     /** Alias for inner_product (dot product). */
     using Base::operator*;
     template <typename OtherValueType>
     constexpr ValueType
-    operator*(const Matrix<3, 1, OtherValueType> & other) const
+    operator*(const Matrix<3, 1, OtherValueType> & other) const noexcept
     {
         return this->inner_product(other);
     }
@@ -161,17 +169,18 @@ struct Matrix<1,1, ValueType> : public internal::BaseVector<Matrix, 1, 1, ValueT
      * Copy constructor from another row-vector of the same data type
      */
     constexpr
-    Matrix(const Matrix<1, 1, ValueType> & other) {
-        Base::template copy_from<0>(other);
-    }
+    Matrix(const Matrix<1, 1, ValueType> & other) noexcept
+    : Base(other)
+    {}
 
 
-    explicit constexpr
+    constexpr
     Matrix (const ValueType & value) noexcept {
         (*this)[0] = value;
     }
 
-    operator ValueType() const noexcept { return (*this)[0]; }
+    operator ValueType() const noexcept
+    { return (*this)[0]; }
 };
 
 /**
@@ -187,7 +196,7 @@ template <size_t Dimension, typename ValueType=FLOATING_POINT_TYPE>
 using ColumnVector = Matrix<Dimension, 1, ValueType>;
 
 /**
- * Vector Alias for Rx1 column vector.
+ * Vector Alias for 1xC row vector.
  */
 template <size_t Dimension, typename ValueType=FLOATING_POINT_TYPE>
 using RowVector = Matrix<1, Dimension, ValueType>;

@@ -124,18 +124,52 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     }}
     {}
 
-    /** Constructor from a list of rows (each parameter is a vector of size Rx1) **/
+    /**
+     * Constructor of a matrix RxC from a list of R rows (each parameter of this constructor is a row-vector, which is
+     * matrix of size 1xC)
+     **/
     template <
             template <size_t, size_t, typename> class OtherMatrixType,
+            size_t OtherC,
             typename OtherValueType,
             typename ...Args,
             REQUIRES(std::is_arithmetic_v<OtherValueType>),
-            REQUIRES(sizeof...(Args)+1 == R_)
+            REQUIRES(sizeof...(Args)+1 == R_),
+            REQUIRES(OtherC>1),
+            REQUIRES(OtherC==C_)
     >
     constexpr
-    BaseMatrix(const OtherMatrixType<C_, 1, OtherValueType> & first_vector, Args&&...remaining_vectors) noexcept
+    BaseMatrix(const OtherMatrixType<1, OtherC, OtherValueType> & first_vector, Args&&...remaining_vectors) noexcept
     {
-        copy_from<0>(std::make_index_sequence<C_>{}, first_vector, std::forward<Args>(remaining_vectors)...);
+        copy_from<0>(
+                std::make_index_sequence<C_>{},
+                std::forward<const OtherMatrixType<1, C_, OtherValueType> &>(first_vector),
+                std::forward<Args>(remaining_vectors)...
+        );
+    }
+
+    /**
+     * Constructor of a matrix RxC from a list of C columns (each parameter of this constructor is a column-vector,
+     * which is matrix of size Rx1)
+     **/
+    template <
+            template <size_t, size_t, typename> class OtherMatrixType,
+            size_t OtherR,
+            typename OtherValueType,
+            typename ...Args,
+            REQUIRES(std::is_arithmetic_v<OtherValueType>),
+            REQUIRES(sizeof...(Args)+1 == C_),
+            REQUIRES(OtherR>1),
+            REQUIRES(OtherR==R_)
+    >
+    constexpr
+    BaseMatrix(const OtherMatrixType<OtherR, 1, OtherValueType> & first_vector, Args&&...remaining_vectors) noexcept
+    {
+        copy_from<0>(
+                std::make_index_sequence<R_>{},
+                std::forward<const OtherMatrixType<R_, 1, OtherValueType> &>(first_vector),
+                std::forward<Args>(remaining_vectors)...
+        );
     }
 
     ///////////////////
@@ -216,7 +250,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     }
 
     /** Matrix-scalar multiplication **/
-    template<typename ScalarType>
+    template<typename ScalarType, REQUIRES(std::is_arithmetic_v<ScalarType>)>
     inline MatrixType<R, C, ValueType>
     operator*(const ScalarType & scalar) const noexcept
     {
@@ -228,7 +262,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     }
 
     /** Matrix multiplication-assignment **/
-    template<typename ScalarType>
+    template<typename ScalarType, REQUIRES(std::is_arithmetic_v<ScalarType>)>
     inline MatrixType<R, C, ValueType> &
     operator*= (const ScalarType & scalar) noexcept
     {
@@ -239,7 +273,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     }
 
     /** Matrix-scalar division **/
-    template<typename ScalarType>
+    template<typename ScalarType, REQUIRES(std::is_arithmetic_v<ScalarType>)>
     inline MatrixType<R, C, ValueType>
     operator/(const ScalarType & scalar) const noexcept
     {
@@ -251,7 +285,7 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     }
 
     /** Matrix division-assignment **/
-    template<typename ScalarType>
+    template<typename ScalarType, REQUIRES(std::is_arithmetic_v<ScalarType>)>
     inline MatrixType<R, C, ValueType> &
     operator/= (const ScalarType & scalar) noexcept
     {
@@ -603,21 +637,46 @@ protected:
             copy_from<row_index+1, 0, OtherValueType>(components);
     }
 
-    /** Static copying from a set of rows (vectors of size Cx1) */
+    /** Static copying from a set of rows (vectors of size 1xC) */
     template <
             size_t row_id,
             std::size_t... Ix,
             template <size_t, size_t, typename> class OtherMatrixType,
             typename OtherValueType,
-            typename ...Args
+            size_t OtherC,
+            typename ...Args,
+            REQUIRES(std::is_arithmetic_v<OtherValueType>),
+            REQUIRES(OtherC>1),
+            REQUIRES(OtherC==C_)
     >
     constexpr
     void
-    copy_from( const std::index_sequence<Ix...> & indices, const OtherMatrixType<C_, 1, OtherValueType> & current_vector, Args&&...remaining_vectors) noexcept
+    copy_from( const std::index_sequence<Ix...> & indices, const OtherMatrixType<1,OtherC, OtherValueType> & current_vector, Args&&...remaining_vectors) noexcept
     {
         (void ((*this)[C*row_id + Ix] = static_cast<ValueType> (current_vector[Ix])), ...);
         if constexpr (row_id< R-1)
             copy_from<row_id+1>(indices, std::forward<Args>(remaining_vectors)...);
+    }
+
+    /** Static copying from a set of columns (vectors of size Rx1) */
+    template <
+            size_t column_id,
+            std::size_t... Ix,
+            template <size_t, size_t, typename> class OtherMatrixType,
+            size_t OtherR,
+            typename OtherValueType,
+            typename ...Args,
+            REQUIRES(std::is_arithmetic_v<OtherValueType>),
+            REQUIRES(OtherR>1),
+            REQUIRES(OtherR==R_)
+    >
+    constexpr
+    void
+    copy_from( const std::index_sequence<Ix...> & indices, const OtherMatrixType<OtherR, 1, OtherValueType> & current_vector, Args&&...remaining_vectors) noexcept
+    {
+        (void ((*this)[C*Ix + column_id] = static_cast<ValueType> (current_vector[Ix])), ...);
+        if constexpr (column_id< C-1)
+            copy_from<column_id+1>(indices, std::forward<Args>(remaining_vectors)...);
     }
 };
 
