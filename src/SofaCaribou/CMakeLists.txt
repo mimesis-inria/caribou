@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(SofaCaribou)
 
 set(HEADER_FILES
-        GraphComponents/Forcefield/ElasticForce.h
+        GraphComponents/Forcefield/HexahedronElasticForce.h
         GraphComponents/Forcefield/TractionForce.h
         GraphComponents/Topology/FictitiousGrid.h
     GraphComponents/Ode/StaticSolver.h
@@ -12,7 +12,7 @@ set(TEMPLATE_FILES
         GraphComponents/Topology/FictitiousGrid.inl)
 
 set(SOURCE_FILES
-        GraphComponents/Forcefield/ElasticForce.cpp
+        GraphComponents/Forcefield/HexahedronElasticForce.cpp
         GraphComponents/Forcefield/TractionForce.cpp
         GraphComponents/Topology/FictitiousGrid.cpp
     GraphComponents/Ode/StaticSolver.cpp
