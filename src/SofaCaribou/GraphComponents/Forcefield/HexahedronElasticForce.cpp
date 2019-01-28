@@ -28,6 +28,10 @@ HexahedronElasticForce<DataTypes>::HexahedronElasticForce()
         bool(true), "linearStrain",
         "True if the small (linear) strain tensor is used, otherwise the nonlinear Green-Lagrange strain is used.",
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+, d_corotated(initData(&d_corotated,
+        bool(true), "corotated",
+        "Whether or not to use corotated elements for the strain computation.",
+        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_topology_container(initLink(
         "topology_container", "Topology that contains the elements on which this force will be computed."))
 {
@@ -94,20 +98,27 @@ void HexahedronElasticForce<DataTypes>::reinit()
         }
     }
 
+    p_initial_rotation.resize(topology->getNbHexahedra(), Mat33::Identity());
+    p_current_rotation.resize(topology->getNbHexahedra(), Mat33::Identity());
+
+    // Initialize the initial frame of each hexahedron
+    if (d_corotated.getValue()) {
+        if (not d_linear_strain.getValue()) {
+            msg_warning() << "The corotated method won't be computed since nonlinear strain is used.";
+        } else {
+            for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+                Hexahedron hexa = make_hexa(hexa_id, X);
+                p_initial_rotation[hexa_id] = hexa.extract_frame_by_cross_products();
+            }
+        }
+    }
+
     if (not d_linear_strain.getValue()) {
         // For nonlinear Green-Lagrange strain
         // Initialize the gauss quadrature points for every hexahedrons
         p_quatrature_nodes.resize(topology->getNbHexahedra());
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-            const auto &node_indices = topology->getHexahedron(hexa_id);
-
-            std::array<caribou::geometry::Node<3>, 8> nodes;
-            for (std::size_t j = 0; j < 8; ++j) {
-                const auto &node_id = node_indices[j];
-                nodes[j] = X[node_id];
-            }
-
-            Hexahedron rest_hexahedron(nodes);
+            Hexahedron hexa = make_hexa(hexa_id, X);
 
             for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
                 const auto &gauss_node = Hexahedron::gauss_nodes[gauss_node_id];
@@ -118,7 +129,7 @@ void HexahedronElasticForce<DataTypes>::reinit()
                 const auto &w = gauss_node[2];
 
                 // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-                const auto J = rest_hexahedron.jacobian(u, v, w);
+                const auto J = hexa.jacobian(u, v, w);
                 const auto Jinv = J.inverted();
                 const auto detJ = J.determinant();
 
@@ -153,17 +164,8 @@ void HexahedronElasticForce<DataTypes>::reinit()
     C(5,0) = 0; C(5,1) = 0; C(5,2) = 0; C(5,3) = 0; C(5,4) = 0; C(5,5) = m;
 
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-        const auto & node_indices = topology->getHexahedron(hexa_id);
-
-        std::array<caribou::geometry::Node<3>, 8> nodes;
-        for (std::size_t j = 0; j < 8; ++j) {
-            const auto & node_id = node_indices[j];
-            nodes[j] = X[node_id];
-        }
-
-        Hexahedron hexahedron (nodes);
-
-        p_stiffness_matrices[hexa_id] = hexahedron.gauss_quadrature([&C](const auto & hexa, const auto & u, const auto & v, const auto & w) {
+        Hexahedron hexa = make_hexa(hexa_id, X);
+        p_stiffness_matrices[hexa_id] = hexa.gauss_quadrature([&C](const auto & hexa, const auto & u, const auto & v, const auto & w) {
             const auto B = elasticity::strain::B(hexa, u, v, w);
             return B.T() * C * B;
         });
@@ -195,17 +197,40 @@ void HexahedronElasticForce<DataTypes>::addForce(
     sofa::helper::ReadAccessor<Data<VecCoord>> x0 =  state->readRestPositions();
     sofa::helper::WriteAccessor<Data<VecDeriv>> f = d_f;
 
+    const std::vector<Mat33> & initial_rotation = p_initial_rotation;
+    std::vector<Mat33> & current_rotation = p_current_rotation;
+
+    bool corotated = d_corotated.getValue();
+
     if (d_linear_strain.getValue()) {
         // Small (linear) strain
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+            Hexahedron hexa = make_hexa(hexa_id, x);
+
+            const Mat33 & R0 = initial_rotation[hexa_id];
+            const Mat33 R0t = R0.T();
+
+            Mat33 & R = current_rotation[hexa_id];
+
+
+            // Extract the hexahedron's frame
+            if (corotated)
+                R = hexa.extract_frame_by_cross_products();
+
+            const Mat33 & Rt = R.T();
 
             // Gather the displacement vector
             Vec24 U;
             size_t i = 0;
             for (const auto &node_id : topology->getHexahedron(hexa_id)) {
-                U[i++] = x[node_id][0] - x0[node_id][0];
-                U[i++] = x[node_id][1] - x0[node_id][1];
-                U[i++] = x[node_id][2] - x0[node_id][2];
+                const Vec3 r0 {x0[node_id][0], x0[node_id][1],  x0[node_id][2]};
+                const Vec3 r  {x [node_id][0],  x [node_id][1], x [node_id][2]};
+
+                const Vec3 u = Rt*r - R0t*r0;
+
+                U[i++] = u[0];
+                U[i++] = u[1];
+                U[i++] = u[2];
             }
 
             // Compute the force vector
@@ -215,9 +240,13 @@ void HexahedronElasticForce<DataTypes>::addForce(
             // Write the forces into the output vector
             i = 0;
             for (const auto &node_id : topology->getHexahedron(hexa_id)) {
-                f[node_id][0] -= F[i++];
-                f[node_id][1] -= F[i++];
-                f[node_id][2] -= F[i++];
+                Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
+                force = R*force;
+
+                f[node_id][0] -= force[0];
+                f[node_id][1] -= force[1];
+                f[node_id][2] -= force[2];
+                ++i;
             }
         }
     } else {
@@ -351,15 +380,23 @@ void HexahedronElasticForce<DataTypes>::addDForce(
     auto kFactor = (Real)mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue());
     sofa::helper::ReadAccessor<Data<VecDeriv>> dx = d_dx;
     sofa::helper::WriteAccessor<Data<VecDeriv>> df = d_df;
+    std::vector<Mat33> & current_rotation = p_current_rotation;
 
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+
+        const Mat33 & R  = current_rotation[hexa_id];
+        const Mat33 & Rt = R.T();
+
         // Gather the displacement vector
         Vec24 U;
         size_t i = 0;
         for (const auto & node_id : topology->getHexahedron(hexa_id)) {
-            U[i++] = dx[node_id][0];
-            U[i++] = dx[node_id][1];
-            U[i++] = dx[node_id][2];
+            const Vec3 v = {dx[node_id][0], dx[node_id][1], dx[node_id][2]};
+            const Vec3 u = Rt*v;
+
+            U[i++] = u[0];
+            U[i++] = u[1];
+            U[i++] = u[2];
         }
 
         // Compute the force vector
@@ -369,9 +406,13 @@ void HexahedronElasticForce<DataTypes>::addDForce(
         // Write the forces into the output vector
         i = 0;
         for (const auto & node_id : topology->getHexahedron(hexa_id)) {
-            df[node_id][0] -= F[i++];
-            df[node_id][1] -= F[i++];
-            df[node_id][2] -= F[i++];
+            Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
+            force = R*force;
+
+            df[node_id][0] -= force[0];
+            df[node_id][1] -= force[1];
+            df[node_id][2] -= force[2];
+            ++i;
         }
     }
 }

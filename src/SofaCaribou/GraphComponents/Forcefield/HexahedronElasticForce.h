@@ -75,15 +75,34 @@ public:
         caribou::algebra::Matrix<Hexahedron::gauss_nodes.size(), 3> dN_dx;
     };
 
+    template <typename T>
+    inline
+    Hexahedron make_hexa(std::size_t hexa_id, const T & x) const
+    {
+        sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+        const auto &node_indices = topology->getHexahedron(hexa_id);
+
+        std::array<caribou::geometry::Node<3>, 8> nodes;
+        for (std::size_t j = 0; j < 8; ++j) {
+            const auto &node_id = node_indices[j];
+            nodes[j] = x[node_id];
+        }
+
+        return Hexahedron(nodes);
+    }
+
 protected:
     Data< Real > d_youngModulus;
     Data< Real > d_poissonRatio;
     Data< bool > d_linear_strain;
+    Data< bool > d_corotated;
     Link<TopologyContainer> d_topology_container;
 
 private:
     std::vector<caribou::algebra::Matrix<24, 24, Real>> p_stiffness_matrices;
     std::vector<std::array<GaussNode,8>> p_quatrature_nodes;
+    std::vector<Mat33> p_initial_rotation;
+    std::vector<Mat33> p_current_rotation;
 
 };
 

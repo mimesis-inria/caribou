@@ -151,6 +151,7 @@ TEST(Geometry, Hexahedron) {
     using namespace caribou::algebra;
 
     Hexahedron<interpolation::Hexahedron8> hexa;
+    const auto I = Matrix<3,3>::Identity();
 
     Node<3> node {{1, 1, -1}};
     ASSERT_EQ(hexa.node(2), node);
@@ -160,6 +161,23 @@ TEST(Geometry, Hexahedron) {
     });
 
     ASSERT_FLOAT_EQ(r, 8);
+
+    ASSERT_EQ(hexa.extract_frame_by_cross_products(), I);
+
+    // Rotate the hexa by R and extract the resulting frame
+    const Matrix R ({
+            {0.44480652434057482703, 0.49694411802952204171, 0.74511321251197670801},
+            {0.60593116938112601133, 0.44567310019856992698, -0.6589559209323614386},
+            {-0.65954118436719233465, 0.74459521306227582915, -0.10287562786328596776}
+    });
+
+    for (std::size_t i = 0; i<8; i++)
+        hexa.node(i) = R*hexa.node(i);
+
+    const auto frame = hexa.extract_frame_by_cross_products();
+    for (std::size_t i = 0; i < 3; ++i)
+        for (std::size_t j = 0; j < 3; ++j)
+            ASSERT_FLOAT_EQ(R(i,j), frame(i,j));
 
 }
 

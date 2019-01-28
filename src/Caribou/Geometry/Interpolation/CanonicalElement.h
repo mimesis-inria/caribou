@@ -180,10 +180,13 @@ struct CanonicalElement
     template <typename ValueType>
     static inline
     auto
-    interpolate_at_local_position (LocalCoordinates && coordinates, const algebra::Vector<NumberOfNodes, ValueType> & values)
+    interpolate_at_local_position (LocalCoordinates && coordinates, const std::array<ValueType, NumberOfNodes> & values)
     {
         const auto shapes = N(std::forward<LocalCoordinates>(coordinates));
-        return  shapes.dot(values);
+        auto v = shapes[0] * values[0];
+        for (std::size_t i = 1; i < NumberOfNodes; ++i)
+            v += shapes[i]*values[i];
+        return  v;
     }
 
     /**

@@ -4,6 +4,7 @@
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
 #include <Caribou/Geometry/Interpolation/CanonicalElement.h>
+#include <Caribou/Geometry/Interpolation/Quad.h>
 #include <Caribou/Geometry/Node.h>
 
 namespace caribou {
@@ -34,6 +35,8 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
     using Index = INTEGER_TYPE;
     using Real = FLOATING_POINT_TYPE;
 
+    using QuadType = Quad4;
+
     static constexpr INTEGER_TYPE Dimension = 3;
     static constexpr INTEGER_TYPE NumberOfNodes = 8;
 
@@ -62,6 +65,15 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
         {5, 6}, // Edge 9
         {6, 7}, // Edge 10
         {7, 4}  // Edge 11
+    }};
+
+    static constexpr std::array<std::array<INTEGER_TYPE, 4>, 6> faces {{
+        {0, 3, 2, 1}, // Face 0
+        {0, 4, 7, 3}, // Face 1
+        {1, 2, 6, 5}, // Face 2
+        {0, 1, 5, 4}, // Face 3
+        {2, 3, 7, 6}, // Face 4
+        {4, 5, 6, 7}  // Face 5
     }};
 
     static constexpr std::array<caribou::geometry::Node<3>, 8> gauss_nodes {{

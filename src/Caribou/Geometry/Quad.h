@@ -29,6 +29,11 @@ struct Quad : public CanonicalElementType
     : p_nodes {std::forward<Nodes>(remaining_nodes)...}
     {}
 
+    constexpr
+    Quad(const std::array<NodeType, NumberOfNodes> & nodes)
+            : p_nodes(nodes)
+    {}
+
     const NodeType &
     node(Index index) const
     {
@@ -39,6 +44,16 @@ struct Quad : public CanonicalElementType
     node(Index index)
     {
         return p_nodes[index];
+    }
+
+    /**
+     * Compute the transformation of a local position {u,v} to its world position {x,y,z}
+     */
+    inline
+    NodeType
+    T(const Real & u, const Real & v) const
+    {
+        return CanonicalElementType::interpolate_at_local_position({u,v}, p_nodes);
     }
 
     /** Compute the jacobian matrix evaluated at local position {u,v} */
