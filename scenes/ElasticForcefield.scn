@@ -1,0 +1,172 @@
+<Node name="root" gravity="0 -9 0" dt="1">
+    <VisualStyle displayFlags="showBehaviorModels showForceFields" />
+    <!--<Node name="cylinder_sofa">-->
+        <!--&lt;!&ndash;<CentralDifferenceSolver />&ndash;&gt;-->
+        <!--<EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />-->
+        <!--<CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="16 16 81" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+        <!--<HexahedronSetGeometryAlgorithms />-->
+        <!--<MeshMatrixMass  massDensity="2.3"/>-->
+        <!--&lt;!&ndash;<UniformMass totalMass="41400"/>&ndash;&gt;-->
+        <!--<HexahedronFEMForceField method="small" poissonRatio="0" youngModulus="100000" />-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <!--<Node name="nonlinear_explicit_cylinder_sofa">-->
+        <!--<CentralDifferenceSolver />-->
+        <!--&lt;!&ndash;<EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />&ndash;&gt;-->
+        <!--&lt;!&ndash;<CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />&ndash;&gt;-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+
+        <!--<TetrahedronSetTopologyContainer name="tetrahedrons_container" />-->
+        <!--<TetrahedronSetGeometryAlgorithms />-->
+        <!--<TetrahedronSetTopologyModifier />-->
+
+        <!--<Hexa2TetraTopologicalMapping input="@mesh" output="@tetrahedrons_container"/>-->
+
+        <!--&lt;!&ndash;<MeshMatrixMass  massDensity="2.3"/>&ndash;&gt;-->
+        <!--<UniformMass totalMass="41400"/>-->
+        <!--<TetrahedronHyperelasticityFEMForceField materialName="StVenantKirchhoff" ParameterSet="50000.0 0"/>-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <!--<Node name="nonlinear_implicit_cylinder_sofa_4">-->
+        <!--<EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />-->
+        <!--<CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+
+        <!--<TetrahedronSetTopologyContainer name="tetrahedrons_container" />-->
+        <!--<TetrahedronSetGeometryAlgorithms />-->
+        <!--<TetrahedronSetTopologyModifier />-->
+
+        <!--<Hexa2TetraTopologicalMapping input="@mesh" output="@tetrahedrons_container"/>-->
+
+        <!--<MeshMatrixMass  massDensity="2.3"/>-->
+        <!--<TetrahedronHyperelasticityFEMForceField materialName="StVenantKirchhoff" ParameterSet="50000.0 0"/>-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <!--<Node name="nonlinear_implicit_cylinder_sofa_15">-->
+        <!--<EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />-->
+        <!--<CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="16 16 81" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+
+        <!--<TetrahedronSetTopologyContainer name="tetrahedrons_container" />-->
+        <!--<TetrahedronSetGeometryAlgorithms />-->
+        <!--<TetrahedronSetTopologyModifier />-->
+
+        <!--<Hexa2TetraTopologicalMapping input="@mesh" output="@tetrahedrons_container"/>-->
+
+        <!--<MeshMatrixMass  massDensity="2.3"/>-->
+        <!--<TetrahedronHyperelasticityFEMForceField materialName="StVenantKirchhoff" ParameterSet="50000.0 0"/>-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <!--<Node name="corotated_explicit_cylinder_sofa">-->
+        <!--<CentralDifferenceSolver />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+        <!--<HexahedronSetGeometryAlgorithms />-->
+        <!--<UniformMass totalMass="41400"/>-->
+        <!--<HexahedronFEMForceField method="large" poissonRatio="0" youngModulus="100000" />-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <!--<Node name="corotated_implicit_cylinder_sofa">-->
+        <!--<EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />-->
+        <!--<CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+        <!--<HexahedronSetGeometryAlgorithms />-->
+        <!--<MeshMatrixMass  massDensity="2.3"/>-->
+        <!--<HexahedronFEMForceField method="large" poissonRatio="0" youngModulus="100000" />-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+
+
+
+    <!--<Node name="cylinder_caribou">-->
+        <!--&lt;!&ndash;<CentralDifferenceSolver />&ndash;&gt;-->
+        <!--<EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />-->
+        <!--<CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="16 16 81" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+        <!--<HexahedronSetGeometryAlgorithms />-->
+        <!--<MeshMatrixMass  massDensity="2.3"/>-->
+        <!--&lt;!&ndash;<UniformMass totalMass="41400"/>&ndash;&gt;-->
+        <!--<HexahedronElasticForce poissonRatio="0" youngModulus="100000" printLog="true" />-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <!--<Node name="nonlinear_explicit_cylinder_caribou">-->
+        <!--<CentralDifferenceSolver />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+        <!--<HexahedronSetGeometryAlgorithms />-->
+        <!--<UniformMass totalMass="41400"/>-->
+        <!--<HexahedronElasticForce poissonRatio="0" youngModulus="100000" printLog="true" linearStrain="false" />-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <!--<Node name="nonlinear_implicit_cylinder_caribou_4">-->
+        <!--<EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />-->
+        <!--<CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+        <!--<HexahedronSetGeometryAlgorithms />-->
+        <!--<MeshMatrixMass  massDensity="2.3"/>-->
+        <!--<HexahedronElasticForce poissonRatio="0" youngModulus="100000" printLog="true" linearStrain="false" />-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <!--<Node name="nonlinear_implicit_cylinder_caribou_15">-->
+        <!--<EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />-->
+        <!--<CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="16 16 81" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+        <!--<HexahedronSetGeometryAlgorithms />-->
+        <!--<MeshMatrixMass  massDensity="2.3"/>-->
+        <!--<HexahedronElasticForce poissonRatio="0" youngModulus="100000" printLog="true" linearStrain="false" />-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+
+    <!--<Node name="corotated_explicit_cylinder_caribou">-->
+        <!--<CentralDifferenceSolver />-->
+        <!--<RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />-->
+        <!--<MechanicalObject src="@mesh" />-->
+        <!--<HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />-->
+        <!--<HexahedronSetGeometryAlgorithms />-->
+        <!--<UniformMass totalMass="41400"/>-->
+        <!--<HexahedronElasticForce poissonRatio="0" youngModulus="100000" printLog="true" linearStrain="true" corotated="true" />-->
+        <!--<BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />-->
+        <!--<FixedConstraint indices="@fixed_roi.indices" />-->
+    <!--</Node>-->
+    <Node name="corotated_implicit_cylinder_caribou">
+        <EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />
+        <CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />
+        <RegularGridTopology name="mesh" min="-7.5 -7.5 0" max="7.5 7.5 80" n="5 5 21" />
+        <MechanicalObject src="@mesh" />
+        <HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />
+        <HexahedronSetGeometryAlgorithms />
+        <MeshMatrixMass  massDensity="2.3"/>
+        <HexahedronElasticForce poissonRatio="0" youngModulus="100000" printLog="true" linearStrain="true" corotated="true" />
+        <BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />
+        <FixedConstraint indices="@fixed_roi.indices" />
+    </Node>
+</Node>

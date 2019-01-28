@@ -1,0 +1,23 @@
+<Node name="root" gravity="0 0 0" dt="1">
+    <VisualStyle displayFlags="showBehaviorModels showForceFields" />
+    <Node name="cylinder">
+        <EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />
+        <CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />
+        <!--<MechanicalObject name="mo" position="-1 -1 -1      1 -1 -1      1 1 -1      -1 1 -1      -1 -1 1      1 -1 1      1 1 1      -1 1 1" />-->
+        <MechanicalObject name="mo" position="-0.5 -1.2 -0.8      1 -1 -1      1 1 -1      -1 1 -1      -1 -1 1      1 -1 1      1 1 1      -0.6 0.7 0.7" />
+        <HexahedronSetTopologyContainer name="hexahedron_container"
+                                        points="0 1 2 3 4 5 6 7"
+                                        hexas="0 1 2 3 4 5 6 7"
+                                        quads="0 4 7 3    4 5 6 7    1 2 6 5    0 3 2 1    2 3 7 6     0 1 5 4"
+        />
+
+        <HexahedronFEMForceField method="small" poissonRatio="0" youngModulus="100000" />
+
+        <Node>
+            <QuadSetTopologyContainer name="quad_container" quads="0 4 7 3    4 5 6 7    1 2 6 5    0 3 2 1    2 3 7 6     0 1 5 4"/>
+            <OglModel name="visual_mo"/>
+            <IdentityMapping />
+
+        </Node>
+    </Node>
+</Node>

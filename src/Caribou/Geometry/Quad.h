@@ -1,84 +1,72 @@
 #ifndef CARIBOU_GEOMETRY_QUAD_H
 #define CARIBOU_GEOMETRY_QUAD_H
 
-#include <Caribou/Geometry/Polygon.h>
+#include <Caribou/config.h>
+#include <Caribou/Algebra/Vector.h>
+#include <Caribou/Geometry/Node.h>
+#include <Caribou/Geometry/Interpolation/Quad.h>
 
-namespace caribou
+namespace caribou {
+namespace geometry {
+
+template <size_t Dim, typename CanonicalElementType = interpolation::Quad4>
+struct Quad : public CanonicalElementType
 {
-namespace geometry
-{
+    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
+    using NodeType = caribou::geometry::Node<Dim>;
+    using Index = std::size_t ;
+    using Real = FLOATING_POINT_TYPE;
 
-/** A quad is an alias to a polygon of four nodes. **/
-template<size_t Dimension>
-using Quad = Polygon<4, Dimension>;
+    static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D quads are supported.");
 
-/**
- * Create a quad from four points.
- *
- * Example:
- * \code{.cpp}
- * auto p1 = make_point(1,-1,0);
- * auto p2 = make_point(-1,-1,0);
- * auto p3 = make_point(1,1,0);
- * auto p4 = make_point(-1,1,0);
- *
- * auto q = make_quad(p1, p2, p3, p4);
- * \endcode
- * @return
- */
-template<size_t Dimension>
-Quad<Dimension>
-make_quad(const Point<Dimension> & p1, const Point<Dimension> & p2, const Point<Dimension> & p3, const Point<Dimension> & p4) {
-    return make_polygon(p1, p2, p3, p4);
-}
+    template <
+            typename ...Nodes,
+            REQUIRES(NumberOfNodes == sizeof...(Nodes)),
+            REQUIRES(std::conjunction_v<std::is_same<NodeType, Nodes>...>)
+    >
+    constexpr
+    Quad(Nodes&&...remaining_nodes)
+    : p_nodes {std::forward<Nodes>(remaining_nodes)...}
+    {}
 
-/**
- * Create a quad from a list of lists.
- *
- * Example:
- * \code{.cpp}
- * auto q = make_quad(
- *   {{1, -1, 0}, {-1, -1, 0}, {1, 1, 0}, {-1, 1, 0}}
- * );
- * \endcode
- * @return
- */
-template<size_t Dimension, typename ValueType>
-auto
-make_quad(ValueType const (&arg)[4][Dimension])
-{
-    return make_polygon(arg);
-}
+    constexpr
+    Quad(const std::array<NodeType, NumberOfNodes> & nodes)
+            : p_nodes(nodes)
+    {}
 
-/**
- * Create a quad from four lists.
- *
- * Example:
- * \code{.cpp}
- * auto q = make_quad(
- *   {1, -1, 0}, {-1, -1, 0}, {1, 1, 0}, {-1, 1, 0}
- * );
- * \endcode
- * @return
- */
-template<size_t Dimension, typename ValueType>
-auto
-make_quad(const ValueType (&arg1)[Dimension], const ValueType (&arg2)[Dimension], const ValueType (&arg3)[Dimension], const ValueType (&arg4)[Dimension])
-{
-    ValueType nodes[4][Dimension];
-
-    for (size_t i = 0; i < Dimension; ++i) {
-        nodes[0][i] = arg1[i];
-        nodes[1][i] = arg2[i];
-        nodes[2][i] = arg3[i];
-        nodes[3][i] = arg4[i];
+    const NodeType &
+    node(Index index) const
+    {
+        return p_nodes[index];
     }
 
-    return make_polygon(nodes);
-}
+    NodeType &
+    node(Index index)
+    {
+        return p_nodes[index];
+    }
+
+    /**
+     * Compute the transformation of a local position {u,v} to its world position {x,y,z}
+     */
+    inline
+    NodeType
+    T(const Real & u, const Real & v) const
+    {
+        return CanonicalElementType::interpolate_at_local_position({u,v}, p_nodes);
+    }
+
+    /** Compute the jacobian matrix evaluated at local position {u,v} */
+    algebra::Matrix<Dim, 2, Real>
+    jacobian (const Real & u, const Real & v) const
+    {
+        return CanonicalElementType::Jacobian({u,v}, p_nodes);
+    }
+
+private:
+    std::array<NodeType, NumberOfNodes> p_nodes;
+};
 
 } // namespace geometry
-
 } // namespace caribou
-
 #endif //CARIBOU_GEOMETRY_QUAD_H

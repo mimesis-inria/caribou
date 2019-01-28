@@ -8,16 +8,16 @@ set(PYTHON_FILES
 )
 
 set(PYTHON_TEST_FILES
-    tests/test_point.py
+    tests/test_node.py
 )
 
 set(HEADER_FILES
-    Point.h
+    Node.h
 )
 
 set(SOURCE_FILES
     Geometry.cpp
-    Point.cpp
+    Node.cpp
 )
 
 if (CARIBOU_WITH_PYTHON_2)
@@ -25,6 +25,8 @@ if (CARIBOU_WITH_PYTHON_2)
     message(STATUS "${PROJECT_NAME} with python 2.7 support (version ${PYTHONLIBS_VERSION_STRING})")
 
     set(PYBIND11_PYTHON_VERSION 2.7 CACHE STRING "")
+    set(PYBIND11_CPP_STANDARD -std=c++17)
+
     find_package(pybind11 REQUIRED)
 
     add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${PYTHON_FILES})

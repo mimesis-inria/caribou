@@ -1,14 +1,12 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCEFIELD_H
-#define SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCEFIELD_H
+#ifndef SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCE_H
+#define SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCE_H
 
 #include <sofa/defaulttype/MatSym.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <SofaBaseTopology/TriangleSetTopologyContainer.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
-namespace SofaCaribou {
-namespace GraphComponents {
-namespace forcefield {
+namespace SofaCaribou::GraphComponents::forcefield {
 
 using namespace sofa::core::objectmodel;
 using namespace sofa::core::behavior;
@@ -28,10 +26,10 @@ using namespace sofa::component::topology;
  * vector or 2D double vector).
  */
 template<class DataTypes>
-class TractionForcefield : public sofa::core::behavior::ForceField<DataTypes>
+class TractionForce : public sofa::core::behavior::ForceField<DataTypes>
 {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(TractionForcefield, DataTypes), SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
+    SOFA_CLASS(SOFA_TEMPLATE(TractionForce, DataTypes), SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
 
     typedef typename DataTypes::VecCoord VecCoord;
     typedef typename DataTypes::VecDeriv VecDeriv;
@@ -44,13 +42,13 @@ public:
     using Triange = TriangleSetTopologyContainer::Triangle;
 
     using TriangleTopologyLink =
-        SingleLink<TractionForcefield, TriangleSetTopologyContainer, BaseLink::FLAG_STRONGLINK>;
+        SingleLink<TractionForce, TriangleSetTopologyContainer, BaseLink::FLAG_STRONGLINK>;
 
     using MechanicalStateLink =
-        SingleLink<TractionForcefield, MechanicalState<DataTypes>, BaseLink::FLAG_STRONGLINK>;
+        SingleLink<TractionForce, MechanicalState<DataTypes>, BaseLink::FLAG_STRONGLINK>;
 
 
-    TractionForcefield();
+    TractionForce();
 
     void init() override;
     void reset() override;
@@ -86,9 +84,7 @@ private:
     unsigned int m_number_of_steps_since_last_increment = 0;
 };
 
-} // namespace forcefield
-} // namespace GraphComponents
-} // namespace SofaCaribou
+} // namespace SofaCaribou::GraphComponents::forcefield
 
 
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCEFIELD_H
+#endif //SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCE_H

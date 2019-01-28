@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
-project(Caribou.Algebra)
+project(Caribou.Mechanics)
 
 set(HEADER_FILES
-        Vector.h
-        Matrix.h
-        SquareMatrix.h
-        )
+        Elasticity/Strain.h)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
