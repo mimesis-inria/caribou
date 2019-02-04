@@ -165,13 +165,14 @@ struct Matrix<1,1, ValueType> : public internal::BaseVector<Matrix, 1, 1, ValueT
 
     using Base::Base;
 
-    /**
-     * Copy constructor from another row-vector of the same data type
-     */
     constexpr
     Matrix(const Matrix<1, 1, ValueType> & other) noexcept
-    : Base(other)
-    {}
+    {(*this)[0] = other[0];}
+
+    template <typename OtherValueType>
+    constexpr
+    Matrix(const Matrix<1, 1, OtherValueType> & other) noexcept
+    {(*this)[0] = static_cast<ValueType> (other[0]);}
 
 
     constexpr

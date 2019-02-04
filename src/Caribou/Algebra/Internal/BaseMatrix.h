@@ -94,16 +94,23 @@ struct BaseMatrix : public std::array<ValueType_, R_*C_>, public CaribouMatrix
     }
 
     /**
-     * Copy constructor from another matrix of a different type
+     * Copy constructor from another matrix of a different type, but from the same size
      */
-    template <template <size_t, size_t, typename> class OtherMatrixType, typename OtherValueType>
+    template <
+            template <size_t, size_t, typename> class OtherMatrixType,
+            size_t OtherR,
+            size_t OtherC,
+            typename OtherValueType,
+            REQUIRES(OtherR != 1 and OtherC != 1),
+            REQUIRES(OtherR == R and OtherC == C)
+    >
     constexpr
-    BaseMatrix(const OtherMatrixType<R, C, OtherValueType> & other) noexcept {
+    BaseMatrix(const OtherMatrixType<OtherR, OtherC, OtherValueType> & other) noexcept {
         copy_from<0> (other);
     }
 
     /**
-     * Copy constructor from another matrix of a same type
+     * Copy constructor from another matrix of a same type and of the same size
      */
     constexpr
     explicit BaseMatrix(const MatrixType<R, C, ValueType> & other) noexcept {
