@@ -18,6 +18,9 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
     using Index = std::size_t ;
     using Real = FLOATING_POINT_TYPE;
 
+    using LocalCoordinates = algebra::Vector<2, Real>;
+    using WorldCoordinates = algebra::Vector<Dim, Real>;
+
     static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D triangles are supported.");
 
     template <
@@ -76,9 +79,9 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
 
     /** Compute the jacobian matrix evaluated at local position {u,v} */
     algebra::Matrix<Dim, 2, Real>
-    jacobian (const Real & u, const Real & v) const
+    jacobian (const LocalCoordinates & coordinates) const
     {
-        return CanonicalElementType::Jacobian({u,v}, p_nodes);
+        return CanonicalElementType::Jacobian(coordinates, p_nodes);
     }
 
 private:

@@ -5,8 +5,10 @@ set(HEADER_FILES
     Hexahedron.h
     Node.h
     Quad.h
+    RectangularHexahedron.h
     Segment.h
     Triangle.h
+    Internal/BaseHexahedron.h
     Internal/BaseNode.h
     Internal/BaseQuad.h
     Internal/BaseTriangle.h

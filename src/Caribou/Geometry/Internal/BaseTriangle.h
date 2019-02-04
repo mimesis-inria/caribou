@@ -11,13 +11,13 @@ namespace geometry {
 namespace internal {
 
 template<size_t Dim, typename CanonicalElementType, typename TriangleType>
-struct BaseTriangle : CanonicalElementType
+struct BaseTriangle : public CanonicalElementType
 {
     static_assert(Dim == 2 or Dim == 3, "Triangle can only be made in dimension 2 or 3.");
 };
 
 template<typename CanonicalElementType, typename TriangleType>
-struct BaseTriangle<2, CanonicalElementType, TriangleType> : CanonicalElementType
+struct BaseTriangle<2, CanonicalElementType, TriangleType> : public CanonicalElementType
 {
 
 private:
@@ -28,7 +28,7 @@ private:
 };
 
 template<typename CanonicalElementType, typename TriangleType>
-struct BaseTriangle<3, CanonicalElementType, TriangleType> : CanonicalElementType
+struct BaseTriangle<3, CanonicalElementType, TriangleType> : public CanonicalElementType
 {
     inline auto normal() const noexcept {
         const auto v1 = self().node(1) - self().node(0);

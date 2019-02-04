@@ -30,7 +30,6 @@ struct CanonicalElement
     static constexpr INTEGER_TYPE NumberOfNodes = NNodes;
 
     using Real = FLOATING_POINT_TYPE;
-    using LocalCoordinates = algebra::Vector<CanonicalDimension, FLOATING_POINT_TYPE>;
 
     /**
      * Compute the Jacobian matrix evaluated at local coordinates.
@@ -97,10 +96,10 @@ struct CanonicalElement
      * double detJ = J.determinant();
      * \endcode
      */
-    template<typename NodeType>
+    template<typename LocalCoordinates, typename WorldCoordinates>
     static inline
     auto
-    Jacobian (LocalCoordinates && coordinates, const std::array<NodeType, NumberOfNodes> & nodes)
+    Jacobian (LocalCoordinates && coordinates, const std::array<WorldCoordinates, NumberOfNodes> & nodes)
     {
         using namespace caribou::algebra;
 
@@ -155,6 +154,7 @@ struct CanonicalElement
     /**
      * Get the shape values for each nodes evaluated at local coordinates.
      */
+    template <typename LocalCoordinates>
     static constexpr
     algebra::Vector <NumberOfNodes, Real>
     N (LocalCoordinates && coordinates)
@@ -165,6 +165,7 @@ struct CanonicalElement
     /**
      * Get the shape derivatives for each nodes  w.r.t the local frame {dN/du, dN/dv} evaluated at local coordinates.
      */
+    template <typename LocalCoordinates>
     static constexpr
     algebra::Matrix<NumberOfNodes, CanonicalDimension, Real>
     dN (LocalCoordinates && coordinates)
@@ -177,10 +178,10 @@ struct CanonicalElement
      * @tparam ValueType Type of the value to interpolate.
      * This type must implement the multiplication operator with a floating point value (scalar) : ValueType * scalar.
      */
-    template <typename ValueType>
+    template <typename LocalCoordinates, typename WorldCoordinates>
     static inline
     auto
-    interpolate_at_local_position (LocalCoordinates && coordinates, const std::array<ValueType, NumberOfNodes> & values)
+    interpolate_at_local_position (LocalCoordinates && coordinates, const std::array<WorldCoordinates, NumberOfNodes> & values)
     {
         const auto shapes = N(std::forward<LocalCoordinates>(coordinates));
         auto v = shapes[0] * values[0];
@@ -194,7 +195,7 @@ struct CanonicalElement
      * @tparam ValueType Type of the value to interpolate.
      * This type must implement the multiplication operator with a floating point value (scalar) : ValueType * scalar.
      */
-    template <typename ValueType, typename ...Values, REQUIRES(NumberOfNodes == sizeof...(Values)+1)>
+    template <typename LocalCoordinates, typename ValueType, typename ...Values, REQUIRES(NumberOfNodes == sizeof...(Values)+1)>
     static inline
     auto
     interpolate_at_local_position (LocalCoordinates && coordinates, ValueType && v0, Values &&... v)
@@ -214,7 +215,7 @@ private:
      * Vector<4> shapes = LagrangeElement::get_N_shapes({u, v}, 0, 1, 2, 3);
      * \endcode
      */
-    template <std::size_t... Ix>
+    template <typename LocalCoordinates, std::size_t... Ix>
     static constexpr
     algebra::Vector <NumberOfNodes, Real>
     get_N_shapes (const LocalCoordinates & coordinates, std::index_sequence<Ix...>)
@@ -242,7 +243,7 @@ private:
      * Matrix<4,2> shapes_derivatives = LagrangeElement::get_N_shape_derivatives({u, v}, 0, 1, 2, 3);
      * \endcode
      */
-    template <std::size_t... Ix>
+    template <typename LocalCoordinates, std::size_t... Ix>
     static constexpr
     algebra::Matrix<NumberOfNodes, CanonicalDimension, Real>
     get_N_shape_derivatives (const LocalCoordinates & coordinates, std::index_sequence<Ix...>)

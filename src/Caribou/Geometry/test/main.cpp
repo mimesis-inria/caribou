@@ -6,9 +6,7 @@
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Hexahedron.h>
-#include <Caribou/Geometry/Interpolation/Triangle.h>
-#include <Caribou/Geometry/Interpolation/Quad.h>
-#include <Caribou/Geometry/Interpolation/Hexahedron.h>
+#include <Caribou/Geometry/RectangularHexahedron.h>
 
 TEST(Geometry, Node) {
     using namespace caribou::geometry;
@@ -60,6 +58,8 @@ TEST(Geometry, Triangle) {
     using namespace caribou::geometry::interpolation;
     using namespace caribou::algebra;
 
+    using LocalCoordinates = Vector<2, FLOATING_POINT_TYPE>;
+
     Triangle<2> triangle (Node<2> {0,0}, Node<2> {1, 0}, Node<2> {0, 1});
     Node<2> node {{1, 0}};
     ASSERT_EQ( triangle.node(1), node);
@@ -72,7 +72,7 @@ TEST(Geometry, Triangle) {
     ASSERT_EQ(Triangle3::L<2>(0, 1), 1);
 
     Vector <3, FLOATING_POINT_TYPE> shapes {Triangle3::L<0>(0, 0), Triangle3::L<1>(0, 0), Triangle3::L<2>(0, 0)};
-    ASSERT_EQ(Triangle3::N({0,0}), shapes);
+    ASSERT_EQ(Triangle3::N(LocalCoordinates {0,0}), shapes);
 
     // Shape function derivatives
     caribou::algebra::Vector<2, FLOATING_POINT_TYPE> derivatives[3] {{-1, -1}, {1, 0}, {0, 1}};
@@ -85,11 +85,11 @@ TEST(Geometry, Triangle) {
             Triangle3::dL<1>(0, 0).T(),
             Triangle3::dL<2>(0, 0).T(),
     };
-    ASSERT_EQ(triangle.dN({0,0}), sderivatives);
+    ASSERT_EQ(triangle.dN(LocalCoordinates {0,0}), sderivatives);
 
     // Jacobian
     Triangle<2> triangle2D (Node<2>{50, 50}, Node<2>{60, 50}, Node<2>{55, 55});
-    Matrix J = triangle2D.jacobian(1/3, 1/3);
+    Matrix J = triangle2D.jacobian(LocalCoordinates {1/3, 1/3} );
     ASSERT_EQ(J.determinant()*0.5, 25);
 
     // Some properties
@@ -107,6 +107,8 @@ TEST(Geometry, Quad) {
     using namespace caribou::geometry;
     using namespace caribou::geometry::interpolation;
     using namespace caribou::algebra;
+
+    using LocalCoordinates = Vector<2, FLOATING_POINT_TYPE>;
 
     Quad<2, interpolation::Quad4> quad (Node<2> {-1, -1}, Node<2> {+1, -1}, Node<2>{+1, +1}, Node<2>{-1, +1});
 
@@ -131,7 +133,7 @@ TEST(Geometry, Quad) {
 
     // Jacobian
     Quad<2> quad2D (Node<2>{50, 50}, Node<2>{55, 50}, Node<2>{55, 55}, Node<2>{50, 55});
-    Matrix J = quad2D.jacobian(-sqrt(3)/3, sqrt(3)/3);
+    Matrix J = quad2D.jacobian(LocalCoordinates {-sqrt(3)/3, sqrt(3)/3 });
     ASSERT_EQ(J.determinant()*4, 25);
 
 
@@ -141,7 +143,7 @@ TEST(Geometry, Quad) {
         return 5 + 2*u + 3*v;
     };
 
-    ASSERT_EQ(f(0,0), quad.interpolate_at_local_position({0, 0}, f(-1, -1), f(1, -1), f(1, 1), f(-1, 1)));
+    ASSERT_EQ(f(0,0), quad.interpolate_at_local_position(LocalCoordinates {0, 0}, f(-1, -1), f(1, -1), f(1, 1), f(-1, 1)));
 
 }
 
@@ -156,13 +158,13 @@ TEST(Geometry, Hexahedron) {
     Node<3> node {{1, 1, -1}};
     ASSERT_EQ(hexa.node(2), node);
 
-    double r = hexa.gauss_quadrature(0., [](const Hexahedron<Hexahedron8> & /*h*/, const auto & /*u*/, const auto & /*v*/, const auto & /*w*/) {
+    double r = hexa.gauss_quadrature([](const Hexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
         return 1.;
     });
 
     ASSERT_FLOAT_EQ(r, 8);
 
-    ASSERT_EQ(hexa.extract_frame_by_cross_products(), I);
+    ASSERT_EQ(hexa.frame(), I);
 
     // Rotate the hexa by R and extract the resulting frame
     const Matrix R ({
@@ -174,11 +176,31 @@ TEST(Geometry, Hexahedron) {
     for (std::size_t i = 0; i<8; i++)
         hexa.node(i) = R*hexa.node(i);
 
-    const auto frame = hexa.extract_frame_by_cross_products();
+    const auto frame = hexa.frame();
     for (std::size_t i = 0; i < 3; ++i)
         for (std::size_t j = 0; j < 3; ++j)
             ASSERT_FLOAT_EQ(R(i,j), frame(i,j));
 
+}
+
+TEST(Geometry, RectangularHexahedron) {
+    using namespace caribou::geometry;
+    using namespace caribou::geometry::interpolation;
+    using namespace caribou::algebra;
+
+    RectangularHexahedron<interpolation::Hexahedron8> hexa;
+    const auto I = Matrix<3,3>::Identity();
+
+    Node<3> node {{1, 1, -1}};
+    ASSERT_EQ(hexa.node(2), node);
+
+    double r = hexa.gauss_quadrature([](const RectangularHexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
+        return 1.;
+    });
+
+    ASSERT_FLOAT_EQ(r, 8);
+
+    ASSERT_EQ(hexa.frame(), I);
 }
 
 int main(int argc, char **argv) {

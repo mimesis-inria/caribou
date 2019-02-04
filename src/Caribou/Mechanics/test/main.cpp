@@ -25,12 +25,14 @@ TEST(Mechanics, Strain) {
     using namespace caribou::algebra;
     using namespace caribou::mechanics;
 
+    using LocalCoordinates = Vector<3, FLOATING_POINT_TYPE>;
+
     using Mat33 = Matrix<3,3>;
     const auto I = Mat33::Identity();
 
     Hexahedron<interpolation::Hexahedron8> initial_hexahedron;
     {
-        const Mat33 F = elasticity::strain::F(initial_hexahedron, initial_hexahedron, 1/sqrt(3), 1/sqrt(3), 1/sqrt(3));
+        const Mat33 F = elasticity::strain::F(initial_hexahedron, initial_hexahedron, LocalCoordinates {1/sqrt(3), 1/sqrt(3), 1/sqrt(3)});
         ASSERT_EQ(Mat33::Identity(), F);
     }
 
@@ -57,8 +59,8 @@ TEST(Mechanics, Strain) {
         deformed_hexahedron.node(i) += displacements.row(i).T();
 
     // Compute the elastic force with the stiffness matrix
-    Matrix<24,24,double> K = initial_hexahedron.gauss_quadrature([](const auto & hexa, const auto & u, const auto & v, const auto & w) {
-        const auto B = elasticity::strain::B(hexa, u, v, w);
+    Matrix<24,24,double> K = initial_hexahedron.gauss_quadrature([](const auto & hexa, const auto & local_coordinates) {
+        const auto B = elasticity::strain::B(hexa, local_coordinates);
         return B.T() * C * B;
     });
     Vector<24> F1 = K*U;
@@ -66,15 +68,11 @@ TEST(Mechanics, Strain) {
     // Compute the elastic force by manually integrating the stress and strain tensors
     Vector<24> F2; F2.fill(0);
     for (const auto & gauss_node : interpolation::Hexahedron8::gauss_nodes) {
-        const auto & u = gauss_node[0];
-        const auto & v = gauss_node[1];
-        const auto & w = gauss_node[2];
-
-        const auto J = initial_hexahedron.jacobian(u, v, w);
+        const auto J = initial_hexahedron.jacobian(gauss_node);
         const auto Jinv = J^-1;
         const auto detJ = J.determinant();
 
-        Matrix<8,3> dN_dx = (Jinv.T() * interpolation::Hexahedron8::dN({u, v, w}).T()).T();
+        Matrix<8,3> dN_dx = (Jinv.T() * interpolation::Hexahedron8::dN(gauss_node).T()).T();
 
         const auto F = elasticity::strain::F(dN_dx, displacements);
         const auto E2 = (F.T() + F) - 2*I;
@@ -99,11 +97,8 @@ TEST(Mechanics, Strain) {
     const auto detJ = J.determinant();
 
     for (const auto & gauss_node : interpolation::Hexahedron8::gauss_nodes) {
-        const auto & u = gauss_node[0];
-        const auto & v = gauss_node[1];
-        const auto & w = gauss_node[2];
 
-        Matrix<8,3> dN_dx = (Jinv.T() * interpolation::Hexahedron8::dN({u, v, w}).T()).T();
+        Matrix<8,3> dN_dx = (Jinv.T() * interpolation::Hexahedron8::dN(gauss_node).T()).T();
 
         const auto F = elasticity::strain::F(dN_dx, displacements);
         const auto E2 = (F.T() + F) - 2*I;

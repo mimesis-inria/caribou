@@ -43,14 +43,14 @@ using Vec3  = algebra::Matrix<3,1, FLOATING_POINT_TYPE>;
  *    and the following public static member:
  *       - NumberOfNodes : The number of nodes this element type contains
  */
-template <typename ElementType, REQUIRES(ElementType::CanonicalDimension == 3)>
+template <typename ElementType, typename LocalCoordinates, REQUIRES(ElementType::CanonicalDimension == 3)>
 static inline
 algebra::Matrix<6, ElementType::NumberOfNodes*3, FLOATING_POINT_TYPE>
-B (const ElementType & element, const Float & xi, const Float & eta, const Float & zeta)
+B (const ElementType & element, const LocalCoordinates & coordinates)
 {
-    const auto J = element.jacobian(xi, eta, zeta); // Jacobian matrix of the shape function N
+    const auto J = element.jacobian(coordinates); // Jacobian matrix of the shape function N
     const auto Jinv = J^-1;
-    const auto dN = ElementType::dN({xi, eta, zeta});
+    const auto dN = ElementType::dN(coordinates);
 
     algebra::Matrix<6, ElementType::NumberOfNodes*3, FLOATING_POINT_TYPE> r; // Result (B)
 
@@ -136,18 +136,18 @@ F (const algebra::Matrix<NumberOfNodes, Dimension, DataType> & dN_dx, const alge
  *       - NumberOfNodes : The number of nodes this element type contains
  *
  */
-template <typename ElementType>
+template <typename ElementType, typename LocalCoordinates>
 static inline Mat33
 F (const ElementType & initial_element, const ElementType & deformed_element,
-   const Float & xi, const Float & eta, const Float & zeta)
+   const LocalCoordinates & coordinates)
 {
-    const Mat33 J = initial_element.jacobian(xi, eta, zeta); // Jacobian matrix of the shape function N
+    const Mat33 J = initial_element.jacobian(coordinates); // Jacobian matrix of the shape function N
     const Mat33 Jinv = J^-1;
     const Mat33 I = Mat33::Identity();
 
     Mat33 GradU;
     GradU.fill(0);
-    const auto dN = ElementType::dN({xi, eta, zeta});
+    const auto dN = ElementType::dN(coordinates);
     for (size_t i = 0; i < ElementType::NumberOfNodes; ++i) {
         const auto dN_dXi = dN.row(i).T();
         const auto dN_dx = Jinv.T() * dN_dXi;
@@ -156,24 +156,6 @@ F (const ElementType & initial_element, const ElementType & deformed_element,
     }
 
     return GradU + I;
-}
-
-/**
- * Deformation gradient tensor F evaluated at local coordinates {xi, eta, zeta}.
- *
- * see caribou::mechanics::elasticity::strain::F( const ElementType & initial_element, const ElementType & deformed_element,
-   const Float & xi, const Float & eta, const Float & zeta)
- *
- */
-template <typename ElementType>
-static inline Mat33
-F (const ElementType & initial_element, const ElementType & deformed_element, const Vec3 & local_coordinates)
-{
-    const auto & xi   = local_coordinates[0];
-    const auto & eta  = local_coordinates[1];
-    const auto & zeta = local_coordinates[2];
-
-    return strain::F(initial_element, deformed_element, xi, eta, zeta);
 }
 
 /**
@@ -188,33 +170,16 @@ F (const ElementType & initial_element, const ElementType & deformed_element, co
  * @tparam ElementType
  *    see caribou::mechanics::elasticity::strain::F::ElementType
  */
-template <typename ElementType>
+template <typename ElementType, typename LocalCoordinates>
 static inline Mat33
 small_strain (const ElementType & initial_element, const ElementType & deformed_element,
-              const Float & xi, const Float & eta, const Float & zeta)
+              const LocalCoordinates & coordinates)
 {
-    const auto F = strain::F(initial_element, deformed_element, xi, eta, zeta);
+    const auto F = strain::F(initial_element, deformed_element, coordinates);
     const auto Ft = F.T();
     const auto I = Mat33::Identity();
 
     return 1./2 * (Ft + F) - I;
-}
-
-/**
- * Small (infinitesimal) strain tensor evaluated at local coordinates {xi, eta, zeta}.
- *
- * see caribou::mechanics::elasticity::strain::small_strain( const ElementType & initial_element, const ElementType & deformed_element,
-   const Float & xi, const Float & eta, const Float & zeta)
- */
-template <typename ElementType>
-static inline Mat33
-small_strain (const ElementType & initial_element, const ElementType & deformed_element, const Vec3 & local_coordinates)
-{
-    const auto & xi   = local_coordinates[0];
-    const auto & eta  = local_coordinates[1];
-    const auto & zeta = local_coordinates[2];
-
-    return small_strain(initial_element, deformed_element, xi, eta, zeta);
 }
 
 /**
@@ -232,35 +197,17 @@ small_strain (const ElementType & initial_element, const ElementType & deformed_
  * @tparam ElementType
  *    see caribou::mechanics::elasticity::strain::F::ElementType
  */
-template <typename ElementType>
-inline Mat33
-static strain (const ElementType & initial_element, const ElementType & deformed_element,
-        const Float & xi, const Float & eta, const Float & zeta)
+template <typename ElementType, typename LocalCoordinates>
+static inline Mat33
+strain (const ElementType & initial_element, const ElementType & deformed_element,
+        const LocalCoordinates & coordinates)
 {
-    const auto F = strain::F(initial_element, deformed_element, xi, eta, zeta);
+    const auto F = strain::F(initial_element, deformed_element, coordinates);
     const auto Ft = F.T();
     const auto I = Mat33::Identity();
     const auto C = Ft*F; // right Cauchy–Green deformation tensor
 
     return 1./2 * (C - I);
-}
-
-/**
- * Lagrangian finite strain tensor (also called the Green-Lagrangian strain tensor or Green – St-Venant strain tensor)
- * evaluated at local coordinates {xi, eta, zeta}.
- *
- * see caribou::mechanics::elasticity::strain::strain( const ElementType & initial_element, const ElementType & deformed_element,
-   const Float & xi, const Float & eta, const Float & zeta)
- */
-template <typename ElementType>
-inline Mat33
-static strain (const ElementType & initial_element, const ElementType & deformed_element, const Vec3 & local_coordinates)
-{
-    const auto & xi   = local_coordinates[0];
-    const auto & eta  = local_coordinates[1];
-    const auto & zeta = local_coordinates[2];
-
-    return strain(initial_element, deformed_element, xi, eta, zeta);
 }
 
 } // namespace strain

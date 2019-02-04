@@ -17,6 +17,9 @@ struct Quad : public CanonicalElementType
     using Index = std::size_t ;
     using Real = FLOATING_POINT_TYPE;
 
+    using LocalCoordinates = algebra::Vector<2, Real>;
+    using WorldCoordinates = algebra::Vector<Dim, Real>;
+
     static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D quads are supported.");
 
     template <
@@ -51,16 +54,16 @@ struct Quad : public CanonicalElementType
      */
     inline
     NodeType
-    T(const Real & u, const Real & v) const
+    T(const LocalCoordinates & coordinates) const
     {
-        return CanonicalElementType::interpolate_at_local_position({u,v}, p_nodes);
+        return CanonicalElementType::interpolate_at_local_position(coordinates, p_nodes);
     }
 
     /** Compute the jacobian matrix evaluated at local position {u,v} */
     algebra::Matrix<Dim, 2, Real>
-    jacobian (const Real & u, const Real & v) const
+    jacobian (const LocalCoordinates & coordinates) const
     {
-        return CanonicalElementType::Jacobian({u,v}, p_nodes);
+        return CanonicalElementType::Jacobian(coordinates, p_nodes);
     }
 
 private:

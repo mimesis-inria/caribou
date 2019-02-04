@@ -6,18 +6,25 @@
 #include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Interpolation/Hexahedron.h>
+#include <Caribou/Geometry/Internal/BaseHexahedron.h>
 
 namespace caribou {
 namespace geometry {
 
 template <typename CanonicalElementType>
-struct Hexahedron : public CanonicalElementType
+struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahedron<CanonicalElementType>>
 {
     static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
-    using NodeType = caribou::geometry::Node<3>;
-    using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
-    using Index = std::size_t ;
-    using Real = FLOATING_POINT_TYPE;
+
+    using Base = internal::BaseHexahedron<CanonicalElementType, Hexahedron<CanonicalElementType>>;
+
+    using NodeType = typename Base::NodeType;
+    using QuadType = typename Base::QuadType;
+    using Index = typename Base::Index;
+    using Real = typename Base::Real;
+
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
 
     constexpr
     Hexahedron()
@@ -55,161 +62,34 @@ struct Hexahedron : public CanonicalElementType
         return p_nodes[index];
     }
 
-    /**
-     * Get the ith quadrangle face.
-     */
+    /** Get a reference to the set of nodes */
     inline
-    QuadType
-    face(Index index) const
+    const std::array<NodeType, NumberOfNodes> &
+    nodes() const
     {
-        const auto & face_indices = CanonicalElementType::faces[index];
-        std::array<NodeType, QuadType::NumberOfNodes> quad_nodes;
-        for (std::size_t i = 0; i < QuadType::NumberOfNodes; ++i)
-            quad_nodes[i] = node(face_indices[i]);
-
-        return QuadType(quad_nodes);
-    }
-
-    /** Compute the jacobian matrix evaluated at local position {u,v,w}
-     * (see interpolation::CanonicalElement::Jacobian for more details).
-     * */
-    inline
-    algebra::Matrix<3, 3, Real>
-    jacobian (const Real & u, const Real & v, const Real & w) const
-    {
-        return CanonicalElementType::Jacobian({u,v, w}, p_nodes);
+        return p_nodes;
     }
 
     /**
-     * Compute the transformation of a local position {u,v,w} to its world position {x,y,z}
-     */
-    inline
-    NodeType
-    T(const Real & u, const Real & v, const Real & w) const
-    {
-        return CanonicalElementType::interpolate_at_local_position({u,v,w}, p_nodes);
-    }
-
-    /**
-     * Compute an integral approximation by gauss quadrature on the hexahedron of the given evaluation function.
-     *
-     * @example
-     * \code{.cpp}
-     * // Integrate the polynomial 1 + 2x + 2xy + 3*z on an hexahedron.
-     * float result = LinearHexahedron(x1, x2, x3, x4, x5, x6, x7, x8).gauss_integrate(
-     *   [] (const LinearHexahedron & hexa, const float & xi, const float & eta, const float & zeta) -> float {
-     *     return 1 + 2*xi + 2*xi*eta + 3*zeta;
-     *   }
-     * );
-     * \endcode
-     *
-     * @tparam ValueType The result type of the evaluation function.
-     * This type must implement the assignment "=", assignment-addition "+=", and multiplication "*" with a scalar type (float, double) operators.
-     * @tparam EvaluateFunctionType Callback function reference type. See evaluate parameter.
-     *
-     * @param f
-     * Callback function of the signature
-     *
-     *     ValueType f (const LinearHexahedron & hexa, const float & u, const float & v, const float & w);
-     *
-     * Where hexa is a reference to the current hexahadron on which we integrate, and the coordinates u, v and w
-     * forms the local position of a sample point on which we want to get the evaluation value of type ValueType.
-     *
-     * @return The value of the integral computed on this hexahedron.
-     *
-     */
-    template <typename ValueType , typename EvaluateFunctor>
-    inline
-    ValueType
-    gauss_quadrature(const ValueType & initial_value, EvaluateFunctor f) const
-    {
-        static_assert(CanonicalElementType::gauss_nodes.size() == CanonicalElementType::gauss_weights.size(),
-                "Gauss nodes must have assigned weights.");
-
-        ValueType result = initial_value;
-
-        for (std::size_t i = 0; i < CanonicalElementType::gauss_nodes.size(); ++i) {
-            const auto p = CanonicalElementType::gauss_nodes[i];
-            const auto w = CanonicalElementType::gauss_weights[i];
-            const auto detJ = jacobian(p[0], p[1], p[2]).determinant();
-            const auto eval = f(*this, p[0], p[1], p[2]);
-            result += eval * w * detJ;
-        }
-
-        return result;
-    }
-
-    /**
-     * Compute an integral approximation by gauss quadrature on the hexahedron of the given evaluation function.
-     *
-     * @example
-     * \code{.cpp}
-     * // Integrate the polynomial 1 + 2x + 2xy + 3*z on an hexahedron.
-     * float result = Hexahedron(x1, x2, x3, x4, x5, x6, x7, x8).gauss_integrate(
-     *   [] (const LinearHexahedron & hexa, const float & xi, const float & eta, const float & zeta) -> float {
-     *     return 1 + 2*xi + 2*xi*eta + 3*zeta;
-     *   }
-     * );
-     * \endcode
-     *
-     * @tparam EvaluateFunctionType Callback function reference type. See f parameter.
-     *
-     * @param f
-     * Callback function of the signature
-     *
-     *     ValueType f (const Hexahedron & hexa, const float & u, const float & v, const float & w);
-     *
-     * Where hexa is a reference to the current hexahadron on which we integrate, and the coordinates u, v and w
-     * forms the local position of a sample point on which we want to get the evaluation value.
-     *
-     * @return The value of the integral computed on this hexahedron.
-     *
-     */
-    template <typename EvaluateFunctor>
-    inline
-    auto
-    gauss_quadrature(EvaluateFunctor f) const
-    {
-        static_assert(CanonicalElementType::gauss_nodes.size() == CanonicalElementType::gauss_weights.size(),
-                      "Gauss nodes must have assigned weights.");
-
-        const auto p0 = CanonicalElementType::gauss_nodes[0];
-        const auto w0 = CanonicalElementType::gauss_weights[0];
-        const auto detJ0 = jacobian(p0[0], p0[1], p0[2]).determinant();
-        const auto eval0 = f(*this, p0[0], p0[1], p0[2]);
-        auto result = eval0 * w0 * detJ0;
-
-        for (std::size_t i = 1; i < CanonicalElementType::gauss_nodes.size(); ++i) {
-            const auto p = CanonicalElementType::gauss_nodes[i];
-            const auto w = CanonicalElementType::gauss_weights[i];
-            const auto detJ = jacobian(p[0], p[1], p[2]).determinant();
-            const auto eval = f(*this, p[0], p[1], p[2]);
-            result += eval * w * detJ;
-        }
-
-        return result;
-    }
-
-    /**
-     * Check whether the hexahedron is a parallelepiped.
-     *
-     * A parallelepiped:
-     * - Has six faces, each of which is a parallelogram
-     * - Has three pairs of parallel faces
-     *
-     * The transformation from its elemental frame to its world frame can be defined as
-     *                      | x1 + 1/2 (1 + u) hx |
-     * (x,y,z) = Q(u,v,w) = | y1 + 1/2 (1 + v) hy |
-     *                      | z1 + 1/2 (1 + w) hz |
-     *
-     * where (x1,y1,z1) are the world coordinates of the node #0 on the hexahedron, and (hx,hy,hz) denote the hexahedron
-     * size w.r.t the x,y and z directions.
-     *
-     * And the Jacobian of this transformation is constant and defined as
-     *                          | hx 0  0  |
-     * J = gradQ^T(u,v,w) = 1/2 | 0  hy 0  |
-     *                          | 0  0  hz |
-     */
+    * Check whether the hexahedron is a parallelepiped.
+    *
+    * A parallelepiped:
+    * - Has six faces, each of which is a parallelogram
+    * - Has three pairs of parallel faces
+    *
+    * The transformation from its elemental frame to its world frame can be defined as
+    *                      | x1 + 1/2 (1 + u) hx |
+    * (x,y,z) = Q(u,v,w) = | y1 + 1/2 (1 + v) hy |
+    *                      | z1 + 1/2 (1 + w) hz |
+    *
+    * where (x1,y1,z1) are the world coordinates of the node #0 on the hexahedron, and (hx,hy,hz) denote the hexahedron
+    * size w.r.t the x,y and z directions.
+    *
+    * And the Jacobian of this transformation is constant and defined as
+    *                          | hx 0  0  |
+    * J = gradQ^T(u,v,w) = 1/2 | 0  hy 0  |
+    *                          | 0  0  hz |
+    */
     inline
     bool
     is_a_parallelepiped() const noexcept
@@ -241,15 +121,15 @@ struct Hexahedron : public CanonicalElementType
      */
     inline
     algebra::Matrix<3,3,FLOATING_POINT_TYPE>
-    extract_frame_by_cross_products() const
+    frame() const
     {
-        const auto hexa_center = T(0,0,0); // Hexahedron's center position
+        const auto hexa_center = T( LocalCoordinates {0,0,0} ); // Hexahedron's center position
 
-        const auto quad_faced_to_u_axis = face(2); // Quad that lies in front of the u axis
-        const auto face_u_center = quad_faced_to_u_axis.T(0,0); // Center position of this quad
+        const auto quad_faced_to_u_axis = Base::face(2); // Quad that lies in front of the u axis
+        const auto face_u_center = quad_faced_to_u_axis.T({0,0}); // Center position of this quad
 
-        const auto quad_faced_to_v_axis = face(4); // Quad that lies in front of the v axis
-        const auto face_v_center = quad_faced_to_v_axis.T(0,0); // Center position of this quad
+        const auto quad_faced_to_v_axis = Base::face(4); // Quad that lies in front of the v axis
+        const auto face_v_center = quad_faced_to_v_axis.T({0,0}); // Center position of this quad
 
         /* @todo(jnbrunet2000@gmail.com): select between the pairs of axis (center-to-u, center-to-v),
           (center-to-u, center-to-w) and (center-to-v, center-to-w) to find the best match (closer to orthogonal) */
@@ -273,6 +153,80 @@ struct Hexahedron : public CanonicalElementType
         v = w.cross(u).unit();
 
         return {u,v,w};
+    }
+
+    /** Compute the jacobian matrix evaluated at local position {u,v,w}
+ * (see interpolation::CanonicalElement::Jacobian for more details).
+ * */
+    inline
+    algebra::Matrix<3, 3, Real>
+    jacobian (const LocalCoordinates & coordinates) const
+    {
+        return CanonicalElementType::Jacobian(coordinates, nodes());
+    }
+
+    /**
+     * Compute the transformation of a local position {u,v,w} to its world position {x,y,z}
+     */
+    inline
+    WorldCoordinates
+    T(const LocalCoordinates & coordinates) const
+    {
+        return CanonicalElementType::interpolate_at_local_position(coordinates, nodes());
+    }
+
+    /**
+     * Compute an integral approximation by gauss quadrature on the hexahedron of the given evaluation function.
+     *
+     * @example
+     * \code{.cpp}
+     * // Integrate the polynomial 1 + 2x + 2xy + 3*z on an hexahedron.
+     * float result = Hexahedron(x1, x2, x3, x4, x5, x6, x7, x8).gauss_integrate(
+     *   [] (const Hexahedron & hexa, const Hexahedron::LocalCoordinates & coordinates) -> float {
+     *     const auto & xi   = coordinates[0];
+     *     const auto & eta  = coordinates[1];
+     *     const auto & zeta = coordinates[2];
+     *     return 1 + 2*xi + 2*xi*eta + 3*zeta;
+     *   }
+     * );
+     * \endcode
+     *
+     * @tparam EvaluateFunctionType Callback function reference type. See f parameter.
+     *
+     * @param f
+     * Callback function of the signature
+     *
+     *     ValueType f (const Hexahedron & hexa, const LocalCoordinates & coordinates);
+     *
+     * Where hexa is a reference to the current hexahadron on which we integrate, and the coordinates u, v and w
+     * forms the local position of a sample point on which we want to get the evaluation value.
+     *
+     * @return The value of the integral computed on this hexahedron.
+     *
+     */
+    template <typename EvaluateFunctor>
+    inline
+    auto
+    gauss_quadrature(EvaluateFunctor f) const
+    {
+        static_assert(CanonicalElementType::gauss_nodes.size() == CanonicalElementType::gauss_weights.size(),
+                      "Gauss nodes must have assigned weights.");
+
+        const auto p0 = CanonicalElementType::gauss_nodes[0];
+        const auto w0 = CanonicalElementType::gauss_weights[0];
+        const auto detJ0 = jacobian(p0).determinant();
+        const auto eval0 = f(*this, p0);
+        auto result = eval0 * w0 * detJ0;
+
+        for (std::size_t i = 1; i < CanonicalElementType::gauss_nodes.size(); ++i) {
+            const auto p = CanonicalElementType::gauss_nodes[i];
+            const auto w = CanonicalElementType::gauss_weights[i];
+            const auto detJ = jacobian(p).determinant();
+            const auto eval = f(*this, p);
+            result += eval * w * detJ;
+        }
+
+        return result;
     }
 
 private:

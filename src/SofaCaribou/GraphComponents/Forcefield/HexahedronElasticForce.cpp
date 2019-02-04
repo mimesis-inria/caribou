@@ -108,7 +108,7 @@ void HexahedronElasticForce<DataTypes>::reinit()
         } else {
             for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
                 Hexahedron hexa = make_hexa(hexa_id, X);
-                p_initial_rotation[hexa_id] = hexa.extract_frame_by_cross_products();
+                p_initial_rotation[hexa_id] = hexa.frame();
             }
         }
     }
@@ -129,12 +129,12 @@ void HexahedronElasticForce<DataTypes>::reinit()
                 const auto &w = gauss_node[2];
 
                 // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-                const auto J = hexa.jacobian(u, v, w);
+                const auto J = hexa.jacobian({u, v, w});
                 const auto Jinv = J.inverted();
                 const auto detJ = J.determinant();
 
                 // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-                const auto dN_dx = (Jinv.T() * interpolation::Hexahedron8::dN({u, v, w}).T()).T();
+                const auto dN_dx = (Jinv.T() * Hexahedron::dN(Hexahedron::LocalCoordinates {u, v, w}).T()).T();
 
                 p_quatrature_nodes[hexa_id][gauss_node_id] = {
                         Hexahedron::gauss_weights[gauss_node_id],
@@ -165,8 +165,8 @@ void HexahedronElasticForce<DataTypes>::reinit()
 
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         Hexahedron hexa = make_hexa(hexa_id, X);
-        p_stiffness_matrices[hexa_id] = hexa.gauss_quadrature([&C](const auto & hexa, const auto & u, const auto & v, const auto & w) {
-            const auto B = elasticity::strain::B(hexa, u, v, w);
+        p_stiffness_matrices[hexa_id] = hexa.gauss_quadrature([&C](const auto & hexa, const auto & local_coordinates) {
+            const auto B = elasticity::strain::B(hexa, local_coordinates);
             return B.T() * C * B;
         });
     }
@@ -215,7 +215,7 @@ void HexahedronElasticForce<DataTypes>::addForce(
 
             // Extract the hexahedron's frame
             if (corotated)
-                R = hexa.extract_frame_by_cross_products();
+                R = hexa.frame();
 
             const Mat33 & Rt = R.T();
 
