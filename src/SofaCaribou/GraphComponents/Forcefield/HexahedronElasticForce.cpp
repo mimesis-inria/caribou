@@ -418,6 +418,49 @@ void HexahedronElasticForce<DataTypes>::addDForce(
 }
 
 template<class DataTypes>
+void HexahedronElasticForce<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int & /*offset*/)
+{
+    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+
+    if (!topology)
+        return;
+
+    std::vector<Mat33> & current_rotation = p_current_rotation;
+
+    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+        const auto & node_indices = topology->getHexahedron(hexa_id);
+        const Mat33 & R  = current_rotation[hexa_id];
+        const Mat33   Rt = R.T();
+
+        const auto & K = p_stiffness_matrices[hexa_id];
+
+        for (size_t i = 0; i < 8; ++i) {
+            for (size_t j = 0; j < 8; ++j) {
+                Mat33 k;
+
+                for (unsigned char m = 0; m < 3; ++m) {
+                    for (unsigned char n = 0; n < 3; ++n) {
+                        k(m,n) = K(i*3+m, j*3+n);
+                    }
+                }
+
+                k = -1. * R*k*Rt*kFact;
+
+                for (unsigned char m = 0; m < 3; ++m) {
+                    for (unsigned char n = 0; n < 3; ++n) {
+                        const auto x = node_indices[i]*3+m;
+                        const auto y = node_indices[j]*3+n;
+
+                        const auto v = matrix->element(x,y);
+                        matrix->set(x, y, v + k(m,n));
+                    }
+                }
+            }
+        }
+    }
+}
+
+template<class DataTypes>
 void HexahedronElasticForce<DataTypes>::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
 {
     if( !onlyVisible ) return;

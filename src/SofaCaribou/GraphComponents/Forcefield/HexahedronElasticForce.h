@@ -65,7 +65,7 @@ public:
             const Data<VecCoord>& /* d_x */) const override
     {return 0;}
 
-    void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override {}
+    void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;
 
