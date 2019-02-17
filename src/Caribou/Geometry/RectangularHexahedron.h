@@ -126,7 +126,17 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     WorldCoordinates
     T(const LocalCoordinates & coordinates) const
     {
-        return p_R * coordinates.direct_multiplication(p_H/2.);
+        return p_center + (p_R * coordinates.direct_multiplication(p_H/2.));
+    }
+
+    /**
+     * Compute the inverse transformation of a world position {x,y,z} to its local position {u,v,w}
+     */
+    inline
+    LocalCoordinates
+    Tinv(const WorldCoordinates & coordinates) const
+    {
+        return p_R.T() * (coordinates - p_center).direct_multiplication(2./p_H);
     }
 
     /**

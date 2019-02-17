@@ -7,29 +7,19 @@
 
 #include <Caribou/config.h>
 
-#include <Caribou/Topology/Engine/Grid/Internal/UnidimensionalGrid.h>
-#include <Caribou/Topology/Engine/Grid/Internal/MultidimensionalGrid.h>
+#include <Caribou/Topology/Engine/Grid/Internal/BaseUnidimensionalGrid.h>
+#include <Caribou/Topology/Engine/Grid/Internal/BaseMultidimensionalGrid.h>
+
+#include <Caribou/Geometry/RectangularHexahedron.h>
 
 namespace caribou {
 namespace topology {
 namespace engine {
 
 template <size_t Dim>
-struct Grid : public internal::BaseMultidimensionalGrid<Dim, Grid<Dim>>
+struct Grid
 {
-    static constexpr size_t Dimension = Dim;
-
-    using Base = internal::BaseMultidimensionalGrid<Dimension, Grid<Dimension>>;
-    using Base::Base;
-
-    using NodeIndex = typename Base::NodeIndex;
-    using CellIndex = typename Base::CellIndex;
-    using Dimensions = typename Base::Dimensions;
-    using Subdivisions = typename Base::Subdivisions;
-    using LocalCoordinates = typename Base::LocalCoordinates;
-    using WorldCoordinates = typename Base::WorldCoordinates;
-    using GridCoordinates = typename Base::GridCoordinates;
-    using CellSet = std::list<CellIndex>;
+    static_assert(Dim > 0 and Dim < 4, "A grid can only be of dimension 1, 2 or 3.");
 };
 
 template <>
@@ -48,6 +38,50 @@ struct Grid<1> : public internal::BaseUnidimensionalGrid<Grid<1>>
     using WorldCoordinates = typename Base::WorldCoordinates;
     using GridCoordinates = typename Base::GridCoordinates;
     using CellSet = std::list<CellIndex>;
+};
+
+template <>
+struct Grid<2> : public internal::BaseMultidimensionalGrid<2, Grid<2>>
+{
+    static constexpr size_t Dimension = 2;
+
+    using Base = internal::BaseMultidimensionalGrid<Dimension, Grid<Dimension>>;
+    using Base::Base;
+
+    using NodeIndex = typename Base::NodeIndex;
+    using CellIndex = typename Base::CellIndex;
+    using Dimensions = typename Base::Dimensions;
+    using Subdivisions = typename Base::Subdivisions;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+    using GridCoordinates = typename Base::GridCoordinates;
+    using CellSet = std::list<CellIndex>;
+};
+
+template <>
+struct Grid<3> : public internal::BaseMultidimensionalGrid<3, Grid<3>>
+{
+    static constexpr size_t Dimension = 3;
+
+    using Base = internal::BaseMultidimensionalGrid<Dimension, Grid<Dimension>>;
+    using Base::Base;
+
+    using NodeIndex = typename Base::NodeIndex;
+    using CellIndex = typename Base::CellIndex;
+    using Dimensions = typename Base::Dimensions;
+    using Subdivisions = typename Base::Subdivisions;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+    using GridCoordinates = typename Base::GridCoordinates;
+    using CellSet = std::list<CellIndex>;
+
+    inline
+    geometry::RectangularHexahedron<geometry::interpolation::Hexahedron8>
+    hexahedron(const GridCoordinates & coordinates) const
+    {
+        const auto center = Base::m_anchor_position + coordinates.direct_multiplication(Base::H()) + Base::H()/2.;
+        return geometry::RectangularHexahedron<geometry::interpolation::Hexahedron8> (center, Base::H());
+    }
 };
 
 } // namespace engine

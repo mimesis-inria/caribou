@@ -1,0 +1,17 @@
+<Node name="root" gravity="0 0 0" dt="1">
+    <VisualStyle displayFlags="showBehaviorModels showForceFields" />
+
+    <Node name="implicit_surface">
+        <Mesh name="mesh" filename="mesh/frog.obj" />
+        <MechanicalObject src="@mesh" />
+        <TriangleSetTopologyContainer name="topology" src="@mesh" />
+    </Node>
+
+    <Node name="grid">
+        <EulerImplicitSolver rayleighStiffness="0" rayleighMass="0" />
+        <CGLinearSolver iterations="2500" tolerance="1e-09" threshold="1e-09" />
+
+        <FictitiousGrid printLog="true" surface_topology_container="@../implicit_surface/topology" />
+
+    </Node>
+</Node>

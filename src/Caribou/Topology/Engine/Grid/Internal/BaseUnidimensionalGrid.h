@@ -1,7 +1,7 @@
 #ifndef CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_UNIDIMENSIONALGRID_H
 #define CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_UNIDIMENSIONALGRID_H
 
-#include <Caribou/Topology/Engine/Grid/Internal/Grid.h>
+#include <Caribou/Topology/Engine/Grid/Internal/BaseGrid.h>
 
 namespace caribou {
 namespace topology {
@@ -30,12 +30,6 @@ struct BaseUnidimensionalGrid : public BaseGrid<1, GridType_>
 
     using GridType = GridType_;
     using Base = BaseGrid<1, GridType_>;
-
-    using Int = size_t;
-    using Float = FLOATING_POINT_TYPE;
-
-    using VecFloat = caribou::algebra::Vector<Dimension, Float>;
-    using VecInt = caribou::algebra::Vector<Dimension, Int>;
 
     using NodeIndex = typename Base::NodeIndex;
     using CellIndex = typename Base::CellIndex;

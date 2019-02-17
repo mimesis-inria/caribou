@@ -1,7 +1,7 @@
 #ifndef CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_MULTIDIMENSIONALGRID_H
 #define CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_MULTIDIMENSIONALGRID_H
 
-#include <Caribou/Topology/Engine/Grid/Internal/Grid.h>
+#include <Caribou/Topology/Engine/Grid/Internal/BaseGrid.h>
 #include <Caribou/Algebra/Vector.h>
 
 namespace caribou::topology::engine::internal {
@@ -32,12 +32,6 @@ struct BaseMultidimensionalGrid : public BaseGrid<Dim, GridType_>
     using GridType = GridType_;
     using Base = BaseGrid<Dim, GridType_>;
 
-    using Int = size_t;
-    using Float = FLOATING_POINT_TYPE;
-
-    using VecFloat = caribou::algebra::Vector<Dimension, Float>;
-    using VecInt = caribou::algebra::Vector<Dimension, Int>;
-
     using NodeIndex = typename Base::NodeIndex;
     using CellIndex = typename Base::CellIndex;
     using Dimensions = typename Base::Dimensions;
@@ -45,32 +39,9 @@ struct BaseMultidimensionalGrid : public BaseGrid<Dim, GridType_>
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
     using GridCoordinates = typename Base::GridCoordinates;
-    using CellSet = std::list<CellIndex>;
+    using CellSet = typename Base::CellSet;
 
-    using Base:: BaseGrid;
-
-    /** Get the position of the node node_id relative to the grid frame (bottom-left most node). **/
-//    inline RelativePosition
-//    relative_position(const NodeIndex & index) const
-//    {
-//        const auto & n = Self().number_of_subdivision();
-//        const auto & nx = n[0]+1; // Number of nodes in the x direction
-//        const auto & ny = n[1]+1; // Number of nodes in the y direction
-//
-//        const Index k = (Dimension == 3) ? (index / (nx*ny)) : 0; // Node indice in the z direction
-//        const Index j = (index - (k*nx*ny)) / nx; // Node indice in the y direction
-//        const Index i = index - ((k*nx*ny) + (j*nx)); // Node indice in the x direction
-//
-//        const auto & h = Self().cell_size();
-//        const auto & hx = h[0]; // Width of a cell
-//        const auto & hy = h[1]; // Height of a cell
-//        const auto & hz = h[2]; // Dept of a cell
-//
-//        // Relative position of the node within the grid
-//        const VecFloat p = (Dimension == 2) ? VecFloat({i*hx, j*hy}) : VecFloat({i*hx, j*hy, k*hz});
-//
-//        return p; // Relative position
-//    }
+    using Base::Base;
 
 private:
     inline constexpr

@@ -4,8 +4,11 @@ project(Caribou.Topology)
 set(HEADER_FILES
         Engine/Grid/Cell.h
         Engine/Grid/Grid.h
-        Engine/Grid/Internal/Grid.h
-        Engine/Grid/Internal/MultidimensionalGrid.h)
+        Engine/Grid/GridContainer.h
+        Engine/Grid/Internal/BaseCell.h
+        Engine/Grid/Internal/BaseGrid.h
+        Engine/Grid/Internal/BaseMultidimensionalGrid.h
+        Engine/Grid/Internal/BaseUnidimensionalGrid.h)
 
 add_library(${PROJECT_NAME} INTERFACE)
 

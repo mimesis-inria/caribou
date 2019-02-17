@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <Caribou/Topology/Engine/Grid/Grid.h>
+#include <Caribou/Topology/Engine/Grid/GridContainer.h>
 #include <Caribou/Topology/Engine/Grid/Cell.h>
 #include <Caribou/Algebra/Vector.h>
 
@@ -12,7 +13,7 @@ bool list_are_equals (const std::list<T> & l1, const std::list<T> & l2)
         if (*it1 != *it2)
             return false;
     return true;
-};
+}
 
 TEST(Topology, Grid1D) {
     using namespace caribou::topology::engine;
@@ -40,9 +41,20 @@ TEST(Topology, Grid1D) {
     ASSERT_EQ((Grid::GridCoordinates) 1, grid.grid_coordinates_at(Grid::WorldCoordinates (100)));
 
     // Cells queries
+    ASSERT_TRUE(list_are_equals({}, grid.cells_enclosing(-50, 0, 0.24)));
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_enclosing(-50, 25, 50.24)));
     ASSERT_TRUE(list_are_equals({0}, grid.cells_enclosing(0.25, 25, 50.24)));
     ASSERT_TRUE(list_are_equals({1}, grid.cells_enclosing(50.25, 75, 100.24)));
     ASSERT_TRUE(list_are_equals({0,1}, grid.cells_enclosing(25, 75)));
+    ASSERT_TRUE(list_are_equals({0,1}, grid.cells_enclosing(0.25, 101)));
+}
+
+TEST(Topology, GridContainer1D) {
+    using namespace caribou::topology::engine;
+    using Cell = Cell<1>;
+    using Grid = GridContainer<1, Cell>;
+
+    Grid grid(0.25 /* anchor_position */, 2 /* subdivision */, 100 /* size */);
 }
 
 TEST(Topology, Grid2D) {
@@ -65,6 +77,11 @@ TEST(Topology, Grid2D) {
     ASSERT_FALSE(grid.contains_position({100.26,100.5}));
 
     // Cells queries
+    ASSERT_TRUE(list_are_equals({0,2}, grid.cells_enclosing(
+            Grid::WorldCoordinates ({-50, 50}),
+            Grid::WorldCoordinates ({25, 25}),
+            Grid::WorldCoordinates ({25, 75})
+    )));
     ASSERT_TRUE(list_are_equals({0}, grid.cells_enclosing(
             Grid::WorldCoordinates ({0.25, 0.5}),
             Grid::WorldCoordinates ({25, 25}),
@@ -104,6 +121,12 @@ TEST(Topology, Grid3D) {
     ASSERT_FALSE(grid.contains_position({100.25,100.50,100.76}));
 
     // Cells queries
+    ASSERT_TRUE(list_are_equals({0,2,4,6}, grid.cells_enclosing(
+            Grid::WorldCoordinates ({-50, 50, 50}),
+            Grid::WorldCoordinates ({25, 25, 25}),
+            Grid::WorldCoordinates ({25, 75, 75})
+    )));
+
     ASSERT_TRUE(list_are_equals({0}, grid.cells_enclosing(
             Grid::WorldCoordinates ({0.25, 0.5, 0.75}),
             Grid::WorldCoordinates ({25, 25, 25}),
