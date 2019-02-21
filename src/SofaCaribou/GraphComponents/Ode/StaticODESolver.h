@@ -1,5 +1,5 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICSOLVER_H
-#define SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICSOLVER_H
+#ifndef SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICODESOLVER_H
+#define SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICODESOLVER_H
 
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
@@ -11,11 +11,11 @@ namespace ode {
 
 using sofa::core::objectmodel::Data;
 
-class StaticSolver : public sofa::core::behavior::OdeSolver
+class StaticODESolver : public sofa::core::behavior::OdeSolver
 {
 public:
-    SOFA_CLASS(StaticSolver, sofa::core::behavior::OdeSolver);
-    StaticSolver();
+    SOFA_CLASS(StaticODESolver, sofa::core::behavior::OdeSolver);
+    StaticODESolver();
 
 public:
     void solve (const sofa::core::ExecParams* params /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
@@ -100,7 +100,6 @@ protected:
     Data<unsigned> d_newton_iterations;
     Data<double> d_correction_tolerance_threshold;
     Data<double> d_residual_tolerance_threshold;
-    Data<bool> d_should_converge_on_residual_tolerance_threshold;
     Data<bool> d_shoud_diverge_when_residual_is_growing;
 };
 
@@ -109,4 +108,4 @@ protected:
 } // namespace GraphComponents
 } // namespace SofaCaribou
 
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICSOLVER_H
+#endif //SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICODESOLVER_H

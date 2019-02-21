@@ -4,7 +4,7 @@ project(SofaCaribou)
 set(HEADER_FILES
     GraphComponents/Forcefield/HexahedronElasticForce.h
     GraphComponents/Forcefield/TractionForce.h
-    GraphComponents/Ode/StaticSolver.h
+    GraphComponents/Ode/StaticODESolver.h
     Traits.h)
 
 set(TEMPLATE_FILES
@@ -13,7 +13,7 @@ set(TEMPLATE_FILES
 set(SOURCE_FILES
     GraphComponents/Forcefield/HexahedronElasticForce.cpp
     GraphComponents/Forcefield/TractionForce.cpp
-    GraphComponents/Ode/StaticSolver.cpp
+    GraphComponents/Ode/StaticODESolver.cpp
     init.cpp)
 
 # Try to find Sofa's cmake prefix

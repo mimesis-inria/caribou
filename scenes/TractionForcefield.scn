@@ -10,7 +10,27 @@
         <BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />
         <FixedConstraint indices="@fixed_roi.indices" />
 
-        <BoxROI name="press_roi" box="-7.5 -7.5 79.9 7.5 7.5 80.1" />
-        <ConstantForceField indices="@press_roi.indices" totalForce="0 0 20000000" />
+        <Node>
+            <include href="Objects/QuadSetTopology.xml" src="@" tags=" " />
+            <Hexa2QuadTopologicalMapping input="@../hexahedron_container" output="@Container" />
+
+            <Node>
+                <MechanicalObject />
+                <IdentityMapping  input="@../.." output="@."/>
+
+                <include href="Objects/TriangleSetTopology.xml" src="@" tags=" " />
+                <Quad2TriangleTopologicalMapping input="@../Container" output="@Container" />
+
+                <BoxROI name="press_roi" box="-7.6 -7.6 79.9 7.6 7.6 80.1" drawBoxes="1" drawTriangles="1"/>
+                <TractionForce triangles="@press_roi.trianglesInROI" traction="0 0 20000000" />
+            </Node>
+            <Node>
+                <include href="Objects/TriangleSetTopology.xml" src="@" tags=" " />
+                <Quad2TriangleTopologicalMapping input="@../Container" output="@Container" />
+
+                <OglModel name="Visual" color="red" />
+                <IdentityMapping  input="@../.." output="@."/>
+            </Node>
+        </Node>
     </Node>
 </Node>
