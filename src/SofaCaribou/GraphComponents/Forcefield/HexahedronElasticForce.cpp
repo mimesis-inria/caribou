@@ -42,18 +42,18 @@ void HexahedronElasticForce<DataTypes>::init()
 {
     Inherit::init();
     if (not d_topology_container.get()) {
-        auto containers = this->getContext()->template getObjects<TopologyContainer>(BaseContext::Local);
+        auto containers = this->getContext()->template getObjects<BaseMeshTopology>(BaseContext::Local);
         auto node = static_cast<const sofa::simulation::Node *> (this->getContext());
         if (containers.empty()) {
-            msg_error() << "No topology container were found in the context node '" << node->getPathName() << "'.";
+            msg_error() << "No topology were found in the context node '" << node->getPathName() << "'.";
         } else if (containers.size() > 1) {
             msg_error() <<
-            "Multiple topology containers were found in the node '" << node->getPathName() << "'." <<
+            "Multiple topology were found in the node '" << node->getPathName() << "'." <<
             " Please specify which one contains the elements on which this force field will be computed " <<
             "by explicitly setting the container's path in the 'topology_container' parameter.";
         } else {
             d_topology_container.set(containers[0]);
-            msg_info() << "Automatically found the topology container '" << d_topology_container.get()->getPathName() << "'.";
+            msg_info() << "Automatically found the topology '" << d_topology_container.get()->getPathName() << "'.";
         }
     }
 
@@ -68,7 +68,7 @@ void HexahedronElasticForce<DataTypes>::init()
 template<class DataTypes>
 void HexahedronElasticForce<DataTypes>::reinit()
 {
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    sofa::core::topology::BaseMeshTopology * topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
 
     if (!topology or !state)
@@ -184,7 +184,7 @@ void HexahedronElasticForce<DataTypes>::addForce(
 
     static const auto I = Matrix<3,3,Real>::Identity();
 
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    auto topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
 
     if (!topology or !state)
@@ -368,7 +368,7 @@ void HexahedronElasticForce<DataTypes>::addDForce(
         Data<VecDeriv>& d_df,
         const Data<VecDeriv>& d_dx)
 {
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    auto * topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
 
     if (!topology or !state)
@@ -420,7 +420,7 @@ void HexahedronElasticForce<DataTypes>::addDForce(
 template<class DataTypes>
 void HexahedronElasticForce<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int & /*offset*/)
 {
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    auto * topology = d_topology_container.get();
 
     if (!topology)
         return;
@@ -486,7 +486,7 @@ void HexahedronElasticForce<DataTypes>::computeBBox(const sofa::core::ExecParams
 template<class DataTypes>
 void HexahedronElasticForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
 {
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    auto * topology = d_topology_container.get();
     if (!topology)
         return;
 

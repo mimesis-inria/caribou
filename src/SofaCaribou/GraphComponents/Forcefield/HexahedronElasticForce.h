@@ -79,7 +79,7 @@ public:
     inline
     Hexahedron make_hexa(std::size_t hexa_id, const T & x) const
     {
-        sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+        auto * topology = d_topology_container.get();
         const auto &node_indices = topology->getHexahedron(hexa_id);
 
         std::array<caribou::geometry::Node<3>, 8> nodes;
@@ -96,7 +96,7 @@ protected:
     Data< Real > d_poissonRatio;
     Data< bool > d_linear_strain;
     Data< bool > d_corotated;
-    Link<TopologyContainer> d_topology_container;
+    Link<BaseMeshTopology> d_topology_container;
 
 private:
     std::vector<caribou::algebra::Matrix<24, 24, Real>> p_stiffness_matrices;
