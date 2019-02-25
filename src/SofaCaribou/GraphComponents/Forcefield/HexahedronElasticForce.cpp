@@ -3,6 +3,7 @@
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/Node.h>
+#include <sofa/helper/AdvancedTimer.h>
 
 #include <SofaCaribou/Traits.h>
 #include <Caribou/Geometry/Hexahedron.h>
@@ -201,9 +202,9 @@ void HexahedronElasticForce<DataTypes>::addForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     bool corotated = d_corotated.getValue();
-
     if (d_linear_strain.getValue()) {
         // Small (linear) strain
+        sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
             Hexahedron hexa = make_hexa(hexa_id, x);
 
@@ -249,8 +250,10 @@ void HexahedronElasticForce<DataTypes>::addForce(
                 ++i;
             }
         }
+        sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addForce");
     } else {
         // Nonlinear Green-Lagrange strain
+        sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
         bool compute_tangent_stiffness = mparams->implicit();
         const Real youngModulus = d_youngModulus.getValue();
         const Real poissonRatio = d_poissonRatio.getValue();
@@ -359,6 +362,7 @@ void HexahedronElasticForce<DataTypes>::addForce(
             }
 
         }
+        sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addForce");
     }
 }
 
@@ -382,6 +386,7 @@ void HexahedronElasticForce<DataTypes>::addDForce(
     sofa::helper::WriteAccessor<Data<VecDeriv>> df = d_df;
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
+    sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
 
         const Mat33 & R  = current_rotation[hexa_id];
@@ -415,6 +420,7 @@ void HexahedronElasticForce<DataTypes>::addDForce(
             ++i;
         }
     }
+    sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addDForce");
 }
 
 template<class DataTypes>
@@ -427,6 +433,7 @@ void HexahedronElasticForce<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatr
 
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
+    sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addKToMatrix");
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(hexa_id);
         const Mat33 & R  = current_rotation[hexa_id];
@@ -451,13 +458,13 @@ void HexahedronElasticForce<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatr
                         const auto x = node_indices[i]*3+m;
                         const auto y = node_indices[j]*3+n;
 
-                        const auto v = matrix->element(x,y);
-                        matrix->set(x, y, v + k(m,n));
+                        matrix->add(x, y, k(m,n));
                     }
                 }
             }
         }
     }
+    sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addKToMatrix");
 }
 
 template<class DataTypes>
