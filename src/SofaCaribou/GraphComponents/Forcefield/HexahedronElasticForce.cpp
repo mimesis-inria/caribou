@@ -3,6 +3,7 @@
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/Node.h>
+#include <sofa/helper/AdvancedTimer.h>
 
 #include <SofaCaribou/Traits.h>
 #include <Caribou/Geometry/Hexahedron.h>
@@ -42,18 +43,18 @@ void HexahedronElasticForce<DataTypes>::init()
 {
     Inherit::init();
     if (not d_topology_container.get()) {
-        auto containers = this->getContext()->template getObjects<TopologyContainer>(BaseContext::Local);
+        auto containers = this->getContext()->template getObjects<BaseMeshTopology>(BaseContext::Local);
         auto node = static_cast<const sofa::simulation::Node *> (this->getContext());
         if (containers.empty()) {
-            msg_error() << "No topology container were found in the context node '" << node->getPathName() << "'.";
+            msg_error() << "No topology were found in the context node '" << node->getPathName() << "'.";
         } else if (containers.size() > 1) {
             msg_error() <<
-            "Multiple topology containers were found in the node '" << node->getPathName() << "'." <<
+            "Multiple topology were found in the node '" << node->getPathName() << "'." <<
             " Please specify which one contains the elements on which this force field will be computed " <<
             "by explicitly setting the container's path in the 'topology_container' parameter.";
         } else {
             d_topology_container.set(containers[0]);
-            msg_info() << "Automatically found the topology container '" << d_topology_container.get()->getPathName() << "'.";
+            msg_info() << "Automatically found the topology '" << d_topology_container.get()->getPathName() << "'.";
         }
     }
 
@@ -68,7 +69,7 @@ void HexahedronElasticForce<DataTypes>::init()
 template<class DataTypes>
 void HexahedronElasticForce<DataTypes>::reinit()
 {
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    sofa::core::topology::BaseMeshTopology * topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
 
     if (!topology or !state)
@@ -184,7 +185,7 @@ void HexahedronElasticForce<DataTypes>::addForce(
 
     static const auto I = Matrix<3,3,Real>::Identity();
 
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    auto topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
 
     if (!topology or !state)
@@ -201,9 +202,9 @@ void HexahedronElasticForce<DataTypes>::addForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     bool corotated = d_corotated.getValue();
-
     if (d_linear_strain.getValue()) {
         // Small (linear) strain
+        sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
             Hexahedron hexa = make_hexa(hexa_id, x);
 
@@ -249,8 +250,10 @@ void HexahedronElasticForce<DataTypes>::addForce(
                 ++i;
             }
         }
+        sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addForce");
     } else {
         // Nonlinear Green-Lagrange strain
+        sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
         bool compute_tangent_stiffness = mparams->implicit();
         const Real youngModulus = d_youngModulus.getValue();
         const Real poissonRatio = d_poissonRatio.getValue();
@@ -359,6 +362,7 @@ void HexahedronElasticForce<DataTypes>::addForce(
             }
 
         }
+        sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addForce");
     }
 }
 
@@ -368,7 +372,7 @@ void HexahedronElasticForce<DataTypes>::addDForce(
         Data<VecDeriv>& d_df,
         const Data<VecDeriv>& d_dx)
 {
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    auto * topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
 
     if (!topology or !state)
@@ -382,6 +386,7 @@ void HexahedronElasticForce<DataTypes>::addDForce(
     sofa::helper::WriteAccessor<Data<VecDeriv>> df = d_df;
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
+    sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
 
         const Mat33 & R  = current_rotation[hexa_id];
@@ -415,6 +420,51 @@ void HexahedronElasticForce<DataTypes>::addDForce(
             ++i;
         }
     }
+    sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addDForce");
+}
+
+template<class DataTypes>
+void HexahedronElasticForce<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int & /*offset*/)
+{
+    auto * topology = d_topology_container.get();
+
+    if (!topology)
+        return;
+
+    std::vector<Mat33> & current_rotation = p_current_rotation;
+
+    sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addKToMatrix");
+    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+        const auto & node_indices = topology->getHexahedron(hexa_id);
+        const Mat33 & R  = current_rotation[hexa_id];
+        const Mat33   Rt = R.T();
+
+        const auto & K = p_stiffness_matrices[hexa_id];
+
+        for (size_t i = 0; i < 8; ++i) {
+            for (size_t j = 0; j < 8; ++j) {
+                Mat33 k;
+
+                for (unsigned char m = 0; m < 3; ++m) {
+                    for (unsigned char n = 0; n < 3; ++n) {
+                        k(m,n) = K(i*3+m, j*3+n);
+                    }
+                }
+
+                k = -1. * R*k*Rt*kFact;
+
+                for (unsigned char m = 0; m < 3; ++m) {
+                    for (unsigned char n = 0; n < 3; ++n) {
+                        const auto x = node_indices[i]*3+m;
+                        const auto y = node_indices[j]*3+n;
+
+                        matrix->add(x, y, k(m,n));
+                    }
+                }
+            }
+        }
+    }
+    sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addKToMatrix");
 }
 
 template<class DataTypes>
@@ -486,7 +536,7 @@ void HexahedronElasticForce<DataTypes>::computeBBox(const sofa::core::ExecParams
 template<class DataTypes>
 void HexahedronElasticForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
 {
-    sofa::core::topology::TopologyContainer * topology = d_topology_container.get();
+    auto * topology = d_topology_container.get();
     if (!topology)
         return;
 

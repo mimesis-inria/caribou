@@ -55,6 +55,8 @@ TractionForce<DataTypes>::TractionForce()
 template<class DataTypes>
 void TractionForce<DataTypes>::init()
 {
+    sofa::core::behavior::ForceField<DataTypes>::init();
+
     // If no triangle container specified, but a link is set for the triangles, use the linked container
     if ( !  d_triangleContainer.get()
          && d_triangles.getParent()

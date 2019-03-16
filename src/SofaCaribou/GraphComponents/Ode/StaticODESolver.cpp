@@ -1,4 +1,4 @@
-#include "StaticSolver.h"
+#include "StaticODESolver.h"
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/helper/AdvancedTimer.h>
@@ -14,7 +14,7 @@ using sofa::core::VecId;
 using namespace sofa::defaulttype;
 using namespace sofa::core::behavior;
 
-StaticSolver::StaticSolver()
+StaticODESolver::StaticODESolver()
     : d_newton_iterations(initData(&d_newton_iterations,
             (unsigned) 1,
             "newton_iterations",
@@ -35,7 +35,7 @@ StaticSolver::StaticSolver()
 
 {}
 
-void StaticSolver::solve(const sofa::core::ExecParams* params, double /*dt*/, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId /*vResult*/) {
+void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId /*vResult*/) {
     sofa::simulation::common::VectorOperations vop( params, this->getContext() );
     sofa::simulation::common::MechanicalOperations mop( params, this->getContext() );
     sofa::simulation::common::VisitorExecuteFunc executeVisitor(*this->getContext());
@@ -57,7 +57,7 @@ void StaticSolver::solve(const sofa::core::ExecParams* params, double /*dt*/, so
     unsigned n_it=0;
     double dx_norm = -1.0, f_norm;
 
-    sofa::helper::AdvancedTimer::stepBegin("StaticSolver::Solve");
+    sofa::helper::AdvancedTimer::stepBegin("StaticODESolver::Solve");
 
     // compute addForce, in mapped: addForce + applyJT (vec)
     // Initial computation
@@ -71,10 +71,8 @@ void StaticSolver::solve(const sofa::core::ExecParams* params, double /*dt*/, so
     } else {
 
         while (n_it < d_newton_iterations.getValue()) {
-
-            {
-                sofa::helper::AdvancedTimer::stepBegin("step_" + std::to_string(n_it));
-            }
+            std::string stepname = "step_" + std::to_string(n_it);
+            sofa::helper::AdvancedTimer::stepBegin(stepname.c_str());
 
 
             // assemble matrix, CG: does nothing
@@ -105,12 +103,10 @@ void StaticSolver::solve(const sofa::core::ExecParams* params, double /*dt*/, so
             dx_norm = sqrt(dx.dot(dx));
 
 
-            {
-                msg_info() << "Newton iteration #" << n_it << ": |f - K(x0 + dx)| = " << f_cur_norm << " |dx| = " << dx_norm;
-                sofa::helper::AdvancedTimer::valSet("residual", f_cur_norm);
-                sofa::helper::AdvancedTimer::valSet("correction", dx_norm);
-                sofa::helper::AdvancedTimer::stepEnd("step_" + std::to_string(n_it));
-            }
+            msg_info() << "Newton iteration #" << n_it << ": |f - K(x0 + dx)| = " << f_cur_norm << " |dx| = " << dx_norm;
+            sofa::helper::AdvancedTimer::valSet("residual", f_cur_norm);
+            sofa::helper::AdvancedTimer::valSet("correction", dx_norm);
+            sofa::helper::AdvancedTimer::stepEnd(stepname.c_str());
 
             if (d_shoud_diverge_when_residual_is_growing.getValue() && f_cur_norm > f_norm && n_it>1) {
                 msg_info() << "[DIVERGED] residual's norm increased";
@@ -143,14 +139,14 @@ void StaticSolver::solve(const sofa::core::ExecParams* params, double /*dt*/, so
     sofa::helper::AdvancedTimer::valSet("nb_iterations", n_it+1);
     sofa::helper::AdvancedTimer::valSet("residual", f_norm);
     sofa::helper::AdvancedTimer::valSet("correction", dx_norm);
-    sofa::helper::AdvancedTimer::stepEnd("StaticSolver::Solve");
+    sofa::helper::AdvancedTimer::stepEnd("StaticODESolver::Solve");
 }
 
 
-SOFA_DECL_CLASS(StaticSolver)
+SOFA_DECL_CLASS(StaticODESolver)
 
-int StaticSolverClass = sofa::core::RegisterObject("Static Solver")
-    .add< StaticSolver >()
+int StaticODESolverClass = sofa::core::RegisterObject("Static ODE Solver")
+    .add< StaticODESolver >()
 ;
 
 } // namespace ode
