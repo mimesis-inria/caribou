@@ -18,6 +18,13 @@ option(CARIBOU_WITH_PYTHON_2 "Compile the plugin with python 2 support" ${PYTHON
 find_package(Python3 QUIET)
 option(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ${Python3_FOUND})
 
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
 
 ## Change default install prefix
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
