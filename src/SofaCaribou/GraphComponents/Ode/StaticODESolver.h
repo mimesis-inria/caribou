@@ -97,10 +97,15 @@ protected:
 
     /// the solution vector is stored for warm-start
     sofa::core::behavior::MultiVecDeriv dx;
+
+    /// INPUTS
     Data<unsigned> d_newton_iterations;
     Data<double> d_correction_tolerance_threshold;
     Data<double> d_residual_tolerance_threshold;
     Data<bool> d_shoud_diverge_when_residual_is_growing;
+
+    /// OUTPUTS
+    Data<bool> d_converged; ///< Whether or not the last call to solve converged
 };
 
 

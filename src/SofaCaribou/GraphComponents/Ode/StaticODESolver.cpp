@@ -32,6 +32,7 @@ StaticODESolver::StaticODESolver()
             false,
             "shoud_diverge_when_residual_is_growing",
             "Divergence criterion: The newton iterations will stop when the residual is greater than the one from the previous iteration."))
+    , d_converged(initData(&d_converged, false, "converged", "Whether or not the last call to solve converged", true /*is_displayed_in_gui*/, true /*is_read_only*/))
 
 {}
 
@@ -109,17 +110,20 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             sofa::helper::AdvancedTimer::stepEnd(stepname.c_str());
 
             if (d_shoud_diverge_when_residual_is_growing.getValue() && f_cur_norm > f_norm && n_it>1) {
+                d_converged.setValue(false);
                 msg_info() << "[DIVERGED] residual's norm increased";
                 break;
             }
 
             if (dx_norm <= this->d_correction_tolerance_threshold.getValue()) {
+                d_converged.setValue(true);
                 msg_info() << "[CONVERGED] The correction's norm |dx| is smaller than the threshold of "
                            << d_correction_tolerance_threshold;
                 break;
             }
 
             if (d_residual_tolerance_threshold.getValue() > 0 && f_cur_norm <= d_residual_tolerance_threshold.getValue()) {
+                d_converged.setValue(true);
                 msg_info() << "[CONVERGED] The residual's norm |f - K(x0 + dx)| is smaller than the threshold of "
                            << d_residual_tolerance_threshold;
                 break;
@@ -133,6 +137,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
 
     if (n_it >= d_newton_iterations.getValue()) {
         n_it--;
+        d_converged.setValue(false);
         msg_info() << "[DIVERGED] The number of Newton iterations reached the threshold of " << d_newton_iterations << " iterations";
     }
 
