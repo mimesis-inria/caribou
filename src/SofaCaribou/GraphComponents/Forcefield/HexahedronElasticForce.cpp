@@ -266,7 +266,6 @@ void HexahedronElasticForce<DataTypes>::addForce(
                 K.fill(0.);
         }
 
-#pragma omp parallel for
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
             const auto &hexa = topology->getHexahedron(hexa_id);
 
@@ -357,11 +356,8 @@ void HexahedronElasticForce<DataTypes>::addForce(
             }
 
             for (size_t i = 0; i < 8; ++i) {
-#pragma omp atomic
                 f[hexa[i]][0] -= forces.row(i)[0];
-#pragma omp atomic
                 f[hexa[i]][1] -= forces.row(i)[1];
-#pragma omp atomic
                 f[hexa[i]][2] -= forces.row(i)[2];
             }
 
@@ -417,7 +413,6 @@ void HexahedronElasticForce<DataTypes>::addDForce(
         for (const auto & node_id : topology->getHexahedron(hexa_id)) {
             Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
             force = R*force;
-
             df[node_id][0] -= force[0];
             df[node_id][1] -= force[1];
             df[node_id][2] -= force[2];
