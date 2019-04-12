@@ -9,5 +9,4 @@ PYBIND11_MODULE(CaribouGeometryPython, m) {
     m.doc() = "Geometry module";
 
     create_node(m);
-
 }

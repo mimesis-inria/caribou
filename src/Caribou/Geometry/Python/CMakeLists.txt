@@ -19,88 +19,23 @@ set(SOURCE_FILES
     Node.cpp
 )
 
-if (CARIBOU_WITH_PYTHON_3)
-    project(CaribouGeometryPython3)
-    find_package(Python3 COMPONENTS Development REQUIRED)
-    message(STATUS "${PROJECT_NAME} with python 3 support (version ${Python3_VERSION})")
-
-    set(PYBIND11_PYTHON_VERSION ${Python3_VERSION})
-    set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
-    set(PYBIND11_CPP_STANDARD -std=c++17)
-
-    find_package(pybind11 REQUIRED)
-
-    pybind11_add_module(${PROJECT_NAME} ${SOURCE_FILES})
-
-    target_include_directories(${PROJECT_NAME}
-        PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>"
-        PUBLIC $<INSTALL_INTERFACE:include>
-        )
-
-
-    target_compile_definitions(${PROJECT_NAME}
-        PUBLIC PYTHON_3
-        )
-
-    set_target_properties(
-        ${PROJECT_NAME}
-        PROPERTIES
-        OUTPUT_NAME ${PROJECT_NAME}
-        PREFIX "${PYTHON_MODULE_PREFIX}"
-        SUFFIX "${PYTHON_MODULE_EXTENSION}"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/site-packages/3/${DIRECTORY}"
-    )
-
-    set(PACKAGE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/site-packages/3")
-
-    file(COPY ${PYTHON_FILES} DESTINATION "${PACKAGE_INSTALL_PREFIX}/${DIRECTORY}")
-    foreach(t ${PYTHON_TEST_FILES})
-        configure_file(${t} "${CMAKE_BINARY_DIR}/python_tests/3/${DIRECTORY}/${t}")
-    endforeach()
-    install(FILES ${PYTHON_FILES} DESTINATION site-packages/3/${DIRECTORY})
-endif()
+unset(PYTHON_MODULE_PREFIX)
+unset(PYTHON_MODULE_EXTENSION)
 
 if (CARIBOU_WITH_PYTHON_2)
-    project(CaribouGeometryPython2)
-    find_package(PythonLibs 2.7 REQUIRED)
-    find_package(PythonInterp 2.7 REQUIRED)
-    message(STATUS "${PROJECT_NAME} with python 2.7 support (version ${PYTHONLIBS_VERSION_STRING})")
+    caribou_add_python_module(CaribouGeometryPython
+                              PYTHON_VERSION 2.7
+                              DESTINATION Caribou/Geometry
+                              SOURCE_FILES ${SOURCE_FILES}
+                              PYTHON_FILES ${PYTHON_FILES}
+                              PYTHON_TEST_FILES ${PYTHON_TEST_FILES})
+endif()
 
-    set(PYBIND11_PYTHON_VERSION ${PYTHONLIBS_VERSION_STRING})
-    set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
-    set(PYBIND11_CPP_STANDARD -std=c++17)
-
-    find_package(pybind11 REQUIRED)
-
-    add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${PYTHON_FILES})
-
-    target_include_directories(${PROJECT_NAME}
-            PUBLIC ${PYTHON_INCLUDE_DIRS}
-            PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>"
-            PUBLIC $<INSTALL_INTERFACE:include>
-            )
-
-
-    target_compile_definitions(${PROJECT_NAME}
-            PUBLIC PYTHON_27
-    )
-
-    set_target_properties(
-        ${PROJECT_NAME}
-        PROPERTIES
-            OUTPUT_NAME ${PROJECT_NAME}
-            PREFIX "${PYTHON_MODULE_PREFIX}"
-            SUFFIX "${PYTHON_MODULE_EXTENSION}"
-            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/site-packages/2.7/${DIRECTORY}"
-    )
-
-    target_link_libraries(${PROJECT_NAME} pybind11::module)
-
-    set(PACKAGE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/site-packages/2.7")
-
-    file(COPY ${PYTHON_FILES} DESTINATION "${PACKAGE_INSTALL_PREFIX}/${DIRECTORY}")
-        foreach(t ${PYTHON_TEST_FILES})
-            configure_file(${t} "${CMAKE_BINARY_DIR}/python_tests/2.7/${DIRECTORY}/${t}")
-        endforeach()
-    install(FILES ${PYTHON_FILES} DESTINATION site-packages/2.7/${DIRECTORY})
+if (CARIBOU_WITH_PYTHON_3)
+    caribou_add_python_module(CaribouGeometryPython
+                              PYTHON_VERSION 3
+                              DESTINATION Caribou/Geometry
+                              SOURCE_FILES ${SOURCE_FILES}
+                              PYTHON_FILES ${PYTHON_FILES}
+                              PYTHON_TEST_FILES ${PYTHON_TEST_FILES})
 endif()

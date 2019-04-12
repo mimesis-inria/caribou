@@ -6,7 +6,9 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 endif()
 
-
+# CMAKE TOOLS
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
+include(caribouTools)
 # OPTIONS
 
 option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." ON)
