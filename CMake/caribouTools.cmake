@@ -52,9 +52,9 @@ function(caribou_add_python_module NAME)
         project(${TARGET_NAME})
 
         if (${A_PYTHON_VERSION} VERSION_LESS "3.0")
-            find_package(PythonLibs ${A_PYTHON_VERSION})
+            find_package(PythonLibs ${A_PYTHON_VERSION} QUIET)
         else()
-            find_package(Python3 COMPONENTS Development)
+            find_package(Python3 QUIET COMPONENTS Development)
             set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
         endif ()
 
@@ -72,8 +72,11 @@ function(caribou_add_python_module NAME)
                                    PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>"
                                    PUBLIC $<INSTALL_INTERFACE:include>
                                    )
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            target_compile_options(${TARGET_NAME} PRIVATE -fsized-deallocation)
+        endif()
 
-        add_compile_definitions(register=)
+        target_compile_options(${TARGET_NAME} PRIVATE -Dregister=)
 
         set_target_properties(
             ${TARGET_NAME}
