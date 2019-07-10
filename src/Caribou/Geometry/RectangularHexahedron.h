@@ -11,7 +11,7 @@
 namespace caribou {
 namespace geometry {
 
-template <typename CanonicalElementType>
+template <typename CanonicalElementType = interpolation::Hexahedron8>
 struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementType, RectangularHexahedron<CanonicalElementType>>
 {
     static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
@@ -73,6 +73,14 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         return nodes;
     }
 
+    /** Get the center point position */
+    inline
+    NodeType
+    center() const
+    {
+        return p_center;
+    }
+
     /**
      * Get the local coordinates frame (a.k.a. the rotation matrix) positioned at the center of the hexahedron
      */
@@ -126,7 +134,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     WorldCoordinates
     T(const LocalCoordinates & coordinates) const
     {
-        return p_center + (p_R * coordinates.direct_multiplication(p_H/2.));
+        return p_center + ((p_R * coordinates).direct_multiplication(p_H/2.));
     }
 
     /**
@@ -136,7 +144,54 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     LocalCoordinates
     Tinv(const WorldCoordinates & coordinates) const
     {
-        return p_R.T() * (coordinates - p_center).direct_multiplication(2./p_H);
+        return p_R.T() * ((coordinates - p_center).direct_division(p_H/2.));
+    }
+
+    /**
+     * Test if the cube intersects the given 3D segment (in world coordinates)
+     *
+     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
+     */
+    inline
+    bool
+    intersects(const Segment<3> & segment) const
+    {
+        const auto & v0 = Tinv(segment.node(0)) / 2.;
+        const auto & v1 = Tinv(segment.node(1)) / 2.;
+
+        const auto edge = (v1 - v0);
+        INTEGER_TYPE edge_signs[3];
+
+        for (INTEGER_TYPE i = 0; i < 3; ++i) {
+            edge_signs[i] = (edge[i] < 0) ? -1 : 1;
+        }
+
+        for (INTEGER_TYPE i = 0; i < 3; ++i) {
+
+            if (v0[i] * edge_signs[i] >  .5+EPSILON) return false;
+            if (v1[i] * edge_signs[i] < -.5-EPSILON) return false;
+        }
+
+
+        for (INTEGER_TYPE i = 0; i < 3; ++i) {
+            FLOATING_POINT_TYPE rhomb_normal_dot_v0, rhomb_normal_dot_cubedge;
+
+            const INTEGER_TYPE iplus1 = (i + 1) % 3;
+            const INTEGER_TYPE iplus2 = (i + 2) % 3;
+
+            rhomb_normal_dot_v0 =   edge[iplus2] * v0[iplus1]
+                                  - edge[iplus1] * v0[iplus2];
+
+            rhomb_normal_dot_cubedge = .5 *
+                                       (edge[iplus2] * edge_signs[iplus1] +
+                                        edge[iplus1] * edge_signs[iplus2]);
+
+            const auto r = (rhomb_normal_dot_v0*rhomb_normal_dot_v0) - (rhomb_normal_dot_cubedge*rhomb_normal_dot_cubedge);
+            if (r > EPSILON)
+                return false;
+        }
+
+        return true;
     }
 
     /**

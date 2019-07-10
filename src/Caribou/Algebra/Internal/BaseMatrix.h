@@ -691,4 +691,18 @@ protected:
 } // namespace algebra
 } // namespace caribou
 
+
+/** scalar-Matrix division **/
+template <template <size_t, size_t, typename> class MatrixType, size_t R, size_t C, typename ValueType, typename ScalarType,
+          REQUIRES(std::is_arithmetic_v<ScalarType>),
+          REQUIRES(std::is_base_of_v<caribou::algebra::internal::CaribouMatrix, MatrixType<R,C,ValueType>>)>
+inline MatrixType<R, C, ValueType>
+operator/(const ScalarType & v, const MatrixType<R,C,ValueType> & m) noexcept
+{
+    MatrixType<R, C, ValueType> result;
+    std::transform(std::begin(m), std::end(m), std::begin(result), [v] (const ValueType & component) {
+        return v/component;
+    });
+    return result;
+}
 #endif //CARIBOU_ALGEBRA_INTERNAL_BASEMATRIX_H
