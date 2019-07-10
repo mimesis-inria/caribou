@@ -3,6 +3,7 @@
 #include <Caribou/config.h>
 #include <Caribou/Traits.h>
 #include <Caribou/Geometry/Node.h>
+#include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Hexahedron.h>
@@ -51,6 +52,55 @@ TEST(Geometry, Node) {
 
     p1.translate({5,5,5});
     ASSERT_EQ(Node(1+5, 2+5, 3+5), p1);
+}
+
+TEST(Geometry, Segment) {
+    using namespace caribou::geometry;
+    using namespace caribou::geometry::interpolation;
+    using namespace caribou::algebra;
+
+    using LocalCoordinates1D = Vector<1, FLOATING_POINT_TYPE>;
+    using LocalCoordinates2D = Vector<2, FLOATING_POINT_TYPE>;
+    using LocalCoordinates3D = Vector<3, FLOATING_POINT_TYPE>;
+
+    // Shape functions
+    ASSERT_EQ(Segment2::L<0>(-1), 1);
+    ASSERT_EQ(Segment2::L<1>(-1), 0);
+    ASSERT_EQ(Segment2::L<1>(1), 1);
+    ASSERT_EQ(Segment2::L<0>(1), 0);
+
+    // 1D
+    {
+        Node<1> node_0{-5.5};
+        Node<1> node_1{1.1};
+        Segment<1> segment(node_0, node_1);
+        ASSERT_EQ(segment.node(0), node_0);
+        ASSERT_EQ(segment.node(1), node_1);
+
+        Node<1> center_node{-2.2};
+        ASSERT_FLOAT_EQ(segment.center(), center_node);
+    }
+
+    // 2D
+    {
+        Node<2> node_0{-1.5, -1.5};
+        Node<2> node_1{5.5, 5.5};
+        Segment<2> segment(node_0, node_1);
+        Node<2> center_node = node_0 + (node_1 - node_0).unit()*(node_1-node_0).length()/2.;
+        ASSERT_FLOAT_EQ(segment.center()[0], center_node[0]);
+        ASSERT_FLOAT_EQ(segment.center()[1], center_node[1]);
+    }
+
+    // 3D
+    {
+        Node<3> node_0{-1.5, -1.5, -5.2};
+        Node<3> node_1{5.5, 5.5, 54.3};
+        Segment<3> segment(node_0, node_1);
+        Node<3> center_node = node_0 + (node_1 - node_0).unit()*(node_1-node_0).length()/2.;
+        ASSERT_FLOAT_EQ(segment.center()[0], center_node[0]);
+        ASSERT_FLOAT_EQ(segment.center()[1], center_node[1]);
+        ASSERT_FLOAT_EQ(segment.center()[2], center_node[2]);
+    }
 }
 
 TEST(Geometry, Triangle) {

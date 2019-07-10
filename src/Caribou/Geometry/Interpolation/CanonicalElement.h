@@ -178,10 +178,10 @@ struct CanonicalElement
      * @tparam ValueType Type of the value to interpolate.
      * This type must implement the multiplication operator with a floating point value (scalar) : ValueType * scalar.
      */
-    template <typename LocalCoordinates, typename WorldCoordinates>
+    template <typename LocalCoordinates, typename ValueType>
     static inline
     auto
-    interpolate_at_local_position (LocalCoordinates && coordinates, const std::array<WorldCoordinates, NumberOfNodes> & values)
+    interpolate_at_local_position (LocalCoordinates && coordinates, const std::array<ValueType, NumberOfNodes> & values)
     {
         const auto shapes = N(std::forward<LocalCoordinates>(coordinates));
         auto v = shapes[0] * values[0];
@@ -200,9 +200,8 @@ struct CanonicalElement
     auto
     interpolate_at_local_position (LocalCoordinates && coordinates, ValueType && v0, Values &&... v)
     {
-        const auto shapes = N(std::forward<LocalCoordinates>(coordinates));
-        const algebra::Vector<NumberOfNodes, ValueType> values {std::forward<ValueType>(v0), std::forward<Values>(v)...};
-        return  shapes.dot(values);
+        const std::array<ValueType, NumberOfNodes> values {std::forward<ValueType>(v0), std::forward<Values>(v)...};
+        return interpolate_at_local_position(std::forward<LocalCoordinates>(coordinates), values);
     }
 
 private:

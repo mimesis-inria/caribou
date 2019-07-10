@@ -11,7 +11,7 @@ namespace geometry {
 namespace interpolation {
 
 /**
- * Interpolation on a quad with Lagrange polynomials of degree 1 (P1)
+ * Interpolation on a triangle with Lagrange polynomials of degree 1 (P1)
  *
  * v
  * ^                                                                   2

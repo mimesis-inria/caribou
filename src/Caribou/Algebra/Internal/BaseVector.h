@@ -126,7 +126,7 @@ struct BaseVector : public BaseMatrix<MatrixType_, R_, C_, ValueType_>
     }
 
     /** Get the unit vector (current vector normalized to unit length) **/
-    inline constexpr MatrixType<R, C>
+    inline constexpr MatrixType<R, C, ValueType>
     unit() const noexcept
     {
         using Vec = const MatrixType<R,C,ValueType>&;

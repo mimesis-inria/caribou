@@ -11,11 +11,13 @@ set(HEADER_FILES
     Internal/BaseHexahedron.h
     Internal/BaseNode.h
     Internal/BaseQuad.h
+    Internal/BaseSegment.h
     Internal/BaseTriangle.h
     Interpolation/CanonicalElement.h
     Interpolation/Hexahedron.h
     Interpolation/Quad.h
-    Interpolation/Triangle.h)
+    Interpolation/Triangle.h
+    Interpolation/Segment.h)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
