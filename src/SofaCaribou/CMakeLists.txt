@@ -5,15 +5,18 @@ set(HEADER_FILES
     GraphComponents/Forcefield/HexahedronElasticForce.h
     GraphComponents/Forcefield/TractionForce.h
     GraphComponents/Ode/StaticODESolver.h
+    GraphComponents/Topology/FictitiousGrid.h
     Traits.h)
 
 set(TEMPLATE_FILES
+    GraphComponents/Topology/FictitiousGrid.inl
         )
 
 set(SOURCE_FILES
     GraphComponents/Forcefield/HexahedronElasticForce.cpp
     GraphComponents/Forcefield/TractionForce.cpp
     GraphComponents/Ode/StaticODESolver.cpp
+    GraphComponents/Topology/FictitiousGrid.cpp
     init.cpp)
 
 # Try to find Sofa's cmake prefix
@@ -49,7 +52,11 @@ find_package(SofaFramework REQUIRED)
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology Caribou.Geometry)
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SofaCore)
 target_link_libraries(${PROJECT_NAME} SofaCore SofaBaseTopology)
-target_link_libraries(${PROJECT_NAME} Caribou.Topology)
+target_link_libraries(${PROJECT_NAME} Caribou.Topology Caribou.Geometry)
+
+if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
+    add_subdirectory(Python)
+endif()

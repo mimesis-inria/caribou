@@ -7,11 +7,15 @@
 #include <sofa/core/topology/BaseTopology.h>
 
 #include <Caribou/Algebra/Vector.h>
+#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/RectangularHexahedron.h>
 #include <Caribou/Topology/Engine/Grid/GridContainer.h>
 #include <Caribou/config.h>
 
 #include <memory>
 #include <exception>
+#include <bitset>
+#include <functional>
 
 // Forward declarations
 namespace caribou::topology::engine {
@@ -55,20 +59,9 @@ public:
     using ElementId = sofa::core::topology::Topology::index_type;
     using VecElementId = sofa::helper::vector<ElementId>;
 
-    enum class Type {
-        Undefined,
-        Inside,
-        Outside,
-        Boundary
-    };
-
-    template <unsigned char Dim>
-    struct Cell {
-        Type type;
-    };
-
     // Grid data aliases
-    using GridType = caribou::topology::engine::GridContainer<Dimension, Cell<Dimension>>;
+    struct Cell;
+    using GridType = caribou::topology::engine::GridContainer<Dimension, Cell>;
     using NodeIndex = typename GridType::NodeIndex;
     using CellIndex = typename GridType::CellIndex;
     using Dimensions = typename GridType::Dimensions;
@@ -78,14 +71,40 @@ public:
     using GridCoordinates = typename GridType::GridCoordinates;
     using CellSet = typename GridType::CellSet;
 
+    // FictitiousGrid aliases
+    enum class Type {
+        Undefined,
+        Inside,
+        Outside,
+        Boundary
+    };
+
+    //using f_implicit_test_callback_t = float(*)(const std::array<FLOATING_POINT_TYPE, Dimension> &);
+    using f_implicit_test_callback_t = std::function<float(const std::array<FLOATING_POINT_TYPE, Dimension> &)>;
+
     template <typename ObjectType>
     using Link = SingleLink<FictitiousGrid<DataTypes>, ObjectType, BaseLink::FLAG_STRONGLINK>;
 
+    // Public functions
     FictitiousGrid();
     void init() override;
     void draw(const sofa::core::visual::VisualParams* vparams) override;
     void create_grid();
+    void compute_cell_types();
     std::pair<Coord, Coord> compute_bbox_from(const SofaVecCoord & positions);
+
+    /**
+     * Set the implicit test callback function.
+     * @param callback This should point to a function that takes one world position as argument and return 0 if the
+     * given position is directly on the surface, < 0 if it is inside the surface, > 1 otherwise.
+     *
+     * float implicit_test(const WorldCoordinates & query_position);
+     */
+    inline void
+    set_implicit_test_function(const f_implicit_test_callback_t & callback)
+    {
+        p_implicit_test_callback = callback;
+    }
 
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override
     {
@@ -100,15 +119,31 @@ private:
     Data<SofaVecFloat> d_min;
     Data<SofaVecFloat> d_max;
     Data<unsigned char> d_number_of_subdivision;
+    Data<bool> d_use_implicit_surface;
 
     Data< SofaVecCoord > d_surface_positions;
     Link<sofa::core::topology::TopologyContainer> d_surface_topology_container;
 
     std::unique_ptr<GridType> p_grid;
+    f_implicit_test_callback_t p_implicit_test_callback;
+
+    std::vector<Type> p_node_type;
 };
 
 template<> void FictitiousGrid<Vec2Types>::create_grid ();
 template<> void FictitiousGrid<Vec3Types>::create_grid ();
+
+template <>
+struct FictitiousGrid<Vec2Types>::Cell {
+    Type type = Type::Undefined;
+    std::bitset<4 + (caribou::geometry::Quad<2>::NumberOfNodes - 4)> node_is_inside_boundaries;
+};
+
+template <>
+struct FictitiousGrid<Vec3Types>::Cell {
+    Type type = Type::Undefined;
+    std::bitset<8 + (caribou::geometry::RectangularHexahedron<>::NumberOfNodes - 8)> node_is_inside_boundaries;
+};
 
 extern template class FictitiousGrid<Vec2Types>;
 extern template class FictitiousGrid<Vec3Types>;

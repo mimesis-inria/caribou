@@ -50,8 +50,6 @@ void FictitiousGrid<Vec3Types>::create_grid()
     p_grid = std::make_unique<GridType> (
             anchor_position, grid_n, grid_size
     );
-
-
 }
 
 // This will force the compiler to compile the class with some template type
