@@ -5,6 +5,7 @@
 #include <Caribou/Algebra/Vector.h>
 #include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Interpolation/Hexahedron.h>
 #include <Caribou/Geometry/Internal/BaseHexahedron.h>
 
@@ -156,31 +157,48 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     bool
     intersects(const Segment<3> & segment) const
     {
-        const auto & v0 = Tinv(segment.node(0)) / 2.;
-        const auto & v1 = Tinv(segment.node(1)) / 2.;
+        return intersects_local(
+            Segment<3>(
+                Tinv(segment.node(0)),
+                Tinv(segment.node(1))
+            )
+        );
+    }
+
+    /**
+     * Test if the cube intersects the given 3D segment (in the hexahedron's local coordinates)
+     *
+     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
+     */
+    inline
+    bool
+    intersects_local(const Segment<3> & segment) const
+    {
+        const auto & v0 = segment.node(0) / 2.; // Shrink to a cube of size 1x1x1 centered on 0
+        const auto & v1 = segment.node(1) / 2.; // Shrink to a cube of size 1x1x1 centered on 0
 
         const auto edge = (v1 - v0);
         INTEGER_TYPE edge_signs[3];
 
-        for (INTEGER_TYPE i = 0; i < 3; ++i) {
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
             edge_signs[i] = (edge[i] < 0) ? -1 : 1;
         }
 
-        for (INTEGER_TYPE i = 0; i < 3; ++i) {
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
 
             if (v0[i] * edge_signs[i] >  .5+EPSILON) return false;
             if (v1[i] * edge_signs[i] < -.5-EPSILON) return false;
         }
 
 
-        for (INTEGER_TYPE i = 0; i < 3; ++i) {
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
             FLOATING_POINT_TYPE rhomb_normal_dot_v0, rhomb_normal_dot_cubedge;
 
-            const INTEGER_TYPE iplus1 = (i + 1) % 3;
-            const INTEGER_TYPE iplus2 = (i + 2) % 3;
+            const UNSIGNED_INTEGER_TYPE iplus1 = (i + 1) % 3;
+            const UNSIGNED_INTEGER_TYPE iplus2 = (i + 2) % 3;
 
             rhomb_normal_dot_v0 =   edge[iplus2] * v0[iplus1]
-                                  - edge[iplus1] * v0[iplus2];
+                                    - edge[iplus1] * v0[iplus2];
 
             rhomb_normal_dot_cubedge = .5 *
                                        (edge[iplus2] * edge_signs[iplus1] +
@@ -192,6 +210,24 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         }
 
         return true;
+    }
+
+    /**
+     * Test if the cube intersects the given 3D polygon (in world coordinates).
+     *
+     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
+     * @tparam NNodes Number of nodes in the polygon
+     * @param nodes The nodes of the polygon
+     * @param polynormal Vector perpendicular to the polygon.  It need not be of unit length.
+     * @return True if the polygon intersects the cube, false otherwise.
+     */
+    template <int NNodes>
+    inline
+    bool
+    intersects_polygon(const WorldCoordinates nodes[NNodes], const algebra::Vector<3, FLOATING_POINT_TYPE> & polynormal)
+    {
+        // todo(jnbrunet2000@gmail.com): do it
+        return false;
     }
 
     /**

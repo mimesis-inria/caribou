@@ -33,6 +33,14 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
         : p_nodes {first_node, std::forward<Nodes>(remaining_nodes)...}
     {}
 
+    inline constexpr bool
+    operator==(const Segment<Dim, CanonicalElementType> & other) const noexcept
+    {
+        return std::equal(this->nodes().begin(), this->nodes().end(), other.nodes().begin(), [](const NodeType & n1, const NodeType & n2) -> bool {
+            return n1 == n2;
+        });
+    }
+
     /** Get the Node at given index */
     constexpr
     const NodeType &
