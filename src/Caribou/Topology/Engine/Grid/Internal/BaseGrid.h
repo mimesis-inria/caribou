@@ -5,6 +5,7 @@
 #include <list>
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
+#include <Caribou/Geometry/Segment.h>
 
 namespace caribou::topology::engine::internal {
 
@@ -40,6 +41,7 @@ struct BaseGrid
     using VecUInt = caribou::algebra::Vector<Dimension, UInt>;
 
     using NodeIndex = Int;
+    using EdgeIndex = Int;
     using CellIndex = Int;
     using Dimensions = VecFloat;
     using Subdivisions = VecUInt;
@@ -47,6 +49,7 @@ struct BaseGrid
     using WorldCoordinates = VecFloat;
     using GridCoordinates = VecInt;
     using CellSet = std::list<CellIndex>;
+    using Edge = geometry::Segment<Dimension>;
 
     static_assert(Dimension == 1 || Dimension == 2 || Dimension == 3, "Grids are only available in 1, 2 or 3 dimensions");
 
@@ -98,7 +101,7 @@ struct BaseGrid
             return (n[0]+1) * (n[1]+1);
 
         if CONSTEXPR_IF (Dimension == 3)
-            return (n[0]+1) * (n[2]+1) * (n[3]+1);
+            return (n[0]+1) * (n[1]+1) * (n[2]+1);
 
         return 0;
     }
@@ -109,17 +112,24 @@ struct BaseGrid
     {
         const auto & n = m_number_of_subdivisions;
 
-        if CONSTEXPR_IF (Dimension == 1)
+        if CONSTEXPR_IF (Dimension == 1) {
             return n;
+        } else {
+            const auto & nx = n[0];
+            const auto & ny = n[1];
 
-        if CONSTEXPR_IF (Dimension == 2)
-            return n[0] * (n[1]+1) + n[1] * (n[0]+1); // nx * (ny+1)  +  ny * (nx+1)
+            const auto number_of_edges_in_2D_grid = nx*(ny+1) + ny*(nx+1);
+            if CONSTEXPR_IF (Dimension == 2)
+                return number_of_edges_in_2D_grid; // nx * (ny+1)  +  ny * (nx+1)
 
-        if CONSTEXPR_IF (Dimension == 3)
-            return (n[0] * (n[1]+1) + n[1] * (n[0]+1)) * (n[2]+1) +  // Number of edges in a 2D grid * (nz+1)
-                   (n[0]+1) * (n[1]+1); // Plus the number of edges in between 2D grids
+            if CONSTEXPR_IF (Dimension == 3) {
+                const auto & nz = n[2];
+                const auto number_of_edges_between_2D_grids = (nx + 1) * (ny + 1);
+                return number_of_edges_in_2D_grid * (nz+1)
+                       + number_of_edges_between_2D_grids * nz;
+            }
 
-        return 0;
+        }
     }
 
     /** Get the number of sub-cells in this grid : nx (in 2D), {nx, ny} (in 2D) or {nx, ny, nz} (in 3D) */
@@ -217,6 +227,80 @@ struct BaseGrid
                 .direct_division(H());
 
         return a;
+    }
+
+    /** Get the node location in world coordinates at node index */
+    inline WorldCoordinates
+    node(const NodeIndex & index) const noexcept
+    {
+        const auto & n = m_number_of_subdivisions;
+        if CONSTEXPR_IF (Dimension == 1) {
+            return m_anchor_position + index*H();
+        } else if CONSTEXPR_IF (Dimension == 2) {
+            const auto & nx = n[0]+1;
+
+            const auto j = index / nx;
+            const auto i = index - (j*nx);
+            const GridCoordinates coordinates {i, j};
+
+            return m_anchor_position + H().direct_multiplication(coordinates);
+        } else {
+            const auto & nx = n[0]+1;
+            const auto & ny = n[1]+1;
+
+            const auto k = index / (nx*ny);
+            const auto j = (index - (k*nx*ny)) / nx;
+            const auto i = index - ((k*nx*ny) + (j*nx));
+            const GridCoordinates coordinates {i, j, k};
+
+            return m_anchor_position + H().direct_multiplication(coordinates);
+        }
+    }
+
+    /** Get the edge location in world coordinates at edge index */
+    inline Edge
+    edge(const EdgeIndex & index) const noexcept
+    {
+        const auto & n = m_number_of_subdivisions;
+
+        if CONSTEXPR_IF (Dimension == 1)
+            return {node(index), node(index+1)};
+
+        const auto & nx = n[0];
+        const auto & ny = n[1];
+
+        const auto n_edges_per_row = (2*nx + 1);
+        const auto n_edges_per_slice = (n_edges_per_row * ny) + nx;
+        const auto n_edges_between_slices = (Dimension == 2) ? 0 : (nx + 1)*(ny + 1);
+
+        const auto slice = (Dimension == 2) ? 0 : index / (n_edges_per_slice + n_edges_between_slices);
+        const auto index_on_slice = index % (n_edges_per_slice + n_edges_between_slices);
+
+        const bool edge_is_on_z_direction =(Dimension == 2) ? false :  index_on_slice > n_edges_per_slice - 1;
+
+        const auto slice_corner_index = slice * (nx+1) * (ny+1);
+
+        NodeIndex n0, n1;
+
+        if (edge_is_on_z_direction) {
+            n0 = slice_corner_index + (index_on_slice - n_edges_per_slice);
+            n1 = n0 + n_edges_between_slices;
+        } else {
+            const auto row = index_on_slice / n_edges_per_row;
+            const auto index_on_row = index_on_slice % n_edges_per_row;
+            const bool edge_is_on_x_direction = index_on_row < nx;
+
+            if (edge_is_on_x_direction) {
+                n0 = slice_corner_index + row * (nx+1) + index_on_row;
+                n1 = n0 + 1;
+            } else {
+                n0 = slice_corner_index + row * (nx+1) + index_on_row - nx;
+                n1 = n0 + (nx + 1);
+            }
+        }
+
+
+        return {node(n0), node(n1)};
     }
 
     /** Test if the position of a given point is inside this grid */
