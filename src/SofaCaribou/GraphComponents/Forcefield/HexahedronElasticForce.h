@@ -74,6 +74,7 @@ public:
         Real weight;
         Real jacobian_determinant;
         caribou::algebra::Matrix<Hexahedron::gauss_nodes.size(), 3> dN_dx;
+        Mat33 F;
     };
 
     template <typename T>
@@ -91,6 +92,9 @@ public:
 
         return Hexahedron(nodes);
     }
+
+private:
+    virtual void compute_K();
 
 protected:
     Data< Real > d_youngModulus;
