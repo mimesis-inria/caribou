@@ -44,7 +44,7 @@ public:
     static constexpr unsigned char Dimension = DataTypes::spatial_dimensions;
 
     // Caribou data aliases
-    using Index = size_t;
+    using Index = std::size_t;
     using VecFloat = caribou::algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using VecInt   = caribou::algebra::Vector<Dimension, Index>;
     using Int   = typename VecInt::ValueType;

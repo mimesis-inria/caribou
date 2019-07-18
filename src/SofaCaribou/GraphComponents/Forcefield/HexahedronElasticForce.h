@@ -15,14 +15,15 @@ using namespace sofa::core;
 using namespace sofa::core::objectmodel;
 using namespace sofa::core::behavior;
 using namespace sofa::core::topology;
+using sofa::defaulttype::Vec3Types;
 
-template<class DataTypes>
-class HexahedronElasticForce : public ForceField<DataTypes>
+class HexahedronElasticForce : public ForceField<Vec3Types>
 {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(HexahedronElasticForce, DataTypes), SOFA_TEMPLATE(ForceField, DataTypes));
+    SOFA_CLASS(HexahedronElasticForce, SOFA_TEMPLATE(ForceField, Vec3Types));
 
     // Type definitions
+    using DataTypes = Vec3Types;
     using Inherit  = ForceField<DataTypes>;
     using VecCoord = typename DataTypes::VecCoord;
     using VecDeriv = typename DataTypes::VecDeriv;
@@ -38,7 +39,7 @@ public:
     using Hexahedron = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
 
     template <typename ObjectType>
-    using Link = SingleLink<HexahedronElasticForce<DataTypes>, ObjectType, BaseLink::FLAG_STRONGLINK>;
+    using Link = SingleLink<HexahedronElasticForce, ObjectType, BaseLink::FLAG_STRONGLINK>;
 
     // Public methods
 

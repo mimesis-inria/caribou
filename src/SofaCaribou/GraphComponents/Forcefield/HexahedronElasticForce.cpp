@@ -19,8 +19,7 @@ using namespace caribou::geometry;
 using namespace caribou::algebra;
 using namespace caribou::mechanics;
 
-template<class DataTypes>
-HexahedronElasticForce<DataTypes>::HexahedronElasticForce()
+HexahedronElasticForce::HexahedronElasticForce()
 : d_youngModulus(initData(&d_youngModulus,
         Real(1000), "youngModulus", "Young's modulus of the material", true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_poissonRatio(initData(&d_poissonRatio,
@@ -38,8 +37,7 @@ HexahedronElasticForce<DataTypes>::HexahedronElasticForce()
 {
 }
 
-template<class DataTypes>
-void HexahedronElasticForce<DataTypes>::init()
+void HexahedronElasticForce::init()
 {
     Inherit::init();
     if (not d_topology_container.get()) {
@@ -66,8 +64,7 @@ void HexahedronElasticForce<DataTypes>::init()
     reinit();
 }
 
-template<class DataTypes>
-void HexahedronElasticForce<DataTypes>::reinit()
+void HexahedronElasticForce::reinit()
 {
     sofa::core::topology::BaseMeshTopology * topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
@@ -173,8 +170,7 @@ void HexahedronElasticForce<DataTypes>::reinit()
     }
 }
 
-template<class DataTypes>
-void HexahedronElasticForce<DataTypes>::addForce(
+void HexahedronElasticForce::addForce(
         const MechanicalParams * mparams,
         Data<VecDeriv> & d_f,
         const Data<VecCoord> & d_x,
@@ -366,8 +362,7 @@ void HexahedronElasticForce<DataTypes>::addForce(
     }
 }
 
-template<class DataTypes>
-void HexahedronElasticForce<DataTypes>::addDForce(
+void HexahedronElasticForce::addDForce(
         const MechanicalParams* mparams,
         Data<VecDeriv>& d_df,
         const Data<VecDeriv>& d_dx)
@@ -422,8 +417,7 @@ void HexahedronElasticForce<DataTypes>::addDForce(
     sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addDForce");
 }
 
-template<class DataTypes>
-void HexahedronElasticForce<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int & /*offset*/)
+void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int & /*offset*/)
 {
     auto * topology = d_topology_container.get();
 
@@ -466,8 +460,7 @@ void HexahedronElasticForce<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatr
     sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addKToMatrix");
 }
 
-template<class DataTypes>
-void HexahedronElasticForce<DataTypes>::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
+void HexahedronElasticForce::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
 {
     if( !onlyVisible ) return;
 
@@ -489,8 +482,7 @@ void HexahedronElasticForce<DataTypes>::computeBBox(const sofa::core::ExecParams
     this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
 }
 
-template<class DataTypes>
-void HexahedronElasticForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
+void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparams)
 {
     auto * topology = d_topology_container.get();
     if (!topology)
@@ -587,9 +579,9 @@ void HexahedronElasticForce<DataTypes>::draw(const sofa::core::visual::VisualPar
     }
 }
 
-} // namespace SofaCaribou::GraphComponents::forcefield
 
-SOFA_DECL_CLASS(HexahedronElasticForce)
-static int HexahedronElasticForceClass = sofa::core::RegisterObject("Caribou Hexahedron FEM Forcefield")
-                                        .add< SofaCaribou::GraphComponents::forcefield::HexahedronElasticForce<sofa::defaulttype::Vec3dTypes> >(true)
+static int HexahedronElasticForceClass = RegisterObject("Caribou Hexahedron FEM Forcefield")
+    .add< HexahedronElasticForce >(true)
 ;
+
+} // namespace SofaCaribou::GraphComponents::forcefield

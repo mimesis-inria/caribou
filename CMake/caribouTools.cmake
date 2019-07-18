@@ -77,6 +77,7 @@ function(caribou_add_python_module NAME)
         endif()
 
         target_compile_options(${TARGET_NAME} PRIVATE -Dregister=)
+        set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17)
 
         set_target_properties(
             ${TARGET_NAME}

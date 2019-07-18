@@ -2,6 +2,7 @@
 #define CARIBOU_ALGEBRA_INTERNAL_BASEMATRIX_H
 
 #include <array>
+#include <algorithm>
 
 #include <Caribou/config.h>
 #include <Caribou/Traits.h>
