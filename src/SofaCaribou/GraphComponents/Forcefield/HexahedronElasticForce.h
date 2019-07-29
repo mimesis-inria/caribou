@@ -104,6 +104,7 @@ protected:
     Link<BaseMeshTopology> d_topology_container;
 
 private:
+    bool recompute_compute_tangent_stiffness = false;
     std::vector<caribou::algebra::Matrix<24, 24, Real>> p_stiffness_matrices;
     std::vector<std::array<GaussNode,8>> p_quatrature_nodes;
     std::vector<Mat33> p_initial_rotation;

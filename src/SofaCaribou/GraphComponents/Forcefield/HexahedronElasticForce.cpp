@@ -4,6 +4,7 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
+#include <SofaBaseTopology/SparseGridTopology.h>
 
 #include <SofaCaribou/Traits.h>
 #include <Caribou/Geometry/Hexahedron.h>
@@ -18,6 +19,35 @@ using namespace sofa::core::topology;
 using namespace caribou::geometry;
 using namespace caribou::algebra;
 using namespace caribou::mechanics;
+using sofa::component::topology::SparseGridTopology;
+
+FLOATING_POINT_TYPE compute_recursively_cube_volume(SparseGridTopology * grid, int cube_id) {
+    if (cube_id < 0)
+        return 0;
+
+    if (!grid)
+        return 0;
+
+    const auto type = grid->getType(cube_id);
+    if (type == SparseGridTopology::OUTSIDE) {
+        return 0;
+    } else if (type == SparseGridTopology::INSIDE) {
+        return 1;
+    } else { // Boundary cell
+        auto finer_grid = grid->getFinerSparseGrid();
+        if (not finer_grid) {
+            return 1;
+        }
+
+        const auto subcubes_indices = grid->_hierarchicalCubeMap[cube_id];
+        FLOATING_POINT_TYPE volume = 0;
+        for (const auto subcube_id : subcubes_indices) {
+            volume += 1/8. * compute_recursively_cube_volume(finer_grid, subcube_id);
+        }
+
+        return  volume;
+    }
+}
 
 HexahedronElasticForce::HexahedronElasticForce()
 : d_youngModulus(initData(&d_youngModulus,
@@ -77,6 +107,12 @@ void HexahedronElasticForce::reinit()
         return;
     }
 
+    bool topology_is_a_subdivisible_grid = false;
+    auto sparsegrid = dynamic_cast<SparseGridTopology*>(topology);
+    if (sparsegrid) {
+        topology_is_a_subdivisible_grid = (sparsegrid->getNbVirtualFinerLevels() > 0);
+    }
+
     const sofa::helper::ReadAccessor<Data<VecCoord>> X = state->readRestPositions();
 
     p_stiffness_matrices.resize(0);
@@ -115,6 +151,7 @@ void HexahedronElasticForce::reinit()
         // For nonlinear Green-Lagrange strain
         // Initialize the gauss quadrature points for every hexahedrons
         p_quatrature_nodes.resize(topology->getNbHexahedra());
+        FLOATING_POINT_TYPE vv = 0;
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
             Hexahedron hexa = make_hexa(hexa_id, X);
 
@@ -134,15 +171,29 @@ void HexahedronElasticForce::reinit()
                 // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
                 const auto dN_dx = (Jinv.T() * Hexahedron::dN(Hexahedron::LocalCoordinates {u, v, w}).T()).T();
 
+                // In case a sparse grid is used with virtual finer levels, compute the volume of each gauss node
+                Real volume = 0;
+                if (topology_is_a_subdivisible_grid) {
+                    Real fx,fy,fz; // unused
+                    const auto finer_grid = sparsegrid->getFinerSparseGrid();
+                    const auto gauss_position = hexa.T({u,v,w});
+                    const auto gauss_cube_id = finer_grid->findCube({gauss_position[0], gauss_position[1], gauss_position[2]}, fx, fy, fz);
+                    volume = compute_recursively_cube_volume(finer_grid, gauss_cube_id);
+                } else {
+                    volume = 1;
+                }
+
+                vv += volume*detJ;
+
                 p_quatrature_nodes[hexa_id][gauss_node_id] = {
-                        Hexahedron::gauss_weights[gauss_node_id],
+                        Hexahedron::gauss_weights[gauss_node_id]*volume,
                         detJ,
                         dN_dx,
                         Mat33::Identity()
                 };
             }
-
         }
+        std::cout << "VOLUME IS " << vv << std::endl;
     }
 
     // Initialize the stiffness matrix of every hexahedrons
@@ -200,7 +251,7 @@ void HexahedronElasticForce::addForce(
 
     bool corotated = d_corotated.getValue();
     bool linear = d_linear_strain.getValue();
-    bool compute_tangent_stiffness = (not linear) and mparams->implicit();
+    recompute_compute_tangent_stiffness = (not linear) and mparams->implicit();
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
@@ -312,9 +363,6 @@ void HexahedronElasticForce::addForce(
             }
         }
         sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addForce");
-
-        if (compute_tangent_stiffness)
-            compute_K();
     }
 }
 
@@ -331,6 +379,9 @@ void HexahedronElasticForce::addDForce(
 
     if (p_stiffness_matrices.size() != topology->getNbHexahedra())
         return;
+
+    if (recompute_compute_tangent_stiffness)
+        compute_K();
 
     auto kFactor = (Real)mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue());
     sofa::helper::ReadAccessor<Data<VecDeriv>> dx = d_dx;
@@ -379,6 +430,9 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
 
     if (!topology)
         return;
+
+    if (recompute_compute_tangent_stiffness)
+        compute_K();
 
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
@@ -500,6 +554,7 @@ void HexahedronElasticForce::compute_K()
             }
         }
     }
+    recompute_compute_tangent_stiffness = false;
     sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::compute_k");
 }
 
