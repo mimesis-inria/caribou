@@ -10,10 +10,12 @@ set(PYTHON_TEST_FILES
     )
 
 set(HEADER_FILES
+    HexahedronElasticForce.h
     )
 
 set(SOURCE_FILES
     SofaCaribou.cpp
+    HexahedronElasticForce.cpp
     )
 
 unset(PYTHON_MODULE_PREFIX)
