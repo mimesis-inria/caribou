@@ -4,6 +4,8 @@
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
+#include <sofa/helper/OptionsGroup.h>
+#include <SofaBaseTopology/SparseGridTopology.h>
 
 #include <Caribou/Algebra/Matrix.h>
 #include <Caribou/Algebra/Vector.h>
@@ -16,6 +18,7 @@ using namespace sofa::core::objectmodel;
 using namespace sofa::core::behavior;
 using namespace sofa::core::topology;
 using sofa::defaulttype::Vec3Types;
+using sofa::component::topology::SparseGridTopology;
 
 class HexahedronElasticForce : public ForceField<Vec3Types>
 {
@@ -40,6 +43,31 @@ public:
 
     template <typename ObjectType>
     using Link = SingleLink<HexahedronElasticForce, ObjectType, BaseLink::FLAG_STRONGLINK>;
+
+    // Data structures
+
+    struct GaussNode {
+        Real weight;
+        Real jacobian_determinant;
+        caribou::algebra::Matrix<Hexahedron::gauss_nodes.size(), 3> dN_dx;
+        Mat33 F = Mat33::Identity();
+    };
+
+    /// Integration method used to integrate the stiffness matrix.
+    enum class IntegrationMethod : unsigned int {
+        /// Regular 8 points gauss integration
+        Regular = 0,
+
+        /// Hexas are recursively subdivided into cuboid subcells and the later
+        /// are used to compute the inside volume of the regular hexa's gauss points.
+        /// ** Requires a sparse grid topology **
+        SubdividedVolume = 1,
+
+        /// Hexas are recursively subdivided into cuboid subcells and the later
+        /// are used to add new gauss points. Gauss points outside of the boundary are ignored.
+        /// ** Requires a sparse grid topology **
+        SubdividedGauss = 2
+    };
 
     // Public methods
 
@@ -70,13 +98,6 @@ public:
 
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;
 
-    struct GaussNode {
-        Real weight;
-        Real jacobian_determinant;
-        caribou::algebra::Matrix<Hexahedron::gauss_nodes.size(), 3> dN_dx;
-        Mat33 F;
-    };
-
     template <typename T>
     inline
     Hexahedron make_hexa(std::size_t hexa_id, const T & x) const
@@ -93,20 +114,53 @@ public:
         return Hexahedron(nodes);
     }
 
+    inline
+    IntegrationMethod integration_method() const
+    {
+        const auto m = static_cast<IntegrationMethod> (d_integration_method.getValue().getSelectedId());
+        switch (m) {
+            case IntegrationMethod::Regular:
+                return IntegrationMethod::Regular;
+            case IntegrationMethod::SubdividedVolume:
+                return IntegrationMethod::SubdividedVolume;
+            case IntegrationMethod::SubdividedGauss:
+                return IntegrationMethod::SubdividedGauss;
+            default:
+                return IntegrationMethod::Regular;
+        }
+    }
+
+    inline
+    std::string integration_method_as_string() const
+    {
+        return d_integration_method.getValue().getSelectedItem();
+    }
+
+    inline
+    void set_integration_method(const IntegrationMethod & m) {
+        auto index = static_cast<unsigned int > (m);
+        sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> d = d_integration_method;
+        d->setSelectedItem(index);
+    }
+
 private:
+    /** (Re)Compute the tangent stiffness matrix */
     virtual void compute_K();
 
 protected:
     Data< Real > d_youngModulus;
     Data< Real > d_poissonRatio;
+    Data< UNSIGNED_INTEGER_TYPE > d_number_of_subdivisions;
     Data< bool > d_linear_strain;
     Data< bool > d_corotated;
-    Link<BaseMeshTopology> d_topology_container;
+    Data< sofa::helper::OptionsGroup > d_integration_method;
+    Link<BaseMeshTopology>   d_topology_container;
+    Link<SparseGridTopology> d_integration_grid;
 
 private:
     bool recompute_compute_tangent_stiffness = false;
     std::vector<caribou::algebra::Matrix<24, 24, Real>> p_stiffness_matrices;
-    std::vector<std::array<GaussNode,8>> p_quatrature_nodes;
+    std::vector<std::vector<GaussNode>> p_quadrature_nodes;
     std::vector<Mat33> p_initial_rotation;
     std::vector<Mat33> p_current_rotation;
 

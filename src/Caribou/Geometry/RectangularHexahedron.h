@@ -45,6 +45,11 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
             : p_center (center), p_H (dimensions), p_R (Mat33::Identity())
     {}
 
+    constexpr
+    RectangularHexahedron(const NodeType & center)
+        : p_center (center), p_H  {2,2,2}, p_R (Mat33::Identity())
+    {}
+
     /** Get the Node at given index */
     inline
     const NodeType
@@ -72,6 +77,17 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         for (size_t i = 0; i < CanonicalElementType::nodes.size(); ++i)
             nodes[i] = node(i);
         return nodes;
+    }
+
+    /** Compute the volume of the hexa */
+    inline
+    FLOATING_POINT_TYPE
+    volume() const
+    {
+        const auto hx = (node(0) - node(1)).length();
+        const auto hy = (node(0) - node(3)).length();
+        const auto hz = (node(0) - node(4)).length();
+        return hx*hy*hz;
     }
 
     /** Get the center point position */
@@ -224,7 +240,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     template <int NNodes>
     inline
     bool
-    intersects_polygon(const WorldCoordinates nodes[NNodes], const algebra::Vector<3, FLOATING_POINT_TYPE> & polynormal)
+    intersects_polygon(const WorldCoordinates /*nodes*/[NNodes], const algebra::Vector<3, FLOATING_POINT_TYPE> & /*polynormal*/)
     {
         // todo(jnbrunet2000@gmail.com): do it
         return false;

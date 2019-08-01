@@ -1,13 +1,14 @@
 #include <numeric>
+#include <queue>
 
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
-#include <SofaBaseTopology/SparseGridTopology.h>
 
 #include <SofaCaribou/Traits.h>
 #include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/RectangularHexahedron.h>
 #include <Caribou/Mechanics/Elasticity/Strain.h>
 
 #include "HexahedronElasticForce.h"
@@ -21,39 +22,140 @@ using namespace caribou::algebra;
 using namespace caribou::mechanics;
 using sofa::component::topology::SparseGridTopology;
 
-FLOATING_POINT_TYPE compute_recursively_cube_volume(SparseGridTopology * grid, int cube_id) {
-    if (cube_id < 0)
-        return 0;
+/**
+ * Split an hexahedron into 8 subcells. Subcells have their node position relative to the center of the outer hexahedron.
+ */
+template<typename Hexahedron>
+std::array<RectangularHexahedron<typename Hexahedron::CanonicalElement>, 8>
+split_in_local_hexahedrons(const Hexahedron & h) {
+    using LocalHexahedron = RectangularHexahedron<typename Hexahedron::CanonicalElement>;
+    const auto hx = (h.node(1) - h.node(0)).length();
+    const auto hy = (h.node(3) - h.node(0)).length();
+    const auto hz = (h.node(4) - h.node(0)).length();
+    return {{
+        LocalHexahedron({-0.5, -0.5, -0.5}, {hx/2., hy/2., hz/2.}),
+        LocalHexahedron({+0.5, -0.5, -0.5}, {hx/2., hy/2., hz/2.}),
+        LocalHexahedron({+0.5, +0.5, -0.5}, {hx/2., hy/2., hz/2.}),
+        LocalHexahedron({-0.5, +0.5, -0.5}, {hx/2., hy/2., hz/2.}),
+        LocalHexahedron({-0.5, -0.5, +0.5}, {hx/2., hy/2., hz/2.}),
+        LocalHexahedron({+0.5, -0.5, +0.5}, {hx/2., hy/2., hz/2.}),
+        LocalHexahedron({+0.5, +0.5, +0.5}, {hx/2., hy/2., hz/2.}),
+        LocalHexahedron({-0.5, +0.5, +0.5}, {hx/2., hy/2., hz/2.})
+    }};
+}
 
-    if (!grid)
-        return 0;
+/**
+ * Recursively get all the gauss positions that are inside the surface domain with their correct weight.
+ * @tparam Hexahedron
+ * @param grid
+ * @param h
+ * @return An array of 8 vectors of gauss points (one per subcell). A gauss point is represented by the tuple (xi, w)
+ *         where xi is the local coordinates vector of the gauss point and w is its weight.
+ */
+template<typename Hexahedron>
+std::array<std::vector<std::pair<typename Hexahedron::LocalCoordinates, typename Hexahedron::Real>>, 8>
+recursively_get_subcells_gauss_points(SparseGridTopology & grid, const Hexahedron & hexa, const std::size_t & max_number_of_subdivisions) {
+    using LocalHexahedron = RectangularHexahedron<typename Hexahedron::CanonicalElement>;
+    using LocalCoordinates = typename Hexahedron::LocalCoordinates;
+    using Real = typename Hexahedron::Real;
 
-    const auto type = grid->getType(cube_id);
-    if (type == SparseGridTopology::OUTSIDE) {
-        return 0;
-    } else if (type == SparseGridTopology::INSIDE) {
-        return 1;
-    } else { // Boundary cell
-        auto finer_grid = grid->getFinerSparseGrid();
-        if (not finer_grid) {
-            return 1;
+    std::array<std::vector<std::pair<typename Hexahedron::LocalCoordinates, typename Hexahedron::Real>>, 8> gauss_points;
+
+    // First, check if all the top level hexa gauss points are inside to avoid the subdivision
+    {
+        bool all_local_gauss_points_are_inside = true;
+        for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
+            const auto &gauss_node = Hexahedron::gauss_nodes[gauss_node_id];
+            const auto gauss_position = hexa.T(gauss_node);
+            Real fx, fy, fz; // unused
+            const auto gauss_cube_id = grid.findCube({gauss_position[0], gauss_position[1], gauss_position[2]}, fx, fy,fz);
+            if (gauss_cube_id < 0) {
+                all_local_gauss_points_are_inside = false;
+            }
         }
 
-        const auto subcubes_indices = grid->_hierarchicalCubeMap[cube_id];
-        FLOATING_POINT_TYPE volume = 0;
-        for (const auto subcube_id : subcubes_indices) {
-            volume += 1/8. * compute_recursively_cube_volume(finer_grid, subcube_id);
+        if (all_local_gauss_points_are_inside) {
+            // They are all inside the boundary, let's add them and return since the hexa is not cut by the boundary
+            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
+                const auto &gauss_node = Hexahedron::gauss_nodes[gauss_node_id];
+                const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
+                gauss_points[gauss_node_id].push_back({gauss_node, gauss_weight});
+            }
+            return gauss_points;
         }
-
-        return  volume;
     }
+
+    // At this point, we got an hexa that is either outside, or on the boundary of the surface
+    const auto subcells = split_in_local_hexahedrons(LocalHexahedron({0,0,0}));
+
+    for (std::size_t i = 0; i < subcells.size(); ++i) {
+
+        // FIFO which will store final sub-cells. A sub-cell is final when it is fully inside
+        // the surface domain, or when the maximum number of subdivisions has been reach. If it is not final,
+        // then the sub-cell is removed from the top of the queue and its 8 sub-cells are added to the end
+        // of the queue.
+        struct SubCell {
+            LocalHexahedron hexahedron;
+            UNSIGNED_INTEGER_TYPE subdivision_level;
+        };
+
+        std::queue<SubCell> stack ({
+            SubCell {subcells[i], 1}
+        });
+
+        while (not stack.empty()) {
+            const auto & subcell = stack.front();
+            const auto & local_hexahedron = subcell.hexahedron;
+
+            bool all_local_gauss_points_are_inside = true;
+            std::vector<std::pair<LocalCoordinates, Real>> local_gauss_points;
+            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
+                const auto &gauss_node   = Hexahedron::gauss_nodes[gauss_node_id];
+                const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
+                const auto gauss_position = hexa.T(local_hexahedron.T(gauss_node));
+                Real fx,fy,fz; // unused
+                const auto gauss_cube_id = grid.findCube({gauss_position[0], gauss_position[1], gauss_position[2]}, fx, fy, fz);
+                if (gauss_cube_id < 0) {
+                    all_local_gauss_points_are_inside = false;
+                } else {
+                    local_gauss_points.push_back({
+                        local_hexahedron.T(gauss_node),
+                        gauss_weight*local_hexahedron.jacobian().determinant()
+                    });
+                }
+            }
+
+            if (all_local_gauss_points_are_inside or subcell.subdivision_level == max_number_of_subdivisions) {
+                for (const auto & gauss_point : local_gauss_points) {
+                    gauss_points[i].push_back(gauss_point);
+                }
+            } else {
+                const auto local_hexahedrons = split_in_local_hexahedrons(subcell.hexahedron);
+                for (const auto & local_cell : local_hexahedrons) {
+                    stack.push({local_cell, subcell.subdivision_level+1});
+                }
+            }
+
+            stack.pop();
+        }
+    }
+
+    return gauss_points;
 }
 
 HexahedronElasticForce::HexahedronElasticForce()
 : d_youngModulus(initData(&d_youngModulus,
-        Real(1000), "youngModulus", "Young's modulus of the material", true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+        Real(1000), "youngModulus",
+        "Young's modulus of the material",
+        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_poissonRatio(initData(&d_poissonRatio,
-        Real(0.3),  "poissonRatio", "Poisson's ratio of the material", true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+        Real(0.3),  "poissonRatio",
+        "Poisson's ratio of the material",
+        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+, d_number_of_subdivisions(initData(&d_number_of_subdivisions,
+        UNSIGNED_INTEGER_TYPE(0),  "number_of_subdivisions",
+        "Number of subdivisions for the integration method (see 'integration_method').",
+        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_linear_strain(initData(&d_linear_strain,
         bool(true), "linearStrain",
         "True if the small (linear) strain tensor is used, otherwise the nonlinear Green-Lagrange strain is used.",
@@ -62,9 +164,32 @@ HexahedronElasticForce::HexahedronElasticForce()
         bool(true), "corotated",
         "Whether or not to use corotated elements for the strain computation.",
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+, d_integration_method(initData(&d_integration_method,
+        "integration_method",
+        R"(
+                Integration method used to integrate the stiffness matrix.
+
+                Methods are:
+                  Regular:          Regular 8 points gauss integration.
+                  SubdividedVolume: Hexas are recursively subdivided into cubic subcells and these subcells are used to
+                  compute the inside volume of the regular hexa's gauss points.
+                  ** Requires a sparse grid topology **
+                  SubdividedGauss:  Hexas are recursively subdivided into cubic subcells and these subcells are used to
+                  add new gauss points. Gauss points outside of the boundary are ignored.
+                  ** Requires a sparse grid topology **
+                )",
+        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_topology_container(initLink(
         "topology_container", "Topology that contains the elements on which this force will be computed."))
+, d_integration_grid(initLink(
+        "integration_grid", "Sparse grid used for subdivided integration methods (see 'integration_method')."))
 {
+    d_integration_method.setValue(sofa::helper::OptionsGroup(std::vector<std::string> {
+        "Regular", "SubdividedVolume", "SubdividedGauss"
+    }));
+
+    sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> integration_method = d_integration_method;
+    integration_method->setSelectedItem((unsigned int) 0);
 }
 
 void HexahedronElasticForce::init()
@@ -107,16 +232,33 @@ void HexahedronElasticForce::reinit()
         return;
     }
 
-    bool topology_is_a_subdivisible_grid = false;
-    auto sparsegrid = dynamic_cast<SparseGridTopology*>(topology);
-    if (sparsegrid) {
-        topology_is_a_subdivisible_grid = (sparsegrid->getNbVirtualFinerLevels() > 0);
+    if (integration_method() == IntegrationMethod::SubdividedVolume or
+        integration_method() == IntegrationMethod::SubdividedGauss) {
+
+        if (not d_integration_grid.get()) {
+            msg_error() << "Integration method '" << integration_method_as_string()
+                        << "' requires a sparse grid topology.";
+            set_integration_method(IntegrationMethod::Regular);
+        } else {
+
+            if (d_integration_grid.get()->getNbHexas() == 0) {
+                msg_error() << "Integration grid '" << d_integration_grid.get()->getPathName()
+                            << "' does not contain any hexahedron.";
+                set_integration_method(IntegrationMethod::Regular);
+            }
+
+            if (d_number_of_subdivisions.getValue() == 0) {
+                msg_error() << "Integration method '" << integration_method_as_string()
+                            << "' requires the number of subdivisions to be greater than 0";
+                set_integration_method(IntegrationMethod::Regular);
+            }
+        }
     }
 
     const sofa::helper::ReadAccessor<Data<VecCoord>> X = state->readRestPositions();
 
     p_stiffness_matrices.resize(0);
-    p_quatrature_nodes.resize(0);
+    p_quadrature_nodes.resize(0);
 
     // Make sure every node of the hexahedrons have its coordinates inside the mechanical state vector
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
@@ -147,54 +289,89 @@ void HexahedronElasticForce::reinit()
         }
     }
 
-    if (not d_linear_strain.getValue()) {
-        // For nonlinear Green-Lagrange strain
-        // Initialize the gauss quadrature points for every hexahedrons
-        p_quatrature_nodes.resize(topology->getNbHexahedra());
-        FLOATING_POINT_TYPE vv = 0;
-        for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-            Hexahedron hexa = make_hexa(hexa_id, X);
+    // Gather the integration points for each hexahedron
+    p_quadrature_nodes.resize(topology->getNbHexahedra());
+    std::size_t min, max, med;
+    Real v = 0.;
+    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+        auto   hexa = make_hexa(hexa_id, X);
+        auto & quadrature_nodes = p_quadrature_nodes[hexa_id];
 
+        // List of pair (Xi, w) where Xi is the local coordinates vector of the gauss point and w is its weight.
+        std::vector<std::pair<Vec3, Real>> gauss_points;
+
+        if (integration_method() == IntegrationMethod::Regular) {
             for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
-                const auto &gauss_node = Hexahedron::gauss_nodes[gauss_node_id];
+                const auto &gauss_node   = Hexahedron::gauss_nodes[gauss_node_id];
+                const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
 
-                // Local coordinates of the gauss node
-                const auto &u = gauss_node[0];
-                const auto &v = gauss_node[1];
-                const auto &w = gauss_node[2];
+                gauss_points.push_back({gauss_node, gauss_weight});
+            }
+        } else {
+            auto & grid = *d_integration_grid.get();
 
-                // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-                const auto J = hexa.jacobian({u, v, w});
-                const auto Jinv = J.inverted();
-                const auto detJ = J.determinant();
+            auto gauss_points_per_subcells = recursively_get_subcells_gauss_points(grid, hexa, d_number_of_subdivisions.getValue());
+            if (integration_method() == IntegrationMethod::SubdividedVolume) {
+                // SubdividedVolume method keeps only the top level hexahedron gauss points, but adjust their weight
+                // by integrating the volume of the subcell.
+                for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
+                    const auto &gauss_node   = Hexahedron::gauss_nodes[gauss_node_id];
+                    const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
 
-                // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-                const auto dN_dx = (Jinv.T() * Hexahedron::dN(Hexahedron::LocalCoordinates {u, v, w}).T()).T();
-
-                // In case a sparse grid is used with virtual finer levels, compute the volume of each gauss node
-                Real volume = 0;
-                if (topology_is_a_subdivisible_grid) {
-                    Real fx,fy,fz; // unused
-                    const auto finer_grid = sparsegrid->getFinerSparseGrid();
-                    const auto gauss_position = hexa.T({u,v,w});
-                    const auto gauss_cube_id = finer_grid->findCube({gauss_position[0], gauss_position[1], gauss_position[2]}, fx, fy, fz);
-                    volume = compute_recursively_cube_volume(finer_grid, gauss_cube_id);
-                } else {
-                    volume = 1;
+                    Real volume = 0.;
+                    for (const auto subcell_gauss_point : gauss_points_per_subcells[gauss_node_id]) {
+                        volume += subcell_gauss_point.second;
+                    }
+                    if (volume > 0) {
+                        gauss_points.push_back({gauss_node, gauss_weight * volume});
+                    }
                 }
-
-                vv += volume*detJ;
-
-                p_quatrature_nodes[hexa_id][gauss_node_id] = {
-                        Hexahedron::gauss_weights[gauss_node_id]*volume,
-                        detJ,
-                        dN_dx,
-                        Mat33::Identity()
-                };
+            } else { /* IntegrationMethod::SubdividedGauss */
+                // SubdividedGauss method keeps all gauss points found recursively in the subcells
+                for (std::size_t i = 0; i < gauss_points_per_subcells.size(); ++i) {
+                    const auto & gauss_points_in_subcell = gauss_points_per_subcells[i];
+                    for (const auto & gauss_point : gauss_points_in_subcell) {
+                        gauss_points.push_back(gauss_point);
+                    }
+                }
             }
         }
-        std::cout << "VOLUME IS " << vv << std::endl;
+
+        auto s = gauss_points.size();
+        if (hexa_id == 0) {
+            min = s; max = s; med=s;
+        } else {
+            if (s < min) min = s;
+            if (s > max) max = s;
+            med += s;
+        }
+
+        // At this point, we have all the gauss points of the hexa and their corrected weight.
+        // We now compute constant values required by the simulation for each of them
+        for (const auto gauss_point : gauss_points) {
+            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
+            const auto J = hexa.jacobian(gauss_point.first);
+            const auto Jinv = J.inverted();
+            const auto detJ = J.determinant();
+
+            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
+            const auto dN_dx = (Jinv.T() * Hexahedron::dN(gauss_point.first).T()).T();
+
+            v += gauss_point.second*detJ;
+
+            quadrature_nodes.push_back(GaussNode({
+                gauss_point.second,
+                detJ,
+                dN_dx,
+                Mat33::Identity()
+            }));
+        }
     }
+    std::cout << "Min gauss points : " << min <<std::endl;
+    std::cout << "Max gauss points : " << max <<std::endl;
+    std::cout << "Med gauss points : " << med/(Real)topology->getNbHexahedra() <<std::endl;
+    std::cout << "Volume : " << v << std::endl;
+    std::cout << "Estimated volume : " << topology->getNbHexahedra()*make_hexa(0, X).volume() << std::endl;
 
     // Initialize the stiffness matrix of every hexahedrons
     p_stiffness_matrices.resize(topology->getNbHexahedra());
@@ -324,7 +501,7 @@ void HexahedronElasticForce::addForce(
 
             Matrix<8, 3, Real> forces;
             forces.fill(0);
-            for (GaussNode &gauss_node : p_quatrature_nodes[hexa_id]) {
+            for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
 
                 // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
                 const auto detJ = gauss_node.jacobian_determinant;
@@ -492,7 +669,7 @@ void HexahedronElasticForce::compute_K()
         Mat2424 & K = p_stiffness_matrices[hexa_id];
         K.fill(0.);
 
-        for (GaussNode &gauss_node : p_quatrature_nodes[hexa_id]) {
+        for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const auto detJ = gauss_node.jacobian_determinant;
 

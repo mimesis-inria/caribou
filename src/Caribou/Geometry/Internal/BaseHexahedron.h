@@ -13,6 +13,7 @@ template<typename CanonicalElementType, typename HexahedronType>
 struct BaseHexahedron : public CanonicalElementType
 {
     static constexpr INTEGER_TYPE NumberOfNodes = HexahedronType::NumberOfNodes;
+    using CanonicalElement = CanonicalElementType;
     using NodeType = caribou::geometry::Node<3>;
     using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
     using Index = std::size_t ;
@@ -35,6 +36,23 @@ struct BaseHexahedron : public CanonicalElementType
             quad_nodes[i] = self().node(face_indices[i]);
 
         return QuadType(quad_nodes);
+    }
+
+    /** Compute the volume of the hexahedron */
+    inline
+    FLOATING_POINT_TYPE
+    volume() const
+    {
+        FLOATING_POINT_TYPE v = 0.;
+        for (std::size_t gauss_node_id = 0; gauss_node_id < CanonicalElementType::gauss_nodes.size(); ++gauss_node_id) {
+            const auto &gauss_node   = CanonicalElementType::gauss_nodes[gauss_node_id];
+            const auto &gauss_weight = CanonicalElementType::gauss_weights[gauss_node_id];
+            const auto J = self().jacobian(gauss_node);
+            const auto detJ = J.determinant();
+
+            v += detJ * gauss_weight;
+        }
+        return v;
     }
 
 private:
