@@ -23,6 +23,12 @@ struct Segment2 : public CanonicalElement<1, 2, Segment2>
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodes = 2;
     using LocalCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
 
+    static constexpr FLOATING_POINT_TYPE nodes [NumberOfNodes][Dimension] = {
+    //    u
+        {-1}, // Node 0
+        {+1}, // Node 1
+    };
+
     /**
      * Get the Lagrange polynomial values evaluated at local coordinates {u} w.r.t each segment's interpolation nodes.
      *

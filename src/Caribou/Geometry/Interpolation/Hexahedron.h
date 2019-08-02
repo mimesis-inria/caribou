@@ -40,8 +40,8 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
     static constexpr INTEGER_TYPE Dimension = 3;
     static constexpr INTEGER_TYPE NumberOfNodes = 8;
 
-    static constexpr std::array<caribou::geometry::Node<3>, 8> nodes {{
-    //    u,  v,  w
+    static constexpr FLOATING_POINT_TYPE nodes [NumberOfNodes][Dimension] = {
+        //    u,  v,  w
         {-1, -1, -1}, // Node 0
         {+1, -1, -1}, // Node 1
         {+1, +1, -1}, // Node 2
@@ -50,9 +50,10 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
         {+1, -1, +1}, // Node 5
         {+1, +1, +1}, // Node 6
         {-1, +1, +1}  // Node 7
-    }};
+    };
 
-    static constexpr std::array<std::array<INTEGER_TYPE, 2>, 12> edges {{
+
+    static constexpr UNSIGNED_INTEGER_TYPE edges [12][2] {
         {0, 1}, // Edge 0
         {1, 2}, // Edge 1
         {2, 3}, // Edge 2
@@ -65,16 +66,16 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
         {5, 6}, // Edge 9
         {6, 7}, // Edge 10
         {7, 4}  // Edge 11
-    }};
+    };
 
-    static constexpr std::array<std::array<INTEGER_TYPE, 4>, 6> faces {{
+    static constexpr UNSIGNED_INTEGER_TYPE faces [6][4] {
         {0, 3, 2, 1}, // Face 0
         {0, 4, 7, 3}, // Face 1
         {1, 2, 6, 5}, // Face 2
         {0, 1, 5, 4}, // Face 3
         {2, 3, 7, 6}, // Face 4
         {4, 5, 6, 7}  // Face 5
-    }};
+    };
 
     static constexpr std::array<caribou::geometry::Node<3>, 8> gauss_nodes {{
     //    u,  v,  w

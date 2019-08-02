@@ -3,7 +3,7 @@
 #include <Caribou/config.h>
 #include <Caribou/Traits.h>
 #include <Caribou/Geometry/Segment.h>
-//#include <Caribou/Geometry/Triangle.h>
+#include <Caribou/Geometry/Triangle.h>
 //#include <Caribou/Geometry/Quad.h>
 //#include <Caribou/Geometry/Hexahedron.h>
 //#include <Caribou/Geometry/RectangularHexahedron.h>
@@ -69,9 +69,10 @@ TEST(Geometry, Segment) {
     // 1D
     {
         using LocalCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE,1,1>;
+        using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 1, 1>;
         Segment<1> segment(-5.5, 1.1);
-        ASSERT_EQ(segment.node(0), -5.5);
-        ASSERT_EQ(segment.node(1), 1.1);
+        ASSERT_EQ(segment.node(0), WordCoordinates(-5.5));
+        ASSERT_EQ(segment.node(1), WordCoordinates(1.1));
 
         ASSERT_FLOAT_EQ(segment.center()[0], -2.2);
 
@@ -102,57 +103,68 @@ TEST(Geometry, Segment) {
         ASSERT_FLOAT_EQ(segment.center()[2], center_node[2]);
     }
 }
-//
-//TEST(Geometry, Triangle) {
-//    using namespace caribou::geometry;
-//    using namespace caribou::geometry::interpolation;
-//    using namespace caribou::algebra;
-//
-//    using LocalCoordinates = Vector<2, FLOATING_POINT_TYPE>;
-//
-//    Triangle<2> triangle (Node<2> {0,0}, Node<2> {1, 0}, Node<2> {0, 1});
-//    Node<2> node {{1, 0}};
-//    ASSERT_EQ( triangle.node(1), node);
-//
-//    // Shape functions
-//    ASSERT_EQ(Triangle3::L<0>(0, 0), 1);
-//    ASSERT_EQ(Triangle3::L<0>(1, 0), 0);
-//    ASSERT_EQ(Triangle3::L<0>(0, 1), 0);
-//    ASSERT_EQ(Triangle3::L<1>(1, 0), 1);
-//    ASSERT_EQ(Triangle3::L<2>(0, 1), 1);
-//
-//    Vector <3, FLOATING_POINT_TYPE> shapes {Triangle3::L<0>(0, 0), Triangle3::L<1>(0, 0), Triangle3::L<2>(0, 0)};
-//    ASSERT_EQ(Triangle3::N(LocalCoordinates {0,0}), shapes);
-//
-//    // Shape function derivatives
-//    caribou::algebra::Vector<2, FLOATING_POINT_TYPE> derivatives[3] {{-1, -1}, {1, 0}, {0, 1}};
-//    ASSERT_EQ(Triangle3::dL<0>(0, 0), derivatives[0]);
-//    ASSERT_EQ(Triangle3::dL<1>(1, 0), derivatives[1]);
-//    ASSERT_EQ(Triangle3::dL<2>(0, 1), derivatives[2]);
-//
-//    Matrix sderivatives  {
-//            Triangle3::dL<0>(0, 0).T(),
-//            Triangle3::dL<1>(0, 0).T(),
-//            Triangle3::dL<2>(0, 0).T(),
-//    };
-//    ASSERT_EQ(triangle.dN(LocalCoordinates {0,0}), sderivatives);
-//
-//    // Jacobian
-//    Triangle<2> triangle2D (Node<2>{50, 50}, Node<2>{60, 50}, Node<2>{55, 55});
-//    Matrix J = triangle2D.jacobian(LocalCoordinates {1/3, 1/3} );
-//    ASSERT_EQ(J.determinant()*0.5, 25);
-//
-//    // Some properties
-//    caribou::algebra::Vector<2, FLOATING_POINT_TYPE> center {1/3., 1/3.};
-//    ASSERT_EQ(triangle.center(), center);
-//
-//    ASSERT_EQ(triangle.area(), 0.5);
-//
-//    Triangle<3> triangle1 (Node<3> {10,10,10}, Node<3> {20, 10, 10}, Node<3> {15, 20, 10});
-//    ASSERT_EQ(triangle1.area(), 50);
-//
-//}
-//
+
+TEST(Geometry, Triangle) {
+    using namespace caribou::geometry;
+    using namespace caribou::geometry::interpolation;
+
+    using LocalCoordinates = Triangle3::LocalCoordinates;
+
+    // Shape functions
+    ASSERT_EQ(Triangle3::L({0, 0})[0], 1);
+    ASSERT_EQ(Triangle3::L({1, 0})[0], 0);
+    ASSERT_EQ(Triangle3::L({0, 1})[0], 0);
+    ASSERT_EQ(Triangle3::L({1, 0})[1], 1);
+    ASSERT_EQ(Triangle3::L({0, 1})[2], 1);
+
+    // 2D
+    {
+        using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1>;
+
+        // Jacobian
+        Triangle<2> t (
+            WordCoordinates({50, 50}),
+            WordCoordinates({60, 50}),
+            WordCoordinates({55, 55})
+            );
+
+        auto J = t.jacobian(LocalCoordinates {1/3., 1/3.} );
+        ASSERT_EQ(J.determinant()*0.5, 25);
+
+        // Center
+        WordCoordinates center = (t.node(0) + t.node(1) + t.node(2)) / 3.;
+
+        ASSERT_FLOAT_EQ(t.center()[0], center[0]);
+        ASSERT_FLOAT_EQ(t.center()[1], center[1]);
+
+        // Area
+        ASSERT_FLOAT_EQ(t.area(), 25.);
+    }
+
+    // 3D
+    {
+        using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
+
+        // Jacobian
+        Triangle<3> t (
+            WordCoordinates({50, 50, 33}),
+            WordCoordinates({60, 50, 21}),
+            WordCoordinates({55, 55, -4})
+        );
+
+        // Center
+        WordCoordinates center = (t.node(0) + t.node(1) + t.node(2)) / 3.;
+
+        ASSERT_FLOAT_EQ(t.center()[0], center[0]);
+        ASSERT_FLOAT_EQ(t.center()[1], center[1]);
+        ASSERT_FLOAT_EQ(t.center()[2], center[2]);
+
+        // Area
+        ASSERT_FLOAT_EQ(t.area(), 159.84367);
+    }
+
+}
+
 //TEST(Geometry, Quad) {
 //    using namespace caribou::geometry;
 //    using namespace caribou::geometry::interpolation;

@@ -98,9 +98,7 @@ struct CanonicalElement
     {
         const auto shape_derivatives = CanonicalElementType::dL(std::forward<LocalCoordinates>(coordinates));
 
-        auto Jt = Eigen::Matrix<FLOATING_POINT_TYPE, CanonicalDimension, WorldDimension>::Zero();
         auto positions = nodes.transpose();
-
         return positions * shape_derivatives;
 
 

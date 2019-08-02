@@ -25,7 +25,6 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
     >
     Segment(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
     {
-//        p_nodes << (first_node.transpose() , (remaining_nodes.transpose(), ...));
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
@@ -40,34 +39,20 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
         static_assert(Dim == 1 and "Constructor with floating point coordinate is only available for 1D segments.");
     }
 
-    inline constexpr bool
-    operator==(const Segment<Dim, CanonicalElementType> & other) const noexcept
-    {
-        return std::equal(this->nodes().begin(), this->nodes().end(), other.nodes().begin(), [](const WorldCoordinates & n1, const WorldCoordinates & n2) -> bool {
-            return n1 == n2;
-        });
-    }
-
     /** Get the Node at given index */
-    constexpr
-    const auto &
+    inline
+    auto
     node(UNSIGNED_INTEGER_TYPE index) const
     {
-        if constexpr (Dim == 1)
-            return p_nodes.row(index)[0];
-        else
-            return p_nodes.row(index);
+        return p_nodes.row(index);
     }
 
     /** Get the Node at given index */
-    constexpr
-    auto &
+    inline
+    auto
     node(UNSIGNED_INTEGER_TYPE index)
     {
-        if constexpr (Dim == 1)
-            return p_nodes.row(index)[0];
-        else
-            return p_nodes.row(index);
+        return p_nodes.row(index);
     }
 
     /** Get a reference to the set of nodes */
@@ -105,20 +90,14 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
     }
 
 private:
-    template <
-        size_t index,
-        typename ...Nodes,
-        REQUIRES(sizeof...(Nodes) >= 1)
-    >
+    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
     inline
     void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
         p_nodes.row(index) = first_node;
         construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
     }
 
-    template <
-        size_t index
-    >
+    template <size_t index>
     inline
     void construct_from_nodes(const WorldCoordinates & last_node) {
         p_nodes.row(index) = last_node;

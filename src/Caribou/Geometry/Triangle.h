@@ -2,24 +2,19 @@
 #define CARIBOU_GEOMETRY_TRIANGLE_H
 
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Vector.h>
-#include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Interpolation/Triangle.h>
 #include <Caribou/Geometry/Internal/BaseTriangle.h>
+#include <Eigen/Dense>
 
-namespace caribou {
-namespace geometry {
+namespace caribou::geometry {
 
 template <size_t Dim, typename CanonicalElementType = interpolation::Triangle3>
 struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Triangle<Dim, CanonicalElementType>>
 {
     static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
-    using NodeType = caribou::geometry::Node<Dim>;
-    using Index = std::size_t ;
-    using Real = FLOATING_POINT_TYPE;
 
-    using LocalCoordinates = algebra::Vector<2, Real>;
-    using WorldCoordinates = algebra::Vector<Dim, Real>;
+    using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
+    using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
 
     static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D triangles are supported.");
 
@@ -27,30 +22,38 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
             typename ...Nodes,
             REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
     >
-    constexpr
-    Triangle(const NodeType & first_node, Nodes&&...remaining_nodes)
-    : p_nodes {first_node, std::forward<Nodes>(remaining_nodes)...}
-    {}
-
-    constexpr
-    const NodeType &
-    node(Index index) const
+    Triangle(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
     {
-        return p_nodes[index];
+        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
-    constexpr
-    NodeType &
-    node(Index index)
+    inline
+    auto
+    node(UNSIGNED_INTEGER_TYPE index) const
     {
-        return p_nodes[index];
+        return p_nodes.row(index);
+    }
+
+    inline
+    auto
+    node(UNSIGNED_INTEGER_TYPE index)
+    {
+        return p_nodes.row(index);
+    }
+
+    /** Get a reference to the set of nodes */
+    inline
+    const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> &
+    nodes() const
+    {
+        return p_nodes;
     }
 
     /** Compute the center position **/
     auto
     center() const noexcept
     {
-        return (node(0) + node(1) + node(2)) / 3.0;
+        return T(LocalCoordinates({1/3., 1/3.}));
     }
 
     /** Compute the surface area **/
@@ -62,32 +65,54 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
         auto n3 = node(2);
 
         if constexpr (Dim == 2) {
-            caribou::algebra::Matrix<3,3,Real> M ({
-                    {(Real) n1[0], (Real) n2[0], (Real) n3[0]},
-                    {(Real) n1[1], (Real) n2[1], (Real) n3[1]},
-                    {(Real)  1.,   (Real)  1.,   (Real)  1.}
-            });
+            Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3> m;
+            m << n1[0], n2[0], n3[0],
+                 n1[1], n2[1], n3[1],
+                   1. ,   1. ,   1. ;
 
-            return 1 / 2. * std::abs(M.determinant());
+            return 1 / 2. * std::abs(m.determinant());
         } else {
             auto v1 = n3 - n1;
             auto v2 = n2 - n1;
 
-            return v1.cross(v2).length() / 2.;
+            return v1.cross(v2).norm() / 2.;
         }
     }
 
+    /**
+     * Compute the transformation of a local position {u} to its world position {x,y,z}
+     */
+    inline
+    WorldCoordinates
+    T(const LocalCoordinates & coordinates) const
+    {
+        return CanonicalElementType::interpolate_at_local_position(coordinates, nodes());
+    }
+
     /** Compute the jacobian matrix evaluated at local position {u,v} */
-    algebra::Matrix<Dim, 2, Real>
+    Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 2>
     jacobian (const LocalCoordinates & coordinates) const
     {
         return CanonicalElementType::Jacobian(coordinates, p_nodes);
     }
 
 private:
-    std::array<NodeType, NumberOfNodes> p_nodes;
+    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
+    inline
+    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
+        p_nodes.row(index) = first_node;
+        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
+    }
+
+    template <size_t index>
+    inline
+    void construct_from_nodes(const WorldCoordinates & last_node) {
+        p_nodes.row(index) = last_node;
+    }
+
+private:
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> p_nodes;
 };
 
-} // namespace geometry
-} // namespace caribou
+} // namespace caribou::geometry
 #endif //CARIBOU_GEOMETRY_TRIANGLE_H
