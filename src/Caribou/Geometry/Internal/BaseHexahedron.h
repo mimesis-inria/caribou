@@ -4,10 +4,7 @@
 #include <Caribou/config.h>
 #include <Caribou/Algebra/Vector.h>
 
-namespace caribou {
-namespace geometry {
-namespace internal {
-
+namespace caribou::geometry::internal {
 
 template<typename CanonicalElementType, typename HexahedronType>
 struct BaseHexahedron : public CanonicalElementType
@@ -62,7 +59,5 @@ private:
     }
 };
 
-} // namespace internal
-} // namespace geometry
-} // namespace caribou
+} // namespace caribou::geometry::internal
 #endif //CARIBOU_GEOMETRY_INTERNAL_BASEHEXAHEDRON_H

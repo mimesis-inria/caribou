@@ -2,13 +2,10 @@
 #define CARIBOU_GEOMETRY_INTERPOLATION_SEGMENT_H
 
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Vector.h>
+#include <Eigen/Core>
 #include <Caribou/Geometry/Interpolation/CanonicalElement.h>
-#include <Caribou/Geometry/Node.h>
 
-namespace caribou {
-namespace geometry {
-namespace interpolation {
+namespace caribou::geometry::interpolation {
 
 /**
  * Interpolation on a segment with Lagrange polynomials of degree 1 (P1)
@@ -22,70 +19,52 @@ namespace interpolation {
  */
 struct Segment2 : public CanonicalElement<1, 2, Segment2>
 {
-    using Index = INTEGER_TYPE;
-    using Real = FLOATING_POINT_TYPE;
-
-    static constexpr INTEGER_TYPE Dimension = 1;
-    static constexpr INTEGER_TYPE NumberOfNodes = 2;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = 1;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodes = 2;
+    using LocalCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
 
     /**
-     * Compute the ith Lagrange polynomial value evaluated at local coordinates {u} w.r.t the segment's interpolation node i.
+     * Get the Lagrange polynomial values evaluated at local coordinates {u} w.r.t each segment's interpolation nodes.
      *
      * @example
      * \code{.cpp}
      * // Computes the value of node #2 Lagrange polynomial evaluated at local coordinates {-0.4}
-     * float p = Segment2::L<2> (-0.4);
+     * float p = Segment2::L(-0.4)[2];
      * \endcode
-     *
-     * @tparam interpolation_node_index The interpolation node id
      */
-    template<INTEGER_TYPE interpolation_node_index>
-    static constexpr
-    Real
-    L (const Real &u)
+    static
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, 1>
+    L (const LocalCoordinates & x)
     {
-        static_assert(interpolation_node_index >= 0 and interpolation_node_index < NumberOfNodes,
-                      "The shape value can only be computed at the interpolation nodes (indices 0 and 1).");
+        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, 1> m;
+        const auto  & u = x[0];
 
-        if CONSTEXPR_IF (interpolation_node_index == 0)
-            return (Real) 1/2. * (1 - u);
-        else // interpolation_node_index == (Index) 1
-            return (Real) 1/2. * (1 + u);
+        m << 1/2. * (1 - u),
+             1/2. * (1 + u);
+
+        return m;
     }
 
     /**
-     * Compute the ith Lagrange polynomial derivatives w.r.t the local frame {dL/du} evaluated at local
-     * coordinates {u} w.r.t the segment's interpolation node i.
+     * Get the Lagrange polynomial derivatives w.r.t the local frame {dL/du} evaluated at local
+     * coordinates {u} w.r.t each segment's interpolation nodes.
      *
      * @example
      * \code{.cpp}
      * // Computes the derivatives of node #2 Lagrange polynomial evaluated at local coordinates {-0.4}
-     * float dp = Segment2::dL<2> (-0.4);
+     * float dp = Segment2::dL(-0.4)[2];
      * \endcode
-     *
-     * @tparam interpolation_node_index The interpolation node id
      */
-    template<INTEGER_TYPE interpolation_node_index>
-    static constexpr
-    algebra::Vector<1, Real>
-    dL (const Real & /*u*/)
+    static
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension>
+    dL (const LocalCoordinates & /*x*/)
     {
-        static_assert(interpolation_node_index >= 0 and interpolation_node_index < NumberOfNodes,
-                      "The shape derivatives can only be computed at the interpolation nodes (indices 0 and 1).");
-
-        if CONSTEXPR_IF (interpolation_node_index == 0)
-            return {
-                    -1 // dL/du
-            };
-        else // interpolation_node_index == (Index) 1
-            return {
-                    1 // dL/du
-            };
-
+        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension> m;
+        m << -1,
+             +1;
+        return m;
     }
 };
 
-} // namespace interpolation
-} // namespace geometry
-} // namespace caribou
+} // namespace caribou::geometry::interpolation
 #endif //CARIBOU_GEOMETRY_INTERPOLATION_SEGMENT_H

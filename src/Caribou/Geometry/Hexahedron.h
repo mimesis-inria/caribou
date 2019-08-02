@@ -8,8 +8,7 @@
 #include <Caribou/Geometry/Interpolation/Hexahedron.h>
 #include <Caribou/Geometry/Internal/BaseHexahedron.h>
 
-namespace caribou {
-namespace geometry {
+namespace caribou::geometry {
 
 template <typename CanonicalElementType>
 struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahedron<CanonicalElementType>>
@@ -242,6 +241,5 @@ Hexahedron(Nodes&&...remaining_nodes) -> Hexahedron<interpolation::Hexahedron8>;
 
 Hexahedron() -> Hexahedron<interpolation::Hexahedron8>;
 
-} // namespace geometry
-} // namespace caribou
+} // namespace caribou::geometry
 #endif //CARIBOU_GEOMETRY_HEXAHEDRON_H

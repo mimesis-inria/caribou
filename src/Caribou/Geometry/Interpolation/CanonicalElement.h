@@ -1,15 +1,10 @@
 #ifndef CARIBOU_GEOMETRY_INTERPOLATION_CANONICALELEMENT_H
 #define CARIBOU_GEOMETRY_INTERPOLATION_CANONICALELEMENT_H
 
-#include <array>
-
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Matrix.h>
-#include <Caribou/Algebra/Vector.h>
+#include <Eigen/Core>
 
-namespace caribou {
-namespace geometry {
-namespace interpolation {
+namespace caribou::geometry::interpolation {
 
 /**
  * This is a base class that should be inherited by a explicit interpolation element types (example, a Lagrange element
@@ -22,14 +17,14 @@ namespace interpolation {
  * interpolation node per corners. Higher degree elements will usually have additional nodes between its corners.
  * @tparam ElementType_ The explicit element type (that will inherit this base class).
  */
-template<INTEGER_TYPE Dim, INTEGER_TYPE NNodes, typename CanonicalElementType_>
+template<UNSIGNED_INTEGER_TYPE Dim, UNSIGNED_INTEGER_TYPE NNodes, typename CanonicalElementType_>
 struct CanonicalElement
 {
-    using CanonicalElementType = CanonicalElementType_;
-    static constexpr INTEGER_TYPE CanonicalDimension = Dim;
-    static constexpr INTEGER_TYPE NumberOfNodes = NNodes;
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = Dim;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodes = NNodes;
 
-    using Real = FLOATING_POINT_TYPE;
+    using CanonicalElementType = CanonicalElementType_;
+    using LocalCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 1, CanonicalDimension>;
 
     /**
      * Compute the Jacobian matrix evaluated at local coordinates.
@@ -96,174 +91,87 @@ struct CanonicalElement
      * double detJ = J.determinant();
      * \endcode
      */
-    template<typename LocalCoordinates, typename WorldCoordinates>
+    template<typename LocalCoordinates, int WorldDimension>
     static inline
-    auto
-    Jacobian (LocalCoordinates && coordinates, const std::array<WorldCoordinates, NumberOfNodes> & nodes)
+    Eigen::Matrix<FLOATING_POINT_TYPE, WorldDimension, CanonicalDimension>
+    Jacobian (LocalCoordinates && coordinates, const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, WorldDimension> & nodes)
     {
-        using namespace caribou::algebra;
+        const auto shape_derivatives = CanonicalElementType::dL(std::forward<LocalCoordinates>(coordinates));
 
-        const auto shape_derivatives = dN(std::forward<LocalCoordinates>(coordinates));
+        auto Jt = Eigen::Matrix<FLOATING_POINT_TYPE, CanonicalDimension, WorldDimension>::Zero();
+        auto positions = nodes.transpose();
 
-        if CONSTEXPR_IF (CanonicalDimension == 1) { // Canonical element of dimension 1
-            auto sum = nodes[0] * shape_derivatives.row(0).transposed();
-            for (std::size_t i = 1; i < NumberOfNodes; ++i)
-                sum += nodes[i] * shape_derivatives.row(i).transposed();
-            return sum;
-        } else if CONSTEXPR_IF (CanonicalDimension == 2) { // Canonical element of dimension 2
-            Matrix positions (
-                    nodes[0].T(), // [x, y, z]
-                    nodes[0].T()  // [x, y, z]
-            );
-            auto sum =
-                    positions
-                    .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv]^T
-                    .transposed();
-            for (std::size_t i = 1; i < NumberOfNodes; ++i) {
-                positions = Matrix(
-                        nodes[i].T(), // [x, y, z]
-                        nodes[i].T()  // [x, y, z]
-                );
-                sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv]^T
-                        .transposed();
-            }
-            return sum;
-        } else { // Dimension == 3
-            Matrix positions (
-                    nodes[0].T(), // [x, y, z]
-                    nodes[0].T(), // [x, y, z]
-                    nodes[0].T()  // [x, y, z]
-            );
-            auto sum = positions
-                    .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv, dw]^T
-                    .transposed();
+        return positions * shape_derivatives;
 
-            for (std::size_t i = 1; i < NumberOfNodes; ++i) {
-                positions = Matrix(
-                        nodes[i].T(), // [x, y, z]
-                        nodes[i].T(), // [x, y, z]
-                        nodes[i].T()  // [x, y, z]
-                );
-                sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv, dw]^T
-                        .transposed();
-            }
-            return sum;
-        }
+
+//        if constexpr (CanonicalDimension == 1) { // Canonical element of dimension 1
+//            auto sum = nodes[0] * shape_derivatives.row(0).transpose();
+//            for (std::size_t i = 1; i < NumberOfNodes; ++i)
+//                sum += nodes[i] * shape_derivatives.row(i).transpose();
+//            return sum;
+//        } else if constexpr (CanonicalDimension == 2) { // Canonical element of dimension 2
+//
+//            Eigen::Matrix<FLOATING_POINT_TYPE, WorldDimension, CanonicalDimension> J;
+//
+//
+//
+//            Matrix positions (
+//                    nodes[0].T(), // [x, y, z]
+//                    nodes[0].T()  // [x, y, z]
+//            );
+//            auto sum =
+//                    positions
+//                    .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv]^T
+//                    .transposed();
+//            for (std::size_t i = 1; i < NumberOfNodes; ++i) {
+//                positions = Matrix(
+//                        nodes[i].T(), // [x, y, z]
+//                        nodes[i].T()  // [x, y, z]
+//                );
+//                sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv]^T
+//                        .transposed();
+//            }
+//            return sum;
+//        } else { // Dimension == 3
+//            Matrix positions (
+//                    nodes[0].T(), // [x, y, z]
+//                    nodes[0].T(), // [x, y, z]
+//                    nodes[0].T()  // [x, y, z]
+//            );
+//            auto sum = positions
+//                    .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv, dw]^T
+//                    .transposed();
+//
+//            for (std::size_t i = 1; i < NumberOfNodes; ++i) {
+//                positions = Matrix(
+//                        nodes[i].T(), // [x, y, z]
+//                        nodes[i].T(), // [x, y, z]
+//                        nodes[i].T()  // [x, y, z]
+//                );
+//                sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv, dw]^T
+//                        .transposed();
+//            }
+//            return sum;
+//        }
     }
 
     /**
-     * Get the shape values for each nodes evaluated at local coordinates.
-     */
-    template <typename LocalCoordinates>
-    static constexpr
-    algebra::Vector <NumberOfNodes, Real>
-    N (LocalCoordinates && coordinates)
-    {
-        return get_N_shapes(std::forward<LocalCoordinates>(coordinates), std::make_index_sequence<NumberOfNodes>{});
-    }
-
-    /**
-     * Get the shape derivatives for each nodes  w.r.t the local frame {dN/du, dN/dv} evaluated at local coordinates.
-     */
-    template <typename LocalCoordinates>
-    static constexpr
-    algebra::Matrix<NumberOfNodes, CanonicalDimension, Real>
-    dN (LocalCoordinates && coordinates)
-    {
-        return get_N_shape_derivatives(std::forward<LocalCoordinates>(coordinates), std::make_index_sequence<NumberOfNodes>{});
-    }
-
-    /**
-     * Interpolate a value at local coordinates from the given interpolation node values
+     * Interpolate a value at local coordinates from the given interpolation node values specified as a matrix
      * @tparam ValueType Type of the value to interpolate.
+     * @tparam ValueDimension Dimension of the value matrix.
      * This type must implement the multiplication operator with a floating point value (scalar) : ValueType * scalar.
      */
-    template <typename LocalCoordinates, typename ValueType>
+    template <typename ValueType, int ValueDimension, typename LocalCoordinates>
     static inline
     auto
-    interpolate_at_local_position (LocalCoordinates && coordinates, const std::array<ValueType, NumberOfNodes> & values)
+    interpolate_at_local_position (LocalCoordinates && coordinates,
+                                   const Eigen::Matrix<ValueType, NumberOfNodes, ValueDimension> & values)
     {
-        const auto shapes = N(std::forward<LocalCoordinates>(coordinates));
-        auto v = shapes[0] * values[0];
-        for (std::size_t i = 1; i < NumberOfNodes; ++i)
-            v += shapes[i]*values[i];
-        return  v;
-    }
-
-    /**
-     * Interpolate a value at local coordinates from the given interpolation node values
-     * @tparam ValueType Type of the value to interpolate.
-     * This type must implement the multiplication operator with a floating point value (scalar) : ValueType * scalar.
-     */
-    template <typename LocalCoordinates, typename ValueType, typename ...Values, REQUIRES(NumberOfNodes == sizeof...(Values)+1)>
-    static inline
-    auto
-    interpolate_at_local_position (LocalCoordinates && coordinates, ValueType && v0, Values &&... v)
-    {
-        const std::array<ValueType, NumberOfNodes> values {std::forward<ValueType>(v0), std::forward<Values>(v)...};
-        return interpolate_at_local_position(std::forward<LocalCoordinates>(coordinates), values);
-    }
-
-private:
-
-    /**
-     * Build the N first shape functions (L) into a vector at compile time.
-     * @example
-     * \code{.cpp}
-     * // Get the shape values at indices 0, 1, 2 and 3 into a vector.
-     * Vector<4> shapes = LagrangeElement::get_N_shapes({u, v}, 0, 1, 2, 3);
-     * \endcode
-     */
-    template <typename LocalCoordinates, std::size_t... Ix>
-    static constexpr
-    algebra::Vector <NumberOfNodes, Real>
-    get_N_shapes (const LocalCoordinates & coordinates, std::index_sequence<Ix...>)
-    {
-        if constexpr (CanonicalDimension == 1) {
-            return {
-                    CanonicalElementType::template L<Ix>(coordinates[0])...
-            };
-        } else if constexpr (CanonicalDimension == 2) {
-            return {
-                    CanonicalElementType::template L<Ix>(coordinates[0], coordinates[1])...
-            };
-        } else { // CanonicalDimension == 3
-            return {
-                    CanonicalElementType::template L<Ix>(coordinates[0], coordinates[1], coordinates[2])...
-            };
-        }
-    }
-
-    /**
-     * Build the N first shape derivatives (dL) into a Matrix at compile time.
-     * @example
-     * \code{.cpp}
-     * // Get the shape derivatives at indices 0, 1, 2 and 3 into a vector.
-     * Matrix<4,2> shapes_derivatives = LagrangeElement::get_N_shape_derivatives({u, v}, 0, 1, 2, 3);
-     * \endcode
-     */
-    template <typename LocalCoordinates, std::size_t... Ix>
-    static constexpr
-    algebra::Matrix<NumberOfNodes, CanonicalDimension, Real>
-    get_N_shape_derivatives (const LocalCoordinates & coordinates, std::index_sequence<Ix...>)
-    {
-        if constexpr (CanonicalDimension == 1) {
-            return {
-                    CanonicalElementType::template dL<Ix>(coordinates[0]).T()...
-            };
-        } else if constexpr (CanonicalDimension == 2) {
-            return {
-                    CanonicalElementType::template dL<Ix>(coordinates[0], coordinates[1]).T()...
-            };
-        } else { // CanonicalDimension == 3
-            return {
-                    CanonicalElementType::template dL<Ix>(coordinates[0], coordinates[1], coordinates[2]).T()...
-            };
-        }
+        return Eigen::Matrix<ValueType, ValueDimension, 1>(
+            (values.array().colwise() * CanonicalElementType::L(std::forward<LocalCoordinates>(coordinates)).array()).matrix().colwise().sum().transpose()
+            );
     }
 };
 
-} // namespace interpolation
-} // namespace geometry
-} // namespace caribou
+} // namespace caribou::geometry::interpolation
 #endif //CARIBOU_GEOMETRY_INTERPOLATION_CANONICALELEMENT_H

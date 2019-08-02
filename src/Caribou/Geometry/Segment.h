@@ -1,26 +1,21 @@
 #ifndef CARIBOU_GEOMETRY_SEGMENT_H
 #define CARIBOU_GEOMETRY_SEGMENT_H
 
-
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Vector.h>
-#include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Interpolation/Segment.h>
 #include <Caribou/Geometry/Internal/BaseSegment.h>
 
-namespace caribou {
-namespace geometry {
+#include <Eigen/Core>
+
+namespace caribou::geometry {
 
 template <size_t Dim, typename CanonicalElementType = interpolation::Segment2>
 struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment<Dim, CanonicalElementType>>
 {
-    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
-    using NodeType = caribou::geometry::Node<Dim>;
-    using Index = std::size_t ;
-    using Real = FLOATING_POINT_TYPE;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
 
-    using LocalCoordinates = algebra::Vector<1, Real>;
-    using WorldCoordinates = algebra::Vector<Dim, Real>;
+    using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
+    using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
 
     static_assert(Dim == 1 or Dim == 2 or Dim == 3, "Only 1D, 2D and 3D segments are supported.");
 
@@ -28,48 +23,67 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
         typename ...Nodes,
         REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
     >
+    Segment(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
+    {
+//        p_nodes << (first_node.transpose() , (remaining_nodes.transpose(), ...));
+        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
+    }
+
+    template <
+        typename ...Nodes,
+        REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
+    >
     constexpr
-    Segment(const NodeType & first_node, Nodes&&...remaining_nodes)
+    Segment(const FLOATING_POINT_TYPE & first_node, Nodes&&...remaining_nodes)
         : p_nodes {first_node, std::forward<Nodes>(remaining_nodes)...}
-    {}
+    {
+        static_assert(Dim == 1 and "Constructor with floating point coordinate is only available for 1D segments.");
+    }
 
     inline constexpr bool
     operator==(const Segment<Dim, CanonicalElementType> & other) const noexcept
     {
-        return std::equal(this->nodes().begin(), this->nodes().end(), other.nodes().begin(), [](const NodeType & n1, const NodeType & n2) -> bool {
+        return std::equal(this->nodes().begin(), this->nodes().end(), other.nodes().begin(), [](const WorldCoordinates & n1, const WorldCoordinates & n2) -> bool {
             return n1 == n2;
         });
     }
 
     /** Get the Node at given index */
     constexpr
-    const NodeType &
-    node(Index index) const
+    const auto &
+    node(UNSIGNED_INTEGER_TYPE index) const
     {
-        return p_nodes[index];
+        if constexpr (Dim == 1)
+            return p_nodes.row(index)[0];
+        else
+            return p_nodes.row(index);
     }
 
     /** Get the Node at given index */
     constexpr
-    NodeType &
-    node(Index index)
+    auto &
+    node(UNSIGNED_INTEGER_TYPE index)
     {
-        return p_nodes[index];
+        if constexpr (Dim == 1)
+            return p_nodes.row(index)[0];
+        else
+            return p_nodes.row(index);
     }
 
     /** Get a reference to the set of nodes */
     inline
-    const std::array<NodeType, NumberOfNodes> &
+    const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> &
     nodes() const
     {
         return p_nodes;
     }
 
     /** Compute the center position **/
-    auto
+    inline
+    WorldCoordinates
     center() const noexcept
     {
-        return T({0});
+        return T(LocalCoordinates(0.));
     }
 
     /**
@@ -83,17 +97,36 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
     }
 
     /** Compute the jacobian matrix evaluated at local position {u,v} */
-    algebra::Matrix<Dim, 2, Real>
-    jacobian (const LocalCoordinates & coordinates) const
+    template <typename LocalCoordinates>
+    Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>
+    jacobian (LocalCoordinates && coordinates) const
     {
-        return CanonicalElementType::Jacobian(coordinates, p_nodes);
+        return CanonicalElementType::Jacobian(std::forward<LocalCoordinates>(coordinates), p_nodes);
     }
 
 private:
-    std::array<NodeType, NumberOfNodes> p_nodes;
+    template <
+        size_t index,
+        typename ...Nodes,
+        REQUIRES(sizeof...(Nodes) >= 1)
+    >
+    inline
+    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
+        p_nodes.row(index) = first_node;
+        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
+    }
+
+    template <
+        size_t index
+    >
+    inline
+    void construct_from_nodes(const WorldCoordinates & last_node) {
+        p_nodes.row(index) = last_node;
+    }
+private:
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> p_nodes;
 };
 
-} // namespace geometry
-} // namespace caribou
+} // namespace caribou::geometry
 
 #endif //CARIBOU_GEOMETRY_SEGMENT_H

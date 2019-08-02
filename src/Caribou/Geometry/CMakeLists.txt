@@ -19,10 +19,14 @@ set(HEADER_FILES
     Interpolation/Triangle.h
     Interpolation/Segment.h)
 
+
+find_package(Eigen3 REQUIRED NO_MODULE)
+
 add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 target_include_directories(${PROJECT_NAME} INTERFACE "$<INSTALL_INTERFACE:include>")
+target_link_libraries (${PROJECT_NAME} INTERFACE Eigen3::Eigen)
 
 if (CARIBOU_BUILD_TESTS)
     add_subdirectory(test)
