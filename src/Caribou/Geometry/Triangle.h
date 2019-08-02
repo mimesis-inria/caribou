@@ -56,29 +56,6 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
         return T(LocalCoordinates({1/3., 1/3.}));
     }
 
-    /** Compute the surface area **/
-    FLOATING_POINT_TYPE
-    area() const noexcept
-    {
-        auto n1 = node(0);
-        auto n2 = node(1);
-        auto n3 = node(2);
-
-        if constexpr (Dim == 2) {
-            Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3> m;
-            m << n1[0], n2[0], n3[0],
-                 n1[1], n2[1], n3[1],
-                   1. ,   1. ,   1. ;
-
-            return 1 / 2. * std::abs(m.determinant());
-        } else {
-            auto v1 = n3 - n1;
-            auto v2 = n2 - n1;
-
-            return v1.cross(v2).norm() / 2.;
-        }
-    }
-
     /**
      * Compute the transformation of a local position {u} to its world position {x,y,z}
      */
@@ -94,6 +71,29 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
     jacobian (const LocalCoordinates & coordinates) const
     {
         return CanonicalElementType::Jacobian(coordinates, p_nodes);
+    }
+
+    /** Compute the surface area **/
+    FLOATING_POINT_TYPE
+    area() const noexcept
+    {
+        auto n1 = node(0);
+        auto n2 = node(1);
+        auto n3 = node(2);
+
+        if constexpr (Dim == 2) {
+            Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3> m;
+            m << n1[0], n2[0], n3[0],
+                n1[1], n2[1], n3[1],
+                1. ,   1. ,   1. ;
+
+            return 1 / 2. * std::abs(m.determinant());
+        } else {
+            auto v1 = n3 - n1;
+            auto v2 = n2 - n1;
+
+            return v1.cross(v2).norm() / 2.;
+        }
     }
 
 private:

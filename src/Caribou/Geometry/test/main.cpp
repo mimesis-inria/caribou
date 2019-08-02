@@ -4,7 +4,7 @@
 #include <Caribou/Traits.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Triangle.h>
-//#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Quad.h>
 //#include <Caribou/Geometry/Hexahedron.h>
 //#include <Caribou/Geometry/RectangularHexahedron.h>
 
@@ -165,38 +165,36 @@ TEST(Geometry, Triangle) {
 
 }
 
-//TEST(Geometry, Quad) {
-//    using namespace caribou::geometry;
-//    using namespace caribou::geometry::interpolation;
-//    using namespace caribou::algebra;
-//
-//    using LocalCoordinates = Vector<2, FLOATING_POINT_TYPE>;
-//
-//    Quad<2, interpolation::Quad4> quad (Node<2> {-1, -1}, Node<2> {+1, -1}, Node<2>{+1, +1}, Node<2>{-1, +1});
-//
-//    Node<2> node {{+1, +1}};
-//    ASSERT_EQ( quad.node(2), node);
-//
-//    // Shape functions
-//    ASSERT_EQ(Quad4::L<0>(-1, -1), 1);
-//    ASSERT_EQ(Quad4::L<0>(-1, +1), 0);
-//    ASSERT_EQ(Quad4::L<0>(+1, -1), 0);
-//    ASSERT_EQ(Quad4::L<0>(+1, +1), 0);
-//    ASSERT_EQ(Quad4::L<1>(+1, -1), 1);
-//    ASSERT_EQ(Quad4::L<2>(+1, +1), 1);
-//    ASSERT_EQ(Quad4::L<3>(-1, +1), 1);
-//
-//    // Shape function derivatives
-//    caribou::algebra::Vector<2, FLOATING_POINT_TYPE> derivatives[4] {{-0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}, {-0.5, 0.5}};
-//    ASSERT_EQ(Quad4::dL<0>(-1, -1), derivatives[0]);
-//    ASSERT_EQ(Quad4::dL<1>(+1, -1), derivatives[1]);
-//    ASSERT_EQ(Quad4::dL<2>(+1, +1), derivatives[2]);
-//    ASSERT_EQ(Quad4::dL<3>(-1, +1), derivatives[3]);
-//
-//    // Jacobian
-//    Quad<2> quad2D (Node<2>{50, 50}, Node<2>{55, 50}, Node<2>{55, 55}, Node<2>{50, 55});
-//    Matrix J = quad2D.jacobian(LocalCoordinates {-sqrt(3)/3, sqrt(3)/3 });
-//    ASSERT_EQ(J.determinant()*4, 25);
+TEST(Geometry, Quad) {
+    using namespace caribou::geometry;
+    using namespace caribou::geometry::interpolation;
+
+    using LocalCoordinates = Triangle3::LocalCoordinates;
+
+    // Shape functions
+    ASSERT_EQ(Quad4::L({-1, -1})[0], 1);
+    ASSERT_EQ(Quad4::L({-1, +1})[0], 0);
+    ASSERT_EQ(Quad4::L({+1, -1})[0], 0);
+    ASSERT_EQ(Quad4::L({+1, +1})[0], 0);
+    ASSERT_EQ(Quad4::L({+1, -1})[1], 1);
+    ASSERT_EQ(Quad4::L({+1, +1})[2], 1);
+    ASSERT_EQ(Quad4::L({-1, +1})[3], 1);
+
+    // 2D
+    {
+        using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1>;
+
+        // Jacobian
+        Quad<2> quad2D (
+            WordCoordinates({50, 50}),
+            WordCoordinates({55, 50}),
+            WordCoordinates({55, 55}),
+            WordCoordinates({50, 55})
+            );
+        auto J = quad2D.jacobian(LocalCoordinates {-sqrt(3)/3, sqrt(3)/3 });
+        ASSERT_EQ(J.determinant()*4, 25);
+    }
+
 //
 //
 //    // Interpolation
@@ -206,9 +204,9 @@ TEST(Geometry, Triangle) {
 //    };
 //
 //    ASSERT_EQ(f(0,0), quad.interpolate_at_local_position(LocalCoordinates {0, 0}, f(-1, -1), f(1, -1), f(1, 1), f(-1, 1)));
-//
-//}
-//
+
+}
+
 //TEST(Geometry, Hexahedron) {
 //    using namespace caribou::geometry;
 //    using namespace caribou::geometry::interpolation;

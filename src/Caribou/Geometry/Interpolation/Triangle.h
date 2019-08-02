@@ -2,13 +2,9 @@
 #define CARIBOU_GEOMETRY_INTERPOLATION_TRIANGLE_H
 
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Vector.h>
 #include <Caribou/Geometry/Interpolation/CanonicalElement.h>
-#include <Caribou/Geometry/Node.h>
 
-namespace caribou {
-namespace geometry {
-namespace interpolation {
+namespace caribou::geometry::interpolation {
 
 /**
  * Interpolation on a triangle with Lagrange polynomials of degree 1 (P1)
@@ -96,7 +92,5 @@ struct Triangle3 : public CanonicalElement<2, 3, Triangle3>
     }
 };
 
-} // namespace interpolation
-} // namespace geometry
-} // namespace caribou
+} // namespace caribou::geometry::interpolation
 #endif //CARIBOU_GEOMETRY_INTERPOLATION_TRIANGLE_H
