@@ -31,14 +31,14 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
     auto
     node(UNSIGNED_INTEGER_TYPE index) const
     {
-        return p_nodes.row(index);
+        return p_nodes.row(index).transpose();
     }
 
     inline
     auto
     node(UNSIGNED_INTEGER_TYPE index)
     {
-        return p_nodes.row(index);
+        return p_nodes.row(index).transpose();
     }
 
     /** Get a reference to the set of nodes */

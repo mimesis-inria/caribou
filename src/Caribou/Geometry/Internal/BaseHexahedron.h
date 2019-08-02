@@ -1,8 +1,9 @@
 #ifndef CARIBOU_GEOMETRY_INTERNAL_BASEHEXAHEDRON_H
 #define CARIBOU_GEOMETRY_INTERNAL_BASEHEXAHEDRON_H
 
+#include <Eigen/Core>
+
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Vector.h>
 
 namespace caribou::geometry::internal {
 
@@ -11,29 +12,9 @@ struct BaseHexahedron : public CanonicalElementType
 {
     static constexpr INTEGER_TYPE NumberOfNodes = HexahedronType::NumberOfNodes;
     using CanonicalElement = CanonicalElementType;
-    using NodeType = caribou::geometry::Node<3>;
-    using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
-    using Index = std::size_t ;
-    using Real = FLOATING_POINT_TYPE;
 
-    using LocalCoordinates = algebra::Vector<3, Real>;
-    using WorldCoordinates = algebra::Vector<3, Real>;
-
-
-    /**
-     * Get the ith quadrangle face.
-     */
-    inline
-    QuadType
-    face(Index index) const
-    {
-        const auto & face_indices = HexahedronType::faces[index];
-        std::array<NodeType, QuadType::NumberOfNodes> quad_nodes;
-        for (std::size_t i = 0; i < QuadType::NumberOfNodes; ++i)
-            quad_nodes[i] = self().node(face_indices[i]);
-
-        return QuadType(quad_nodes);
-    }
+    using LocalCoordinates = typename CanonicalElement::LocalCoordinates;
+    using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
 
     /** Compute the volume of the hexahedron */
     inline

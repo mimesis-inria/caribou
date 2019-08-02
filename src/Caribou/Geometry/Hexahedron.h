@@ -1,9 +1,9 @@
 #ifndef CARIBOU_GEOMETRY_HEXAHEDRON_H
 #define CARIBOU_GEOMETRY_HEXAHEDRON_H
 
+#include <Eigen/Dense>
+
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Vector.h>
-#include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Interpolation/Hexahedron.h>
 #include <Caribou/Geometry/Internal/BaseHexahedron.h>
@@ -17,56 +17,72 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
 
     using Base = internal::BaseHexahedron<CanonicalElementType, Hexahedron<CanonicalElementType>>;
 
-    using NodeType = typename Base::NodeType;
-    using QuadType = typename Base::QuadType;
-    using Index = typename Base::Index;
-    using Real = typename Base::Real;
-
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
-    constexpr
-    Hexahedron()
-            : p_nodes(CanonicalElementType::nodes)
-    {}
+    using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
 
-    constexpr
-    Hexahedron(const std::array<NodeType, NumberOfNodes> & nodes)
-            : p_nodes(nodes)
-    {}
+    template<int nRows, int nColumns, int Options=0>
+    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+
+    template<int nRows, int nColumns>
+    using Map = Eigen::Map<const Matrix<nRows, nColumns, Eigen::RowMajor>>;
+
+    template<int nRows>
+    using MapVector = Eigen::Map<const Matrix<nRows, 1, Eigen::ColMajor>>;
+
+    Hexahedron()
+    : p_nodes(Map<NumberOfNodes, 3>(&CanonicalElementType::nodes[0][0]))
+    {
+    }
 
     template <
             typename ...Nodes,
-            REQUIRES(NumberOfNodes == sizeof...(Nodes)),
-            REQUIRES(std::conjunction_v<std::is_same<NodeType, Nodes>...>)
+            REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
     >
-    constexpr
-    Hexahedron(Nodes&&...remaining_nodes)
-    : p_nodes {std::forward<Nodes>(remaining_nodes)...}
-    {}
-
-    /** Get the Node at given index */
-    inline
-    const NodeType &
-    node(Index index) const
+    Hexahedron(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
     {
-        return p_nodes[index];
+        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
     /** Get the Node at given index */
     inline
-    NodeType &
-    node(Index index)
+    auto
+    node(UNSIGNED_INTEGER_TYPE index) const
     {
-        return p_nodes[index];
+        return p_nodes.row(index).transpose();
+    }
+
+    /** Get the Node at given index */
+    inline
+    auto
+    node(UNSIGNED_INTEGER_TYPE index)
+    {
+        return p_nodes.row(index).transpose();
     }
 
     /** Get a reference to the set of nodes */
     inline
-    const std::array<NodeType, NumberOfNodes> &
+    const auto &
     nodes() const
     {
         return p_nodes;
+    }
+
+    /**
+     * Get the ith quadrangle face.
+     */
+    inline
+    QuadType
+    face(UNSIGNED_INTEGER_TYPE index) const
+    {
+        const auto & face_indices = CanonicalElementType::faces[index];
+
+        Matrix<QuadType::NumberOfNodes, 3> m;
+        for (std::size_t i = 0; i < QuadType::NumberOfNodes; ++i)
+            m.row(i) = node(face_indices[i]);
+
+        return QuadType(m);
     }
 
     /**
@@ -97,10 +113,10 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
         const auto lz = node(4) - node(0);
 
         return (
-                (node(3)-node(2) + lx).length_squared() < EPSILON && // edges 0-1 and 2-3 have the same length
-                (node(1)-node(5) + lz).length_squared() < EPSILON && // edges 0-4 and 1-5 have the same length
-                (node(2)-node(6) + lz).length_squared() < EPSILON && // edges 0-4 and 2-6 have the same length
-                (node(3)-node(7) + lz).length_squared() < EPSILON    // edges 0-4 and 3-7 have the same length
+                (node(3)-node(2) + lx).squaredNorm() < EPSILON && // edges 0-1 and 2-3 have the same length
+                (node(1)-node(5) + lz).squaredNorm() < EPSILON && // edges 0-4 and 1-5 have the same length
+                (node(2)-node(6) + lz).squaredNorm() < EPSILON && // edges 0-4 and 2-6 have the same length
+                (node(3)-node(7) + lz).squaredNorm() < EPSILON    // edges 0-4 and 3-7 have the same length
         );
     }
 
@@ -119,15 +135,15 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
      * x,y,z world frame (identity matrix).
      */
     inline
-    algebra::Matrix<3,3,FLOATING_POINT_TYPE>
+    Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3>
     frame() const
     {
         const auto hexa_center = T( LocalCoordinates {0,0,0} ); // Hexahedron's center position
 
-        const auto quad_faced_to_u_axis = Base::face(2); // Quad that lies in front of the u axis
+        const auto quad_faced_to_u_axis = face(2); // Quad that lies in front of the u axis
         const auto face_u_center = quad_faced_to_u_axis.T({0,0}); // Center position of this quad
 
-        const auto quad_faced_to_v_axis = Base::face(4); // Quad that lies in front of the v axis
+        const auto quad_faced_to_v_axis = face(4); // Quad that lies in front of the v axis
         const auto face_v_center = quad_faced_to_v_axis.T({0,0}); // Center position of this quad
 
         /* @todo(jnbrunet2000@gmail.com): select between the pairs of axis (center-to-u, center-to-v),
@@ -140,25 +156,28 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
         const auto center_to_v = face_v_center - hexa_center;
 
         // u-axis
-        const auto u = center_to_u.unit();
+        const auto u = center_to_u.normalized();
 
         // v-axis
-        auto v = center_to_v.unit();
+        auto v = center_to_v.normalized();
 
         // w-axis
-        const auto w = u.cross(v).unit();
+        const auto w = u.cross(v).normalized();
 
         // v-axis (recompute the v-axis in case u and v aren't orthogonal
-        v = w.cross(u).unit();
+        v = w.cross(u).normalized();
 
-        return {u,v,w};
+        Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3> m;
+        m << u, v, w;
+
+        return m;
     }
 
     /** Compute the jacobian matrix evaluated at local position {u,v,w}
  * (see interpolation::CanonicalElement::Jacobian for more details).
  * */
     inline
-    algebra::Matrix<3, 3, Real>
+    Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3>
     jacobian (const LocalCoordinates & coordinates) const
     {
         return CanonicalElementType::Jacobian(coordinates, nodes());
@@ -208,17 +227,14 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
     auto
     gauss_quadrature(EvaluateFunctor f) const
     {
-        static_assert(CanonicalElementType::gauss_nodes.size() == CanonicalElementType::gauss_weights.size(),
-                      "Gauss nodes must have assigned weights.");
-
-        const auto p0 = CanonicalElementType::gauss_nodes[0];
+        const auto p0 = MapVector<3>(CanonicalElementType::gauss_nodes[0]);
         const auto w0 = CanonicalElementType::gauss_weights[0];
         const auto detJ0 = jacobian(p0).determinant();
         const auto eval0 = f(*this, p0);
         auto result = eval0 * w0 * detJ0;
 
-        for (std::size_t i = 1; i < CanonicalElementType::gauss_nodes.size(); ++i) {
-            const auto p = CanonicalElementType::gauss_nodes[i];
+        for (std::size_t i = 1; i < CanonicalElementType::number_of_gauss_nodes; ++i) {
+            const auto p = MapVector<3>(CanonicalElementType::gauss_nodes[i]);
             const auto w = CanonicalElementType::gauss_weights[i];
             const auto detJ = jacobian(p).determinant();
             const auto eval = f(*this, p);
@@ -229,13 +245,26 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
     }
 
 private:
-    std::array<NodeType, NumberOfNodes> p_nodes;
+    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
+    inline
+    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
+        p_nodes.row(index) = first_node;
+        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
+    }
+
+    template <size_t index>
+    inline
+    void construct_from_nodes(const WorldCoordinates & last_node) {
+        p_nodes.row(index) = last_node;
+    }
+
+private:
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, 3> p_nodes;
 };
 
 template <
         typename ...Nodes,
-        REQUIRES(8 == sizeof...(Nodes)),
-        REQUIRES(std::conjunction_v<std::is_same<caribou::geometry::Node<3>, Nodes>...>)
+        REQUIRES(8 == sizeof...(Nodes))
 >
 Hexahedron(Nodes&&...remaining_nodes) -> Hexahedron<interpolation::Hexahedron8>;
 

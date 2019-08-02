@@ -44,7 +44,7 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
     auto
     node(UNSIGNED_INTEGER_TYPE index) const
     {
-        return p_nodes.row(index);
+        return p_nodes.row(index).transpose();
     }
 
     /** Get the Node at given index */
@@ -52,7 +52,7 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
     auto
     node(UNSIGNED_INTEGER_TYPE index)
     {
-        return p_nodes.row(index);
+        return p_nodes.row(index).transpose();
     }
 
     /** Get a reference to the set of nodes */

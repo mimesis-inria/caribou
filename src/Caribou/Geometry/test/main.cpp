@@ -5,53 +5,11 @@
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
-//#include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/Hexahedron.h>
 //#include <Caribou/Geometry/RectangularHexahedron.h>
 
-//TEST(Geometry, Node) {
-//    using namespace caribou::geometry;
-//
-//    auto p1 = Node(1, 2, 3);
-//
-//    auto p2 = Node<3> {1, 2, 3};
-//
-//    ASSERT_EQ(p1, p2);
-//
-//    constexpr caribou::algebra::Vector<3> v (1, 2, 3);
-//    Node p3 (v);
-//
-//    Node p4 = p3;
-//
-//    p4[0] = p1[0];
-//    p4[1]= p2[1];
-//    p4[2] = p3[2];
-//
-//    ASSERT_EQ(p3, p4);
-//
-//    ASSERT_EQ(p1.x(), 1);
-//
-//    p2.y() = 4;
-//    ASSERT_EQ(p2[1], 4);
-//
-//    ASSERT_EQ(p4[2], 3);
-//    ASSERT_NE(p1, p2);
-//
-//    Node<3> p8;
-//
-//    // Make sure a point have minimal space taken in the memory
-//    ASSERT_EQ(
-//            sizeof(p8),
-//            (3 * sizeof(Node<3>::ValueType))
-//    );
-//
-//    // Transformations test
-//    Node p9 = p1.translated({5,5,5}); // Does not change the value of p1
-//    ASSERT_EQ(Node(1, 2, 3), p1);
-//    ASSERT_EQ(Node(1+5, 2+5, 3+5), p9);
-//
-//    p1.translate({5,5,5});
-//    ASSERT_EQ(Node(1+5, 2+5, 3+5), p1);
-//}
+template<int nRows, int nColumns>
+using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns>;
 
 TEST(Geometry, Segment) {
     using namespace caribou::geometry;
@@ -207,42 +165,43 @@ TEST(Geometry, Quad) {
 
 }
 
-//TEST(Geometry, Hexahedron) {
-//    using namespace caribou::geometry;
-//    using namespace caribou::geometry::interpolation;
-//    using namespace caribou::algebra;
-//
-//    Hexahedron<interpolation::Hexahedron8> hexa;
-//    const auto I = Matrix<3,3>::Identity();
-//
-//    Node<3> node {{1, 1, -1}};
-//    ASSERT_EQ(hexa.node(2), node);
-//
-//    double r = hexa.gauss_quadrature([](const Hexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
-//        return 1.;
-//    });
-//
-//    ASSERT_FLOAT_EQ(r, 8);
-//
-//    ASSERT_EQ(hexa.frame(), I);
-//
-//    // Rotate the hexa by R and extract the resulting frame
-//    const Matrix R ({
-//            {0.44480652434057482703, 0.49694411802952204171, 0.74511321251197670801},
-//            {0.60593116938112601133, 0.44567310019856992698, -0.6589559209323614386},
-//            {-0.65954118436719233465, 0.74459521306227582915, -0.10287562786328596776}
-//    });
-//
-//    for (std::size_t i = 0; i<8; i++)
-//        hexa.node(i) = R*hexa.node(i);
-//
-//    const auto frame = hexa.frame();
-//    for (std::size_t i = 0; i < 3; ++i)
-//        for (std::size_t j = 0; j < 3; ++j)
-//            ASSERT_FLOAT_EQ(R(i,j), frame(i,j));
-//
-//}
-//
+TEST(Geometry, Hexahedron) {
+    using namespace caribou::geometry;
+    using namespace caribou::geometry::interpolation;
+    using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
+
+    Hexahedron<interpolation::Hexahedron8> hexa;
+    const auto I = Matrix<3,3>::Identity();
+
+    WordCoordinates node {1, 1, -1};
+    ASSERT_FLOAT_EQ(hexa.node(2)[0], node[0]);
+    ASSERT_FLOAT_EQ(hexa.node(2)[1], node[1]);
+    ASSERT_FLOAT_EQ(hexa.node(2)[2], node[2]);
+
+    double r = hexa.gauss_quadrature([](const Hexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
+        return 1.;
+    });
+
+    ASSERT_FLOAT_EQ(r, 8);
+
+    ASSERT_EQ(hexa.frame(), I);
+
+    // Rotate the hexa by R and extract the resulting frame
+    Matrix<3, 3> R;
+    R << 0.44480652434057482703,  0.49694411802952204171, 0.74511321251197670801,
+         0.60593116938112601133,  0.44567310019856992698, -0.6589559209323614386,
+         -0.65954118436719233465, 0.74459521306227582915, -0.10287562786328596776;
+
+    for (std::size_t i = 0; i<8; i++)
+        hexa.node(i) = R*hexa.node(i);
+
+    const auto frame = hexa.frame();
+    for (std::size_t i = 0; i < 3; ++i)
+        for (std::size_t j = 0; j < 3; ++j)
+            ASSERT_FLOAT_EQ(R(i,j), frame(i,j));
+
+}
+
 //TEST(Geometry, RectangularHexahedron) {
 //    using namespace caribou::geometry;
 //    using namespace caribou::geometry::interpolation;

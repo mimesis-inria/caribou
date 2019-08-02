@@ -3,6 +3,7 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Interpolation/CanonicalElement.h>
+#include <Eigen/Core>
 
 namespace caribou::geometry::interpolation {
 
