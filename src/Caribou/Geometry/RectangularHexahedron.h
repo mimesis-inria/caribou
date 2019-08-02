@@ -2,15 +2,12 @@
 #define CARIBOU_GEOMETRY_RECTANGULARHEXAHEDRON_H
 
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Vector.h>
-#include <Caribou/Geometry/Node.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Interpolation/Hexahedron.h>
 #include <Caribou/Geometry/Internal/BaseHexahedron.h>
 
-namespace caribou {
-namespace geometry {
+namespace caribou::geometry {
 
 template <typename CanonicalElementType = interpolation::Hexahedron8>
 struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementType, RectangularHexahedron<CanonicalElementType>>
@@ -19,16 +16,25 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
 
     using Base = internal::BaseHexahedron<CanonicalElementType, RectangularHexahedron<CanonicalElementType>>;
 
-    using NodeType = typename Base::NodeType;
-    using QuadType = typename Base::QuadType;
-    using Index = typename Base::Index;
-    using Real = typename Base::Real;
-
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
-    using Mat33 = algebra::Matrix<3, 3, Real>;
-    using Size = algebra::Vector<3, Real>;
+    using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
+
+    template<int nRows, int nColumns, int Options=0>
+    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+
+    template<int nRows, int nColumns>
+    using Map = Eigen::Map<const Matrix<nRows, nColumns, Eigen::RowMajor>>;
+
+    template<int nRows, int Options=0>
+    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
+
+    template<int nRows>
+    using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
+
+    using Mat33 = Matrix<3, 3>;
+    using Size = Vector<3>;
 
     constexpr
     RectangularHexahedron()
@@ -36,46 +42,46 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     {}
 
     constexpr
-    RectangularHexahedron(const NodeType & center, const Size & dimensions, const Mat33 & rotation)
+    RectangularHexahedron(const WorldCoordinates & center, const Size & dimensions, const Mat33 & rotation)
             : p_center (center), p_H (dimensions), p_R (rotation)
     {}
 
     constexpr
-    RectangularHexahedron(const NodeType & center, const Size & dimensions)
+    RectangularHexahedron(const WorldCoordinates & center, const Size & dimensions)
             : p_center (center), p_H (dimensions), p_R (Mat33::Identity())
     {}
 
     constexpr
-    RectangularHexahedron(const NodeType & center)
+    RectangularHexahedron(const WorldCoordinates & center)
         : p_center (center), p_H  {2,2,2}, p_R (Mat33::Identity())
     {}
 
     /** Get the Node at given index */
     inline
-    const NodeType
-    node(Index index) const
+    auto
+    node(UNSIGNED_INTEGER_TYPE index) const
     {
-        const auto local_coordinates_of_node = CanonicalElementType::nodes[index];
+        const auto local_coordinates_of_node = MapVector<3>(CanonicalElementType::nodes[index]);
         return T(local_coordinates_of_node);
     }
 
     /** Get the Node at given index */
     inline
-    NodeType
-    node(Index index)
+    auto
+    node(UNSIGNED_INTEGER_TYPE index)
     {
-        const auto local_coordinates_of_node = CanonicalElementType::nodes[index];
+        const auto local_coordinates_of_node = MapVector<3>(CanonicalElementType::nodes[index]);
         return T(local_coordinates_of_node);
     }
 
     /** Get a reference to the set of nodes */
     inline
-    std::array<NodeType, NumberOfNodes>
+    Matrix<NumberOfNodes, 3>
     nodes() const
     {
-        std::array<NodeType, NumberOfNodes> nodes;
-        for (size_t i = 0; i < CanonicalElementType::nodes.size(); ++i)
-            nodes[i] = node(i);
+        Matrix<NumberOfNodes, 3> m;
+        for (size_t i = 0; i < CanonicalElementType::NumberOfNodes; ++i)
+            m.row() = node(i).translate();
         return nodes;
     }
 
@@ -92,7 +98,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
 
     /** Get the center point position */
     inline
-    NodeType
+    WorldCoordinates
     center() const
     {
         return p_center;
@@ -120,7 +126,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
      * where hx, hy, and hz are the dimension of the edges 0-1, 0-3 and 0-4 respectively.
      */
     inline
-    algebra::Matrix<3, 3, Real>
+    Mat33
     jacobian (const LocalCoordinates & /*coordinates*/) const
     {
         return jacobian();
@@ -138,10 +144,10 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
      * where hx, hy, and hz are the dimension of the edges 0-1, 0-3 and 0-4 respectively.
      */
     inline
-    algebra::Matrix<3, 3, Real>
+    Mat33
     jacobian () const
     {
-        return 1/2. * Mat33::Identity().direct_multiplication(p_H);
+        return (1/2.*p_H).asDiagonal();
     }
 
     /**
@@ -151,7 +157,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     WorldCoordinates
     T(const LocalCoordinates & coordinates) const
     {
-        return p_center + ((p_R * coordinates).direct_multiplication(p_H/2.));
+        return p_center + ((p_R * coordinates).array()*(p_H/2.).array()).matrix();
     }
 
     /**
@@ -161,7 +167,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     LocalCoordinates
     Tinv(const WorldCoordinates & coordinates) const
     {
-        return p_R.T() * ((coordinates - p_center).direct_division(p_H/2.));
+        return p_R.transpose() * ((coordinates - p_center).array() / (p_H/2.).array()).matrix();
     }
 
     /**
@@ -240,7 +246,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     template <int NNodes>
     inline
     bool
-    intersects_polygon(const WorldCoordinates /*nodes*/[NNodes], const algebra::Vector<3, FLOATING_POINT_TYPE> & /*polynormal*/)
+    intersects_polygon(const WorldCoordinates /*nodes*/[NNodes], const Vector<3> & /*polynormal*/)
     {
         // todo(jnbrunet2000@gmail.com): do it
         return false;
@@ -280,19 +286,16 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     auto
     gauss_quadrature(EvaluateFunctor f) const
     {
-        static_assert(CanonicalElementType::gauss_nodes.size() == CanonicalElementType::gauss_weights.size(),
-                      "Gauss nodes must have assigned weights.");
-
         // Constant for parallelepiped hexahedrons
         const auto detJ = jacobian().determinant();
 
-        const auto p0 = CanonicalElementType::gauss_nodes[0];
+        const auto p0 = MapVector<3>(CanonicalElementType::gauss_nodes[0]);
         const auto w0 = CanonicalElementType::gauss_weights[0];
         const auto eval0 = f(*this, p0);
         auto result = eval0 * w0 * detJ;
 
-        for (std::size_t i = 1; i < CanonicalElementType::gauss_nodes.size(); ++i) {
-            const auto p = CanonicalElementType::gauss_nodes[i];
+        for (std::size_t i = 1; i < CanonicalElementType::number_of_gauss_nodes; ++i) {
+            const auto p = MapVector<3>(CanonicalElementType::gauss_nodes[i]);
             const auto w = CanonicalElementType::gauss_weights[i];
             const auto eval = f(*this, p);
             result += eval * w * detJ;
@@ -302,13 +305,12 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     }
 
 private:
-    NodeType p_center; ///< Position of the center point of the hexahedron
+    WorldCoordinates p_center; ///< Position of the center point of the hexahedron
     Size p_H; ///< Size of the hexahedron {hx, hy, hz}
     Mat33 p_R; ///< Rotation matrix (a.k.a. the local coordinates frame) at the center of the hexahedron
 };
 
 RectangularHexahedron() -> RectangularHexahedron<interpolation::Hexahedron8>;
 
-} // namespace geometry
-} // namespace caribou
+} // namespace caribou::geometry
 #endif //CARIBOU_GEOMETRY_RECTANGULARHEXAHEDRON_H

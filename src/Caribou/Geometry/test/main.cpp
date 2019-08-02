@@ -6,7 +6,7 @@
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Hexahedron.h>
-//#include <Caribou/Geometry/RectangularHexahedron.h>
+#include <Caribou/Geometry/RectangularHexahedron.h>
 
 template<int nRows, int nColumns>
 using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns>;
@@ -202,87 +202,90 @@ TEST(Geometry, Hexahedron) {
 
 }
 
-//TEST(Geometry, RectangularHexahedron) {
-//    using namespace caribou::geometry;
-//    using namespace caribou::geometry::interpolation;
-//    using namespace caribou::algebra;
-//
-//    {
-//        RectangularHexahedron<interpolation::Hexahedron8> hexa;
-//        const auto I = Matrix<3, 3>::Identity();
-//
-//        Node<3> node{{1, 1, -1}};
-//        ASSERT_EQ(hexa.node(2), node);
-//
-//        double r = hexa.gauss_quadrature(
-//            [](const RectangularHexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
-//                return 1.;
-//            });
-//
-//        ASSERT_FLOAT_EQ(r, 8);
-//
-//        ASSERT_EQ(hexa.frame(), I);
-//    }
-//
-//    {
-//        using Hexa = RectangularHexahedron<interpolation::Hexahedron8>;
-//        using Segment = Segment<3>;
-//        Hexa::NodeType center{25, 40, 2};
-//        Hexa::Size dimensions{5,20, 10};
-//
-//        // Rotation from center point around x, y and then z axis => x: -25 deg, y: 30 deg, z: 90 deg
-//        FLOATING_POINT_TYPE a = -25 * 180/M_PI;
-//        Hexa::Mat33 Rx = {{
-//            {1., 0., 0.},
-//            {0., cos(a), -sin(a)},
-//            {0, sin(a), cos(a)}
-//        }};
-//
-//        a = 30 * 180/M_PI;
-//        Hexa::Mat33 Ry = {{
-//            {cos(a), 0., sin(a)},
-//            {0., 1, 0.},
-//            {-sin(a), 0, cos(a)}
-//        }};
-//
-//
-//        a = 90 * 180/M_PI;
-//        Hexa::Mat33 Rz = {{
-//            {cos(a), -sin(a), 0.},
-//            {sin(a), cos(a), 0.},
-//            {0, 0, 1}
-//        }};
-//
-//        Hexa::Mat33 R = Rz*Ry*Rz;
-//
-//        Hexa h(center, dimensions, R);
-//        Hexa base_hexa(Hexa::NodeType {0.,0.,0.}, Hexa::Size {2.,2.,2.});
-//
-//        for (unsigned int i = 0; i < 8; ++i) {
-//            for (unsigned int j = 0; j < 3; ++j) {
-//                ASSERT_FLOAT_EQ(h.T(base_hexa.node(i))[j], h.node(i)[j]);
-//                ASSERT_FLOAT_EQ(h.Tinv(h.node(i))[j], base_hexa.node(i)[j]);
-//            }
-//        }
-//
-//        ASSERT_TRUE(h.intersects(Segment (Hexa::NodeType {0,0,0}, h.center())));
-//        ASSERT_FALSE(h.intersects(Segment (Hexa::NodeType {0,0,0}, Hexa::NodeType {1,1,1})));
-//
-//        for (unsigned int i = 0; i < 8; ++i) {
-//            ASSERT_TRUE(h.intersects(Segment(h.node(i), h.center()))) << "Segment from node " << i << " and the center of the hexa should intersect the cube.";
-//            ASSERT_TRUE(h.intersects(Segment(h.center(), h.node(i)))) << "Segment from  the center of the hexa and node " << i << " should intersect the cube.";
-//        }
-//
-//        for (unsigned int i = 0; i < 8; ++i) {
-//            for (unsigned int j = 0; j < 8; ++j) {
-//                if (i == j) continue;
-//                ASSERT_TRUE(h.intersects(Segment(h.node(i), h.node(j)))) << "Segment from nodes " << i << " and " << j << " should intersect the cube.";
-//            }
-//        }
-//
-//    }
-//
-//}
+TEST(Geometry, RectangularHexahedron) {
+    using namespace caribou::geometry;
+    using namespace caribou::geometry::interpolation;
+    using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
+
+    {
+        RectangularHexahedron<interpolation::Hexahedron8> hexa;
+        const auto I = Matrix<3, 3>::Identity();
+
+        WordCoordinates node (1, 1, -1);
+        ASSERT_EQ(hexa.node(2), node);
+
+        double r = hexa.gauss_quadrature(
+            [](const RectangularHexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
+                return 1.;
+            });
+
+        ASSERT_FLOAT_EQ(r, 8);
+
+        ASSERT_EQ(hexa.frame(), I);
+    }
+
+    {
+        using Hexa = RectangularHexahedron<interpolation::Hexahedron8>;
+        using Segment = Segment<3>;
+        WordCoordinates center {25, 40, 2};
+        Hexa::Size dimensions{5,20, 10};
+
+        // Rotation from center point around x, y and then z axis => x: -25 deg, y: 30 deg, z: 90 deg
+        FLOATING_POINT_TYPE a = -25 * 180/M_PI;
+        Hexa::Mat33 Rx;
+        Rx <<
+            1., 0., 0.,
+            0., cos(a), -sin(a),
+            0, sin(a), cos(a)
+        ;
+
+        a = 30 * 180/M_PI;
+        Hexa::Mat33 Ry;
+        Ry <<
+            cos(a), 0., sin(a),
+            0., 1, 0.,
+            -sin(a), 0, cos(a)
+        ;
+
+
+        a = 90 * 180/M_PI;
+        Hexa::Mat33 Rz;
+        Rz <<
+            cos(a), -sin(a), 0.,
+            sin(a), cos(a), 0.,
+            0, 0, 1
+        ;
+
+        Hexa::Mat33 R = Rz*Ry*Rz;
+
+        Hexa h(center, dimensions, R);
+        Hexa base_hexa(Hexa::WorldCoordinates {0.,0.,0.}, Hexa::Size {2.,2.,2.});
+
+        for (unsigned int i = 0; i < 8; ++i) {
+            for (unsigned int j = 0; j < 3; ++j) {
+                ASSERT_FLOAT_EQ(h.T(base_hexa.node(i))[j], h.node(i)[j]);
+                ASSERT_FLOAT_EQ(h.Tinv(h.node(i))[j], base_hexa.node(i)[j]);
+            }
+        }
+
+        ASSERT_TRUE(h.intersects(Segment (Hexa::WorldCoordinates {0,0,0}, h.center())));
+        ASSERT_FALSE(h.intersects(Segment (Hexa::WorldCoordinates {0,0,0}, Hexa::WorldCoordinates {1,1,1})));
+
+        for (unsigned int i = 0; i < 8; ++i) {
+            ASSERT_TRUE(h.intersects(Segment(h.node(i), h.center()))) << "Segment from node " << i << " and the center of the hexa should intersect the cube.";
+            ASSERT_TRUE(h.intersects(Segment(h.center(), h.node(i)))) << "Segment from  the center of the hexa and node " << i << " should intersect the cube.";
+        }
+
+        for (unsigned int i = 0; i < 8; ++i) {
+            for (unsigned int j = 0; j < 8; ++j) {
+                if (i == j) continue;
+                ASSERT_TRUE(h.intersects(Segment(h.node(i), h.node(j)))) << "Segment from nodes " << i << " and " << j << " should intersect the cube.";
+            }
+        }
+
+    }
+
+}
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

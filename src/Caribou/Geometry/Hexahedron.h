@@ -28,8 +28,11 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
     template<int nRows, int nColumns>
     using Map = Eigen::Map<const Matrix<nRows, nColumns, Eigen::RowMajor>>;
 
+    template<int nRows, int Options=0>
+    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
+
     template<int nRows>
-    using MapVector = Eigen::Map<const Matrix<nRows, 1, Eigen::ColMajor>>;
+    using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
 
     Hexahedron()
     : p_nodes(Map<NumberOfNodes, 3>(&CanonicalElementType::nodes[0][0]))
@@ -259,7 +262,7 @@ private:
     }
 
 private:
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, 3> p_nodes;
+    Matrix<NumberOfNodes, 3> p_nodes;
 };
 
 template <
