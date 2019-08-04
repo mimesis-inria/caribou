@@ -9,7 +9,7 @@
 #include <Caribou/Algebra/Vector.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
-#include <Caribou/Topology/Engine/Grid/GridContainer.h>
+#include <Caribou/Topology/Grid/Grid.h>
 #include <Caribou/config.h>
 
 #include <memory>
@@ -60,8 +60,7 @@ public:
     using VecElementId = sofa::helper::vector<ElementId>;
 
     // Grid data aliases
-    struct Cell;
-    using GridType = caribou::topology::engine::GridContainer<Dimension, Cell>;
+    using GridType = caribou::topology::Grid<Dimension>;
     using NodeIndex = typename GridType::NodeIndex;
     using CellIndex = typename GridType::CellIndex;
     using Dimensions = typename GridType::Dimensions;
@@ -79,8 +78,7 @@ public:
         Boundary
     };
 
-    //using f_implicit_test_callback_t = float(*)(const std::array<FLOATING_POINT_TYPE, Dimension> &);
-    using f_implicit_test_callback_t = std::function<float(const std::array<FLOATING_POINT_TYPE, Dimension> &)>;
+    using f_implicit_test_callback_t = std::function<float(const WorldCoordinates &)>;
 
     template <typename ObjectType>
     using Link = SingleLink<FictitiousGrid<DataTypes>, ObjectType, BaseLink::FLAG_STRONGLINK>;
@@ -132,18 +130,6 @@ private:
 
 template<> void FictitiousGrid<Vec2Types>::create_grid ();
 template<> void FictitiousGrid<Vec3Types>::create_grid ();
-
-template <>
-struct FictitiousGrid<Vec2Types>::Cell {
-    Type type = Type::Undefined;
-    std::bitset<4 + (caribou::geometry::Quad<2>::NumberOfNodes - 4)> node_is_inside_boundaries;
-};
-
-template <>
-struct FictitiousGrid<Vec3Types>::Cell {
-    Type type = Type::Undefined;
-    std::bitset<8 + (caribou::geometry::RectangularHexahedron<>::NumberOfNodes - 8)> node_is_inside_boundaries;
-};
 
 extern template class FictitiousGrid<Vec2Types>;
 extern template class FictitiousGrid<Vec3Types>;

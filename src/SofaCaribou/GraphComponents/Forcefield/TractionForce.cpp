@@ -7,7 +7,6 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Triangle.h>
-#include <SofaCaribou/Traits.h>
 
 namespace SofaCaribou {
 namespace GraphComponents {
@@ -180,9 +179,9 @@ void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_
     Deriv load;
     for (size_t i = 0; i < triangles.size(); ++i) {
         const auto & triangle_node_indices = triangles[i];
-        const auto & p1 = rest_positions[triangle_node_indices[0]];
-        const auto & p2 = rest_positions[triangle_node_indices[1]];
-        const auto & p3 = rest_positions[triangle_node_indices[2]];
+        const Vector<3> & p1 = MapVector<3>(&(rest_positions[triangle_node_indices[0]]));
+        const Vector<3> & p2 = MapVector<3>(&(rest_positions[triangle_node_indices[1]]));
+        const Vector<3> & p3 = MapVector<3>(&(rest_positions[triangle_node_indices[2]]));
 
         const auto triangle = caribou::geometry::Triangle<3>(p1, p2, p3);
 

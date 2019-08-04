@@ -39,6 +39,12 @@ public:
     typedef sofa::defaulttype::Mat<3,3,Real> Mat33;
     typedef sofa::defaulttype::MatSym<3,Real> MatSym3;
 
+    template<int nRows, int Options=0>
+    using Vector = Eigen::Matrix<Real, nRows, 1, Options>;
+
+    template<int nRows>
+    using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
+
     using Triange = TriangleSetTopologyContainer::Triangle;
 
     using TriangleTopologyLink =

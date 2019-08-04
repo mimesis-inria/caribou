@@ -3,18 +3,17 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Traits.h>
-#include <Caribou/Algebra/Matrix.h>
-#include <Caribou/Algebra/Vector.h>
+#include <Eigen/Core>
 
-namespace caribou {
-namespace mechanics {
-namespace elasticity {
-namespace strain {
+namespace caribou::mechanics::elasticity::strain {
 
 using Float = FLOATING_POINT_TYPE;
 
-using Mat33 = algebra::Matrix<3,3, FLOATING_POINT_TYPE>;
-using Vec3  = algebra::Matrix<3,1, FLOATING_POINT_TYPE>;
+template<int nRows, int nColumns, int Options=0>
+using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+
+using Mat33 = Matrix<3,3>;
+using Vec3  = Matrix<3,1>;
 
 /**
  * Strain-displacement matrix B evaluated at local coordinates {xi, eta, zeta}.
@@ -45,18 +44,18 @@ using Vec3  = algebra::Matrix<3,1, FLOATING_POINT_TYPE>;
  */
 template <typename ElementType, typename LocalCoordinates, REQUIRES(ElementType::CanonicalDimension == 3)>
 static inline
-algebra::Matrix<6, ElementType::NumberOfNodes*3, FLOATING_POINT_TYPE>
+Matrix<6, ElementType::NumberOfNodes*3>
 B (const ElementType & element, const LocalCoordinates & coordinates)
 {
     const auto J = element.jacobian(coordinates); // Jacobian matrix of the shape function N
-    const auto Jinv = J^-1;
-    const auto dN = ElementType::dN(coordinates);
+    const auto Jinv = J.inverse();
+    const auto dN = ElementType::dL(coordinates);
 
-    algebra::Matrix<6, ElementType::NumberOfNodes*3, FLOATING_POINT_TYPE> r; // Result (B)
+    Matrix<6, ElementType::NumberOfNodes*3> r; // Result (B)
 
     for (size_t i = 0; i < ElementType::NumberOfNodes; ++i) {
-        const auto dN_dXi = dN.row(i).T();
-        const auto dN_dx = Jinv.T() * dN_dXi;
+        const auto dN_dXi = dN.row(i).transpose();
+        const auto dN_dx = Jinv.transpose() * dN_dXi;
 
         r(0, i*3+0) = dN_dx[0];  r(0, i*3+1) = 0;         r(0, i*3+2) = 0;
         r(1, i*3+0) = 0;         r(1, i*3+1) = dN_dx[1];  r(1, i*3+2) = 0;
@@ -99,15 +98,15 @@ B (const ElementType & element, const LocalCoordinates & coordinates)
  *
  * @return  DxD deformation gradient tensor F where D is the dimension of the world coordinates.
  */
-template <size_t NumberOfNodes, size_t Dimension, typename DataType>
+template <int NumberOfNodes, int Dimension>
 static inline
-algebra::Matrix<Dimension, Dimension, DataType>
-F (const algebra::Matrix<NumberOfNodes, Dimension, DataType> & dN_dx, const algebra::Matrix<NumberOfNodes, Dimension, DataType> & U)
+Matrix<Dimension, Dimension>
+F (const Matrix<NumberOfNodes, Dimension> & dN_dx, const Matrix<NumberOfNodes, Dimension> & U)
 {
-    const Mat33 I = Mat33::Identity();
-    Mat33 GradU = dN_dx.row(0).T() * U.row(0);
+    const auto I = Mat33::Identity();
+    Mat33 GradU = dN_dx.row(0).transpose() * U.row(0);
     for (size_t i = 1; i < NumberOfNodes; ++i) {
-        GradU += dN_dx.row(i).T() * U.row(i);
+        GradU += dN_dx.row(i).transpose() * U.row(i);
     }
     return GradU + I;
 }
@@ -141,18 +140,17 @@ static inline Mat33
 F (const ElementType & initial_element, const ElementType & deformed_element,
    const LocalCoordinates & coordinates)
 {
-    const Mat33 J = initial_element.jacobian(coordinates); // Jacobian matrix of the shape function N
-    const Mat33 Jinv = J^-1;
-    const Mat33 I = Mat33::Identity();
+    const auto J = initial_element.jacobian(coordinates); // Jacobian matrix of the shape function N
+    const auto Jinv = J.inverse();
+    const auto I = Mat33::Identity();
 
-    Mat33 GradU;
-    GradU.fill(0);
-    const auto dN = ElementType::dN(coordinates);
+    Mat33 GradU = Mat33::Zero();
+    const auto dN = ElementType::dL(coordinates);
     for (size_t i = 0; i < ElementType::NumberOfNodes; ++i) {
-        const auto dN_dXi = dN.row(i).T();
-        const auto dN_dx = Jinv.T() * dN_dXi;
+        const auto dN_dXi = dN.row(i).transpose();
+        const auto dN_dx = Jinv.transpose() * dN_dXi;
         const auto u = deformed_element.node(i) - initial_element.node(i);
-        GradU += dN_dx * u.T();
+        GradU += Mat33(dN_dx * u.transpose());
     }
 
     return GradU + I;
@@ -176,7 +174,7 @@ small_strain (const ElementType & initial_element, const ElementType & deformed_
               const LocalCoordinates & coordinates)
 {
     const auto F = strain::F(initial_element, deformed_element, coordinates);
-    const auto Ft = F.T();
+    const auto Ft = F.transpose();
     const auto I = Mat33::Identity();
 
     return 1./2 * (Ft + F) - I;
@@ -203,16 +201,13 @@ strain (const ElementType & initial_element, const ElementType & deformed_elemen
         const LocalCoordinates & coordinates)
 {
     const auto F = strain::F(initial_element, deformed_element, coordinates);
-    const auto Ft = F.T();
+    const auto Ft = F.transpose();
     const auto I = Mat33::Identity();
     const auto C = Ft*F; // right Cauchy–Green deformation tensor
 
     return 1./2 * (C - I);
 }
 
-} // namespace strain
-} // namespace elasticity
-} // namespace mechanics
-} // namespace caribou
+} // namespace caribou::mechanics::elasticity::strain
 
 #endif //CARIBOU_MECHANICS_ELASTICITY_STRAIN_H

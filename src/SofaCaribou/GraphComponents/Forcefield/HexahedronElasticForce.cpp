@@ -1,12 +1,12 @@
 #include <numeric>
 #include <queue>
+#include <array>
 
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
 
-#include <SofaCaribou/Traits.h>
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
 #include <Caribou/Mechanics/Elasticity/Strain.h>
@@ -18,7 +18,6 @@ namespace SofaCaribou::GraphComponents::forcefield {
 
 using namespace sofa::core::topology;
 using namespace caribou::geometry;
-using namespace caribou::algebra;
 using namespace caribou::mechanics;
 using sofa::component::topology::SparseGridTopology;
 
@@ -29,9 +28,9 @@ template<typename Hexahedron>
 std::array<RectangularHexahedron<typename Hexahedron::CanonicalElement>, 8>
 split_in_local_hexahedrons(const Hexahedron & h) {
     using LocalHexahedron = RectangularHexahedron<typename Hexahedron::CanonicalElement>;
-    const auto hx = (h.node(1) - h.node(0)).length();
-    const auto hy = (h.node(3) - h.node(0)).length();
-    const auto hz = (h.node(4) - h.node(0)).length();
+    const auto hx = (h.node(1) - h.node(0)).norm();
+    const auto hy = (h.node(3) - h.node(0)).norm();
+    const auto hz = (h.node(4) - h.node(0)).norm();
     return {{
         LocalHexahedron({-0.5, -0.5, -0.5}, {hx/2., hy/2., hz/2.}),
         LocalHexahedron({+0.5, -0.5, -0.5}, {hx/2., hy/2., hz/2.}),
@@ -58,14 +57,15 @@ recursively_get_subcells_gauss_points(SparseGridTopology & grid, const Hexahedro
     using LocalHexahedron = RectangularHexahedron<typename Hexahedron::CanonicalElement>;
     using LocalCoordinates = typename Hexahedron::LocalCoordinates;
     using Real = typename Hexahedron::Real;
+    using MapVector = Eigen::Map<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>, Eigen::ColMajor>;
 
     std::array<std::vector<std::pair<typename Hexahedron::LocalCoordinates, typename Hexahedron::Real>>, 8> gauss_points;
 
     // First, check if all the top level hexa gauss points are inside to avoid the subdivision
     {
         bool all_local_gauss_points_are_inside = true;
-        for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
-            const auto &gauss_node = Hexahedron::gauss_nodes[gauss_node_id];
+        for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
+            const auto &gauss_node = MapVector(Hexahedron::gauss_nodes[gauss_node_id]);
             const auto gauss_position = hexa.T(gauss_node);
             Real fx, fy, fz; // unused
             const auto gauss_cube_id = grid.findCube({gauss_position[0], gauss_position[1], gauss_position[2]}, fx, fy,fz);
@@ -76,8 +76,8 @@ recursively_get_subcells_gauss_points(SparseGridTopology & grid, const Hexahedro
 
         if (all_local_gauss_points_are_inside) {
             // They are all inside the boundary, let's add them and return since the hexa is not cut by the boundary
-            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
-                const auto &gauss_node = Hexahedron::gauss_nodes[gauss_node_id];
+            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
+                const auto &gauss_node = MapVector(Hexahedron::gauss_nodes[gauss_node_id]);
                 const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
                 gauss_points[gauss_node_id].push_back({gauss_node, gauss_weight});
             }
@@ -109,8 +109,8 @@ recursively_get_subcells_gauss_points(SparseGridTopology & grid, const Hexahedro
 
             bool all_local_gauss_points_are_inside = true;
             std::vector<std::pair<LocalCoordinates, Real>> local_gauss_points;
-            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
-                const auto &gauss_node   = Hexahedron::gauss_nodes[gauss_node_id];
+            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
+                const auto &gauss_node = MapVector(Hexahedron::gauss_nodes[gauss_node_id]);
                 const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
                 const auto gauss_position = hexa.T(local_hexahedron.T(gauss_node));
                 Real fx,fy,fz; // unused
@@ -301,8 +301,8 @@ void HexahedronElasticForce::reinit()
         std::vector<std::pair<Vec3, Real>> gauss_points;
 
         if (integration_method() == IntegrationMethod::Regular) {
-            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
-                const auto &gauss_node   = Hexahedron::gauss_nodes[gauss_node_id];
+            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
+                const auto &gauss_node   = MapVector<3>(Hexahedron::gauss_nodes[gauss_node_id]);
                 const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
 
                 gauss_points.push_back({gauss_node, gauss_weight});
@@ -314,8 +314,8 @@ void HexahedronElasticForce::reinit()
             if (integration_method() == IntegrationMethod::SubdividedVolume) {
                 // SubdividedVolume method keeps only the top level hexahedron gauss points, but adjust their weight
                 // by integrating the volume of the subcell.
-                for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::gauss_nodes.size(); ++gauss_node_id) {
-                    const auto &gauss_node   = Hexahedron::gauss_nodes[gauss_node_id];
+                for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
+                    const auto &gauss_node   = MapVector<3>(Hexahedron::gauss_nodes[gauss_node_id]);
                     const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
 
                     Real volume = 0.;
@@ -351,11 +351,11 @@ void HexahedronElasticForce::reinit()
         for (const auto gauss_point : gauss_points) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const auto J = hexa.jacobian(gauss_point.first);
-            const auto Jinv = J.inverted();
+            const auto Jinv = J.inverse();
             const auto detJ = J.determinant();
 
             // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const auto dN_dx = (Jinv.T() * Hexahedron::dN(gauss_point.first).T()).T();
+            const auto dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_point.first).transpose()).transpose();
 
             v += gauss_point.second*detJ;
 
@@ -382,7 +382,7 @@ void HexahedronElasticForce::reinit()
     const Real l = youngModulus*poissonRatio / ((1 + poissonRatio)*(1 - 2*poissonRatio));
     const Real m = youngModulus / (2 * (1 + poissonRatio));
     const Real a = l + 2*m;
-    Matrix<6,6,Real> C;
+    Matrix<6,6> C;
     C(0,0) = a; C(0,1) = l; C(0,2) = l; C(0,3) = 0; C(0,4) = 0; C(0,5) = 0;
     C(1,0) = l; C(1,1) = a; C(1,2) = l; C(1,3) = 0; C(1,4) = 0; C(1,5) = 0;
     C(2,0) = l; C(2,1) = l; C(2,2) = a; C(2,3) = 0; C(2,4) = 0; C(2,5) = 0;
@@ -392,9 +392,10 @@ void HexahedronElasticForce::reinit()
 
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         Hexahedron hexa = make_hexa(hexa_id, X);
-        p_stiffness_matrices[hexa_id] = hexa.gauss_quadrature([&C](const auto & hexa, const auto & local_coordinates) {
-            const auto B = elasticity::strain::B(hexa, local_coordinates);
-            return B.T() * C * B;
+        p_stiffness_matrices[hexa_id] = hexa.gauss_quadrature<Matrix<24, 24>>([&C](const auto & hexa, const auto & local_coordinates) {
+            const Matrix<6, 24> B = elasticity::strain::B(hexa, local_coordinates);
+            const Matrix<24, 24> K = B.transpose() * C * B;
+            return K;
         });
     }
 }
@@ -408,7 +409,7 @@ void HexahedronElasticForce::addForce(
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_v);
 
-    static const auto I = Matrix<3,3,Real>::Identity();
+    static const auto I = Matrix<3,3>::Identity();
 
     auto topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
@@ -436,7 +437,7 @@ void HexahedronElasticForce::addForce(
             Hexahedron hexa = make_hexa(hexa_id, x);
 
             const Mat33 & R0 = initial_rotation[hexa_id];
-            const Mat33 R0t = R0.T();
+            const Mat33 R0t = R0.transpose();
 
             Mat33 & R = current_rotation[hexa_id];
 
@@ -445,7 +446,7 @@ void HexahedronElasticForce::addForce(
             if (corotated)
                 R = hexa.frame();
 
-            const Mat33 & Rt = R.T();
+            const Mat33 & Rt = R.transpose();
 
             // Gather the displacement vector
             Vec24 U;
@@ -499,7 +500,7 @@ void HexahedronElasticForce::addForce(
                 U(i, 2) = u[2];
             }
 
-            Matrix<8, 3, Real> forces;
+            Matrix<8, 3> forces;
             forces.fill(0);
             for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
 
@@ -517,16 +518,16 @@ void HexahedronElasticForce::addForce(
                 F = elasticity::strain::F(dN_dx, U);
 
                 // Strain tensor at gauss node
-                const auto C = F * F.T();
+                const auto C = F * F.transpose();
                 const auto E = 1/2. * (C - I);
 
                 // Stress tensor at gauss node
-                const auto S = 2.*m*E + (l * tr(E) * I);
+                const auto S = 2.*m*E + (l * E.trace() * I);
 
                 // Elastic forces w.r.t the gauss node applied on each nodes
                 for (size_t i = 0; i < 8; ++i) {
-                    const auto dx = dN_dx.row(i).T();
-                    const auto f_ = (detJ * w) * F.T() * (S * dx);
+                    const auto dx = dN_dx.row(i).transpose();
+                    const auto f_ = (detJ * w) * F.transpose() * (S * dx);
                     forces(i, 0) += f_[0];
                     forces(i, 1) += f_[1];
                     forces(i, 2) += f_[2];
@@ -569,7 +570,7 @@ void HexahedronElasticForce::addDForce(
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
 
         const Mat33 & R  = current_rotation[hexa_id];
-        const Mat33 & Rt = R.T();
+        const Mat33 & Rt = R.transpose();
 
         // Gather the displacement vector
         Vec24 U;
@@ -617,7 +618,7 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(hexa_id);
         const Mat33 & R  = current_rotation[hexa_id];
-        const Mat33   Rt = R.T();
+        const Mat33   Rt = R.transpose();
 
         const auto & K = p_stiffness_matrices[hexa_id];
 
@@ -649,7 +650,7 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
 
 void HexahedronElasticForce::compute_K()
 {
-    static const auto I = Matrix<3,3,Real>::Identity();
+    static const auto I = Matrix<3,3>::Identity();
     auto topology = d_topology_container.get();
 
     if (!topology)
@@ -683,44 +684,45 @@ void HexahedronElasticForce::compute_K()
             auto & F = gauss_node.F;
 
             // Strain tensor at gauss node
-            const auto C = F * F.T();
+            const auto C = F * F.transpose();
             const auto E = 1/2. * (C - I);
 
             // Stress tensor at gauss node
-            const auto S = 2.*m*E + (l * tr(E) * I);
+            const auto S = 2.*m*E + (l * E.trace() * I);
 
             // Computation of the tangent-stiffness matrix
             for (std::size_t i = 0; i < 8; ++i) {
                 for (std::size_t j = 0; j < 8; ++j) {
 
                     // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
-                    const auto dxi = dN_dx.row(i).T();
+                    const auto dxi = dN_dx.row(i).transpose();
 
                     // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
-                    const auto dxj = dN_dx.row(j).T();
+                    const auto dxj = dN_dx.row(j).transpose();
 
                     // Derivative of the force applied on node j w.r.t the u component of the ith nodal's displacement
                     const Mat33 dFu = dxi * I.row(0); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCu = dFu*F.T() + F*dFu.T();
+                    const Mat33 dCu = dFu*F.transpose() + F*dFu.transpose();
                     const Mat33 dEu = 1/2. * dCu;
-                    const Mat33 dSu = 2. * m * dEu + (l*tr(dEu) * I);
-                    const Vec3  Ku  = (detJ*w) * (dFu.T()*S + F.T()*dSu) * dxj;
+                    const Mat33 dSu = 2. * m * dEu + (l*dEu.trace() * I);
+                    const Vec3  Ku  = (detJ*w) * (dFu.transpose()*S + F.transpose()*dSu) * dxj;
 
                     // Derivative of the force applied on node j w.r.t the v component of the ith nodal's displacement
                     const Mat33 dFv = dxi * I.row(1); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCv = dFv*F.T() + F*dFv.T();
+                    const Mat33 dCv = dFv*F.transpose() + F*dFv.transpose();
                     const Mat33 dEv = 1/2. * dCv;
-                    const Mat33 dSv = 2. * m * dEv + (l*tr(dEv) * I);
-                    const Vec3  Kv  = (detJ*w) * (dFv.T()*S + F.T()*dSv) * dxj;
+                    const Mat33 dSv = 2. * m * dEv + (l*dEv.trace() * I);
+                    const Vec3  Kv  = (detJ*w) * (dFv.transpose()*S + F.transpose()*dSv) * dxj;
 
                     // Derivative of the force applied on node j w.r.t the w component of the ith nodal's displacement
                     const Mat33 dFw = dxi * I.row(2); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCw = dFw*F.T() + F*dFw.T();
+                    const Mat33 dCw = dFw*F.transpose() + F*dFw.transpose();
                     const Mat33 dEw = 1/2. * dCw;
-                    const Mat33 dSw = 2. * m * dEw + (l*tr(dEw) * I);
-                    const Vec3  Kw  = (detJ*w) * (dFw.T()*S + F.T()*dSw) * dxj;
+                    const Mat33 dSw = 2. * m * dEw + (l*dEw.trace() * I);
+                    const Vec3  Kw  = (detJ*w) * (dFw.transpose()*S + F.transpose()*dSw) * dxj;
 
-                    const Mat33 Kji (Ku, Kv, Kw); // Kji * ui = fj (the force applied on node j on the displacement of the node i)
+                    Mat33 Kji;
+                    Kji << Ku, Kv, Kw; // Kji * ui = fj (the force applied on node j on the displacement of the node i)
 
                     for (size_t ii = 0; ii < 3; ++ii) {
                         for (size_t jj = 0; jj < 3; ++jj) {

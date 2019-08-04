@@ -48,6 +48,10 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
+    Hexahedron(const Matrix<NumberOfNodes, 3> & m)
+    : p_nodes(m)
+    {}
+
     /** Get the Node at given index */
     inline
     auto
@@ -225,16 +229,16 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
      * @return The value of the integral computed on this hexahedron.
      *
      */
-    template <typename EvaluateFunctor>
+    template <typename ValueType, typename EvaluateFunctor>
     inline
-    auto
+    ValueType
     gauss_quadrature(EvaluateFunctor f) const
     {
         const auto p0 = MapVector<3>(CanonicalElementType::gauss_nodes[0]);
         const auto w0 = CanonicalElementType::gauss_weights[0];
         const auto detJ0 = jacobian(p0).determinant();
         const auto eval0 = f(*this, p0);
-        auto result = eval0 * w0 * detJ0;
+        ValueType result = eval0 * w0 * detJ0;
 
         for (std::size_t i = 1; i < CanonicalElementType::number_of_gauss_nodes; ++i) {
             const auto p = MapVector<3>(CanonicalElementType::gauss_nodes[i]);

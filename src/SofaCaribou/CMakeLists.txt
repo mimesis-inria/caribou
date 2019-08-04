@@ -3,7 +3,7 @@ project(SofaCaribou)
 
 set(HEADER_FILES
     GraphComponents/Forcefield/HexahedronElasticForce.h
-    GraphComponents/Forcefield/TractionForce.h
+#    GraphComponents/Forcefield/TractionForce.h
     GraphComponents/Ode/StaticODESolver.h
     GraphComponents/Topology/FictitiousGrid.h
     Traits.h)
@@ -14,7 +14,7 @@ set(TEMPLATE_FILES
 
 set(SOURCE_FILES
     GraphComponents/Forcefield/HexahedronElasticForce.cpp
-    GraphComponents/Forcefield/TractionForce.cpp
+#    GraphComponents/Forcefield/TractionForce.cpp
     GraphComponents/Ode/StaticODESolver.cpp
     GraphComponents/Topology/FictitiousGrid.cpp
     init.cpp)

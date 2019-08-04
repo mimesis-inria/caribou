@@ -2,6 +2,7 @@
 #define CARIBOU_GEOMETRY_TRIANGLE_H
 
 #include <Caribou/config.h>
+#include <Caribou/Traits.h>
 #include <Caribou/Geometry/Interpolation/Triangle.h>
 #include <Caribou/Geometry/Internal/BaseTriangle.h>
 #include <Eigen/Dense>

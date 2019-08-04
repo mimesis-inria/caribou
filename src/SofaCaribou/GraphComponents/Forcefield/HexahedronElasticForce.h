@@ -1,14 +1,14 @@
 #ifndef SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_HEXAHEDRONELASTICFORCE_H
 #define SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_HEXAHEDRONELASTICFORCE_H
 
+#include <Eigen/Core>
+
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <SofaBaseTopology/SparseGridTopology.h>
 
-#include <Caribou/Algebra/Matrix.h>
-#include <Caribou/Algebra/Vector.h>
 #include <Caribou/Geometry/Hexahedron.h>
 
 namespace SofaCaribou::GraphComponents::forcefield {
@@ -34,10 +34,22 @@ public:
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
 
-    using Mat33   = typename caribou::algebra::Matrix<3, 3, Real>;
-    using Vec3   = typename caribou::algebra::Vector<3, Real>;
-    using Mat2424 = typename caribou::algebra::Matrix<24, 24, Real>;
-    using Vec24   = typename caribou::algebra::Vector<24, Real>;
+    template<int nRows, int nColumns, int Options=0>
+    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+
+    template<int nRows, int nColumns>
+    using Map = Eigen::Map<const Matrix<nRows, nColumns, Eigen::RowMajor>>;
+
+    template<int nRows, int Options=0>
+    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
+
+    template<int nRows>
+    using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
+
+    using Mat33   = Matrix<3, 3>;
+    using Vec3   = Vector<3>;
+    using Mat2424 = Matrix<24, 24>;
+    using Vec24   = Vector<24>;
 
     using Hexahedron = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
 
@@ -49,7 +61,7 @@ public:
     struct GaussNode {
         Real weight;
         Real jacobian_determinant;
-        caribou::algebra::Matrix<Hexahedron::gauss_nodes.size(), 3> dN_dx;
+        Matrix<Hexahedron::number_of_gauss_nodes, 3> dN_dx;
         Mat33 F = Mat33::Identity();
     };
 
@@ -105,13 +117,13 @@ public:
         auto * topology = d_topology_container.get();
         const auto &node_indices = topology->getHexahedron(hexa_id);
 
-        std::array<caribou::geometry::Node<3>, 8> nodes;
+        Matrix<8, 3> m;
         for (std::size_t j = 0; j < 8; ++j) {
             const auto &node_id = node_indices[j];
-            nodes[j] = x[node_id];
+            m.row(j) = MapVector<3>(&x[node_id][0]);
         }
 
-        return Hexahedron(nodes);
+        return Hexahedron(m);
     }
 
     inline
@@ -159,7 +171,7 @@ protected:
 
 private:
     bool recompute_compute_tangent_stiffness = false;
-    std::vector<caribou::algebra::Matrix<24, 24, Real>> p_stiffness_matrices;
+    std::vector<Matrix<24, 24>> p_stiffness_matrices;
     std::vector<std::vector<GaussNode>> p_quadrature_nodes;
     std::vector<Mat33> p_initial_rotation;
     std::vector<Mat33> p_current_rotation;

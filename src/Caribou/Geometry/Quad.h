@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 
 #include <Caribou/config.h>
+#include <Caribou/Traits.h>
 #include <Caribou/Geometry/Interpolation/Quad.h>
 
 namespace caribou::geometry {
