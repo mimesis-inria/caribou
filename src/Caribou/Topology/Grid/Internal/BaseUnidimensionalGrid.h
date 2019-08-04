@@ -1,13 +1,12 @@
-#ifndef CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_MULTIDIMENSIONALGRID_H
-#define CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_MULTIDIMENSIONALGRID_H
+#ifndef CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_UNIDIMENSIONALGRID_H
+#define CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_UNIDIMENSIONALGRID_H
 
-#include <Caribou/Topology/Engine/Grid/Internal/BaseGrid.h>
-#include <Caribou/Algebra/Vector.h>
+#include <Caribou/Topology/Grid/Internal/BaseGrid.h>
 
-namespace caribou::topology::engine::internal {
+namespace caribou::topology::internal {
 
 /**
- * Simple representation of a multidimensional (2D or 3D) Grid in space.
+ * Simple representation of an unidimensional (1D) Grid in space.
  *
  * ** Do not use this class directly. Use instead caribou::topology::engine::Grid. **
  *
@@ -19,18 +18,15 @@ namespace caribou::topology::engine::internal {
  * A Grid is a set of multiple cell entities (same-length lines in 1D, rectangles
  * in 2D and rectangular hexahedrons in 3D) aligned in the x, y and z axis.
  *
- * @tparam Dim Dimension of the grid (1D, 2D or 3D).
  * @tparam GridType_ Type of the derived grid class that will implement the final functions.
  */
-template <size_t Dim, class GridType_>
-struct BaseMultidimensionalGrid : public BaseGrid<Dim, GridType_>
+template <class GridType_>
+struct BaseUnidimensionalGrid : public BaseGrid<1, GridType_>
 {
-    static constexpr size_t Dimension = Dim;
-
-    static_assert(Dimension == 2 or Dimension == 3, "Only grid of dimension 2 or 3 is allowed.");
+    static constexpr size_t Dimension = 1;
 
     using GridType = GridType_;
-    using Base = BaseGrid<Dim, GridType_>;
+    using Base = BaseGrid<1, GridType_>;
 
     using NodeIndex = typename Base::NodeIndex;
     using CellIndex = typename Base::CellIndex;
@@ -39,9 +35,10 @@ struct BaseMultidimensionalGrid : public BaseGrid<Dim, GridType_>
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
     using GridCoordinates = typename Base::GridCoordinates;
-    using CellSet = typename Base::CellSet;
+    using CellSet = std::list<CellIndex>;
 
     using Base::Base;
+
 
 private:
     inline constexpr
@@ -53,6 +50,6 @@ private:
 
 };
 
-} // namespace caribou::topology::engine::internal
+} // namespace caribou::topology::internal
 
-#endif //CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_MULTIDIMENSIONALGRID_H
+#endif //CARIBOU_TOPOLOGY_GRID_INTERNAL_UNIDIMENSIONALGRID_H

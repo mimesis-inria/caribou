@@ -2,6 +2,7 @@
 #define CARIBOU_GEOMETRY_SEGMENT_H
 
 #include <Caribou/config.h>
+#include <Caribou/Traits.h>
 #include <Caribou/Geometry/Interpolation/Segment.h>
 #include <Caribou/Geometry/Internal/BaseSegment.h>
 

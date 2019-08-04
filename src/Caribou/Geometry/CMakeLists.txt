@@ -3,7 +3,6 @@ project(Caribou.Geometry)
 
 set(HEADER_FILES
     Hexahedron.h
-    Node.h
     Quad.h
     RectangularHexahedron.h
     Segment.h

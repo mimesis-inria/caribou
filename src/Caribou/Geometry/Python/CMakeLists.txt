@@ -7,16 +7,14 @@ set(PYTHON_FILES
 )
 
 set(PYTHON_TEST_FILES
-    tests/test_node.py
+    tests/test_segment.py
 )
 
 set(HEADER_FILES
-    Node.h
 )
 
 set(SOURCE_FILES
     Geometry.cpp
-    Node.cpp
 )
 
 unset(PYTHON_MODULE_PREFIX)
@@ -28,7 +26,8 @@ if (CARIBOU_WITH_PYTHON_2)
                               DESTINATION Caribou/Geometry
                               SOURCE_FILES ${SOURCE_FILES}
                               PYTHON_FILES ${PYTHON_FILES}
-                              PYTHON_TEST_FILES ${PYTHON_TEST_FILES})
+                              PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
+                              DEPENDS Caribou.Geometry)
 endif()
 
 if (CARIBOU_WITH_PYTHON_3)
@@ -37,5 +36,6 @@ if (CARIBOU_WITH_PYTHON_3)
                               DESTINATION Caribou/Geometry
                               SOURCE_FILES ${SOURCE_FILES}
                               PYTHON_FILES ${PYTHON_FILES}
-                              PYTHON_TEST_FILES ${PYTHON_TEST_FILES})
+                              PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
+                              DEPENDS Caribou.Geometry)
 endif()

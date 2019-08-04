@@ -1,7 +1,7 @@
 function(caribou_add_python_module NAME)
     set(options QUIET)
     set(oneValueArgs PREFIX TESTS_PREFIX DESTINATION TESTS_DESTINATION PYTHON_VERSION TARGET_NAME)
-    set(multiValueArgs SOURCE_FILES PYTHON_FILES PYTHON_TEST_FILES)
+    set(multiValueArgs SOURCE_FILES PYTHON_FILES PYTHON_TEST_FILES DEPENDS)
 
     cmake_parse_arguments(A "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -66,7 +66,9 @@ function(caribou_add_python_module NAME)
             message(STATUS "${NAME} with python ${A_PYTHON_VERSION} support (python version ${PYTHON_VERSION_STRING}, pybind11 version ${pybind11_VERSION})")
         endif ()
 
-        pybind11_add_module(${TARGET_NAME} "${A_SOURCE_FILES}")
+        pybind11_add_module(${TARGET_NAME} SHARED "${A_SOURCE_FILES}")
+
+        target_link_libraries(${TARGET_NAME} PUBLIC ${A_DEPENDS} ${PYTHON_LIBRARIES} pybind11::module)
 
         target_include_directories(${TARGET_NAME}
                                    PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>"

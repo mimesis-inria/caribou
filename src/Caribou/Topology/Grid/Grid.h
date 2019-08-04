@@ -7,14 +7,12 @@
 
 #include <Caribou/config.h>
 
-#include <Caribou/Topology/Engine/Grid/Internal/BaseUnidimensionalGrid.h>
-#include <Caribou/Topology/Engine/Grid/Internal/BaseMultidimensionalGrid.h>
+#include <Caribou/Topology/Grid/Internal/BaseUnidimensionalGrid.h>
+#include <Caribou/Topology/Grid/Internal/BaseMultidimensionalGrid.h>
 
 #include <Caribou/Geometry/RectangularHexahedron.h>
 
-namespace caribou {
-namespace topology {
-namespace engine {
+namespace caribou::topology {
 
 template <size_t Dim>
 struct Grid
@@ -79,13 +77,12 @@ struct Grid<3> : public internal::BaseMultidimensionalGrid<3, Grid<3>>
     geometry::RectangularHexahedron<geometry::interpolation::Hexahedron8>
     hexahedron(const GridCoordinates & coordinates) const
     {
-        const auto center = Base::m_anchor_position + coordinates.direct_multiplication(Base::H()) + Base::H()/2.;
-        return geometry::RectangularHexahedron<geometry::interpolation::Hexahedron8> (center, Base::H());
+        const auto H = Base::H();
+        const auto center = Base::m_anchor_position + (coordinates.array().cast<FLOATING_POINT_TYPE>() * H.array()).matrix() + H/2.;
+        return geometry::RectangularHexahedron<geometry::interpolation::Hexahedron8> (center, H);
     }
 };
 
-} // namespace engine
-} // namespace topology
-} // namespace caribou
+} // namespace caribou::topology
 
 #endif //CARIBOU_TOPOLOGY_ENGINE_GRID_GRID_H

@@ -1,13 +1,14 @@
-#ifndef CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_GRID_H
-#define CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_GRID_H
+#ifndef CARIBOU_TOPOLOGY_GRID_INTERNAL_GRID_H
+#define CARIBOU_TOPOLOGY_GRID_INTERNAL_GRID_H
 
 #include <cstddef>
 #include <list>
+#include <array>
 #include <Caribou/config.h>
-#include <Caribou/Algebra/Vector.h>
+#include <Eigen/Core>
 #include <Caribou/Geometry/Segment.h>
 
-namespace caribou::topology::engine::internal {
+namespace caribou::topology::internal {
 
 /**
  * Simple representation of a Grid in space.
@@ -36,9 +37,9 @@ struct BaseGrid
     using UInt = size_t;
     using Float = FLOATING_POINT_TYPE;
 
-    using VecFloat = caribou::algebra::Vector<Dimension, Float>;
-    using VecInt = caribou::algebra::Vector<Dimension, Int>;
-    using VecUInt = caribou::algebra::Vector<Dimension, UInt>;
+    using VecFloat = Eigen::Matrix<Float, Dimension, 1>;
+    using VecInt = Eigen::Matrix<Int, Dimension, 1>;
+    using VecUInt = Eigen::Matrix<UInt, Dimension, 1>;
 
     using NodeIndex = Int;
     using EdgeIndex = Int;
@@ -75,17 +76,7 @@ struct BaseGrid
     number_of_cells() const noexcept
     {
         const auto & n = m_number_of_subdivisions;
-
-        if CONSTEXPR_IF (Dimension == 1)
-            return n;
-
-        if CONSTEXPR_IF (Dimension == 2)
-            return n[0] * n[1];
-
-        if CONSTEXPR_IF (Dimension == 3)
-            return n[0] * n[2] * n[3];
-
-        return 0;
+        return n.prod();
     }
 
     /** Get the number of distinct nodes in this grid. **/
@@ -93,17 +84,9 @@ struct BaseGrid
     number_of_nodes() const noexcept
     {
         const auto & n = m_number_of_subdivisions;
+        const auto & one = VecUInt::Ones();
 
-        if CONSTEXPR_IF (Dimension == 1)
-            return n+1;
-
-        if CONSTEXPR_IF (Dimension == 2)
-            return (n[0]+1) * (n[1]+1);
-
-        if CONSTEXPR_IF (Dimension == 3)
-            return (n[0]+1) * (n[1]+1) * (n[2]+1);
-
-        return 0;
+        return (n+one).prod();
     }
 
     /** Get the number of distinct edges in this grid. **/
@@ -113,7 +96,7 @@ struct BaseGrid
         const auto & n = m_number_of_subdivisions;
 
         if CONSTEXPR_IF (Dimension == 1) {
-            return n;
+            return n[0];
         } else {
             const auto & nx = n[0];
             const auto & ny = n[1];
@@ -143,7 +126,7 @@ struct BaseGrid
     inline Dimensions
     H () const noexcept
     {
-        return m_size.direct_division(m_number_of_subdivisions);
+        return (m_size.array() / m_number_of_subdivisions.array().template cast<FLOATING_POINT_TYPE>()).matrix();
     }
 
     /** The global dimension of this grid : hx (in 1D), {hx, hy} (in 2D) or {hx, hy, hz} (in 3D) */
@@ -196,14 +179,14 @@ struct BaseGrid
         const auto & n = m_number_of_subdivisions;
 
         if CONSTEXPR_IF (Dimension == 1) {
-            return index;
+            return GridCoordinates {index};
         } else if CONSTEXPR_IF (Dimension == 2) {
             const auto & nx = n[0];
 
             const auto j = index / nx;
             const auto i = index - (j*nx);
 
-            return {i,j};
+            return GridCoordinates {i,j};
         } else {
             const auto & nx = n[0];
             const auto & ny = n[1];
@@ -212,7 +195,7 @@ struct BaseGrid
             const auto j = (index - (k*nx*ny)) / nx;
             const auto i = index - ((k*nx*ny) + (j*nx));
 
-            return {i, j, k};
+            return GridCoordinates {i, j, k};
         }
     }
 
@@ -223,8 +206,7 @@ struct BaseGrid
         // @todo (jnbrunet2000@gmail.com): This test should be using inverse mapping function from a regular
         //  hexahedron geometric element defined in the geometry module.
 
-        auto a = (coordinates - m_anchor_position)
-                .direct_division(H());
+        auto a = ((coordinates - m_anchor_position).array() / H().array()).matrix(). template cast<Int>();
 
         return a;
     }
@@ -243,7 +225,7 @@ struct BaseGrid
             const auto i = index - (j*nx);
             const GridCoordinates coordinates {i, j};
 
-            return m_anchor_position + H().direct_multiplication(coordinates);
+            return m_anchor_position + (H().array() * coordinates.array().template cast<FLOATING_POINT_TYPE>()).matrix();
         } else {
             const auto & nx = n[0]+1;
             const auto & ny = n[1]+1;
@@ -253,7 +235,7 @@ struct BaseGrid
             const auto i = index - ((k*nx*ny) + (j*nx));
             const GridCoordinates coordinates {i, j, k};
 
-            return m_anchor_position + H().direct_multiplication(coordinates);
+            return m_anchor_position + (H().array() * coordinates.array().template cast<FLOATING_POINT_TYPE>()).matrix();
         }
     }
 
@@ -305,12 +287,12 @@ struct BaseGrid
 
     /** Test if the position of a given point is inside this grid */
     inline bool
-    contains_position(const WorldCoordinates & coordinates) const noexcept
+    contains(const WorldCoordinates & coordinates) const noexcept
     {
         // @todo (jnbrunet2000@gmail.com): This test should be using inverse mapping function from a regular
         //  hexahedron geometric element defined in the geometry module.
 
-        const auto distance_to_anchor = (coordinates - m_anchor_position).direct_division(size());
+        const auto distance_to_anchor = ((coordinates - m_anchor_position).array() / size().array()).matrix();
 
         if (distance_to_anchor[0] < 0 || distance_to_anchor[0] > 1)
             return false;
@@ -387,11 +369,11 @@ struct BaseGrid
         GridCoordinates upper_cell = max_between(grid_coordinates_at(positions[0]), lower_grid_boundary);
 
         // This is used to discard the bbox computation if all points are outside the grid
-        bool grid_contains_at_least_one_point = contains_position(positions[0]);
+        bool grid_contains_at_least_one_point = contains(WorldCoordinates(positions[0]));
 
         for (size_t i = 1; i < positions.size(); ++ i) {
 
-            if (not grid_contains_at_least_one_point and contains_position(positions[i]))
+            if (not grid_contains_at_least_one_point and contains(WorldCoordinates(positions[i])))
                 grid_contains_at_least_one_point = true;
 
             GridCoordinates coordinates = grid_coordinates_at(positions[i]);
@@ -441,6 +423,6 @@ private:
 
 };
 
-} // namespace caribou::topology::engine::internal
+} // namespace caribou::topology::internal
 
-#endif //CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_GRID_H
+#endif //CARIBOU_TOPOLOGY_GRID_INTERNAL_GRID_H
