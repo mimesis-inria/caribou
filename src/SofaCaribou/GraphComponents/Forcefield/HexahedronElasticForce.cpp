@@ -377,28 +377,8 @@ void HexahedronElasticForce::reinit()
     // Initialize the stiffness matrix of every hexahedrons
     p_stiffness_matrices.resize(topology->getNbHexahedra());
 
-    const Real youngModulus = d_youngModulus.getValue();
-    const Real poissonRatio = d_poissonRatio.getValue();
-
-    const Real l = youngModulus*poissonRatio / ((1 + poissonRatio)*(1 - 2*poissonRatio));
-    const Real m = youngModulus / (2 * (1 + poissonRatio));
-    const Real a = l + 2*m;
-    Matrix<6,6> C;
-    C(0,0) = a; C(0,1) = l; C(0,2) = l; C(0,3) = 0; C(0,4) = 0; C(0,5) = 0;
-    C(1,0) = l; C(1,1) = a; C(1,2) = l; C(1,3) = 0; C(1,4) = 0; C(1,5) = 0;
-    C(2,0) = l; C(2,1) = l; C(2,2) = a; C(2,3) = 0; C(2,4) = 0; C(2,5) = 0;
-    C(3,0) = 0; C(3,1) = 0; C(3,2) = 0; C(3,3) = m; C(3,4) = 0; C(3,5) = 0;
-    C(4,0) = 0; C(4,1) = 0; C(4,2) = 0; C(4,3) = 0; C(4,4) = m; C(4,5) = 0;
-    C(5,0) = 0; C(5,1) = 0; C(5,2) = 0; C(5,3) = 0; C(5,4) = 0; C(5,5) = m;
-
-    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-        Hexahedron hexa = hexahedron(hexa_id, X);
-        p_stiffness_matrices[hexa_id] = hexa.gauss_quadrature<Matrix<24, 24>>([&C](const auto & hexa, const auto & local_coordinates) {
-            const Matrix<6, 24> B = elasticity::strain::B(hexa, local_coordinates);
-            const Matrix<24, 24> K = B.transpose() * C * B;
-            return K;
-        });
-    }
+    // Compute the initial tangent stiffness matrix
+    compute_K();
 }
 
 void HexahedronElasticForce::addForce(
