@@ -198,7 +198,7 @@ void HexahedronElasticForce::init()
     Inherit::init();
     if (not d_topology_container.get()) {
         auto containers = this->getContext()->template getObjects<BaseMeshTopology>(BaseContext::Local);
-        auto node = static_cast<const sofa::simulation::Node *> (this->getContext());
+        auto node = dynamic_cast<const sofa::simulation::Node *> (this->getContext());
         if (containers.empty()) {
             msg_error() << "No topology were found in the context node '" << node->getPathName() << "'.";
         } else if (containers.size() > 1) {
@@ -292,8 +292,6 @@ void HexahedronElasticForce::reinit()
 
     // Gather the integration points for each hexahedron
     p_quadrature_nodes.resize(topology->getNbHexahedra());
-    std::size_t min, max, med;
-    Real v = 0.;
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         auto   hexa = hexahedron(hexa_id, X);
         auto & quadrature_nodes = p_quadrature_nodes[hexa_id];
@@ -306,7 +304,7 @@ void HexahedronElasticForce::reinit()
                 const auto &gauss_node   = MapVector<3>(Hexahedron::gauss_nodes[gauss_node_id]);
                 const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
 
-                gauss_points.push_back({gauss_node, gauss_weight});
+                gauss_points.emplace_back(gauss_node, gauss_weight);
             }
         } else {
             auto & grid = *d_integration_grid.get();
@@ -320,31 +318,21 @@ void HexahedronElasticForce::reinit()
                     const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
 
                     Real volume = 0.;
-                    for (const auto subcell_gauss_point : gauss_points_per_subcells[gauss_node_id]) {
+                    for (const auto & subcell_gauss_point : gauss_points_per_subcells[gauss_node_id]) {
                         volume += subcell_gauss_point.second;
                     }
                     if (volume > 0) {
-                        gauss_points.push_back({gauss_node, gauss_weight * volume});
+                        gauss_points.emplace_back(gauss_node, gauss_weight * volume);
                     }
                 }
             } else { /* IntegrationMethod::SubdividedGauss */
                 // SubdividedGauss method keeps all gauss points found recursively in the subcells
-                for (std::size_t i = 0; i < gauss_points_per_subcells.size(); ++i) {
-                    const auto & gauss_points_in_subcell = gauss_points_per_subcells[i];
+                for (const auto & gauss_points_in_subcell : gauss_points_per_subcells) {
                     for (const auto & gauss_point : gauss_points_in_subcell) {
                         gauss_points.push_back(gauss_point);
                     }
                 }
             }
-        }
-
-        auto s = gauss_points.size();
-        if (hexa_id == 0) {
-            min = s; max = s; med=s;
-        } else {
-            if (s < min) min = s;
-            if (s > max) max = s;
-            med += s;
         }
 
         // At this point, we have all the gauss points of the hexa and their corrected weight.
@@ -358,8 +346,6 @@ void HexahedronElasticForce::reinit()
             // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
             const auto dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_point.first).transpose()).transpose();
 
-            v += gauss_point.second*detJ;
-
             quadrature_nodes.push_back(GaussNode({
                 gauss_point.second,
                 detJ,
@@ -368,11 +354,6 @@ void HexahedronElasticForce::reinit()
             }));
         }
     }
-    std::cout << "Min gauss points : " << min <<std::endl;
-    std::cout << "Max gauss points : " << max <<std::endl;
-    std::cout << "Med gauss points : " << med/(Real)topology->getNbHexahedra() <<std::endl;
-    std::cout << "Volume : " << v << std::endl;
-    std::cout << "Estimated volume : " << topology->getNbHexahedra()*hexahedron(0, X).volume() << std::endl;
 
     // Initialize the stiffness matrix of every hexahedrons
     p_stiffness_matrices.resize(topology->getNbHexahedra());
