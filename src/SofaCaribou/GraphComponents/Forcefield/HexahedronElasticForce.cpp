@@ -1,6 +1,7 @@
 #include <numeric>
 #include <queue>
 #include <array>
+#include <Eigen/Sparse>
 
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
@@ -283,7 +284,7 @@ void HexahedronElasticForce::reinit()
             msg_warning() << "The corotated method won't be computed since nonlinear strain is used.";
         } else {
             for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-                Hexahedron hexa = make_hexa(hexa_id, X);
+                Hexahedron hexa = hexahedron(hexa_id, X);
                 p_initial_rotation[hexa_id] = hexa.frame();
             }
         }
@@ -294,7 +295,7 @@ void HexahedronElasticForce::reinit()
     std::size_t min, max, med;
     Real v = 0.;
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-        auto   hexa = make_hexa(hexa_id, X);
+        auto   hexa = hexahedron(hexa_id, X);
         auto & quadrature_nodes = p_quadrature_nodes[hexa_id];
 
         // List of pair (Xi, w) where Xi is the local coordinates vector of the gauss point and w is its weight.
@@ -348,10 +349,10 @@ void HexahedronElasticForce::reinit()
 
         // At this point, we have all the gauss points of the hexa and their corrected weight.
         // We now compute constant values required by the simulation for each of them
-        for (const auto gauss_point : gauss_points) {
+        for (const auto & gauss_point : gauss_points) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const auto J = hexa.jacobian(gauss_point.first);
-            const auto Jinv = J.inverse();
+            const Mat33 Jinv = J.inverse();
             const auto detJ = J.determinant();
 
             // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
@@ -371,7 +372,7 @@ void HexahedronElasticForce::reinit()
     std::cout << "Max gauss points : " << max <<std::endl;
     std::cout << "Med gauss points : " << med/(Real)topology->getNbHexahedra() <<std::endl;
     std::cout << "Volume : " << v << std::endl;
-    std::cout << "Estimated volume : " << topology->getNbHexahedra()*make_hexa(0, X).volume() << std::endl;
+    std::cout << "Estimated volume : " << topology->getNbHexahedra()*hexahedron(0, X).volume() << std::endl;
 
     // Initialize the stiffness matrix of every hexahedrons
     p_stiffness_matrices.resize(topology->getNbHexahedra());
@@ -391,7 +392,7 @@ void HexahedronElasticForce::reinit()
     C(5,0) = 0; C(5,1) = 0; C(5,2) = 0; C(5,3) = 0; C(5,4) = 0; C(5,5) = m;
 
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-        Hexahedron hexa = make_hexa(hexa_id, X);
+        Hexahedron hexa = hexahedron(hexa_id, X);
         p_stiffness_matrices[hexa_id] = hexa.gauss_quadrature<Matrix<24, 24>>([&C](const auto & hexa, const auto & local_coordinates) {
             const Matrix<6, 24> B = elasticity::strain::B(hexa, local_coordinates);
             const Matrix<24, 24> K = B.transpose() * C * B;
@@ -434,7 +435,7 @@ void HexahedronElasticForce::addForce(
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-            Hexahedron hexa = make_hexa(hexa_id, x);
+            Hexahedron hexa = hexahedron(hexa_id, x);
 
             const Mat33 & R0 = initial_rotation[hexa_id];
             const Mat33 R0t = R0.transpose();

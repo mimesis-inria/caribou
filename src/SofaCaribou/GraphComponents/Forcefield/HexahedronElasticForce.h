@@ -34,6 +34,10 @@ public:
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
 
+    using Hexahedron = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
+    static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodes;
+
+
     template<int nRows, int nColumns, int Options=0>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
 
@@ -51,8 +55,6 @@ public:
     using Mat2424 = Matrix<24, 24>;
     using Vec24   = Vector<24>;
 
-    using Hexahedron = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
-
     template <typename ObjectType>
     using Link = SingleLink<HexahedronElasticForce, ObjectType, BaseLink::FLAG_STRONGLINK>;
 
@@ -61,7 +63,7 @@ public:
     struct GaussNode {
         Real weight;
         Real jacobian_determinant;
-        Matrix<Hexahedron::number_of_gauss_nodes, 3> dN_dx;
+        Matrix<NumberOfNodes, 3> dN_dx;
         Mat33 F = Mat33::Identity();
     };
 
@@ -112,7 +114,7 @@ public:
 
     template <typename T>
     inline
-    Hexahedron make_hexa(std::size_t hexa_id, const T & x) const
+    Hexahedron hexahedron(std::size_t hexa_id, const T & x) const
     {
         auto * topology = d_topology_container.get();
         const auto &node_indices = topology->getHexahedron(hexa_id);
@@ -153,6 +155,14 @@ public:
         auto index = static_cast<unsigned int > (m);
         sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> d = d_integration_method;
         d->setSelectedItem(index);
+    }
+
+    const std::vector<GaussNode> & gauss_nodes_of(std::size_t hexahedron_id) const {
+        return p_quadrature_nodes[hexahedron_id];
+    }
+
+    const Matrix<24, 24> & stiffness_matrix_of(std::size_t hexahedron_id) const {
+        return p_stiffness_matrices[hexahedron_id];
     }
 
 private:

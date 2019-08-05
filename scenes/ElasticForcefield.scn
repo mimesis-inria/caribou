@@ -165,7 +165,7 @@
         <HexahedronSetTopologyContainer name="hexahedron_container" src="@mesh" />
         <HexahedronSetGeometryAlgorithms />
         <MeshMatrixMass  massDensity="2.3"/>
-        <HexahedronElasticForce poissonRatio="0" youngModulus="100000" printLog="true" linearStrain="false" corotated="false" />
+        <HexahedronElasticForce poissonRatio="0" youngModulus="100000" topology_container="@hexahedron_container" printLog="true" linearStrain="false" corotated="false" />
         <BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1" />
         <FixedConstraint indices="@fixed_roi.indices" />
     </Node>
