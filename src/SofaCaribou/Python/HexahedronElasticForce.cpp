@@ -21,5 +21,7 @@ void addHexahedronElasticForce(py::module &m) {
     py::class_<HexahedronElasticForce> c(m, "HexahedronElasticForce");
     c.def("gauss_nodes_of", &HexahedronElasticForce::gauss_nodes_of, py::arg("hexahedron_id"), py::return_value_policy::reference_internal);
     c.def("stiffness_matrix_of", &HexahedronElasticForce::stiffness_matrix_of, py::arg("hexahedron_id"), py::return_value_policy::reference_internal);
+    c.def("K", &HexahedronElasticForce::K);
+    c.def("cond", &HexahedronElasticForce::cond);
 }
 }

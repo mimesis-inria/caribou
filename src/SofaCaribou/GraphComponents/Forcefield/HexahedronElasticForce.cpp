@@ -699,6 +699,63 @@ void HexahedronElasticForce::compute_K()
     sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::compute_k");
 }
 
+Eigen::SparseMatrix<HexahedronElasticForce::Real> HexahedronElasticForce::K() const {
+    const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
+    const auto nDofs = X.size()*3;
+    Eigen::SparseMatrix<HexahedronElasticForce::Real> K(nDofs, nDofs);
+    K.reserve(Eigen::VectorXi::Constant(nDofs, 24));
+
+    auto * topology = d_topology_container.get();
+
+    if (topology) {
+
+        const std::vector<Mat33> &current_rotation = p_current_rotation;
+
+        for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+            const auto &node_indices = topology->getHexahedron(hexa_id);
+            const Mat33 &R = current_rotation[hexa_id];
+            const Mat33 Rt = R.transpose();
+
+            const auto &Ke = p_stiffness_matrices[hexa_id];
+
+            for (size_t i = 0; i < 8; ++i) {
+                for (size_t j = 0; j < 8; ++j) {
+                    Mat33 k = Ke.block(i,j, 3, 3);
+
+                    k = -1. * R * k * Rt;
+
+                    for (unsigned char m = 0; m < 3; ++m) {
+                        for (unsigned char n = 0; n < 3; ++n) {
+                            const auto x = node_indices[i] * 3 + m;
+                            const auto y = node_indices[j] * 3 + n;
+
+                            const auto v = K.coeff(x, y);
+                            K.coeffRef(x, y) = v + k(m, n);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    K.makeCompressed();
+    return K;
+}
+
+HexahedronElasticForce::Real HexahedronElasticForce::cond() const
+{
+    Eigen::SelfAdjointEigenSolver eigensolver(K(), Eigen::EigenvaluesOnly);
+    if (eigensolver.info() != Eigen::Success) {
+        msg_error() << "Unable to find the eigen values of K.";
+        return -1.;
+    }
+
+    const auto & eigenvalues = eigensolver.eigenvalues();
+    const auto min = eigenvalues.minCoeff();
+    const auto max = eigenvalues.maxCoeff();
+
+    return min/max;
+}
+
 void HexahedronElasticForce::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
 {
     if( !onlyVisible ) return;

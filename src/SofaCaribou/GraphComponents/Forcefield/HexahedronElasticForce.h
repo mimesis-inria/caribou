@@ -1,7 +1,7 @@
 #ifndef SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_HEXAHEDRONELASTICFORCE_H
 #define SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_HEXAHEDRONELASTICFORCE_H
 
-#include <Eigen/Core>
+#include <Eigen/Sparse>
 
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
@@ -39,13 +39,13 @@ public:
 
 
     template<int nRows, int nColumns, int Options=0>
-    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+    using Matrix = Eigen::Matrix<Real, nRows, nColumns, Options>;
 
     template<int nRows, int nColumns>
     using Map = Eigen::Map<const Matrix<nRows, nColumns, Eigen::RowMajor>>;
 
     template<int nRows, int Options=0>
-    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
+    using Vector = Eigen::Matrix<Real, nRows, 1, Options>;
 
     template<int nRows>
     using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
@@ -164,6 +164,12 @@ public:
     const Matrix<24, 24> & stiffness_matrix_of(std::size_t hexahedron_id) const {
         return p_stiffness_matrices[hexahedron_id];
     }
+
+    /** Get the complete tangent stiffness matrix */
+    Eigen::SparseMatrix<Real> K() const;
+
+    /** Get the condition number of the tangent stiffness matrix */
+    Real cond() const;
 
 private:
     /** (Re)Compute the tangent stiffness matrix */
