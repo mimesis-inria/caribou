@@ -696,62 +696,83 @@ void HexahedronElasticForce::compute_K()
         }
     }
     recompute_compute_tangent_stiffness = false;
+    K_is_up_to_date = false;
+    eigenvalues_are_up_to_date = false;
     sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::compute_k");
 }
 
-Eigen::SparseMatrix<HexahedronElasticForce::Real> HexahedronElasticForce::K() const {
-    const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
-    const auto nDofs = X.size()*3;
-    Eigen::SparseMatrix<HexahedronElasticForce::Real> K(nDofs, nDofs);
-    K.reserve(Eigen::VectorXi::Constant(nDofs, 24));
+const Eigen::SparseMatrix<HexahedronElasticForce::Real> & HexahedronElasticForce::K() {
+    if (not K_is_up_to_date) {
+        const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
+        const auto nDofs = X.size() * 3;
+        p_K.resize(nDofs, nDofs);
+        p_K.setZero();
+        p_K.reserve(Eigen::VectorXi::Constant(nDofs, 24));
 
-    auto * topology = d_topology_container.get();
+        auto *topology = d_topology_container.get();
 
-    if (topology) {
+        if (topology) {
 
-        const std::vector<Mat33> &current_rotation = p_current_rotation;
+            const std::vector<Mat33> &current_rotation = p_current_rotation;
 
-        for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-            const auto &node_indices = topology->getHexahedron(hexa_id);
-            const Mat33 &R = current_rotation[hexa_id];
-            const Mat33 Rt = R.transpose();
+            for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+                const auto &node_indices = topology->getHexahedron(hexa_id);
+                const Mat33 &R = current_rotation[hexa_id];
+                const Mat33 Rt = R.transpose();
 
-            const auto &Ke = p_stiffness_matrices[hexa_id];
+                const auto &Ke = p_stiffness_matrices[hexa_id];
 
-            for (size_t i = 0; i < 8; ++i) {
-                for (size_t j = 0; j < 8; ++j) {
-                    Mat33 k = Ke.block(i,j, 3, 3);
+                for (size_t i = 0; i < 8; ++i) {
+                    for (size_t j = 0; j < 8; ++j) {
+                        Mat33 k = Ke.block(i, j, 3, 3);
 
-                    k = -1. * R * k * Rt;
+                        k = -1. * R * k * Rt;
 
-                    for (unsigned char m = 0; m < 3; ++m) {
-                        for (unsigned char n = 0; n < 3; ++n) {
-                            const auto x = node_indices[i] * 3 + m;
-                            const auto y = node_indices[j] * 3 + n;
+                        for (unsigned char m = 0; m < 3; ++m) {
+                            for (unsigned char n = 0; n < 3; ++n) {
+                                const auto x = node_indices[i] * 3 + m;
+                                const auto y = node_indices[j] * 3 + n;
 
-                            const auto v = K.coeff(x, y);
-                            K.coeffRef(x, y) = v + k(m, n);
+                                const auto v = p_K.coeff(x, y);
+                                p_K.coeffRef(x, y) = v + k(m, n);
+                            }
                         }
                     }
                 }
             }
         }
+        p_K.makeCompressed();
+        K_is_up_to_date = true;
     }
-    K.makeCompressed();
-    return K;
+
+    return p_K;
 }
 
-HexahedronElasticForce::Real HexahedronElasticForce::cond() const
+const Eigen::Matrix<HexahedronElasticForce::Real, Eigen::Dynamic, 1> & HexahedronElasticForce::eigenvalues()
 {
-    Eigen::SelfAdjointEigenSolver eigensolver(K(), Eigen::EigenvaluesOnly);
-    if (eigensolver.info() != Eigen::Success) {
-        msg_error() << "Unable to find the eigen values of K.";
-        return -1.;
+    if (not eigenvalues_are_up_to_date) {
+#ifdef EIGEN_USE_LAPACKE
+        Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> k (K());
+        Eigen::SelfAdjointEigenSolver eigensolver(k, Eigen::EigenvaluesOnly);
+#else
+        Eigen::SelfAdjointEigenSolver eigensolver(K(), Eigen::EigenvaluesOnly);
+#endif
+        if (eigensolver.info() != Eigen::Success) {
+            msg_error() << "Unable to find the eigen values of K.";
+        }
+
+        p_eigenvalues = eigensolver.eigenvalues();
+        eigenvalues_are_up_to_date = true;
     }
 
-    const auto & eigenvalues = eigensolver.eigenvalues();
-    const auto min = eigenvalues.minCoeff();
-    const auto max = eigenvalues.maxCoeff();
+    return p_eigenvalues;
+}
+
+HexahedronElasticForce::Real HexahedronElasticForce::cond()
+{
+    const auto & values = eigenvalues();
+    const auto min = values.minCoeff();
+    const auto max = values.maxCoeff();
 
     return min/max;
 }

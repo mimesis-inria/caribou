@@ -166,10 +166,13 @@ public:
     }
 
     /** Get the complete tangent stiffness matrix */
-    Eigen::SparseMatrix<Real> K() const;
+    const Eigen::SparseMatrix<Real> & K();
+
+    /** Get the eigen values of the tangent stiffness matrix */
+    const Eigen::Matrix<Real, Eigen::Dynamic, 1> & eigenvalues();
 
     /** Get the condition number of the tangent stiffness matrix */
-    Real cond() const;
+    Real cond();
 
 private:
     /** (Re)Compute the tangent stiffness matrix */
@@ -191,6 +194,10 @@ private:
     std::vector<std::vector<GaussNode>> p_quadrature_nodes;
     std::vector<Mat33> p_initial_rotation;
     std::vector<Mat33> p_current_rotation;
+    Eigen::SparseMatrix<Real> p_K;
+    Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
+    bool K_is_up_to_date;
+    bool eigenvalues_are_up_to_date;
 
 };
 

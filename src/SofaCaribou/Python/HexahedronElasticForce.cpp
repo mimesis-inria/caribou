@@ -23,5 +23,6 @@ void addHexahedronElasticForce(py::module &m) {
     c.def("stiffness_matrix_of", &HexahedronElasticForce::stiffness_matrix_of, py::arg("hexahedron_id"), py::return_value_policy::reference_internal);
     c.def("K", &HexahedronElasticForce::K);
     c.def("cond", &HexahedronElasticForce::cond);
+    c.def("eigenvalues", &HexahedronElasticForce::eigenvalues);
 }
 }
