@@ -48,14 +48,47 @@ endif()
 
 find_package(SofaBase REQUIRED)
 find_package(SofaFramework REQUIRED)
+find_package(OpenMP)
+find_package(LAPACK)
+find_package(LAPACKE)
+find_package(MKL)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology Caribou.Geometry)
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SofaCore)
-target_link_libraries(${PROJECT_NAME} SofaCore SofaBaseTopology)
-target_link_libraries(${PROJECT_NAME} Caribou.Topology Caribou.Geometry)
+target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology)
+target_link_libraries(${PROJECT_NAME} PUBLIC Caribou.Topology Caribou.Geometry)
+
+
+if (LAPACK_FOUND AND LAPACKE_FOUND AND MKL_FOUND)
+    OPTION(Caribou_with_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" ON)
+else()
+    OPTION(Caribou_with_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" OFF)
+endif()
+
+if (OPENMP_FOUND)
+    OPTION(Caribou_with_OpenMP "Use OpenMP support" ON)
+else()
+    OPTION(Caribou_with_OpenMP "Use OpenMP support" OFF)
+endif()
+
+
+if (Caribou_with_OpenMP)
+    find_package(OpenMP REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${OpenMP_CXX_LIBRARIES})
+endif()
+
+if (Caribou_with_EIGEN_MKL)
+    find_package(LAPACK REQUIRED)
+    find_package(LAPACKE REQUIRED)
+    find_package(MKL REQUIRED)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_USE_LAPACKE)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${LAPACKE_INCLUDE_DIRS} ${LAPACKE_INCLUDE_DIRS_DEP} ${MKL_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES} ${LAPACKE_LIBRARIES_DEP} ${MKL_LIBRARIES})
+endif()
+
 
 if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
     add_subdirectory(Python)
