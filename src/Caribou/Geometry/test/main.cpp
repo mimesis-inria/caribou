@@ -6,6 +6,7 @@
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/Tetrahedron.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
 
 template<int nRows, int nColumns>
@@ -44,7 +45,7 @@ TEST(Geometry, Segment) {
         WordCoordinates node_0 {-1.5, -1.5};
         WordCoordinates node_1 {5.5, 5.5};
         Segment<2> segment(node_0, node_1);
-        auto center_node = node_0 + (node_1 - node_0).normalized()*(node_1-node_0).norm()/2.;
+        WordCoordinates center_node = node_0 + (node_1 - node_0).normalized()*(node_1-node_0).norm()/2.;
         ASSERT_FLOAT_EQ(segment.center()[0], center_node[0]);
         ASSERT_FLOAT_EQ(segment.center()[1], center_node[1]);
     }
@@ -165,6 +166,43 @@ TEST(Geometry, Quad) {
 
 }
 
+TEST(Geometry, Tetrahedron) {
+    using namespace caribou::geometry;
+    using namespace caribou::geometry::interpolation;
+    using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
+
+    Tetrahedron<interpolation::Tetrahedron4> tetra;
+    const auto I = Matrix<3,3>::Identity();
+
+    WordCoordinates node {0, 1, 0};
+    ASSERT_FLOAT_EQ(tetra.node(2)[0], node[0]);
+    ASSERT_FLOAT_EQ(tetra.node(2)[1], node[1]);
+    ASSERT_FLOAT_EQ(tetra.node(2)[2], node[2]);
+
+    double r = tetra.gauss_quadrature<double>([](const Tetrahedron<Tetrahedron4> & /*h*/, const auto & /*local_coordinates*/) {
+        return 1.;
+    });
+
+    ASSERT_FLOAT_EQ(r, 8/5/2);
+
+    ASSERT_EQ(tetra.frame(), I);
+
+    // Rotate the hexa by R and extract the resulting frame
+    Matrix<3, 3> R;
+    R << 0.44480652434057482703,  0.49694411802952204171, 0.74511321251197670801,
+        0.60593116938112601133,  0.44567310019856992698, -0.6589559209323614386,
+        -0.65954118436719233465, 0.74459521306227582915, -0.10287562786328596776;
+
+    for (std::size_t i = 0; i<8; i++)
+        tetra.node(i) = R*(tetra.node(i));
+
+    const auto frame = tetra.frame();
+    for (std::size_t i = 0; i < 3; ++i)
+        for (std::size_t j = 0; j < 3; ++j)
+            ASSERT_FLOAT_EQ(R(i,j), frame(i,j));
+
+}
+
 TEST(Geometry, Hexahedron) {
     using namespace caribou::geometry;
     using namespace caribou::geometry::interpolation;
@@ -178,7 +216,7 @@ TEST(Geometry, Hexahedron) {
     ASSERT_FLOAT_EQ(hexa.node(2)[1], node[1]);
     ASSERT_FLOAT_EQ(hexa.node(2)[2], node[2]);
 
-    double r = hexa.gauss_quadrature([](const Hexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
+    double r = hexa.gauss_quadrature<double>([](const Hexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
         return 1.;
     });
 

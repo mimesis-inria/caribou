@@ -5,6 +5,9 @@
 
 namespace caribou {
 
+template<typename T> struct traits;
+template<typename T> struct traits<const T> : traits<T> {};
+
 /**
  * REQUIRES(condition)
  *

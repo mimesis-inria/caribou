@@ -6,15 +6,19 @@ set(HEADER_FILES
     Quad.h
     RectangularHexahedron.h
     Segment.h
+    Traits.h
     Triangle.h
+    Tetrahedron.h
     Internal/BaseHexahedron.h
     Internal/BaseNode.h
     Internal/BaseQuad.h
     Internal/BaseSegment.h
+    Internal/BaseTetrahedron.h
     Internal/BaseTriangle.h
     Interpolation/CanonicalElement.h
     Interpolation/Hexahedron.h
     Interpolation/Quad.h
+    Interpolation/Tetrahedron.h
     Interpolation/Triangle.h
     Interpolation/Segment.h)
 
