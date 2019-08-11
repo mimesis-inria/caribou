@@ -154,7 +154,7 @@ HexahedronElasticForce::HexahedronElasticForce()
         "Poisson's ratio of the material",
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_number_of_subdivisions(initData(&d_number_of_subdivisions,
-        UNSIGNED_INTEGER_TYPE(0),  "number_of_subdivisions",
+        (UNSIGNED_INTEGER_TYPE) 0,  "number_of_subdivisions",
         "Number of subdivisions for the integration method (see 'integration_method').",
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_linear_strain(initData(&d_linear_strain,
@@ -755,7 +755,7 @@ const Eigen::Matrix<HexahedronElasticForce::Real, Eigen::Dynamic, 1> & Hexahedro
         Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> k (K());
         Eigen::SelfAdjointEigenSolver eigensolver(k, Eigen::EigenvaluesOnly);
 #else
-        Eigen::SelfAdjointEigenSolver eigensolver(K(), Eigen::EigenvaluesOnly);
+        Eigen::SelfAdjointEigenSolver<Eigen::SparseMatrix<Real>> eigensolver(K(), Eigen::EigenvaluesOnly);
 #endif
         if (eigensolver.info() != Eigen::Success) {
             msg_error() << "Unable to find the eigen values of K.";
