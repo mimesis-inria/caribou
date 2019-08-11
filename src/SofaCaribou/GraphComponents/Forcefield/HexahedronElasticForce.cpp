@@ -344,7 +344,7 @@ void HexahedronElasticForce::reinit()
             const auto detJ = J.determinant();
 
             // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const auto dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_point.first).transpose()).transpose();
+            const Matrix<NumberOfNodes, 3> dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_point.first).transpose()).transpose();
 
             quadrature_nodes.push_back(GaussNode({
                 gauss_point.second,
@@ -480,16 +480,16 @@ void HexahedronElasticForce::addForce(
                 F = elasticity::strain::F(dN_dx, U);
 
                 // Strain tensor at gauss node
-                const auto C = F * F.transpose();
-                const auto E = 1/2. * (C - I);
+                const Mat33 C = F * F.transpose();
+                const Mat33 E = 1/2. * (C - I);
 
                 // Stress tensor at gauss node
-                const auto S = 2.*m*E + (l * E.trace() * I);
+                const Mat33 S = 2.*m*E + (l * E.trace() * I);
 
                 // Elastic forces w.r.t the gauss node applied on each nodes
                 for (size_t i = 0; i < 8; ++i) {
-                    const auto dx = dN_dx.row(i).transpose();
-                    const auto f_ = (detJ * w) * F.transpose() * (S * dx);
+                    const Vec3 dx = dN_dx.row(i).transpose();
+                    const Vec3 f_ = (detJ * w) * F.transpose() * (S * dx);
                     forces(i, 0) += f_[0];
                     forces(i, 1) += f_[1];
                     forces(i, 2) += f_[2];
@@ -634,7 +634,7 @@ void HexahedronElasticForce::compute_K()
 
         for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-            const auto detJ = gauss_node.jacobian_determinant;
+            const Real detJ = gauss_node.jacobian_determinant;
 
             // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
             const auto dN_dx = gauss_node.dN_dx;
@@ -643,24 +643,24 @@ void HexahedronElasticForce::compute_K()
             const auto w = gauss_node.weight;
 
             // Deformation tensor at gauss node
-            auto & F = gauss_node.F;
+            Mat33 & F = gauss_node.F;
 
             // Strain tensor at gauss node
-            const auto C = F * F.transpose();
-            const auto E = 1/2. * (C - I);
+            const Mat33 C = F * F.transpose();
+            const Mat33 E = 1/2. * (C - I);
 
             // Stress tensor at gauss node
-            const auto S = 2.*m*E + (l * E.trace() * I);
+            const Mat33 S = 2.*m*E + (l * E.trace() * I);
 
             // Computation of the tangent-stiffness matrix
             for (std::size_t i = 0; i < 8; ++i) {
                 for (std::size_t j = 0; j < 8; ++j) {
 
                     // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
-                    const auto dxi = dN_dx.row(i).transpose();
+                    const Vec3 dxi = dN_dx.row(i).transpose();
 
                     // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
-                    const auto dxj = dN_dx.row(j).transpose();
+                    const Vec3 dxj = dN_dx.row(j).transpose();
 
                     // Derivative of the force applied on node j w.r.t the u component of the ith nodal's displacement
                     const Mat33 dFu = dxi * I.row(0); // Deformation tensor derivative with respect to u_i
