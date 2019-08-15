@@ -44,7 +44,7 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
 
     /** Get a reference to the set of nodes */
     inline
-    const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> &
+    const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim, Eigen::RowMajor> &
     nodes() const
     {
         return p_nodes;
@@ -83,7 +83,7 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
         auto n3 = node(2);
 
         if constexpr (Dim == 2) {
-            Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3> m;
+            Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3, Eigen::RowMajor> m;
             m << n1[0], n2[0], n3[0],
                 n1[1], n2[1], n3[1],
                 1. ,   1. ,   1. ;
@@ -112,7 +112,7 @@ private:
     }
 
 private:
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> p_nodes;
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim, Eigen::RowMajor> p_nodes;
 };
 
 } // namespace caribou::geometry
