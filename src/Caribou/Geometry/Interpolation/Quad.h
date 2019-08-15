@@ -82,13 +82,13 @@ struct Quad4 : public CanonicalElement<2, 4, Quad4>
      * \endcode
      */
     static
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension>
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension, Eigen::RowMajor>
     dL (const LocalCoordinates & x)
     {
         const auto & u = x[0];
         const auto & v = x[1];
 
-        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension> m;
+        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension, Eigen::RowMajor> m;
         //         dL/du                dL/dv
         m << -1 / 4. * (1 - v),   -1 / 4. * (1 - u),   // Node 0
              +1 / 4. * (1 - v),   -1 / 4. * (1 + u),   // Node 1

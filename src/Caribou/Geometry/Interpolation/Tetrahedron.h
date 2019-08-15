@@ -78,7 +78,7 @@ struct Tetrahedron4 : public CanonicalElement<3, 4, Tetrahedron4>
             {1/4., 1/4., 1/4.}, // Node 0
     };
 
-    static constexpr FLOATING_POINT_TYPE gauss_weights[number_of_gauss_nodes] {1};
+    static constexpr FLOATING_POINT_TYPE gauss_weights[number_of_gauss_nodes] {1/6.};
 
     /**
      * Get the Lagrange polynomial value evaluated at local coordinates {u, v, w} w.r.t each
@@ -120,10 +120,10 @@ struct Tetrahedron4 : public CanonicalElement<3, 4, Tetrahedron4>
      * \endcode
      */
     static
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension>
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension, Eigen::RowMajor>
     dL (const LocalCoordinates & /* x */)
     {
-        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension> m;
+        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension, Eigen::RowMajor> m;
         //  dL/du  dL/dv  dL/dw
         m << -1,    -1,    -1,   // Node 0
               1,     0,     0,   // Node 1

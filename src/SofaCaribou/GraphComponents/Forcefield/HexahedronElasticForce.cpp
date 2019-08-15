@@ -344,7 +344,7 @@ void HexahedronElasticForce::reinit()
             const auto detJ = J.determinant();
 
             // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const Matrix<NumberOfNodes, 3> dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_point.first).transpose()).transpose();
+            const Matrix<NumberOfNodes, 3, Eigen::RowMajor> dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_point.first).transpose()).transpose();
 
             quadrature_nodes.push_back(GaussNode({
                 gauss_point.second,
@@ -371,7 +371,7 @@ void HexahedronElasticForce::addForce(
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_v);
 
-    static const auto I = Matrix<3,3>::Identity();
+    static const auto I = Matrix<3,3, Eigen::RowMajor>::Identity();
 
     auto topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
@@ -453,7 +453,7 @@ void HexahedronElasticForce::addForce(
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
             const auto &hexa = topology->getHexahedron(hexa_id);
 
-            Matrix<8, 3> U;
+            Matrix<8, 3, Eigen::RowMajor> U;
 
             for (size_t i = 0; i < 8; ++i) {
                 const auto u = x[hexa[i]] - x0[hexa[i]];
@@ -462,7 +462,7 @@ void HexahedronElasticForce::addForce(
                 U(i, 2) = u[2];
             }
 
-            Matrix<8, 3> forces;
+            Matrix<8, 3, Eigen::RowMajor> forces;
             forces.fill(0);
             for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
 
@@ -629,7 +629,7 @@ void HexahedronElasticForce::compute_K()
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::compute_k");
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-        Mat2424 & K = p_stiffness_matrices[hexa_id];
+        auto & K = p_stiffness_matrices[hexa_id];
         K.fill(0.);
 
         for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
@@ -654,33 +654,32 @@ void HexahedronElasticForce::compute_K()
 
             // Computation of the tangent-stiffness matrix
             for (std::size_t i = 0; i < 8; ++i) {
+                // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
+                const Vec3 dxi = dN_dx.row(i).transpose();
+
                 for (std::size_t j = 0; j < 8; ++j) {
-
-                    // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
-                    const Vec3 dxi = dN_dx.row(i).transpose();
-
                     // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
                     const Vec3 dxj = dN_dx.row(j).transpose();
 
                     // Derivative of the force applied on node j w.r.t the u component of the ith nodal's displacement
-                    const Mat33 dFu = dxi * I.row(0); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCu = dFu*F.transpose() + F*dFu.transpose();
-                    const Mat33 dEu = 1/2. * dCu;
-                    const Mat33 dSu = 2. * m * dEu + (l*dEu.trace() * I);
+                    const auto dFu = dxi * I.row(0); // Deformation tensor derivative with respect to u_i
+                    const auto dCu = dFu*F.transpose() + F*dFu.transpose();
+                    const auto dEu = 1/2. * dCu;
+                    const auto dSu = 2. * m * dEu + (l*dEu.trace() * I);
                     const Vec3  Ku  = (detJ*w) * (dFu.transpose()*S + F.transpose()*dSu) * dxj;
 
                     // Derivative of the force applied on node j w.r.t the v component of the ith nodal's displacement
-                    const Mat33 dFv = dxi * I.row(1); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCv = dFv*F.transpose() + F*dFv.transpose();
-                    const Mat33 dEv = 1/2. * dCv;
-                    const Mat33 dSv = 2. * m * dEv + (l*dEv.trace() * I);
+                    const auto dFv = dxi * I.row(1); // Deformation tensor derivative with respect to u_i
+                    const auto dCv = dFv*F.transpose() + F*dFv.transpose();
+                    const auto dEv = 1/2. * dCv;
+                    const auto dSv = 2. * m * dEv + (l*dEv.trace() * I);
                     const Vec3  Kv  = (detJ*w) * (dFv.transpose()*S + F.transpose()*dSv) * dxj;
 
                     // Derivative of the force applied on node j w.r.t the w component of the ith nodal's displacement
-                    const Mat33 dFw = dxi * I.row(2); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCw = dFw*F.transpose() + F*dFw.transpose();
-                    const Mat33 dEw = 1/2. * dCw;
-                    const Mat33 dSw = 2. * m * dEw + (l*dEw.trace() * I);
+                    const auto dFw = dxi * I.row(2); // Deformation tensor derivative with respect to u_i
+                    const auto dCw = dFw*F.transpose() + F*dFw.transpose();
+                    const auto dEw = 1/2. * dCw;
+                    const auto dSw = 2. * m * dEw + (l*dEw.trace() * I);
                     const Vec3  Kw  = (detJ*w) * (dFw.transpose()*S + F.transpose()*dSw) * dxj;
 
                     Mat33 Kji;
@@ -753,7 +752,7 @@ const Eigen::Matrix<HexahedronElasticForce::Real, Eigen::Dynamic, 1> & Hexahedro
     if (not eigenvalues_are_up_to_date) {
 #ifdef EIGEN_USE_LAPACKE
         Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> k (K());
-        Eigen::SelfAdjointEigenSolver eigensolver(k, Eigen::EigenvaluesOnly);
+        Eigen::SelfAdjointEigenSolver<Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic>> eigensolver(k, Eigen::EigenvaluesOnly);
 #else
         Eigen::SelfAdjointEigenSolver<Eigen::SparseMatrix<Real>> eigensolver(K(), Eigen::EigenvaluesOnly);
 #endif

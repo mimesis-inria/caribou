@@ -17,6 +17,9 @@ struct Quad : public CanonicalElementType
     using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
     using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
 
+    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
+    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+
     static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D quads are supported.");
 
     template <
@@ -28,7 +31,7 @@ struct Quad : public CanonicalElementType
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
-    Quad(const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> & nodes)
+    Quad(const Matrix<NumberOfNodes, Dim> & nodes)
     : p_nodes(nodes)
     {}
 
@@ -72,7 +75,7 @@ struct Quad : public CanonicalElementType
     }
 
     /** Compute the jacobian matrix evaluated at local position {u,v} */
-    Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 2>
+    Matrix<Dim, 2>
     jacobian (const LocalCoordinates & coordinates) const
     {
         return CanonicalElementType::Jacobian(coordinates, p_nodes);
@@ -94,7 +97,7 @@ private:
 
 
 private:
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> p_nodes;
+    Matrix<NumberOfNodes, Dim> p_nodes;
 };
 
 } // namespace caribou::geometry

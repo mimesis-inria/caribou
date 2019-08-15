@@ -25,7 +25,8 @@ TractionForce<DataTypes>::TractionForce()
     , d_slope(initData(&d_slope,
             (Real) 0,
             "slope",
-            "Slope of load increment, the resulting tractive force will be p^t = p^{t-1} + p*slope. "
+            "Slope of load increment, the resulting tractive force will be p^t = p^{t-1} + p*slope where p is the "
+            "traction force passed as a data and p^t is the traction force applied at time step t. "
             "If slope = 0, the traction will be constant."))
     , d_triangleContainer(initLink(
             "triangle_container",
@@ -179,9 +180,9 @@ void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_
     Deriv load;
     for (size_t i = 0; i < triangles.size(); ++i) {
         const auto & triangle_node_indices = triangles[i];
-        const Vector<3> & p1 = MapVector<3>(&(rest_positions[triangle_node_indices[0]]));
-        const Vector<3> & p2 = MapVector<3>(&(rest_positions[triangle_node_indices[1]]));
-        const Vector<3> & p3 = MapVector<3>(&(rest_positions[triangle_node_indices[2]]));
+        const auto p1 = MapVector<3>(&(rest_positions[triangle_node_indices[0]][0]));
+        const auto p2 = MapVector<3>(&(rest_positions[triangle_node_indices[1]][0]));
+        const auto p3 = MapVector<3>(&(rest_positions[triangle_node_indices[2]][0]));
 
         const auto triangle = caribou::geometry::Triangle<3>(p1, p2, p3);
 
@@ -232,9 +233,9 @@ void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vpar
 
     for (size_t i = 0; i < triangles.size(); ++i) {
         const auto & triangle_node_indices = triangles[i];
-        const auto & p1 = positions[triangle_node_indices[0]];
-        const auto & p2 = positions[triangle_node_indices[1]];
-        const auto & p3 = positions[triangle_node_indices[2]];
+        const auto p1 = MapVector<3>(&(positions[triangle_node_indices[0]][0]));
+        const auto p2 = MapVector<3>(&(positions[triangle_node_indices[1]][0]));
+        const auto p3 = MapVector<3>(&(positions[triangle_node_indices[2]][0]));
 
         const auto triangle = caribou::geometry::Triangle<3>(p1, p2, p3);
 

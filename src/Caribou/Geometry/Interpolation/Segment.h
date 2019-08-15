@@ -23,6 +23,9 @@ struct Segment2 : public CanonicalElement<1, 2, Segment2>
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodes = 2;
     using LocalCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
 
+    template<int nRows, int nColumns, int Options=0>
+    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+
     static constexpr FLOATING_POINT_TYPE nodes [NumberOfNodes][Dimension] = {
     //    u
         {-1}, // Node 0
@@ -62,10 +65,10 @@ struct Segment2 : public CanonicalElement<1, 2, Segment2>
      * \endcode
      */
     static
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension>
+    Matrix<NumberOfNodes, Dimension>
     dL (const LocalCoordinates & /*x*/)
     {
-        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension> m;
+        Matrix<NumberOfNodes, Dimension> m;
         m << -1,
              +1;
         return m;

@@ -21,17 +21,17 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
 
     using FaceType = Triangle<3, typename CanonicalElementType::FaceType>;
 
-    template<int nRows, int nColumns, int Options=0>
+    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
 
     template<int nRows, int nColumns>
-    using Map = Eigen::Map<const Matrix<nRows, nColumns, Eigen::RowMajor>>;
+    using Map = Eigen::Map<const Matrix<nRows, nColumns>>;
 
     template<int nRows, int Options=0>
     using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
 
     template<int nRows>
-    using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
+    using MapVector = Eigen::Map<const Vector<nRows>>;
 
     Tetrahedron()
         : p_nodes(Map<NumberOfNodes, 3>(&CanonicalElementType::nodes[0][0]))
@@ -47,7 +47,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
-    Tetrahedron(const Matrix<NumberOfNodes, 3> & m)
+    Tetrahedron(const Matrix<NumberOfNodes, 3, Eigen::RowMajor> & m)
         : p_nodes(m)
     {}
 
@@ -84,7 +84,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
     {
         const auto & face_indices = CanonicalElementType::faces[index];
 
-        Matrix<FaceType::NumberOfNodes, 3> m;
+        Matrix<FaceType::NumberOfNodes, 3, Eigen::RowMajor> m;
         for (std::size_t i = 0; i < FaceType::NumberOfNodes; ++i)
             m.row(i) = node(face_indices[i]);
 
@@ -114,7 +114,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
      * axis to the x,y,z world frame (identity matrix).
      */
     inline
-    Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3>
+    Matrix<3, 3>
     frame() const
     {
         // u-axis
@@ -124,12 +124,12 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
         auto v = (node(2) - node(0)).normalized();
 
         // w-axis
-        const auto w = u.cross(v).normalized();
+        const WorldCoordinates w = u.cross(v).normalized();
 
         // v-axis (recompute the v-axis in case u and v aren't orthogonal
         v = w.cross(u).normalized();
 
-        Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3> m;
+        Matrix<3, 3> m;
         m << u, v, w;
 
         return m;
@@ -139,7 +139,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
  * (see interpolation::CanonicalElement::Jacobian for more details).
  * */
     inline
-    Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3>
+    Matrix<3, 3>
     jacobian (const LocalCoordinates & coordinates) const
     {
         return CanonicalElementType::Jacobian(coordinates, nodes());

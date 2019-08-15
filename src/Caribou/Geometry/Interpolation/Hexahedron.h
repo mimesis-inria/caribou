@@ -134,14 +134,14 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
      * \endcode
      */
     static
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension>
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension, Eigen::RowMajor>
     dL (const LocalCoordinates & x)
     {
         const auto & u = x[0];
         const auto & v = x[1];
         const auto & w = x[2];
 
-        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension> m;
+        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension, Eigen::RowMajor> m;
         //            dL/du                         dL/dv                         dL/dw
         m << -1/8. * (1 - v) * (1 - w),    -1/8. * (1 - u) * (1 - w),    -1/8. * (1 - u) * (1 - v),   // Node 0
              +1/8. * (1 - v) * (1 - w),    -1/8. * (1 + u) * (1 - w),    -1/8. * (1 + u) * (1 - v),   // Node 1

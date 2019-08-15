@@ -18,6 +18,9 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
     using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
     using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
 
+    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
+    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+
     static_assert(Dim == 1 or Dim == 2 or Dim == 3, "Only 1D, 2D and 3D segments are supported.");
 
     template <
@@ -84,7 +87,7 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
 
     /** Compute the jacobian matrix evaluated at local position {u,v} */
     template <typename LocalCoordinates>
-    Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>
+    Matrix<Dim, 1>
     jacobian (LocalCoordinates && coordinates) const
     {
         return CanonicalElementType::Jacobian(std::forward<LocalCoordinates>(coordinates), p_nodes);
@@ -104,7 +107,7 @@ private:
         p_nodes.row(index) = last_node;
     }
 private:
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> p_nodes;
+    Matrix<NumberOfNodes, Dim> p_nodes;
 };
 
 } // namespace caribou::geometry

@@ -38,7 +38,7 @@ public:
     static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodes;
 
 
-    template<int nRows, int nColumns, int Options=0>
+    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<Real, nRows, nColumns, Options>;
 
     template<int nRows, int nColumns>
@@ -50,9 +50,9 @@ public:
     template<int nRows>
     using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
 
-    using Mat33   = Matrix<3, 3>;
+    using Mat33   = Matrix<3, 3, Eigen::RowMajor>;
     using Vec3   = Vector<3>;
-    using Mat2424 = Matrix<24, 24>;
+    using Mat2424 = Matrix<24, 24, Eigen::RowMajor>;
     using Vec24   = Vector<24>;
 
     template <typename ObjectType>
@@ -61,9 +61,9 @@ public:
     // Data structures
 
     struct GaussNode {
-        Real weight;
-        Real jacobian_determinant;
-        Matrix<NumberOfNodes, 3> dN_dx;
+        Real weight = 0;
+        Real jacobian_determinant = 0;
+        Matrix<NumberOfNodes, 3> dN_dx = Matrix<NumberOfNodes, 3, Eigen::RowMajor>::Zero();
         Mat33 F = Mat33::Identity();
     };
 
@@ -169,7 +169,7 @@ public:
     const Eigen::SparseMatrix<Real> & K();
 
     /** Get the eigen values of the tangent stiffness matrix */
-    const Eigen::Matrix<Real, Eigen::Dynamic, 1> & eigenvalues();
+    const Vector<Eigen::Dynamic> & eigenvalues();
 
     /** Get the condition number of the tangent stiffness matrix */
     Real cond();
@@ -195,7 +195,7 @@ private:
     std::vector<Mat33> p_initial_rotation;
     std::vector<Mat33> p_current_rotation;
     Eigen::SparseMatrix<Real> p_K;
-    Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
+    Vector<Eigen::Dynamic> p_eigenvalues;
     bool K_is_up_to_date;
     bool eigenvalues_are_up_to_date;
 
