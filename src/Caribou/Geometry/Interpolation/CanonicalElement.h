@@ -93,8 +93,8 @@ struct CanonicalElement
      */
     template<typename LocalCoordinates, int WorldDimension>
     static inline
-    Eigen::Matrix<FLOATING_POINT_TYPE, WorldDimension, CanonicalDimension>
-    Jacobian (LocalCoordinates && coordinates, const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, WorldDimension> & nodes)
+    Eigen::Matrix<FLOATING_POINT_TYPE, WorldDimension, CanonicalDimension, Eigen::RowMajor>
+    Jacobian (LocalCoordinates && coordinates, const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, WorldDimension, Eigen::RowMajor> & nodes)
     {
         const auto shape_derivatives = CanonicalElementType::dL(std::forward<LocalCoordinates>(coordinates));
 
@@ -163,7 +163,7 @@ struct CanonicalElement
     static inline
     auto
     interpolate_at_local_position (LocalCoordinates && coordinates,
-                                   const Eigen::Matrix<ValueType, NumberOfNodes, ValueDimension> & values)
+                                   const Eigen::Matrix<ValueType, NumberOfNodes, ValueDimension, Eigen::RowMajor> & values)
     {
         return Eigen::Matrix<ValueType, ValueDimension, 1>(
             (values.array().colwise() * CanonicalElementType::L(std::forward<LocalCoordinates>(coordinates)).array()).matrix().colwise().sum().transpose()

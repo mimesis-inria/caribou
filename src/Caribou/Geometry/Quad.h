@@ -28,7 +28,7 @@ struct Quad : public CanonicalElementType
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
-    Quad(const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> & nodes)
+    Quad(const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim, Eigen::RowMajor> & nodes)
     : p_nodes(nodes)
     {}
 
@@ -94,7 +94,7 @@ private:
 
 
 private:
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> p_nodes;
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim, Eigen::RowMajor> p_nodes;
 };
 
 } // namespace caribou::geometry

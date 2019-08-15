@@ -47,7 +47,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
-    Tetrahedron(const Matrix<NumberOfNodes, 3> & m)
+    Tetrahedron(const Matrix<NumberOfNodes, 3, Eigen::RowMajor> & m)
         : p_nodes(m)
     {}
 
@@ -84,7 +84,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
     {
         const auto & face_indices = CanonicalElementType::faces[index];
 
-        Matrix<FaceType::NumberOfNodes, 3> m;
+        Matrix<FaceType::NumberOfNodes, 3, Eigen::RowMajor> m;
         for (std::size_t i = 0; i < FaceType::NumberOfNodes; ++i)
             m.row(i) = node(face_indices[i]);
 
@@ -114,7 +114,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
      * axis to the x,y,z world frame (identity matrix).
      */
     inline
-    Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3>
+    Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3, Eigen::RowMajor>
     frame() const
     {
         // u-axis
@@ -129,7 +129,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
         // v-axis (recompute the v-axis in case u and v aren't orthogonal
         v = w.cross(u).normalized();
 
-        Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3> m;
+        Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3, Eigen::RowMajor> m;
         m << u, v, w;
 
         return m;
@@ -139,7 +139,7 @@ struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetr
  * (see interpolation::CanonicalElement::Jacobian for more details).
  * */
     inline
-    Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3>
+    Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3, Eigen::RowMajor>
     jacobian (const LocalCoordinates & coordinates) const
     {
         return CanonicalElementType::Jacobian(coordinates, nodes());
@@ -221,7 +221,7 @@ private:
     }
 
 private:
-    Matrix<NumberOfNodes, 3> p_nodes;
+    Matrix<NumberOfNodes, 3, Eigen::RowMajor> p_nodes;
 };
 
 } // namespace caribou::geometry

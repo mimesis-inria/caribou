@@ -50,9 +50,9 @@ public:
     template<int nRows>
     using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
 
-    using Mat33   = Matrix<3, 3>;
+    using Mat33   = Matrix<3, 3, Eigen::RowMajor>;
     using Vec3   = Vector<3>;
-    using Mat2424 = Matrix<24, 24>;
+    using Mat2424 = Matrix<24, 24, Eigen::RowMajor>;
     using Vec24   = Vector<24>;
 
     template <typename ObjectType>
@@ -63,7 +63,7 @@ public:
     struct GaussNode {
         Real weight;
         Real jacobian_determinant;
-        Matrix<NumberOfNodes, 3> dN_dx;
+        Matrix<NumberOfNodes, 3, Eigen::RowMajor> dN_dx;
         Mat33 F = Mat33::Identity();
     };
 
@@ -119,7 +119,7 @@ public:
         auto * topology = d_topology_container.get();
         const auto &node_indices = topology->getHexahedron(hexa_id);
 
-        Matrix<8, 3> m;
+        Matrix<8, 3, Eigen::RowMajor> m;
         for (std::size_t j = 0; j < 8; ++j) {
             const auto &node_id = node_indices[j];
             m.row(j) = MapVector<3>(&x[node_id][0]);
@@ -161,7 +161,7 @@ public:
         return p_quadrature_nodes[hexahedron_id];
     }
 
-    const Matrix<24, 24> & stiffness_matrix_of(std::size_t hexahedron_id) const {
+    const Matrix<24, 24, Eigen::RowMajor> & stiffness_matrix_of(std::size_t hexahedron_id) const {
         return p_stiffness_matrices[hexahedron_id];
     }
 
@@ -190,7 +190,7 @@ protected:
 
 private:
     bool recompute_compute_tangent_stiffness = false;
-    std::vector<Matrix<24, 24>> p_stiffness_matrices;
+    std::vector<Matrix<24, 24, Eigen::RowMajor>> p_stiffness_matrices;
     std::vector<std::vector<GaussNode>> p_quadrature_nodes;
     std::vector<Mat33> p_initial_rotation;
     std::vector<Mat33> p_current_rotation;

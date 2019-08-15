@@ -266,7 +266,7 @@ private:
     }
 
 private:
-    Matrix<NumberOfNodes, 3> p_nodes;
+    Matrix<NumberOfNodes, 3, Eigen::RowMajor> p_nodes;
 };
 
 template <

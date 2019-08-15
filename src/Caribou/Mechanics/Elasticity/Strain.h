@@ -12,7 +12,7 @@ using Float = FLOATING_POINT_TYPE;
 template<int nRows, int nColumns, int Options=0>
 using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
 
-using Mat33 = Matrix<3,3>;
+using Mat33 = Matrix<3,3, Eigen::RowMajor>;
 using Vec3  = Matrix<3,1>;
 
 /**
@@ -101,7 +101,7 @@ B (const ElementType & element, const LocalCoordinates & coordinates)
 template <int NumberOfNodes, int Dimension>
 static inline
 Matrix<Dimension, Dimension>
-F (const Matrix<NumberOfNodes, Dimension> & dN_dx, const Matrix<NumberOfNodes, Dimension> & U)
+F (const Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> & dN_dx, const Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> & U)
 {
     const auto I = Mat33::Identity();
     Mat33 GradU = dN_dx.row(0).transpose() * U.row(0);
