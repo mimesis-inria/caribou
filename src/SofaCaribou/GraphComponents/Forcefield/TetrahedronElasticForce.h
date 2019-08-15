@@ -32,10 +32,10 @@ public:
     using Real     = typename Coord::value_type;
 
 
-    template<int nRows, int nColumns, int Options=0>
+    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<Real, nRows, nColumns, Options>;
 
-    template<int nRows, int nColumns, int Options=0>
+    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using MatrixI = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, nRows, nColumns, Options>;
 
     template<int nRows, int nColumns>
@@ -45,7 +45,7 @@ public:
     using Vector = Eigen::Matrix<Real, nRows, 1, Options>;
 
     template<int nRows>
-    using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
+    using MapVector = Eigen::Map<const Vector<nRows>>;
 
     using Mat33   = Matrix<3, 3>;
     using Vec3   = Vector<3>;
@@ -58,9 +58,9 @@ public:
     // Data structures
 
     struct GaussNode {
-        Real weight;
-        Real jacobian_determinant;
-        Matrix<NumberOfNodes, 3, Eigen::RowMajor> dN_dx;
+        Real weight = 0;
+        Real jacobian_determinant = 0;
+        Matrix<NumberOfNodes, 3> dN_dx = Matrix<NumberOfNodes, 3, Eigen::RowMajor>::Zero();
         Mat33 F = Mat33::Identity();
     };
 
@@ -105,7 +105,7 @@ private:
         auto * topology = d_topology_container.get();
         const auto &node_indices = topology->getTetrahedron(tetrahedron_id);
 
-        Matrix<NumberOfNodes, 3, Eigen::RowMajor> m;
+        Matrix<NumberOfNodes, 3> m;
         for (std::size_t j = 0; j < NumberOfNodes; ++j) {
             const auto &node_id = node_indices[j];
             m.row(j) = MapVector<3>(&x[node_id][0]);
@@ -123,12 +123,12 @@ private:
 
 private:
     bool recompute_compute_tangent_stiffness = false;
-    std::vector<Matrix<12, 12, Eigen::RowMajor>> p_stiffness_matrices;
+    std::vector<Matrix<12, 12>> p_stiffness_matrices;
     std::vector<std::vector<GaussNode>> p_quadrature_nodes;
     std::vector<Mat33> p_initial_rotation;
     std::vector<Mat33> p_current_rotation;
     Eigen::SparseMatrix<Real> p_K;
-    Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
+    Vector<Eigen::Dynamic> p_eigenvalues;
     bool K_is_up_to_date;
     bool eigenvalues_are_up_to_date;
 

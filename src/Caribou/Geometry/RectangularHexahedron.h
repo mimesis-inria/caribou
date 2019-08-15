@@ -21,17 +21,17 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
 
     using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
 
-    template<int nRows, int nColumns, int Options=0>
+    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
 
     template<int nRows, int nColumns>
-    using Map = Eigen::Map<const Matrix<nRows, nColumns, Eigen::RowMajor>>;
+    using Map = Eigen::Map<const Matrix<nRows, nColumns>>;
 
     template<int nRows, int Options=0>
     using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
 
     template<int nRows>
-    using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
+    using MapVector = Eigen::Map<const Vector<nRows>>;
 
     using Mat33 = Matrix<3, 3>;
     using Size = Vector<3>;
@@ -281,9 +281,9 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
      * @return The value of the integral computed on this hexahedron.
      *
      */
-    template <typename EvaluateFunctor>
+    template <typename ValueType, typename EvaluateFunctor>
     inline
-    auto
+    ValueType
     gauss_quadrature(EvaluateFunctor f) const
     {
         // Constant for parallelepiped hexahedrons
@@ -292,7 +292,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         const auto p0 = MapVector<3>(CanonicalElementType::gauss_nodes[0]);
         const auto w0 = CanonicalElementType::gauss_weights[0];
         const auto eval0 = f(*this, p0);
-        auto result = eval0 * w0 * detJ;
+        ValueType result = eval0 * w0 * detJ;
 
         for (std::size_t i = 1; i < CanonicalElementType::number_of_gauss_nodes; ++i) {
             const auto p = MapVector<3>(CanonicalElementType::gauss_nodes[i]);

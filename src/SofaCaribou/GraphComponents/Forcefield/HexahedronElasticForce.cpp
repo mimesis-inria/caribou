@@ -662,24 +662,24 @@ void HexahedronElasticForce::compute_K()
                     const Vec3 dxj = dN_dx.row(j).transpose();
 
                     // Derivative of the force applied on node j w.r.t the u component of the ith nodal's displacement
-                    const Mat33 dFu = dxi * I.row(0); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCu = dFu*F.transpose() + F*dFu.transpose();
-                    const Mat33 dEu = 1/2. * dCu;
-                    const Mat33 dSu = 2. * m * dEu + (l*dEu.trace() * I);
+                    const auto dFu = dxi * I.row(0); // Deformation tensor derivative with respect to u_i
+                    const auto dCu = dFu*F.transpose() + F*dFu.transpose();
+                    const auto dEu = 1/2. * dCu;
+                    const auto dSu = 2. * m * dEu + (l*dEu.trace() * I);
                     const Vec3  Ku  = (detJ*w) * (dFu.transpose()*S + F.transpose()*dSu) * dxj;
 
                     // Derivative of the force applied on node j w.r.t the v component of the ith nodal's displacement
-                    const Mat33 dFv = dxi * I.row(1); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCv = dFv*F.transpose() + F*dFv.transpose();
-                    const Mat33 dEv = 1/2. * dCv;
-                    const Mat33 dSv = 2. * m * dEv + (l*dEv.trace() * I);
+                    const auto dFv = dxi * I.row(1); // Deformation tensor derivative with respect to u_i
+                    const auto dCv = dFv*F.transpose() + F*dFv.transpose();
+                    const auto dEv = 1/2. * dCv;
+                    const auto dSv = 2. * m * dEv + (l*dEv.trace() * I);
                     const Vec3  Kv  = (detJ*w) * (dFv.transpose()*S + F.transpose()*dSv) * dxj;
 
                     // Derivative of the force applied on node j w.r.t the w component of the ith nodal's displacement
-                    const Mat33 dFw = dxi * I.row(2); // Deformation tensor derivative with respect to u_i
-                    const Mat33 dCw = dFw*F.transpose() + F*dFw.transpose();
-                    const Mat33 dEw = 1/2. * dCw;
-                    const Mat33 dSw = 2. * m * dEw + (l*dEw.trace() * I);
+                    const auto dFw = dxi * I.row(2); // Deformation tensor derivative with respect to u_i
+                    const auto dCw = dFw*F.transpose() + F*dFw.transpose();
+                    const auto dEw = 1/2. * dCw;
+                    const auto dSw = 2. * m * dEw + (l*dEw.trace() * I);
                     const Vec3  Kw  = (detJ*w) * (dFw.transpose()*S + F.transpose()*dSw) * dxj;
 
                     Mat33 Kji;

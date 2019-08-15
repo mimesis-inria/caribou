@@ -185,7 +185,7 @@
 
         <MeshMatrixMass massDensity="2.3"/>
 
-        <TetrahedronElasticForce poissonRatio="0" youngModulus="100000" topology_container="@tetrahedrons_container" linearStrain="true" corotated="true"/>
+        <TetrahedronElasticForce poissonRatio="0" youngModulus="100000" topology_container="@tetrahedrons_container" linearStrain="false" corotated="true"/>
         <!--<TetrahedronHyperelasticityFEMForceField materialName="StVenantKirchhoff" ParameterSet="50000.0 0"/>-->
 
         <BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1"/>
@@ -206,8 +206,8 @@
 
         <MeshMatrixMass massDensity="2.3"/>
 
-        <!--<TetrahedronHyperelasticityFEMForceField materialName="StVenantKirchhoff" ParameterSet="50000.0 0"/>-->
-        <TetrahedronFEMForceField poissonRatio="0" youngModulus="100000" method="large" />
+        <TetrahedronHyperelasticityFEMForceField materialName="StVenantKirchhoff" ParameterSet="50000.0 0"/>
+<!--        <TetrahedronFEMForceField poissonRatio="0" youngModulus="100000" method="large" />-->
         <BoxROI name="fixed_roi" box="-7.5 -7.5 -0.9 7.5 7.5 0.1"/>
         <FixedConstraint indices="@fixed_roi.indices"/>
     </Node>

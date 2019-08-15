@@ -100,57 +100,6 @@ struct CanonicalElement
 
         auto positions = nodes.transpose();
         return positions * shape_derivatives;
-
-
-//        if constexpr (CanonicalDimension == 1) { // Canonical element of dimension 1
-//            auto sum = nodes[0] * shape_derivatives.row(0).transpose();
-//            for (std::size_t i = 1; i < NumberOfNodes; ++i)
-//                sum += nodes[i] * shape_derivatives.row(i).transpose();
-//            return sum;
-//        } else if constexpr (CanonicalDimension == 2) { // Canonical element of dimension 2
-//
-//            Eigen::Matrix<FLOATING_POINT_TYPE, WorldDimension, CanonicalDimension> J;
-//
-//
-//
-//            Matrix positions (
-//                    nodes[0].T(), // [x, y, z]
-//                    nodes[0].T()  // [x, y, z]
-//            );
-//            auto sum =
-//                    positions
-//                    .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv]^T
-//                    .transposed();
-//            for (std::size_t i = 1; i < NumberOfNodes; ++i) {
-//                positions = Matrix(
-//                        nodes[i].T(), // [x, y, z]
-//                        nodes[i].T()  // [x, y, z]
-//                );
-//                sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv]^T
-//                        .transposed();
-//            }
-//            return sum;
-//        } else { // Dimension == 3
-//            Matrix positions (
-//                    nodes[0].T(), // [x, y, z]
-//                    nodes[0].T(), // [x, y, z]
-//                    nodes[0].T()  // [x, y, z]
-//            );
-//            auto sum = positions
-//                    .direct_multiplication(shape_derivatives.row(0).transposed()) // [du, dv, dw]^T
-//                    .transposed();
-//
-//            for (std::size_t i = 1; i < NumberOfNodes; ++i) {
-//                positions = Matrix(
-//                        nodes[i].T(), // [x, y, z]
-//                        nodes[i].T(), // [x, y, z]
-//                        nodes[i].T()  // [x, y, z]
-//                );
-//                sum += positions.direct_multiplication(shape_derivatives.row(i).transposed()) // [du, dv, dw]^T
-//                        .transposed();
-//            }
-//            return sum;
-//        }
     }
 
     /**

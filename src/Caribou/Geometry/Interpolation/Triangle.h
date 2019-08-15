@@ -79,10 +79,10 @@ struct Triangle3 : public CanonicalElement<2, 3, Triangle3>
      * \endcode
      */
     static
-    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension>
+    Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension, Eigen::RowMajor>
     dL (const LocalCoordinates & /*x*/)
     {
-        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension> m;
+        Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dimension, Eigen::RowMajor> m;
         //    dL/du dL/dv
         m <<   -1,   -1,   // Node 0
                 1,    0,   // Node 1
