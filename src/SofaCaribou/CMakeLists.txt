@@ -70,18 +70,6 @@ else()
     OPTION(Caribou_with_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" OFF)
 endif()
 
-if (OPENMP_FOUND)
-    OPTION(Caribou_with_OpenMP "Use OpenMP support" ON)
-else()
-    OPTION(Caribou_with_OpenMP "Use OpenMP support" OFF)
-endif()
-
-
-if (Caribou_with_OpenMP)
-    find_package(OpenMP REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${OpenMP_CXX_LIBRARIES})
-endif()
-
 if (Caribou_with_EIGEN_MKL)
     find_package(LAPACK REQUIRED)
     find_package(LAPACKE REQUIRED)
@@ -91,6 +79,11 @@ if (Caribou_with_EIGEN_MKL)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES} ${LAPACKE_LIBRARIES_DEP} ${MKL_LIBRARIES})
 endif()
 
+
+if (Caribou_with_OpenMP)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_OPENMP)
+endif()
 
 if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
     add_subdirectory(Python)

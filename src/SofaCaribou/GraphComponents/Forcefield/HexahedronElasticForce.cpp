@@ -1,6 +1,9 @@
 #include <numeric>
 #include <queue>
 #include <array>
+#ifdef CARIBOU_WITH_OPENMP
+#include <omp.h>
+#endif
 #include <Eigen/Sparse>
 
 #include <sofa/core/visual/VisualParams.h>
@@ -358,6 +361,10 @@ void HexahedronElasticForce::reinit()
     // Initialize the stiffness matrix of every hexahedrons
     p_stiffness_matrices.resize(topology->getNbHexahedra());
 
+#ifdef CARIBOU_WITH_OPENMP
+    msg_info() << "Using " << omp_get_num_threads() << " threads for computations.";
+#endif
+
     // Compute the initial tangent stiffness matrix
     compute_K();
 }
@@ -395,8 +402,9 @@ void HexahedronElasticForce::addForce(
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
+        #pragma omp parallel for
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-            Hexahedron hexa = hexahedron(hexa_id, x);
+            const Hexahedron hexa = hexahedron(hexa_id, x);
 
             const Mat33 & R0 = initial_rotation[hexa_id];
             const Mat33 R0t = R0.transpose();
@@ -434,8 +442,13 @@ void HexahedronElasticForce::addForce(
                 Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
                 force = R*force;
 
+                #pragma omp atomic
                 f[node_id][0] -= force[0];
+
+                #pragma omp atomic
                 f[node_id][1] -= force[1];
+
+                #pragma omp atomic
                 f[node_id][2] -= force[2];
                 ++i;
             }
@@ -450,6 +463,7 @@ void HexahedronElasticForce::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
+        #pragma omp parallel for
         for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
             const auto &hexa = topology->getHexahedron(hexa_id);
 
@@ -497,8 +511,13 @@ void HexahedronElasticForce::addForce(
             }
 
             for (size_t i = 0; i < 8; ++i) {
+                #pragma omp atomic
                 f[hexa[i]][0] -= forces.row(i)[0];
+
+                #pragma omp atomic
                 f[hexa[i]][1] -= forces.row(i)[1];
+
+                #pragma omp atomic
                 f[hexa[i]][2] -= forces.row(i)[2];
             }
         }
@@ -529,6 +548,7 @@ void HexahedronElasticForce::addDForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
+    #pragma omp parallel for
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
 
         const Mat33 & R  = current_rotation[hexa_id];
@@ -555,8 +575,14 @@ void HexahedronElasticForce::addDForce(
         for (const auto & node_id : topology->getHexahedron(hexa_id)) {
             Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
             force = R*force;
+
+            #pragma omp atomic
             df[node_id][0] -= force[0];
+
+            #pragma omp atomic
             df[node_id][1] -= force[1];
+
+            #pragma omp atomic
             df[node_id][2] -= force[2];
             ++i;
         }
@@ -577,6 +603,8 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addKToMatrix");
+
+    #pragma omp parallel for
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(hexa_id);
         const Mat33 & R  = current_rotation[hexa_id];
@@ -601,6 +629,7 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
                         const auto x = node_indices[i]*3+m;
                         const auto y = node_indices[j]*3+n;
 
+                        #pragma omp critical
                         matrix->add(x, y, k(m,n));
                     }
                 }
@@ -628,6 +657,8 @@ void HexahedronElasticForce::compute_K()
     const Real m = youngModulus / (2 * (1 + poissonRatio));
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::compute_k");
+
+    #pragma omp parallel for
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         auto & K = p_stiffness_matrices[hexa_id];
         K.fill(0.);
