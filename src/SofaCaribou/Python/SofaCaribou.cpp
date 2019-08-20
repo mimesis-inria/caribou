@@ -8,8 +8,6 @@
 #include <SofaCaribou/GraphComponents/Forcefield/HexahedronElasticForce.h>
 #include "HexahedronElasticForce.h"
 
-#include <Caribou/Algebra/Python/Matrix.h>
-
 namespace py = pybind11;
 
 using namespace sofa::core::objectmodel;

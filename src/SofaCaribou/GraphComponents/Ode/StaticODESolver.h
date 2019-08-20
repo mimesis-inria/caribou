@@ -95,8 +95,11 @@ public:
 
 protected:
 
-    /// the solution vector is stored for warm-start
+    /// Increment at current newton iteration
     sofa::core::behavior::MultiVecDeriv dx;
+
+    /// Total displacement since the beginning of the step
+    sofa::core::behavior::MultiVecDeriv U;
 
     /// INPUTS
     Data<unsigned> d_newton_iterations;
