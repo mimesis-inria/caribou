@@ -79,6 +79,7 @@ public:
     TriangleTopologyLink d_triangleContainer; ///< Triangle set topology container that contains the triangle indices
     MechanicalStateLink d_mechanicalState; ///< Mechanical state that contains the triangle positions
     Data<unsigned int> d_number_of_steps_before_increment; ///< Number of steps to wait before a load increment. This can be used to simulate a Newton-Raphson solver.
+    Data<bool> d_draw_triangles; ///< Draw the triangles on which the traction will be applied
 
     // Outputs
     Data<VecDeriv> d_nodal_forces; /// Tractive force for each nodes of the surface on which we are applying the traction

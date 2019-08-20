@@ -39,6 +39,10 @@ TractionForce<DataTypes>::TractionForce()
             "number_of_steps_before_increment",
             "Number of time steps to wait before adding an increment. "
             "This can be used to simulate Newton-Raphson solving process where the time steps are the Newton iterations."))
+    , d_draw_triangles(initData(&d_draw_triangles,
+            (bool) true,
+            "draw_triangles",
+            "Draw the triangles on which the traction will be applied"))
 
     // Outputs
     , d_nodal_forces(initData(&d_nodal_forces,
@@ -223,13 +227,21 @@ void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vpar
     using Color = sofa::core::visual::DrawTool::RGBAColor;
     using Vector3 = sofa::core::visual::DrawTool::Vector3;
 
-    if (! vparams->displayFlags().getShowForceFields())
+    const auto & draw_triangles = d_draw_triangles.getValue();
+
+    if (! vparams->displayFlags().getShowForceFields() )
         return;
 
     const auto & triangles = d_triangles.getValue();
     const auto positions = d_mechanicalState.get()->readPositions();
 
-    sofa::helper::vector<Vector3> points (triangles.size() * 2);
+    sofa::helper::vector<Vector3> triangles_points;
+    sofa::helper::vector<Vector3> line_points;
+    if (draw_triangles) {
+        triangles_points.resize(triangles.size() * 3);
+    }
+
+    line_points.resize(triangles.size() * 2);
 
     for (size_t i = 0; i < triangles.size(); ++i) {
         const auto & triangle_node_indices = triangles[i];
@@ -245,11 +257,24 @@ void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vpar
         const auto n = triangle.normal();
         const Vector3 normal(n[0], n[1], n[2]);
 
-        points[2*i] = center;
-        points[2*i + 1] = center + normal;
+        if (draw_triangles) {
+            const auto pp1 = c + (p1-c)*0.666667 + n*0.001;
+            const auto pp2 = c + (p2-c)*0.666667 + n*0.001;
+            const auto pp3 = c + (p3-c)*0.666667 + n*0.001;
+            triangles_points[3 * i + 0] = {pp1[0], pp1[1], pp1[2]};
+            triangles_points[3 * i + 1] = {pp2[0], pp2[1], pp2[2]};
+            triangles_points[3 * i + 2] = {pp3[0], pp3[1], pp3[2]};
+        }
+
+        line_points[2 * i] = center;
+        line_points[2 * i + 1] = center + normal;
     }
 
-    vparams->drawTool()->drawLines(points, 1.f, Color(1, 0, 0, 1));
+    if (draw_triangles) {
+        vparams->drawTool()->drawTriangles(triangles_points, Color(1, 0, 0, 0.5));
+    }
+
+    vparams->drawTool()->drawLines(line_points, 1.f, Color(0, 1, 0, 1));
 }
 
 
