@@ -184,12 +184,15 @@ protected:
     Data< UNSIGNED_INTEGER_TYPE > d_number_of_subdivisions;
     Data< bool > d_linear_strain;
     Data< bool > d_corotated;
+    Data< Real > d_ignore_volume_threshold;
     Data< sofa::helper::OptionsGroup > d_integration_method;
     Link<BaseMeshTopology>   d_topology_container;
     Link<SparseGridTopology> d_integration_grid;
 
 private:
     bool recompute_compute_tangent_stiffness = false;
+    std::vector<UNSIGNED_INTEGER_TYPE> p_hexahedrons_indices;
+    std::vector<UNSIGNED_INTEGER_TYPE> p_ignored_hexahedrons_indices;
     std::vector<Matrix<24, 24>> p_stiffness_matrices;
     std::vector<std::vector<GaussNode>> p_quadrature_nodes;
     std::vector<Mat33> p_initial_rotation;

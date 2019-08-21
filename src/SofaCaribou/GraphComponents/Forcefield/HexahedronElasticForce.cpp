@@ -168,6 +168,11 @@ HexahedronElasticForce::HexahedronElasticForce()
         bool(true), "corotated",
         "Whether or not to use corotated elements for the strain computation.",
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+, d_ignore_volume_threshold(initData(&d_ignore_volume_threshold,
+        Real(0.),  "ignore_volume_threshold",
+        "Ignore hexahedrons for which the ratio of the volume inside the boundary against the hexa's volume is "
+              "lower than the given threshold",
+        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_integration_method(initData(&d_integration_method,
         "integration_method",
         R"(
@@ -261,9 +266,6 @@ void HexahedronElasticForce::reinit()
 
     const sofa::helper::ReadAccessor<Data<VecCoord>> X = state->readRestPositions();
 
-    p_stiffness_matrices.resize(0);
-    p_quadrature_nodes.resize(0);
-
     // Make sure every node of the hexahedrons have its coordinates inside the mechanical state vector
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(hexa_id);
@@ -278,26 +280,19 @@ void HexahedronElasticForce::reinit()
         }
     }
 
-    p_initial_rotation.resize(topology->getNbHexahedra(), Mat33::Identity());
-    p_current_rotation.resize(topology->getNbHexahedra(), Mat33::Identity());
-
-    // Initialize the initial frame of each hexahedron
-    if (d_corotated.getValue()) {
-        if (not d_linear_strain.getValue()) {
-            msg_warning() << "The corotated method won't be computed since nonlinear strain is used.";
-        } else {
-            for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-                Hexahedron hexa = hexahedron(hexa_id, X);
-                p_initial_rotation[hexa_id] = hexa.frame();
-            }
-        }
-    }
-
     // Gather the integration points for each hexahedron
+    const Real volume_ratio_threshold = d_ignore_volume_threshold.getValue();
+    std::vector<std::vector<GaussNode>> quadrature_nodes(topology->getNbHexahedra());
     p_quadrature_nodes.resize(topology->getNbHexahedra());
+    p_hexahedrons_indices.resize(topology->getNbHexahedra());
+    p_ignored_hexahedrons_indices.resize(topology->getNbHexahedra());
+
+    UNSIGNED_INTEGER_TYPE next_hexahedron_id = 0;
+    UNSIGNED_INTEGER_TYPE next_ignored_hexahedron_id = 0;
+    std::map<float, UNSIGNED_INTEGER_TYPE> volume_ratios;
+
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         auto   hexa = hexahedron(hexa_id, X);
-        auto & quadrature_nodes = p_quadrature_nodes[hexa_id];
 
         // List of pair (Xi, w) where Xi is the local coordinates vector of the gauss point and w is its weight.
         std::vector<std::pair<Vec3, Real>> gauss_points;
@@ -339,27 +334,95 @@ void HexahedronElasticForce::reinit()
         }
 
         // At this point, we have all the gauss points of the hexa and their corrected weight.
-        // We now compute constant values required by the simulation for each of them
-        for (const auto & gauss_point : gauss_points) {
-            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-            const auto J = hexa.jacobian(gauss_point.first);
-            const Mat33 Jinv = J.inverse();
-            const auto detJ = J.determinant();
+        // 1. Ignore hexahedrons for which their internal volume ratio is lower than the given threshold
+        bool ignore_hexahedron = false;
+        if (integration_method() != IntegrationMethod::Regular) {
+            Real full_volume = 0.;
+            Real true_volume = 0.;
 
-            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const Matrix<NumberOfNodes, 3, Eigen::RowMajor> dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_point.first).transpose()).transpose();
+            for (std::size_t gauss_node_id = 0;
+                 gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
+                const auto &gauss_node = MapVector<3>(Hexahedron::gauss_nodes[gauss_node_id]);
+                const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
+                const auto J = hexa.jacobian(gauss_node);
+                const auto detJ = J.determinant();
+                full_volume += gauss_weight*detJ;
+            }
 
-            quadrature_nodes.push_back(GaussNode({
-                gauss_point.second,
-                detJ,
-                dN_dx,
-                Mat33::Identity()
-            }));
+            for (const auto & gauss_point : gauss_points) {
+                const auto J = hexa.jacobian(gauss_point.first);
+                const auto &gauss_weight = gauss_point.second;
+                const auto detJ = J.determinant();
+                true_volume += gauss_weight*detJ;
+            }
+
+            const auto volume_ratio = (true_volume / full_volume);
+            ignore_hexahedron = (volume_ratio < volume_ratio_threshold);
+            if (volume_ratios.find(volume_ratio) == volume_ratios.end())
+                volume_ratios[volume_ratio] = 1;
+            else
+                volume_ratios[volume_ratio] += 1;
+        } else if (volume_ratio_threshold > 0) {
+            msg_warning() << "Giving a volume threshold value has no effect when using the regular integration method.";
+        }
+
+        // 2. We now compute constant values required by the simulation for each of them
+        if (not ignore_hexahedron) {
+            auto &hexa_quadrature_nodes = p_quadrature_nodes[next_hexahedron_id];
+            for (const auto &gauss_point : gauss_points) {
+                // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
+                const auto J = hexa.jacobian(gauss_point.first);
+                const Mat33 Jinv = J.inverse();
+                const auto detJ = J.determinant();
+
+                // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
+                const Matrix<NumberOfNodes, 3, Eigen::RowMajor> dN_dx = (Jinv.transpose() * Hexahedron::dL(
+                    gauss_point.first).transpose()).transpose();
+
+                hexa_quadrature_nodes.push_back(GaussNode({
+                                                              gauss_point.second,
+                                                              detJ,
+                                                              dN_dx,
+                                                              Mat33::Identity()
+                                                          }));
+            }
+
+            p_hexahedrons_indices[next_hexahedron_id] = hexa_id;
+            ++next_hexahedron_id;
+        } else {
+            p_ignored_hexahedrons_indices[next_ignored_hexahedron_id] = hexa_id;
+            ++next_ignored_hexahedron_id;
         }
     }
 
+    p_quadrature_nodes.resize(next_hexahedron_id);
+    p_hexahedrons_indices.resize(next_hexahedron_id);
+    p_ignored_hexahedrons_indices.resize(next_ignored_hexahedron_id);
+
+    if (integration_method() != IntegrationMethod::Regular) {
+        for (const auto &p : volume_ratios) {
+            msg_info() << p.second << " hexahedrons with a volume ratio of " << p.first;
+        }
+        msg_info() << p_hexahedrons_indices.size() << " hexahedrons ("
+                   << p_ignored_hexahedrons_indices.size() << " ignored on a total of " << topology->getNbHexahedra() << ")";
+    }
+
     // Initialize the stiffness matrix of every hexahedrons
-    p_stiffness_matrices.resize(topology->getNbHexahedra());
+    p_stiffness_matrices.resize(p_hexahedrons_indices.size());
+    p_initial_rotation.resize(p_hexahedrons_indices.size(), Mat33::Identity());
+    p_current_rotation.resize(p_hexahedrons_indices.size(), Mat33::Identity());
+
+    // Initialize the initial frame of each hexahedron
+    if (d_corotated.getValue()) {
+        if (not d_linear_strain.getValue()) {
+            msg_warning() << "The corotated method won't be computed since nonlinear strain is used.";
+        } else {
+            for (const auto & hexa_id : p_hexahedrons_indices) {
+                Hexahedron hexa = hexahedron(hexa_id, X);
+                p_initial_rotation[hexa_id] = hexa.frame();
+            }
+        }
+    }
 
 #ifdef CARIBOU_WITH_OPENMP
     msg_info() << "Using " << omp_get_num_threads() << " threads for computations.";
@@ -403,13 +466,14 @@ void HexahedronElasticForce::addForce(
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
         #pragma omp parallel for default(none) shared(topology, current_rotation, corotated, x, x0, f)
-        for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-            const Hexahedron hexa = hexahedron(hexa_id, x);
+        for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+            const auto & hexa_id = p_hexahedrons_indices[index];
+            Hexahedron hexa = hexahedron(hexa_id, x);
 
-            const Mat33 & R0 = initial_rotation[hexa_id];
+            const Mat33 & R0 = initial_rotation[index];
             const Mat33 R0t = R0.transpose();
 
-            Mat33 & R = current_rotation[hexa_id];
+            Mat33 & R = current_rotation[index];
 
 
             // Extract the hexahedron's frame
@@ -433,7 +497,7 @@ void HexahedronElasticForce::addForce(
             }
 
             // Compute the force vector
-            const auto &K = p_stiffness_matrices[hexa_id];
+            const auto &K = p_stiffness_matrices[index];
             Vec24 F = K * U;
 
             // Write the forces into the output vector
@@ -463,8 +527,9 @@ void HexahedronElasticForce::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
-        #pragma omp parallel for default(none) shared(topology, current_rotation, corotated, x, x0, f, l, m)
-        for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+    #pragma omp parallel for default(none) shared(topology, current_rotation, corotated, x, x0, f, l, m)
+        for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+            const auto & hexa_id = p_hexahedrons_indices[index];
             const auto &hexa = topology->getHexahedron(hexa_id);
 
             Matrix<8, 3, Eigen::RowMajor> U;
@@ -478,7 +543,7 @@ void HexahedronElasticForce::addForce(
 
             Matrix<8, 3, Eigen::RowMajor> forces;
             forces.fill(0);
-            for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
+            for (GaussNode &gauss_node : p_quadrature_nodes[index]) {
 
                 // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
                 const auto detJ = gauss_node.jacobian_determinant;
@@ -536,7 +601,7 @@ void HexahedronElasticForce::addDForce(
     if (!topology or !state)
         return;
 
-    if (p_stiffness_matrices.size() != topology->getNbHexahedra())
+    if (p_stiffness_matrices.size() != p_hexahedrons_indices.size())
         return;
 
     if (recompute_compute_tangent_stiffness)
@@ -549,9 +614,10 @@ void HexahedronElasticForce::addDForce(
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
     #pragma omp parallel for default (none) shared (topology, current_rotation, dx, df, kFactor)
-    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+    for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+        const auto & hexa_id = p_hexahedrons_indices[index];
 
-        const Mat33 & R  = current_rotation[hexa_id];
+        const Mat33 & R  = current_rotation[index];
         const Mat33 & Rt = R.transpose();
 
         // Gather the displacement vector
@@ -567,7 +633,7 @@ void HexahedronElasticForce::addDForce(
         }
 
         // Compute the force vector
-        const auto & K = p_stiffness_matrices[hexa_id];
+        const auto & K = p_stiffness_matrices[index];
         Vec24 F = K*U*kFactor;
 
         // Write the forces into the output vector
@@ -606,12 +672,13 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addKToMatrix");
 
     #pragma omp parallel for default (none) shared (topology, current_rotation, matrix, kFact)
-    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+    for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+        const auto & hexa_id = p_hexahedrons_indices[index];
         const auto & node_indices = topology->getHexahedron(hexa_id);
-        const Mat33 & R  = current_rotation[hexa_id];
+        const Mat33 & R  = current_rotation[index];
         const Mat33   Rt = R.transpose();
 
-        const auto & K = p_stiffness_matrices[hexa_id];
+        const auto & K = p_stiffness_matrices[index];
 
         for (size_t i = 0; i < 8; ++i) {
             for (size_t j = 0; j < 8; ++j) {
@@ -647,7 +714,7 @@ void HexahedronElasticForce::compute_K()
     if (!topology)
         return;
 
-    if (p_stiffness_matrices.size() != topology->getNbHexahedra())
+    if (p_stiffness_matrices.size() != p_hexahedrons_indices.size())
         return;
 
     const Real youngModulus = d_youngModulus.getValue();
@@ -659,12 +726,11 @@ void HexahedronElasticForce::compute_K()
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::compute_k");
 
     #pragma omp parallel for default (none) shared (topology, l, m)
-    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
-        const auto I = Matrix<3,3>::Identity();
-        auto & K = p_stiffness_matrices[hexa_id];
+    for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+        auto & K = p_stiffness_matrices[index];
         K.fill(0.);
 
-        for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
+        for (GaussNode &gauss_node : p_quadrature_nodes[index]) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const Real detJ = gauss_node.jacobian_determinant;
 
@@ -746,12 +812,13 @@ const Eigen::SparseMatrix<HexahedronElasticForce::Real> & HexahedronElasticForce
 
             const std::vector<Mat33> &current_rotation = p_current_rotation;
 
-            for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+            for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+                const auto & hexa_id = p_hexahedrons_indices[index];
                 const auto &node_indices = topology->getHexahedron(hexa_id);
-                const Mat33 &R = current_rotation[hexa_id];
+                const Mat33 &R = current_rotation[index];
                 const Mat33 Rt = R.transpose();
 
-                const auto &Ke = p_stiffness_matrices[hexa_id];
+                const auto &Ke = p_stiffness_matrices[index];
 
                 for (size_t i = 0; i < 8; ++i) {
                     for (size_t j = 0; j < 8; ++j) {
@@ -839,6 +906,8 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
     if (!vparams->displayFlags().getShowForceFields())
         return;
 
+    vparams->drawTool()->saveLastState();
+
     if (vparams->displayFlags().getShowWireFrame())
         vparams->drawTool()->setPolygonMode(0,true);
 
@@ -846,9 +915,9 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
 
     const VecCoord& x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
 
-
-    for (auto node_indices : topology->getHexahedra()) {
-        std::vector< sofa::defaulttype::Vector3 > points[6];
+    std::vector< sofa::defaulttype::Vector3 > points[6];
+    for (const auto & hexa_id : p_hexahedrons_indices) {
+        const auto & node_indices = topology->getHexahedron(hexa_id);
 
         auto a = node_indices[0];
         auto b = node_indices[1];
@@ -914,17 +983,98 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
         points[5].push_back(pb);
         points[5].push_back(pg);
         points[5].push_back(pf);
-
-
-        vparams->drawTool()->setLightingEnabled(false);
-        vparams->drawTool()->drawTriangles(points[0], sofa::defaulttype::Vec<4,float>(0.7f,0.7f,0.1f,1.0f));
-        vparams->drawTool()->drawTriangles(points[1], sofa::defaulttype::Vec<4,float>(0.7f,0.0f,0.0f,1.0f));
-        vparams->drawTool()->drawTriangles(points[2], sofa::defaulttype::Vec<4,float>(0.0f,0.7f,0.0f,1.0f));
-        vparams->drawTool()->drawTriangles(points[3], sofa::defaulttype::Vec<4,float>(0.0f,0.0f,0.7f,1.0f));
-        vparams->drawTool()->drawTriangles(points[4], sofa::defaulttype::Vec<4,float>(0.1f,0.7f,0.7f,1.0f));
-        vparams->drawTool()->drawTriangles(points[5], sofa::defaulttype::Vec<4,float>(0.7f,0.1f,0.7f,1.0f));
-
     }
+
+    vparams->drawTool()->drawTriangles(points[0], sofa::defaulttype::Vec<4,float>(0.7f,0.7f,0.1f,1.0f));
+    vparams->drawTool()->drawTriangles(points[1], sofa::defaulttype::Vec<4,float>(0.7f,0.0f,0.0f,1.0f));
+    vparams->drawTool()->drawTriangles(points[2], sofa::defaulttype::Vec<4,float>(0.0f,0.7f,0.0f,1.0f));
+    vparams->drawTool()->drawTriangles(points[3], sofa::defaulttype::Vec<4,float>(0.0f,0.0f,0.7f,1.0f));
+    vparams->drawTool()->drawTriangles(points[4], sofa::defaulttype::Vec<4,float>(0.1f,0.7f,0.7f,1.0f));
+    vparams->drawTool()->drawTriangles(points[5], sofa::defaulttype::Vec<4,float>(0.7f,0.1f,0.7f,1.0f));
+
+
+    std::vector< sofa::defaulttype::Vector3 > ignored_points[6];
+    for (const auto & hexa_id : p_ignored_hexahedrons_indices) {
+        const auto & node_indices = topology->getHexahedron(hexa_id);
+
+        auto a = node_indices[0];
+        auto b = node_indices[1];
+        auto d = node_indices[3];
+        auto c = node_indices[2];
+        auto e = node_indices[4];
+        auto f = node_indices[5];
+        auto h = node_indices[7];
+        auto g = node_indices[6];
+
+
+        Coord center = (x[a]+x[b]+x[c]+x[d]+x[e]+x[g]+x[f]+x[h])*0.125;
+        Real percentage = 0.15;
+        Coord pa = x[a]-(x[a]-center)*percentage;
+        Coord pb = x[b]-(x[b]-center)*percentage;
+        Coord pc = x[c]-(x[c]-center)*percentage;
+        Coord pd = x[d]-(x[d]-center)*percentage;
+        Coord pe = x[e]-(x[e]-center)*percentage;
+        Coord pf = x[f]-(x[f]-center)*percentage;
+        Coord pg = x[g]-(x[g]-center)*percentage;
+        Coord ph = x[h]-(x[h]-center)*percentage;
+
+
+
+        ignored_points[0].push_back(pa);
+        ignored_points[0].push_back(pb);
+        ignored_points[0].push_back(pc);
+        ignored_points[0].push_back(pa);
+        ignored_points[0].push_back(pc);
+        ignored_points[0].push_back(pd);
+
+        ignored_points[1].push_back(pe);
+        ignored_points[1].push_back(pf);
+        ignored_points[1].push_back(pg);
+        ignored_points[1].push_back(pe);
+        ignored_points[1].push_back(pg);
+        ignored_points[1].push_back(ph);
+
+        ignored_points[2].push_back(pc);
+        ignored_points[2].push_back(pd);
+        ignored_points[2].push_back(ph);
+        ignored_points[2].push_back(pc);
+        ignored_points[2].push_back(ph);
+        ignored_points[2].push_back(pg);
+
+        ignored_points[3].push_back(pa);
+        ignored_points[3].push_back(pb);
+        ignored_points[3].push_back(pf);
+        ignored_points[3].push_back(pa);
+        ignored_points[3].push_back(pf);
+        ignored_points[3].push_back(pe);
+
+        ignored_points[4].push_back(pa);
+        ignored_points[4].push_back(pd);
+        ignored_points[4].push_back(ph);
+        ignored_points[4].push_back(pa);
+        ignored_points[4].push_back(ph);
+        ignored_points[4].push_back(pe);
+
+        ignored_points[5].push_back(pb);
+        ignored_points[5].push_back(pc);
+        ignored_points[5].push_back(pg);
+        ignored_points[5].push_back(pb);
+        ignored_points[5].push_back(pg);
+        ignored_points[5].push_back(pf);
+    }
+
+    vparams->drawTool()->drawTriangles(ignored_points[0], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[1], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[2], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[3], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[4], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[5], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
+
+
+    if (vparams->displayFlags().getShowWireFrame())
+        vparams->drawTool()->setPolygonMode(0,false);
+
+    vparams->drawTool()->restoreLastState();
 }
 
 
