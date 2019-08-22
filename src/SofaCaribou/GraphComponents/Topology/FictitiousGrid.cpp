@@ -1,6 +1,8 @@
 #include <sofa/core/ObjectFactory.h>
 #include "FictitiousGrid.inl"
 
+#include <Caribou/Geometry/Triangle.h>
+
 namespace SofaCaribou::GraphComponents::topology {
 
 using sofa::defaulttype::Vec2Types;
@@ -86,8 +88,21 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
             nodes[i] = p;
         }
 
+        caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
+
         // Get all the cells enclosing the three nodes of the triangles
         const auto enclosing_cells = p_grid->cells_enclosing(nodes[0], nodes[1], nodes[2]);
+        for (const auto & cell_index : enclosing_cells) {
+            const auto cell = p_grid->cell_at(cell_index);
+            if (cell.intersects(t)) {
+                p_cells_types[cell_index] = Type::Boundary;
+
+                const auto nodes_indices = p_grid->node_indices_of(cell_index);
+                for (const auto & node_index : nodes_indices) {
+                    p_node_types[node_index] = Type::Boundary;
+                }
+            }
+        }
     }
 }
 

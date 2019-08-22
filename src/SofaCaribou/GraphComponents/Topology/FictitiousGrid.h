@@ -58,7 +58,7 @@ public:
     using SofaVecCoord = sofa::helper::vector<Coord>;
     using ElementId = sofa::core::topology::Topology::index_type;
     using VecElementId = sofa::helper::vector<ElementId>;
-    using Triange = sofa::core::topology::BaseMeshTopology::Triangle;
+    using Triangle = sofa::core::topology::BaseMeshTopology::Triangle;
     using Edge = sofa::core::topology::BaseMeshTopology::Edge;
 
     // Grid data aliases
@@ -125,7 +125,7 @@ private:
 
     Data< SofaVecCoord > d_surface_positions;
     Data<sofa::helper::vector<Edge> > d_surface_edges; ///< List of edges (ex: [e1p1 e1p2 e2p1 e2p2 ...]).
-    Data<sofa::helper::vector<Triange> > d_surface_triangles; ///< List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...]).
+    Data<sofa::helper::vector<Triangle> > d_surface_triangles; ///< List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...]).
 
     std::unique_ptr<GridType> p_grid;
     f_implicit_test_callback_t p_implicit_test_callback;

@@ -82,7 +82,7 @@ void FictitiousGrid<DataTypes>::init() {
                         msg_info() << "Automatically found " << topology->getNbEdges() << " edges in the container '"
                                    << topology->getPathName() << "'.";
                     } else {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<Triange >>> w_triangles = d_surface_triangles;
+                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<Triangle >>> w_triangles = d_surface_triangles;
                         for (unsigned int i = 0; i < topology->getNbTriangles(); ++i) {
                             w_triangles.push_back(topology->getTriangle(i));
                         }
@@ -105,7 +105,7 @@ void FictitiousGrid<DataTypes>::init() {
                     }
                 } else {
                     if (topology->getNbTriangles() > 0) {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<Triange >>> w_triangles = d_surface_triangles;
+                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<Triangle >>> w_triangles = d_surface_triangles;
                         for (unsigned int i = 0; i < topology->getNbTriangles(); ++i) {
                             w_triangles.push_back(topology->getTriangle(i));
                         }
@@ -198,6 +198,9 @@ void FictitiousGrid<DataTypes>::init() {
     // Create the grid
     create_grid();
 
+    p_node_types.resize(p_grid->number_of_nodes(), Type::Undefined);
+    p_cells_types.resize(p_grid->number_of_cells(), Type::Undefined);
+
     if (d_use_implicit_surface.getValue() and p_implicit_test_callback) {
         compute_cell_types_from_implicit_surface();
     } else {
@@ -215,9 +218,6 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
     if (!p_implicit_test_callback) {
         return;
     }
-
-    p_node_types.resize(p_grid->number_of_nodes(), Type::Undefined);
-    p_cells_types.resize(p_grid->number_of_cells(), Type::Undefined);
 
     const auto number_of_nodes = p_grid->number_of_nodes();
     const auto number_of_cells = p_grid->number_of_cells();
