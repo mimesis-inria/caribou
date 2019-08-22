@@ -57,7 +57,7 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
     auto
     node(UNSIGNED_INTEGER_TYPE index) const
     {
-        return p_nodes.row(index).transpose();
+        return WorldCoordinates(p_nodes.row(index));
     }
 
     /** Get the Node at given index */
@@ -65,7 +65,7 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
     auto
     node(UNSIGNED_INTEGER_TYPE index)
     {
-        return p_nodes.row(index).transpose();
+        return WorldCoordinates(p_nodes.row(index));
     }
 
     /** Get a reference to the set of nodes */

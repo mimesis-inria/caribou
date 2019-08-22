@@ -4,7 +4,7 @@
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/defaulttype/Vec.h>
 #include <sofa/defaulttype/VecTypes.h>
-#include <sofa/core/topology/BaseTopology.h>
+#include <sofa/core/topology/BaseMeshTopology.h>
 
 #include <Caribou/Algebra/Vector.h>
 #include <Caribou/Geometry/Quad.h>
@@ -58,6 +58,8 @@ public:
     using SofaVecCoord = sofa::helper::vector<Coord>;
     using ElementId = sofa::core::topology::Topology::index_type;
     using VecElementId = sofa::helper::vector<ElementId>;
+    using Triange = sofa::core::topology::BaseMeshTopology::Triangle;
+    using Edge = sofa::core::topology::BaseMeshTopology::Edge;
 
     // Grid data aliases
     using GridType = caribou::topology::Grid<Dimension>;
@@ -69,13 +71,14 @@ public:
     using WorldCoordinates = typename GridType::WorldCoordinates;
     using GridCoordinates = typename GridType::GridCoordinates;
     using CellSet = typename GridType::CellSet;
+    using CellElement = typename GridType::Element;
 
     // FictitiousGrid aliases
     enum class Type {
-        Undefined,
-        Inside,
-        Outside,
-        Boundary
+        Undefined = -1,
+        Inside = 0,
+        Outside = 1,
+        Boundary = 2
     };
 
     using f_implicit_test_callback_t = std::function<float(const WorldCoordinates &)>;
@@ -88,7 +91,8 @@ public:
     void init() override;
     void draw(const sofa::core::visual::VisualParams* vparams) override;
     void create_grid();
-    void compute_cell_types();
+    void compute_cell_types_from_implicit_surface();
+    void compute_cell_types_from_explicit_surface();
     std::pair<Coord, Coord> compute_bbox_from(const SofaVecCoord & positions);
 
     /**
@@ -120,16 +124,21 @@ private:
     Data<bool> d_use_implicit_surface;
 
     Data< SofaVecCoord > d_surface_positions;
-    Link<sofa::core::topology::TopologyContainer> d_surface_topology_container;
+    Data<sofa::helper::vector<Edge> > d_surface_edges; ///< List of edges (ex: [e1p1 e1p2 e2p1 e2p2 ...]).
+    Data<sofa::helper::vector<Triange> > d_surface_triangles; ///< List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...]).
 
     std::unique_ptr<GridType> p_grid;
     f_implicit_test_callback_t p_implicit_test_callback;
 
-    std::vector<Type> p_node_type;
+    std::vector<Type> p_node_types; ///< Types of the complete regular grid's nodes
+    std::vector<Type> p_cells_types; ///< Types of the complete regular grid's cells
 };
 
 template<> void FictitiousGrid<Vec2Types>::create_grid ();
 template<> void FictitiousGrid<Vec3Types>::create_grid ();
+
+template<> void FictitiousGrid<Vec2Types>::compute_cell_types_from_explicit_surface ();
+template<> void FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface ();
 
 extern template class FictitiousGrid<Vec2Types>;
 extern template class FictitiousGrid<Vec3Types>;

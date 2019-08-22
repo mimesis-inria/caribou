@@ -136,7 +136,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
 
         if (not converged) {
             msg_info() << "Newton iteration #" << n_it + 1 << ": R = " << R << ", R0 = " << R0 << " |du| = " << dx_norm
-                       << " |u| = " << dx_norm;
+                       << " |u| = " << du_norm;
         }
         sofa::helper::AdvancedTimer::valSet("residual", R);
         sofa::helper::AdvancedTimer::valSet("correction", dx_norm);

@@ -15,11 +15,15 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
 {
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
 
+    using Base = internal::BaseSegment<Dim, CanonicalElementType, Segment<Dim, CanonicalElementType>>;
+
     using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
     using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
 
     template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+
+    using NodesContainer = typename Base::template NodesContainer<NumberOfNodes>;
 
     static_assert(Dim == 1 or Dim == 2 or Dim == 3, "Only 1D, 2D and 3D segments are supported.");
 
@@ -107,7 +111,7 @@ private:
         p_nodes.row(index) = last_node;
     }
 private:
-    Matrix<NumberOfNodes, Dim> p_nodes;
+    NodesContainer p_nodes;
 };
 
 } // namespace caribou::geometry

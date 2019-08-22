@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <Caribou/Topology/Grid/Grid.h>
+#include <Caribou/Geometry/Hexahedron.h>
 #include <Eigen/Core>
 
 template<typename T>
@@ -25,6 +26,14 @@ void ASSERT_ELEMENTS_EQ(const Element & e1, const Element & e2) {
     }
 }
 
+template <typename Element1, typename Element2>
+void ASSERT_ELEMENTS_EQ(const Element1 & e1, const Element2 & e2) {
+    static_assert(caribou::traits<Element1>::NumberOfNodes == caribou::traits<Element2>::NumberOfNodes);
+    for (std::size_t i = 0; i < Element1::NumberOfNodes; ++i) {
+        ASSERT_NODE_EQ(e1.node(i), e2.node(i));
+    }
+}
+
 template <typename Element, typename... Elements>
 void ASSERT_ELEMENTS_EQ(const Element & e1, const Element & e2, Elements... elements) {
     ASSERT_ELEMENTS_EQ(e1, e2);
@@ -34,6 +43,7 @@ void ASSERT_ELEMENTS_EQ(const Element & e1, const Element & e2, Elements... elem
 TEST(Topology, Grid1D) {
     using namespace caribou::topology;
     using Grid = Grid<1>;
+    using Edge = Grid::Element;
     using WorldCoordinates = Grid::WorldCoordinates;
     using Subdivisions = Grid::Subdivisions;
     using Dimensions = Grid::Dimensions;
@@ -77,8 +87,15 @@ TEST(Topology, Grid1D) {
 
     // Edge queries
     ASSERT_EQ(grid.number_of_edges(), (unsigned) 2);
-    ASSERT_ELEMENTS_EQ(grid.edge(0), Grid::Edge(0.25, 50.25));
-    ASSERT_ELEMENTS_EQ(grid.edge(1), Grid::Edge(50.25, 100.25));
+    ASSERT_ELEMENTS_EQ(grid.edge(0), Grid::Edge(WorldCoordinates {0.25}, WorldCoordinates{50.25}));
+    ASSERT_ELEMENTS_EQ(grid.edge(1), Grid::Edge(WorldCoordinates{50.25}, WorldCoordinates{100.25}));
+
+    // Node indices
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < grid.number_of_cells(); ++i) {
+        const auto node_indices = grid.node_indices_of((Grid::CellIndex) i);
+        const Edge e (grid.node(node_indices[0]), grid.node(node_indices[1]));
+        ASSERT_ELEMENTS_EQ(e, grid.cell_at((Grid::CellIndex) i));
+    }
 }
 
 TEST(Topology, Grid2D) {
@@ -91,6 +108,7 @@ TEST(Topology, Grid2D) {
     using GridCoordinates = Grid::GridCoordinates;
     using CellIndex = Grid::CellIndex;
     using Edge = Grid::Edge;
+    using Quad = Grid::Element;
 
     Grid grid(WorldCoordinates {0.25, 0.5}, Subdivisions {2, 2}, Dimensions {100, 100});
 
@@ -157,6 +175,12 @@ TEST(Topology, Grid2D) {
     ASSERT_ELEMENTS_EQ(grid.edge(10), Edge (grid.node(6), grid.node(7)));
     ASSERT_ELEMENTS_EQ(grid.edge(11), Edge (grid.node(7), grid.node(8)));
 
+    // Node indices
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < grid.number_of_cells(); ++i) {
+        const auto node_indices = grid.node_indices_of((Grid::CellIndex) i);
+        const Quad q (grid.node(node_indices[0]), grid.node(node_indices[1]), grid.node(node_indices[2]), grid.node(node_indices[3]));
+        ASSERT_ELEMENTS_EQ(q, grid.cell_at((Grid::CellIndex) i));
+    }
 }
 
 TEST(Topology, Grid3D) {
@@ -169,6 +193,7 @@ TEST(Topology, Grid3D) {
     using GridCoordinates = Grid::GridCoordinates;
     using CellIndex = Grid::CellIndex;
     using Edge = Grid::Edge;
+    using Hexa = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
 
     Grid grid(WorldCoordinates {0.25, 0.5, 0.75}, Subdivisions {2, 2, 2}, Dimensions {100, 100, 100});
 
@@ -284,6 +309,15 @@ TEST(Topology, Grid3D) {
     ASSERT_ELEMENTS_EQ(grid.edge(51), Edge (grid.node(23), grid.node(26)));
     ASSERT_ELEMENTS_EQ(grid.edge(52), Edge (grid.node(24), grid.node(25)));
     ASSERT_ELEMENTS_EQ(grid.edge(53), Edge (grid.node(25), grid.node(26)));
+
+    // Node indices
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < grid.number_of_cells(); ++i) {
+        const auto node_indices = grid.node_indices_of((Grid::CellIndex) i);
+        const Hexa h (
+            grid.node(node_indices[0]), grid.node(node_indices[1]), grid.node(node_indices[2]), grid.node(node_indices[3]),
+            grid.node(node_indices[4]), grid.node(node_indices[5]), grid.node(node_indices[6]), grid.node(node_indices[7]));
+        ASSERT_ELEMENTS_EQ(h, grid.cell_at((Grid::CellIndex) i));
+    }
 }
 
 int main(int argc, char **argv) {

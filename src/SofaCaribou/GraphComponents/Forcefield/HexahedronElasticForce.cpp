@@ -717,6 +717,7 @@ void HexahedronElasticForce::compute_K()
     if (p_stiffness_matrices.size() != p_hexahedrons_indices.size())
         return;
 
+    static const auto I = Matrix<3,3, Eigen::RowMajor>::Identity();
     const Real youngModulus = d_youngModulus.getValue();
     const Real poissonRatio = d_poissonRatio.getValue();
 

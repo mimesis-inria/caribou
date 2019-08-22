@@ -33,8 +33,8 @@ struct BaseGrid
 
     using GridType = GridType_;
 
-    using Int = signed long int;
-    using UInt = size_t;
+    using Int = INTEGER_TYPE;
+    using UInt = UNSIGNED_INTEGER_TYPE;
     using Float = FLOATING_POINT_TYPE;
 
     using VecFloat = Eigen::Matrix<Float, Dimension, 1>;
@@ -136,6 +136,32 @@ struct BaseGrid
         return m_size;
     }
 
+    /** Get the node index at a given grid location. */
+    inline NodeIndex
+    node_index_at(const GridCoordinates & coordinates) const noexcept
+    {
+        const auto & n = m_number_of_subdivisions;
+        if CONSTEXPR_IF (Dimension == 1) {
+            return coordinates[0];
+        } else if CONSTEXPR_IF (Dimension == 2) {
+            const auto & i = coordinates[0];
+            const auto & j = coordinates[1];
+
+            const auto &nx = n[0]+1;
+
+            return j * nx + i;
+        } else { // Dimension == 3
+            const auto & i = coordinates[0];
+            const auto & j = coordinates[1];
+            const auto & k = coordinates[2];
+
+            const auto &nx = n[0]+1;
+            const auto & ny = n[1]+1;
+
+            return k*ny*nx + j*nx + i;
+        }
+    }
+
     /** Get the cell index at a given grid location. */
     inline CellIndex
     cell_index_at(const GridCoordinates & coordinates) const noexcept
@@ -209,6 +235,14 @@ struct BaseGrid
         auto a = ((coordinates - m_anchor_position).array() / H().array()).matrix(). template cast<Int>();
 
         return a;
+    }
+
+    /** Get the node location in world coordinates at grid coordinates */
+    inline WorldCoordinates
+    node(const GridCoordinates & coordinates) const noexcept
+    {
+        const auto & n = m_number_of_subdivisions;
+        return m_anchor_position + coordinates*H();
     }
 
     /** Get the node location in world coordinates at node index */
@@ -292,7 +326,7 @@ struct BaseGrid
         // @todo (jnbrunet2000@gmail.com): This test should be using inverse mapping function from a regular
         //  hexahedron geometric element defined in the geometry module.
 
-        const auto distance_to_anchor = ((coordinates - m_anchor_position).array() / size().array()).matrix();
+        const VecFloat distance_to_anchor = ((coordinates - m_anchor_position).array() / size().array()).matrix();
 
         if (distance_to_anchor[0] < 0 || distance_to_anchor[0] > 1)
             return false;
@@ -320,10 +354,10 @@ struct BaseGrid
      * */
     template<typename ...WorldCoordinatesTypes>
     inline CellSet
-    cells_enclosing(WorldCoordinates && first_position, WorldCoordinatesTypes && ... remaining_positions) const noexcept
+    cells_enclosing(const WorldCoordinates & first_position, WorldCoordinatesTypes && ... remaining_positions) const noexcept
     {
         std::array<WorldCoordinates , sizeof...(remaining_positions)+1> positions {{
-            std::forward<WorldCoordinates>(first_position), std::forward<WorldCoordinates>(remaining_positions)...
+            first_position, std::forward<WorldCoordinates>(remaining_positions)...
         }};
 
         // Grid's boundaries (the enclosing cells must not exceed these boundaries)
