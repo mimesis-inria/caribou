@@ -65,7 +65,7 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
 
     /** Get a reference to the set of nodes */
     inline
-    const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, Dim> &
+    const auto &
     nodes() const
     {
         return p_nodes;

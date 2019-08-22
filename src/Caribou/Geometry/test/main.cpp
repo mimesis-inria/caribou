@@ -56,7 +56,7 @@ TEST(Geometry, Segment) {
         WordCoordinates node_0 {-1.5, -1.5, -5.2};
         WordCoordinates node_1 { 5.5,  5.5, 54.3};
         Segment<3> segment(node_0, node_1);
-        auto center_node = node_0 + (node_1 - node_0).normalized()*(node_1-node_0).norm()/2.;
+        WordCoordinates center_node = node_0 + (node_1 - node_0).normalized()*(node_1-node_0).norm()/2.;
         ASSERT_FLOAT_EQ(segment.center()[0], center_node[0]);
         ASSERT_FLOAT_EQ(segment.center()[1], center_node[1]);
         ASSERT_FLOAT_EQ(segment.center()[2], center_node[2]);
@@ -193,8 +193,12 @@ TEST(Geometry, Tetrahedron) {
         0.60593116938112601133,  0.44567310019856992698, -0.6589559209323614386,
         -0.65954118436719233465, 0.74459521306227582915, -0.10287562786328596776;
 
-    for (std::size_t i = 0; i<8; i++)
-        tetra.node(i) = R*(tetra.node(i));
+    Matrix<4, 3> rotated_nodes;
+    for (std::size_t i = 0; i<4; i++) {
+        rotated_nodes.row(i) = (R * tetra.node(i));
+    }
+
+    tetra = Tetrahedron<interpolation::Tetrahedron4>(rotated_nodes);
 
     const auto frame = tetra.frame();
     for (std::size_t i = 0; i < 3; ++i)
@@ -230,8 +234,11 @@ TEST(Geometry, Hexahedron) {
          0.60593116938112601133,  0.44567310019856992698, -0.6589559209323614386,
          -0.65954118436719233465, 0.74459521306227582915, -0.10287562786328596776;
 
-    for (std::size_t i = 0; i<8; i++)
-        hexa.node(i) = R*hexa.node(i);
+    Matrix<8,3> rotated_nodes;
+    for (std::size_t i = 0; i<8; i++) {
+        rotated_nodes.row(i) = R * hexa.node(i);
+    }
+    hexa = Hexahedron<interpolation::Hexahedron8>(rotated_nodes);
 
     const auto frame = hexa.frame();
     for (std::size_t i = 0; i < 3; ++i)
@@ -244,6 +251,9 @@ TEST(Geometry, RectangularHexahedron) {
     using namespace caribou::geometry;
     using namespace caribou::geometry::interpolation;
     using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
+    using Hexa = RectangularHexahedron<interpolation::Hexahedron8>;
+    using Segment = Segment<3>;
+    using Triangle = Triangle<3>;
 
     {
         RectangularHexahedron<interpolation::Hexahedron8> hexa;
@@ -252,7 +262,7 @@ TEST(Geometry, RectangularHexahedron) {
         WordCoordinates node (1, 1, -1);
         ASSERT_EQ(hexa.node(2), node);
 
-        double r = hexa.gauss_quadrature(
+        double r = hexa.gauss_quadrature<double>(
             [](const RectangularHexahedron<Hexahedron8> & /*h*/, const auto & /*local_coordinates*/) {
                 return 1.;
             });
@@ -263,8 +273,6 @@ TEST(Geometry, RectangularHexahedron) {
     }
 
     {
-        using Hexa = RectangularHexahedron<interpolation::Hexahedron8>;
-        using Segment = Segment<3>;
         WordCoordinates center {25, 40, 2};
         Hexa::Size dimensions{5,20, 10};
 
@@ -321,6 +329,26 @@ TEST(Geometry, RectangularHexahedron) {
             }
         }
 
+    }
+
+    {
+        Hexa hexa(Hexa::WorldCoordinates {5.,5.,5.}, Hexa::Size {2.,2.,2.});
+
+        // Inside triangle
+        Triangle t1(WordCoordinates{4,4,4}, WordCoordinates {5,4,4}, WordCoordinates {4.5,5,5});
+        ASSERT_TRUE(hexa.intersects(t1));
+
+        // Outside triangle
+        Triangle t2(WordCoordinates{4,4,8}, WordCoordinates {5,4,8}, WordCoordinates {4.5,5,9});
+        ASSERT_FALSE(hexa.intersects(t2));
+
+        // Lying on face triangle
+        Triangle t3(WordCoordinates{3,3,3}, WordCoordinates {3,3,7}, WordCoordinates {3,5,7});
+        ASSERT_FALSE(hexa.intersects(t3));
+
+        // Cut triangle
+        Triangle t4(WordCoordinates{2,2,2}, WordCoordinates {8,2,2}, WordCoordinates {5,8,8});
+        ASSERT_TRUE(hexa.intersects(t4));
     }
 
 }

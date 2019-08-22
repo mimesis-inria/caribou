@@ -91,10 +91,10 @@ struct CanonicalElement
      * double detJ = J.determinant();
      * \endcode
      */
-    template<typename LocalCoordinates, int WorldDimension>
+    template<typename LocalCoordinates, typename Derived>
     static inline
-    Eigen::Matrix<FLOATING_POINT_TYPE, WorldDimension, CanonicalDimension, Eigen::RowMajor>
-    Jacobian (LocalCoordinates && coordinates, const Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes, WorldDimension, Eigen::RowMajor> & nodes)
+    Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::MatrixBase<Derived>::ColsAtCompileTime, CanonicalDimension, Eigen::RowMajor>
+    Jacobian (LocalCoordinates && coordinates, const Eigen::MatrixBase<Derived> & nodes)
     {
         const auto shape_derivatives = CanonicalElementType::dL(std::forward<LocalCoordinates>(coordinates));
 
@@ -108,15 +108,19 @@ struct CanonicalElement
      * @tparam ValueDimension Dimension of the value matrix.
      * This type must implement the multiplication operator with a floating point value (scalar) : ValueType * scalar.
      */
-    template <typename ValueType, int ValueDimension, typename LocalCoordinates>
+    template <typename Derived, typename LocalCoordinates>
     static inline
     auto
     interpolate_at_local_position (LocalCoordinates && coordinates,
-                                   const Eigen::Matrix<ValueType, NumberOfNodes, ValueDimension, Eigen::RowMajor> & values)
+                                   const Eigen::MatrixBase<Derived> & values)
     {
-        return Eigen::Matrix<ValueType, ValueDimension, 1>(
+        static_assert(Eigen::MatrixBase<Derived>::RowsAtCompileTime == NumberOfNodes,
+                "The matrix containing the values at each nodes must have one node-value per row.");
+        constexpr auto NbCols = Eigen::MatrixBase<Derived>::ColsAtCompileTime;
+        using Scalar = typename Eigen::MatrixBase<Derived>::Scalar;
+        return Eigen::Matrix<Scalar, NbCols, 1>(
             (values.array().colwise() * CanonicalElementType::L(std::forward<LocalCoordinates>(coordinates)).array()).matrix().colwise().sum().transpose()
-            );
+        );
     }
 };
 

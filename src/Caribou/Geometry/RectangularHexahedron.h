@@ -2,12 +2,16 @@
 #define CARIBOU_GEOMETRY_RECTANGULARHEXAHEDRON_H
 
 #include <Caribou/config.h>
+#include <Caribou/macros.h>
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Segment.h>
+#include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Interpolation/Hexahedron.h>
 #include <Caribou/Geometry/Internal/BaseHexahedron.h>
 
 namespace caribou::geometry {
+
+#define seg_contains_point(a,b,x) (((b)>(x)) - ((a)>(x)))
 
 template <typename CanonicalElementType = interpolation::Hexahedron8>
 struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementType, RectangularHexahedron<CanonicalElementType>>
@@ -187,51 +191,18 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         );
     }
 
-    /**
-     * Test if the cube intersects the given 3D segment (in the hexahedron's local coordinates)
-     *
-     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
-     */
-    inline
-    bool
-    intersects_local(const Segment<3> & segment) const
+    template <typename Derived>
+    inline bool
+    intersects(const Triangle<3, Derived> & t) const
     {
-        const auto & v0 = segment.node(0) / 2.; // Shrink to a cube of size 1x1x1 centered on 0
-        const auto & v1 = segment.node(1) / 2.; // Shrink to a cube of size 1x1x1 centered on 0
+        constexpr auto NNodes = Triangle<3, Derived>::NumberOfNodes;
 
-        const auto edge = (v1 - v0);
-        INTEGER_TYPE edge_signs[3];
-
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
-            edge_signs[i] = (edge[i] < 0) ? -1 : 1;
+        WorldCoordinates nodes[NNodes];
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
+            nodes[i] = t.node(i);
         }
 
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
-
-            if (v0[i] * edge_signs[i] >  .5+EPSILON) return false;
-            if (v1[i] * edge_signs[i] < -.5-EPSILON) return false;
-        }
-
-
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
-            FLOATING_POINT_TYPE rhomb_normal_dot_v0, rhomb_normal_dot_cubedge;
-
-            const UNSIGNED_INTEGER_TYPE iplus1 = (i + 1) % 3;
-            const UNSIGNED_INTEGER_TYPE iplus2 = (i + 2) % 3;
-
-            rhomb_normal_dot_v0 =   edge[iplus2] * v0[iplus1]
-                                    - edge[iplus1] * v0[iplus2];
-
-            rhomb_normal_dot_cubedge = .5 *
-                                       (edge[iplus2] * edge_signs[iplus1] +
-                                        edge[iplus1] * edge_signs[iplus2]);
-
-            const auto r = (rhomb_normal_dot_v0*rhomb_normal_dot_v0) - (rhomb_normal_dot_cubedge*rhomb_normal_dot_cubedge);
-            if (r > EPSILON)
-                return false;
-        }
-
-        return true;
+        return intersects_polygon<NNodes>(nodes, t.normal());
     }
 
     /**
@@ -246,10 +217,77 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     template <int NNodes>
     inline
     bool
-    intersects_polygon(const WorldCoordinates /*nodes*/[NNodes], const Vector<3> & /*polynormal*/)
+    intersects_polygon(const WorldCoordinates nodes[NNodes], const Vector<3> & polynormal) const
     {
-        // todo(jnbrunet2000@gmail.com): do it
-        return false;
+        // Project the polygon's nodes into the unit cube
+        WorldCoordinates local_nodes[NNodes];
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
+            local_nodes[i] = Tinv(nodes[i]);
+        }
+
+
+        // Check if any edges of the polygon intersect the hexa
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
+            const auto & p1 = local_nodes[i];
+            const auto & p2 = local_nodes[(i+1)%NNodes];
+            const Segment<3> edge(p1, p2);
+            if (intersects_local(edge))
+                return true;
+        }
+
+        // Check that if the polygon's plane intersect the cube diagonal that is the closest of being perpendicular to the
+        // plane of the polygon.
+        Vector<3> best_diagonal;
+        best_diagonal << (((polynormal[0]) < 0) ? -1 : 1),
+                         (((polynormal[1]) < 0) ? -1 : 1),
+                         (((polynormal[2]) < 0) ? -1 : 1);
+
+        // Check if the intersection point between the two planes lies inside the cube
+        const auto t = polynormal.dot(nodes[0]) / polynormal.dot(best_diagonal);
+        if (!IN_CLOSED_INTERVAL(-1, t, 1))
+            return false;
+
+        // Check if the intersection point between the two planes lies inside the polygon
+        const Vector<3> p = best_diagonal * t;
+        const Vector<3> abspolynormal = p.array().abs2();
+        int zaxis, xaxis, yaxis;
+        if (abspolynormal[0] > abspolynormal[1])
+            zaxis = (abspolynormal[0] > abspolynormal[2]) ? 0 : 2;
+        else
+            zaxis = (abspolynormal[1] > abspolynormal[2]) ? 1 : 2;
+
+        if (polynormal[zaxis] < 0) {
+            xaxis = (zaxis+2)%3;
+            yaxis = (zaxis+1)%3;
+        }
+        else {
+            xaxis = (zaxis+1)%3;
+            yaxis = (zaxis+2)%3;
+        }
+
+        int count = 0;
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
+            const auto & p1 = local_nodes[i];
+            const auto & p2 = local_nodes[(i+1)%NNodes];
+
+            if (const int xdirection = seg_contains_point(p1[xaxis], p2[xaxis], p[xaxis]))
+            {
+                if (seg_contains_point(p1[yaxis], p2[yaxis], p[yaxis]))
+                {
+                    if (xdirection * (p[xaxis]-p1[xaxis])*(p2[yaxis]-p1[yaxis]) <=
+                        xdirection * (p[yaxis]-p1[yaxis])*(p2[xaxis]-p1[xaxis]))
+                        count += xdirection;
+                }
+                else
+                {
+                    if (p2[yaxis] <= p[yaxis])
+                        count += xdirection;
+                }
+            }
+
+        }
+
+        return (count != 0);
     }
 
     /**
@@ -305,6 +343,53 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     }
 
 private:
+    /**
+     * Test if the cube intersects the given 3D segment (in the hexahedron's local coordinates).
+     *
+     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
+     */
+    inline
+    bool
+    intersects_local(const Segment<3> & segment) const
+    {
+        const auto & v0 = segment.node(0) / 2.; // Shrink to a cube of size 1x1x1 centered on 0
+        const auto & v1 = segment.node(1) / 2.; // Shrink to a cube of size 1x1x1 centered on 0
+
+        const auto edge = (v1 - v0);
+        INTEGER_TYPE edge_signs[3];
+
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
+            edge_signs[i] = (edge[i] < 0) ? -1 : 1;
+        }
+
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
+
+            if (v0[i] * edge_signs[i] >  .5+EPSILON) return false;
+            if (v1[i] * edge_signs[i] < -.5-EPSILON) return false;
+        }
+
+
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
+            FLOATING_POINT_TYPE rhomb_normal_dot_v0, rhomb_normal_dot_cubedge;
+
+            const UNSIGNED_INTEGER_TYPE iplus1 = (i + 1) % 3;
+            const UNSIGNED_INTEGER_TYPE iplus2 = (i + 2) % 3;
+
+            rhomb_normal_dot_v0 =   edge[iplus2] * v0[iplus1]
+                                    - edge[iplus1] * v0[iplus2];
+
+            rhomb_normal_dot_cubedge = .5 *
+                                       (edge[iplus2] * edge_signs[iplus1] +
+                                        edge[iplus1] * edge_signs[iplus2]);
+
+            const auto r = (rhomb_normal_dot_v0*rhomb_normal_dot_v0) - (rhomb_normal_dot_cubedge*rhomb_normal_dot_cubedge);
+            if (r > EPSILON)
+                return false;
+        }
+
+        return true;
+    }
+
     WorldCoordinates p_center; ///< Position of the center point of the hexahedron
     Size p_H; ///< Size of the hexahedron {hx, hy, hz}
     Mat33 p_R; ///< Rotation matrix (a.k.a. the local coordinates frame) at the center of the hexahedron
