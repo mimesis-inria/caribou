@@ -12,7 +12,7 @@ length = 60
 
 use_implicit = False
 
-m = Tools.cylinder(center1=[0,0,-length/2.], center2=[0,0,length/2.], radius=radius, number_of_cuts=350, dimension=2)
+m = Tools.cylinder(center1=[0,0,-length/2.], center2=[0,0,length/2.], radius=radius, number_of_cuts=50, dimension=2)
 
 
 def is_inside(p):
@@ -29,7 +29,8 @@ def createScene(root):
     n = root.addChild('meca')
     n.addObject('Mesh', name='mesh', position=m.points.tolist(), triangles=m.cells['triangle'].tolist())
     grid = n.addObject('FictitiousGrid', n=[11, 11, 41], min=[-radius, -radius, -length/2], max=[radius, radius, length/2], use_implicit_surface=use_implicit, printLog=True)
-    # grid.set_implicit_test_function(is_inside)
+    if use_implicit:
+        grid.set_implicit_test_function(is_inside)
 
     v = n.addChild('visual')
     v.addObject('OglModel', src='@../mesh')

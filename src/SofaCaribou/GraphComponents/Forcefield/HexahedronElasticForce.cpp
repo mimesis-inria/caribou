@@ -425,7 +425,12 @@ void HexahedronElasticForce::reinit()
     }
 
 #ifdef CARIBOU_WITH_OPENMP
-    msg_info() << "Using " << omp_get_num_threads() << " threads for computations.";
+    const auto * env = std::getenv("OMP_NUM_THREADS");
+    if (env) {
+        msg_info() << "Using " << env << " threads for computations.";
+    } else {
+        msg_info() << "Using 1 threads for computations.";
+    }
 #endif
 
     // Compute the initial tangent stiffness matrix

@@ -3,6 +3,9 @@
 
 #include <Caribou/Geometry/Triangle.h>
 
+#include <iomanip>
+#include <queue>
+
 namespace SofaCaribou::GraphComponents::topology {
 
 using sofa::defaulttype::Vec2Types;
@@ -74,7 +77,7 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
     std::chrono::steady_clock::time_point begin, end;
 
     std::vector<UNSIGNED_INTEGER_TYPE> outside_triangles;
-    for (UNSIGNED_INTEGER_TYPE triangle_index = 0; triangle_index < triangles.size(); ++triangle_index) {
+    for (std::size_t triangle_index = 0; triangle_index < triangles.size(); ++triangle_index) {
         const auto & triangle = triangles[triangle_index];
         WorldCoordinates nodes [3];
         bool triangle_is_outside = false;
@@ -127,14 +130,100 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
         }
     }
 
-    msg_info() << "Computing the bounding boxes in " << time_to_find_bounding_boxes/1000/1000 << " [ms]";
-    msg_info() << "Computing the intersections in " << time_to_find_intersections/1000/1000 << " [ms]";
+    msg_info() << "Computing the bounding boxes of the surface elements in " << std::setprecision(3) << time_to_find_bounding_boxes/1000/1000 << " [ms]";
+    msg_info() << "Computing the intersections with the surface in "  << std::setprecision(3) << time_to_find_intersections/1000/1000 << " [ms]";
 
     if (!outside_triangles.empty()) {
         std::string triangle_indices = std::accumulate(std::next(outside_triangles.begin()), outside_triangles.end(), std::to_string(outside_triangles[0]),[](std::string s, const UNSIGNED_INTEGER_TYPE & index) {
             return std::move(s) + ", " + std::to_string(index);
         } );
         msg_error() << "Some triangles lie outside of the grid domain: " << triangle_indices;
+    }
+
+    // At this point, we have all the boundary cells, let's create clusters of cells regrouping neighbors cells of the same type
+    struct Region {
+        Type type = Type::Undefined;
+        std::vector<CellIndex> cells;
+    };
+
+    std::vector<Region> regions;
+    std::vector<int> region_of_cell (p_grid->number_of_cells(), -1);
+
+    std::queue<CellIndex> remaining_cells;
+    for (std::size_t i = 0; i < p_grid->number_of_cells(); ++i)
+        remaining_cells.push(CellIndex(i));
+
+    GridCoordinates upper_grid_boundary = p_grid->grid_coordinates_at(CellIndex(p_grid->number_of_cells()-1));
+
+    const auto get_neighbors = [this, &upper_grid_boundary] (const GridCoordinates & coordinates) {
+        std::array<CellIndex, 6> neighbors = {};
+        for (std::size_t axis = 0; axis < 3; ++axis) {
+            // Negative axis
+            if (coordinates[axis] - 1 > 0) {
+                GridCoordinates c = coordinates;
+                c[axis] -= 1;
+                neighbors[axis * 2] = p_grid->cell_index_at(c);
+            } else {
+                neighbors[axis * 2] = -1;
+            }
+
+            // Positive axis
+            if (coordinates[axis] + 1 <= upper_grid_boundary[axis]) {
+                GridCoordinates c = coordinates;
+                c[axis] += 1;
+                neighbors[axis * 2 + 1] = p_grid->cell_index_at(c);
+            } else {
+                neighbors[axis * 2 + 1] = -1;
+            }
+        }
+
+        return neighbors;
+    };
+
+    // Iterate over every cells, and for each one, if it isn't yet classified,
+    // start a clustering algorithm to fill the region's cells
+    while (not remaining_cells.empty()) {
+        CellIndex cell_index = remaining_cells.front();
+        remaining_cells.pop();
+
+        // If this cell was previously classified, skip it
+        if (region_of_cell[cell_index] > -1) {
+            continue;
+        }
+
+        // Create a new region
+        regions.push_back(Region {p_cells_types[cell_index], std::vector<CellIndex> ()});
+        std::size_t current_region_index = regions.size() - 1;
+
+        // Start the clustering algorithm
+        std::queue<CellIndex> cluster_cells;
+        cluster_cells.push(cell_index);
+
+        while (not cluster_cells.empty()) {
+            CellIndex cluster_cell_index = cluster_cells.front();
+            cluster_cells.pop();
+
+            // Tag the current cell
+            region_of_cell[cluster_cell_index] = current_region_index;
+            regions[current_region_index].cells.emplace_back(cluster_cell_index);
+
+            // Add the neighbors that aren't already classified
+            const auto neighbors = get_neighbors(p_grid->grid_coordinates_at(cluster_cell_index));
+            for (const auto & neighbor_id : neighbors) {
+                if (neighbor_id < 0)
+                    continue;
+
+                if (region_of_cell[neighbor_id] < 0 and regions[current_region_index].type == p_cells_types[neighbor_id]) {
+                    cluster_cells.emplace(neighbor_id);
+                }
+            }
+        }
+    }
+
+    // At this point, all cells have been classified into distinct regions
+    msg_info() << "The grid contains " << regions.size() << " regions:";
+    for (std::size_t i = 0; i < regions.size(); ++i) {
+        msg_info() << "Region #" << i+1 << " has " << regions[i].cells.size() << " cells";
     }
 }
 
