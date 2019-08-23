@@ -344,7 +344,22 @@ struct BaseGrid
 
     /** Test if the position of a given point is inside this grid */
     inline bool
-    contains(const WorldCoordinates & coordinates, const VecFloat epsilon = VecFloat(0)) const noexcept
+    contains(const WorldCoordinates & coordinates) const noexcept
+    {
+        VecFloat epsilon;
+        if constexpr (Dimension == 1)
+            epsilon << 0.;
+        else if constexpr (Dimension == 2)
+            epsilon << 0., 0.;
+        else
+            epsilon << 0., 0., 0.;
+
+        return contains(coordinates, epsilon);
+    }
+
+    /** Test if the position of a given point is inside this grid */
+    inline bool
+    contains(const WorldCoordinates & coordinates, const VecFloat epsilon) const noexcept
     {
         // @todo (jnbrunet2000@gmail.com): This test should be using inverse mapping function from a regular
         //  hexahedron geometric element defined in the geometry module.

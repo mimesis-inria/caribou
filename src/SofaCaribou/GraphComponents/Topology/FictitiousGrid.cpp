@@ -69,6 +69,10 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
     // We got a triangle tesselation representation of the surface.
     const auto & positions = d_surface_positions.getValue();
     const auto & triangles = d_surface_triangles.getValue();
+    int64_t time_to_find_bounding_boxes = 0;
+    int64_t time_to_find_intersections = 0;
+    std::chrono::steady_clock::time_point begin, end;
+
     std::vector<UNSIGNED_INTEGER_TYPE> outside_triangles;
     for (UNSIGNED_INTEGER_TYPE triangle_index = 0; triangle_index < triangles.size(); ++triangle_index) {
         const auto & triangle = triangles[triangle_index];
@@ -82,8 +86,7 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
             }
 
             const Eigen::Map<const WorldCoordinates> p (&positions[node_index][0]);
-            const auto cell_index = p_grid->cell_index_at(WorldCoordinates(p), true);
-            if (cell_index < 0 || (unsigned) cell_index >= p_grid->number_of_cells()) {
+            if (!p_grid->contains(p)) {
                 triangle_is_outside = true;
             }
 
@@ -98,14 +101,22 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
         caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
 
         // Get all the cells enclosing the three nodes of the triangles
+        begin = std::chrono::steady_clock::now();
         const auto enclosing_cells = p_grid->cells_enclosing(nodes[0], nodes[1], nodes[2]);
+        end = std::chrono::steady_clock::now();
+        time_to_find_bounding_boxes += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+
         if (enclosing_cells.empty()) {
             msg_error() << "Triangle #"<< triangle_index << " has no enclosing cells.";
             return;
         }
         for (const auto & cell_index : enclosing_cells) {
             const auto cell = p_grid->cell_at(cell_index);
-            if (cell.intersects(t)) {
+            begin = std::chrono::steady_clock::now();
+            const bool intersects = cell.intersects(t);
+            end = std::chrono::steady_clock::now();
+            time_to_find_intersections += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+            if (intersects) {
                 p_cells_types[cell_index] = Type::Boundary;
 
                 const auto nodes_indices = p_grid->node_indices_of(cell_index);
@@ -115,6 +126,9 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
             }
         }
     }
+
+    msg_info() << "Computing the bounding boxes in " << time_to_find_bounding_boxes/1000/1000 << " [ms]";
+    msg_info() << "Computing the intersections in " << time_to_find_intersections/1000/1000 << " [ms]";
 
     if (!outside_triangles.empty()) {
         std::string triangle_indices = std::accumulate(std::next(outside_triangles.begin()), outside_triangles.end(), std::to_string(outside_triangles[0]),[](std::string s, const UNSIGNED_INTEGER_TYPE & index) {

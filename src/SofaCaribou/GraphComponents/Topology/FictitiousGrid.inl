@@ -7,6 +7,7 @@
 #include <SofaBaseTopology/MeshTopology.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/core/behavior/MechanicalState.h>
+#include <chrono>
 
 namespace SofaCaribou::GraphComponents::topology {
 
@@ -210,11 +211,14 @@ void FictitiousGrid<DataTypes>::init() {
     p_node_types.resize(p_grid->number_of_nodes(), Type::Undefined);
     p_cells_types.resize(p_grid->number_of_cells(), Type::Undefined);
 
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     if (d_use_implicit_surface.getValue() and p_implicit_test_callback) {
         compute_cell_types_from_implicit_surface();
     } else {
         compute_cell_types_from_explicit_surface();
     }
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    msg_info() << "Found the boundary cells in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " [ms]";
 }
 
 template <typename DataTypes>
