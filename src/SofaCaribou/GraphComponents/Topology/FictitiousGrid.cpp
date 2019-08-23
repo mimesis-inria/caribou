@@ -69,8 +69,11 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
     // We got a triangle tesselation representation of the surface.
     const auto & positions = d_surface_positions.getValue();
     const auto & triangles = d_surface_triangles.getValue();
-    for (const auto & triangle : triangles) {
+    std::vector<UNSIGNED_INTEGER_TYPE> outside_triangles;
+    for (UNSIGNED_INTEGER_TYPE triangle_index = 0; triangle_index < triangles.size(); ++triangle_index) {
+        const auto & triangle = triangles[triangle_index];
         WorldCoordinates nodes [3];
+        bool triangle_is_outside = false;
         for (unsigned int i = 0; i < 3; ++i) {
             const auto & node_index = triangle[i];
             if (node_index >= positions.size()) {
@@ -79,19 +82,27 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
             }
 
             const Eigen::Map<const WorldCoordinates> p (&positions[node_index][0]);
-            const auto cell_index = p_grid->cell_index_at(WorldCoordinates(p));
-            if (cell_index < 0 || cell_index > (signed) p_grid->number_of_cells()) {
-                msg_error() << "Some triangles lie outside of the grid domain.";
-                return;
+            const auto cell_index = p_grid->cell_index_at(WorldCoordinates(p), true);
+            if (cell_index < 0 || (unsigned) cell_index >= p_grid->number_of_cells()) {
+                triangle_is_outside = true;
             }
 
             nodes[i] = p;
+        }
+
+        if (triangle_is_outside) {
+            outside_triangles.push_back(triangle_index);
+            continue;
         }
 
         caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
 
         // Get all the cells enclosing the three nodes of the triangles
         const auto enclosing_cells = p_grid->cells_enclosing(nodes[0], nodes[1], nodes[2]);
+        if (enclosing_cells.empty()) {
+            msg_error() << "Triangle #"<< triangle_index << " has no enclosing cells.";
+            return;
+        }
         for (const auto & cell_index : enclosing_cells) {
             const auto cell = p_grid->cell_at(cell_index);
             if (cell.intersects(t)) {
@@ -103,6 +114,13 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
                 }
             }
         }
+    }
+
+    if (!outside_triangles.empty()) {
+        std::string triangle_indices = std::accumulate(std::next(outside_triangles.begin()), outside_triangles.end(), std::to_string(outside_triangles[0]),[](std::string s, const UNSIGNED_INTEGER_TYPE & index) {
+            return std::move(s) + ", " + std::to_string(index);
+        } );
+        msg_error() << "Some triangles lie outside of the grid domain: " << triangle_indices;
     }
 }
 

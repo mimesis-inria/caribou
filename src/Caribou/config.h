@@ -9,7 +9,7 @@
 #define FLOATING_POINT_TYPE double
 #define INTEGER_TYPE int
 #define UNSIGNED_INTEGER_TYPE unsigned int
-#define EPSILON  ((double)1.0e-15)
+#define EPSILON  ((double)1.0e-10)
 #else
 #define FLOATING_POINT_TYPE float
 #define INTEGER_TYPE int32_t

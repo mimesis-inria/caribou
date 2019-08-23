@@ -5,6 +5,7 @@
 #include <list>
 #include <array>
 #include <Caribou/config.h>
+#include <Caribou/macros.h>
 #include <Eigen/Core>
 #include <Caribou/Geometry/Segment.h>
 
@@ -191,11 +192,16 @@ struct BaseGrid
         }
     }
 
-    /** Get the index of the cell that contains the given world coordinates. */
+    /** Get the index of the cell that contains the given world coordinates.
+     *
+     * @param test_for_boundary If the location of the point lies directly on one of the grid's upper boundary
+     * (p_x == grid_max_x or p_y == grid_max_y or p_z == grid_max_z), the return grid coordinate will be
+     * outside of the grid boundaries. Enabling this option will verify that and return the closest cell inside.
+     * */
     inline CellIndex
-    cell_index_at(const WorldCoordinates & coordinates) const noexcept
+    cell_index_at(const WorldCoordinates & coordinates, bool test_for_boundary = false) const noexcept
     {
-        return cell_index_at(grid_coordinates_at(coordinates));
+        return cell_index_at(grid_coordinates_at(coordinates, test_for_boundary));
     }
 
     /** Get the grid location of the cell at index cell_index */
@@ -225,16 +231,33 @@ struct BaseGrid
         }
     }
 
-    /** Get the grid location of the cell that contains the given world coordinates */
+    /** Get the grid location of the cell that contains the given world coordinates
+     *
+     * @param test_for_boundary If the location of the point lies directly on one of the grid's upper boundary
+     * (p_x == grid_max_x or p_y == grid_max_y or p_z == grid_max_z), the return grid coordinate will be
+     * outside of the grid boundaries. Enabling this option will verify that and return the closest cell inside.
+     * */
     inline GridCoordinates
-    grid_coordinates_at(const WorldCoordinates & coordinates) const noexcept
+    grid_coordinates_at(const WorldCoordinates & coordinates, bool test_for_boundary = false) const noexcept
     {
         // @todo (jnbrunet2000@gmail.com): This test should be using inverse mapping function from a regular
         //  hexahedron geometric element defined in the geometry module.
 
-        auto a = ((coordinates - m_anchor_position).array() / H().array()).matrix(). template cast<Int>();
+        if (test_for_boundary) {
+            WorldCoordinates p = coordinates;
+            const auto h = H();
+            const WorldCoordinates epsilon = h/1000000;
+            const WorldCoordinates margin = h/10.;
+            const WorldCoordinates upper_bound = m_anchor_position + (N().array(). template cast<FLOATING_POINT_TYPE>()*h.array()).matrix();
+            for (UNSIGNED_INTEGER_TYPE i = 0; i < Dimension; ++i) {
+                if (IN_CLOSED_INTERVAL(-epsilon[i], coordinates[i] - upper_bound[i], epsilon[i])) {
+                    p[i] -= margin[i];
+                }
+            }
+            return ((p - m_anchor_position).array() / h.array()).matrix(). template cast<Int>();
+        }
 
-        return a;
+        return ((coordinates - m_anchor_position).array() / H().array()).matrix(). template cast<Int>();
     }
 
     /** Get the node location in world coordinates at grid coordinates */
@@ -321,24 +344,25 @@ struct BaseGrid
 
     /** Test if the position of a given point is inside this grid */
     inline bool
-    contains(const WorldCoordinates & coordinates) const noexcept
+    contains(const WorldCoordinates & coordinates, const VecFloat epsilon = VecFloat(0)) const noexcept
     {
         // @todo (jnbrunet2000@gmail.com): This test should be using inverse mapping function from a regular
         //  hexahedron geometric element defined in the geometry module.
 
         const VecFloat distance_to_anchor = ((coordinates - m_anchor_position).array() / size().array()).matrix();
 
-        if (distance_to_anchor[0] < 0 || distance_to_anchor[0] > 1)
+        if (distance_to_anchor[0] < 0 - epsilon[0] || distance_to_anchor[0] > 1 + epsilon[0])
             return false;
 
         if CONSTEXPR_IF (Dimension >= 2) {
-            if (distance_to_anchor[1] < 0 || distance_to_anchor[1] > 1)
+            if (distance_to_anchor[1] < 0 - epsilon[1] || distance_to_anchor[1] > 1 + epsilon[1])
                 return false;
         }
 
         if CONSTEXPR_IF (Dimension == 3) {
-            if (distance_to_anchor[2] < 0 || distance_to_anchor[2] > 1)
+            if (distance_to_anchor[2] < 0 - epsilon[2] || distance_to_anchor[2] > 1 + epsilon[2]) {
                 return false;
+            }
         }
 
         return true;
@@ -399,18 +423,19 @@ struct BaseGrid
                 };
 
         // 1. Find the grid coordinates bounding box of the cells that contain each nodes
-        GridCoordinates lower_cell = min_between(grid_coordinates_at(positions[0]), upper_grid_boundary);
-        GridCoordinates upper_cell = max_between(grid_coordinates_at(positions[0]), lower_grid_boundary);
+        GridCoordinates lower_cell = min_between(grid_coordinates_at(positions[0], true), upper_grid_boundary);
+        GridCoordinates upper_cell = max_between(grid_coordinates_at(positions[0], true), lower_grid_boundary);
 
         // This is used to discard the bbox computation if all points are outside the grid
-        bool grid_contains_at_least_one_point = contains(WorldCoordinates(positions[0]));
+        VecFloat epsilon = H()/1000000.;
+        bool grid_contains_at_least_one_point = contains(WorldCoordinates(positions[0]), epsilon);
 
         for (size_t i = 1; i < positions.size(); ++ i) {
 
-            if (not grid_contains_at_least_one_point and contains(WorldCoordinates(positions[i])))
+            if (not grid_contains_at_least_one_point and contains(WorldCoordinates(positions[i]), epsilon))
                 grid_contains_at_least_one_point = true;
 
-            GridCoordinates coordinates = grid_coordinates_at(positions[i]);
+            GridCoordinates coordinates = grid_coordinates_at(positions[i], true);
 
             lower_cell = min_between(lower_cell, coordinates);
             upper_cell = max_between(upper_cell, coordinates);

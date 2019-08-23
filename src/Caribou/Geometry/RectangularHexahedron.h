@@ -244,7 +244,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
 
         // Check if the intersection point between the two planes lies inside the cube
         const auto t = polynormal.dot(nodes[0]) / polynormal.dot(best_diagonal);
-        if (!IN_CLOSED_INTERVAL(-1, t, 1))
+        if (!IN_CLOSED_INTERVAL(-1-EPSILON, t, 1+EPSILON))
             return false;
 
         // Check if the intersection point between the two planes lies inside the polygon

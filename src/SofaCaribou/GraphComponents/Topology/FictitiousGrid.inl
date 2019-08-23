@@ -4,6 +4,7 @@
 #include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
 
 #include <sofa/core/visual/VisualParams.h>
+#include <SofaBaseTopology/MeshTopology.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
@@ -139,42 +140,50 @@ void FictitiousGrid<DataTypes>::init() {
                                 << "', but this one does not contain any positions.";
                     return;
                 } else {
-                    auto surface_context = (topology) ? topology->getContext() : this->getContext();
-                    auto surface_node = dynamic_cast<const sofa::simulation::Node *> (surface_context);
-                    auto mechanical_states = surface_context->template getObjects<MechanicalState<DataTypes>>(
-                        BaseContext::Local);
-                    if (mechanical_states.empty()) {
-                        msg_error() << "No positions were set in the '" << d_surface_positions.getName()
-                                    << "' data parameter, "
-                                    << "and no mechanical objects were found in the context node ('"
-                                    << surface_node->getPathName() << "').";
-                        return;
-                    } else if (mechanical_states.size() > 1) {
-                        msg_error() << "No positions were set in the '" << d_surface_positions.getName()
-                                    << "' data parameter, "
-                                    << "and more than one mechanical objects were found in the context node ('"
-                                    << surface_node->getPathName() << "').";
-                        return;
+                    auto mesh_topology = (topology) ? dynamic_cast<sofa::component::topology::MeshTopology*>(topology) : nullptr;
+                    if (mesh_topology) {
+                        d_surface_positions.setParent(&(mesh_topology->seqPoints));
+                        msg_info() << "Automatically found the positions vector at '"
+                                   << mesh_topology->getPathName() + "." + mesh_topology->seqPoints.getName() << "'.";
                     } else {
-                        const MechanicalState<DataTypes> *mo = mechanical_states[0];
-                        const auto rest_positions_data = dynamic_cast<Data<SofaVecCoord> *> (mo->findData(
-                            "rest_position"));
-                        if (!rest_positions_data) {
-                            msg_error() << "A mechanical state was found at '" << mo->getPathName()
-                                        << "' but does not contain a data field named 'rest_position'.";
+                        auto surface_context = (topology) ? topology->getContext() : this->getContext();
+                        auto surface_node = dynamic_cast<const sofa::simulation::Node *> (surface_context);
+                        auto mechanical_states = surface_context->template getObjects<MechanicalState<DataTypes>>(
+                            BaseContext::Local);
+                        if (mechanical_states.empty()) {
+                            msg_error() << "No positions were set in the '" << d_surface_positions.getName()
+                                        << "' data parameter, "
+                                        << "and no mechanical objects were found in the context node ('"
+                                        << surface_node->getPathName() << "').";
+                            return;
+                        } else if (mechanical_states.size() > 1) {
+                            msg_error() << "No positions were set in the '" << d_surface_positions.getName()
+                                        << "' data parameter, "
+                                        << "and more than one mechanical objects were found in the context node ('"
+                                        << surface_node->getPathName() << "').";
                             return;
                         } else {
-                            sofa::helper::ReadAccessor<Data<SofaVecCoord>> rest_positions = rest_positions_data;
-                            if (rest_positions.empty()) {
-                                msg_error() << "A mechanical state was automatically found at '" << mo->getPathName()
-                                            << "', "
-                                            << "but it does not contain any positions in its data field named '"
-                                            << rest_positions_data->getName() << "'.";
+                            const MechanicalState<DataTypes> *mo = mechanical_states[0];
+                            const auto rest_positions_data = dynamic_cast<Data<SofaVecCoord> *> (mo->findData(
+                                "rest_position"));
+                            if (!rest_positions_data) {
+                                msg_error() << "A mechanical state was found at '" << mo->getPathName()
+                                            << "' but does not contain a data field named 'rest_position'.";
                                 return;
                             } else {
-                                d_surface_positions.setParent(rest_positions_data);
-                                msg_info() << "Automatically found the positions vector at '"
-                                           << mo->getPathName() + "." + rest_positions_data->getName() << "'.";
+                                sofa::helper::ReadAccessor<Data<SofaVecCoord>> rest_positions = rest_positions_data;
+                                if (rest_positions.empty()) {
+                                    msg_error() << "A mechanical state was automatically found at '"
+                                                << mo->getPathName()
+                                                << "', "
+                                                << "but it does not contain any positions in its data field named '"
+                                                << rest_positions_data->getName() << "'.";
+                                    return;
+                                } else {
+                                    d_surface_positions.setParent(rest_positions_data);
+                                    msg_info() << "Automatically found the positions vector at '"
+                                               << mo->getPathName() + "." + rest_positions_data->getName() << "'.";
+                                }
                             }
                         }
                     }
