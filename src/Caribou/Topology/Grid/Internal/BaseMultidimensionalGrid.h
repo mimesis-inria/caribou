@@ -31,6 +31,7 @@ struct BaseMultidimensionalGrid : public BaseGrid<Dim, GridType_>
     using GridType = GridType_;
     using Base = BaseGrid<Dim, GridType_>;
 
+    using UInt = typename Base::UInt;
     using NodeIndex = typename Base::NodeIndex;
     using CellIndex = typename Base::CellIndex;
     using Dimensions = typename Base::Dimensions;

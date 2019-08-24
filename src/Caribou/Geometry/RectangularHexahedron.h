@@ -62,7 +62,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
 
     /** Get the Node at given index */
     inline
-    auto
+    WorldCoordinates
     node(UNSIGNED_INTEGER_TYPE index) const
     {
         const auto local_coordinates_of_node = MapVector<3>(CanonicalElementType::nodes[index]);
@@ -71,7 +71,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
 
     /** Get the Node at given index */
     inline
-    auto
+    WorldCoordinates
     node(UNSIGNED_INTEGER_TYPE index)
     {
         const auto local_coordinates_of_node = MapVector<3>(CanonicalElementType::nodes[index]);

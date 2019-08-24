@@ -73,7 +73,7 @@ public:
     using CellSet = typename GridType::CellSet;
     using CellElement = typename GridType::Element;
 
-    // FictitiousGrid aliases
+    // Structures
     enum class Type {
         Undefined = -1,
         Inside = 0,
@@ -81,6 +81,14 @@ public:
         Boundary = 2
     };
 
+    ///< A region is a cluster of cells sharing the same type and surrounded by either a boundary region or the outside
+    ///< of the grid
+    struct Region {
+        Type type = Type::Undefined;
+        std::vector<CellIndex> cells;
+    };
+
+    // Aliases
     using f_implicit_test_callback_t = std::function<float(const WorldCoordinates &)>;
 
     template <typename ObjectType>
@@ -132,6 +140,8 @@ private:
 
     std::vector<Type> p_node_types; ///< Types of the complete regular grid's nodes
     std::vector<Type> p_cells_types; ///< Types of the complete regular grid's cells
+    std::vector<Region> p_regions; ///< Distinct regions of cells.
+    std::vector<int> p_region_of_cell; ///< Contains the region id of a given cell.
 };
 
 template<> void FictitiousGrid<Vec2Types>::create_grid ();
@@ -139,6 +149,8 @@ template<> void FictitiousGrid<Vec3Types>::create_grid ();
 
 template<> void FictitiousGrid<Vec2Types>::compute_cell_types_from_explicit_surface ();
 template<> void FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface ();
+
+template<> void FictitiousGrid<Vec3Types>::draw (const sofa::core::visual::VisualParams* vparams);
 
 extern template class FictitiousGrid<Vec2Types>;
 extern template class FictitiousGrid<Vec3Types>;

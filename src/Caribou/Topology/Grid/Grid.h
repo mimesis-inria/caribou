@@ -198,6 +198,23 @@ struct Grid<3> : public internal::BaseMultidimensionalGrid<3, Grid<3>>
     {
         return node_indices_of(grid_coordinates_at(index));
     }
+
+    /** Get the number of distinct edges in this grid. **/
+    inline UInt
+    number_of_faces() const noexcept
+    {
+        const auto & N = Base::N();
+
+        const auto & nx = N[0];
+        const auto & ny = N[1];
+        const auto & nz = N[2];
+
+        const auto number_of_faces_in_2D_grid = nx * ny;
+        const auto number_of_faces_between_2D_grids = (nx * ny) + ((nx + 1) * ny) + (nx * (ny + 1));
+
+        return number_of_faces_in_2D_grid * (nz+1)
+               + number_of_faces_between_2D_grids * nz;
+    }
 };
 
 } // namespace caribou::topology

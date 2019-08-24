@@ -218,7 +218,7 @@ void FictitiousGrid<DataTypes>::init() {
         compute_cell_types_from_explicit_surface();
     }
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    msg_info() << "Found the boundary cells in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " [ms]";
+    msg_info() << "Initialization of the grid finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " [ms]";
 }
 
 template <typename DataTypes>
