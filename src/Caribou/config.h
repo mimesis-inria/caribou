@@ -7,8 +7,8 @@
 
 #ifdef CARIBOU_USE_DOUBLE
 #define FLOATING_POINT_TYPE double
-#define INTEGER_TYPE int
-#define UNSIGNED_INTEGER_TYPE unsigned int
+#define INTEGER_TYPE signed long long int
+#define UNSIGNED_INTEGER_TYPE unsigned long long int
 #define EPSILON  ((double)1.0e-10)
 #else
 #define FLOATING_POINT_TYPE float

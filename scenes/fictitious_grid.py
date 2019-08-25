@@ -28,7 +28,13 @@ def is_inside(p):
 def createScene(root):
     n = root.addChild('meca')
     n.addObject('Mesh', name='mesh', position=m.points.tolist(), triangles=m.cells['triangle'].tolist())
-    grid = n.addObject('FictitiousGrid', n=[11, 11, 41], min=[-radius, -radius, -length/2], max=[radius, radius, length/2], use_implicit_surface=use_implicit, printLog=True)
+    grid = n.addObject('FictitiousGrid',
+                       n=[11, 11, 41],
+                       min=[-radius, -radius, -length/2],
+                       max=[radius, radius, length/2],
+                       use_implicit_surface=use_implicit,
+                       maximum_number_of_subdivision_levels=1,
+                       printLog=True)
     if use_implicit:
         grid.set_implicit_test_function(is_inside)
 

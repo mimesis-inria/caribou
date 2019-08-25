@@ -119,6 +119,16 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     }
 
     /**
+     * Get the size (hx, hy, hz) of the hexahedron
+     */
+    inline
+    Size
+    H() const
+    {
+        return p_H;
+    }
+
+    /**
      * Compute the jacobian matrix evaluated at local position {u,v,w}
      *
      * For a rectangular hexahedron, the jacobian matrix is constant and is defined as
@@ -195,14 +205,12 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     inline bool
     intersects(const Triangle<3, Derived> & t) const
     {
-        constexpr auto NNodes = Triangle<3, Derived>::NumberOfNodes;
-
-        WorldCoordinates nodes[NNodes];
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
+        WorldCoordinates nodes[3];
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
             nodes[i] = t.node(i);
         }
 
-        return intersects_polygon<NNodes>(nodes, t.normal());
+        return intersects_polygon<3>(nodes, t.normal());
     }
 
     /**

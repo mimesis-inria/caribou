@@ -7,6 +7,9 @@
 #include <SofaBaseTopology/MeshTopology.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/core/behavior/MechanicalState.h>
+
+#include <stack>
+#include <queue>
 #include <chrono>
 
 namespace SofaCaribou::GraphComponents::topology {
@@ -19,7 +22,7 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
         , d_number_of_subdivision(initData(&d_number_of_subdivision,
                 "maximum_number_of_subdivision_levels",
                 0,
-                "Number of subdivision levels of the boundary cells (one level split the cell in 8 subcells)."))
+                "Number of subdivision levels of the boundary cells (one level split the cell in 4 subcells in 2D, and 8 subcells in 3D)."))
         , d_use_implicit_surface(initData(&d_use_implicit_surface,
                 bool(false),
                 "use_implicit_surface",
@@ -207,18 +210,6 @@ void FictitiousGrid<DataTypes>::init() {
 
     // Create the grid
     create_grid();
-
-    p_node_types.resize(p_grid->number_of_nodes(), Type::Undefined);
-    p_cells_types.resize(p_grid->number_of_cells(), Type::Undefined);
-
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    if (d_use_implicit_surface.getValue() and p_implicit_test_callback) {
-        compute_cell_types_from_implicit_surface();
-    } else {
-        compute_cell_types_from_explicit_surface();
-    }
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    msg_info() << "Initialization of the grid finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " [ms]";
 }
 
 template <typename DataTypes>
@@ -264,6 +255,177 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
         }
     }
 }
+
+template <typename DataTypes>
+std::vector<typename FictitiousGrid<DataTypes>::Cell *>
+FictitiousGrid<DataTypes>::get_neighbors(Cell * cell)
+{
+    const auto & upper_grid_boundary = p_grid->N();
+    std::vector<Cell *> neighbors;
+
+    GridCoordinates subcell_coordinates[(unsigned) 1 << Dimension];
+    if constexpr (Dimension == 2) {
+        subcell_coordinates[0] = {0, 0};
+        subcell_coordinates[1] = {1, 0};
+        subcell_coordinates[2] = {1, 1};
+        subcell_coordinates[3] = {0, 1};
+    } else {
+        subcell_coordinates[0] = {0, 0, 0};
+        subcell_coordinates[1] = {1, 0, 0};
+        subcell_coordinates[2] = {0, 1, 0};
+        subcell_coordinates[3] = {1, 1, 0};
+        subcell_coordinates[4] = {0, 0, 1};
+        subcell_coordinates[5] = {1, 0, 1};
+        subcell_coordinates[6] = {0, 1, 1};
+        subcell_coordinates[7] = {1, 1, 1};
+    }
+
+    static constexpr INTEGER_TYPE directions[2] = {-1, 1};
+
+
+    // For each axis (x, y [, z])
+    for (std::size_t axis = 0; axis < Dimension; ++axis) {
+        // For each direction (-1 or +1)
+        for (const auto & direction : directions) {
+
+            Cell * p = cell;
+            CellIndex index;
+            bool found_suitable_parent = false;
+            std::stack<GridCoordinates> path;
+
+
+            // Go up in the quadtree (resp. octree) until we can move in the axis-direction, and save the path
+            // while doing it so we can follow it back when going down in the neighbor cell
+            do {
+                index = p->index;
+                if (p->parent) {
+                    const GridCoordinates &coordinates = subcell_coordinates[index];
+                    if (IN_CLOSED_INTERVAL(0, coordinates[axis] + direction, 1)) {
+                        found_suitable_parent = true;
+                    }
+                    path.emplace(coordinates);
+                }
+                p = p->parent;
+            } while (p and not found_suitable_parent);
+
+            // If we can no longer move up, we are at the cell top most parent. Check if we can move in the
+            // axis-direction within the grid
+            if (not found_suitable_parent) {
+                const GridCoordinates coordinates = p_grid->grid_coordinates_at(index);
+                const int new_coordinate = coordinates[axis] + direction;
+                const int upper_limit = upper_grid_boundary[axis]-1;
+                if (0 <= new_coordinate and new_coordinate <= upper_limit) {
+                    // We got a neighbor cell within the grid's limit
+                    auto new_coordinates = coordinates;
+                    new_coordinates[axis] += direction;
+                    Cell & c = p_cells[p_grid->cell_index_at(new_coordinates)];
+                    p = &c;
+                }
+            }
+
+            if (p) {
+                // We found a neighbors cell within the limits of the cell quadtree (resp. octree) or the grid.
+                // Let's go down following the reverse path until we get to the same level as the queried cell
+                while (not path.empty() and p->childs) {
+                    GridCoordinates coordinates = path.top();
+                    // We reverse the axis coordinate so that we can get cells at the opposite of the queried one
+                    const auto new_coordinate = (coordinates[axis] - direction) % 2;
+                    coordinates[axis] = new_coordinate*new_coordinate;
+                    index = coordinates[0] + coordinates[1]*2;
+                    if constexpr (Dimension == 3) {
+                        index += coordinates[2]*2*2;
+                    }
+                    p = &(*p->childs)[index];
+                    path.pop();
+                }
+
+                // We are now at the same level of the queried cells, on the opposite side in the axis direction.
+                // If this cell still has children, lets find those that are neighbors to the queried cell.
+                if (p->childs) {
+
+                    // Let's set the axis direction so that we only get children facing the queried cell.
+                    INTEGER_TYPE search_axis = (direction < 0) ? 1 : 0;
+
+                    std::stack<Cell*> children;
+                    for (auto & child : *p->childs) {
+                        children.emplace(&child);
+                    }
+                    while (not children.empty()) {
+                        Cell * c = children.top();
+                        children.pop();
+                        GridCoordinates coordinates = subcell_coordinates[c->index];
+                        if (coordinates[axis] == search_axis) {
+                            if (c->data) {
+                                neighbors.emplace_back(c);
+                            } else {
+                                for (auto & child : *c->childs) {
+                                    children.emplace(&child);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // No further childs, let's add the cell as a neighbor
+                    neighbors.emplace_back(p);
+                }
+            }
+        }
+    }
+
+    return neighbors;
+}
+
+template <typename DataTypes>
+void
+FictitiousGrid<DataTypes>::populate_drawing_vectors()
+{
+    p_drawing_nodes_vector.resize(p_grid->number_of_nodes());
+    p_drawing_edges_vector.resize(p_grid->number_of_edges()*2);
+    p_drawing_subdivided_edges_vector.resize(0);
+    p_drawing_cells_vector.resize(0); // Reset the vector in case we got multiple initializations
+    p_drawing_cells_vector.resize(p_regions.size());
+
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_nodes(); ++i) {
+        const auto p = p_grid->node(i);
+        p_drawing_nodes_vector[i] = {p[0], p[1], p[2]};
+    }
+
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_edges(); ++i) {
+        const auto edge = p_grid->edge(i);
+        p_drawing_edges_vector[i*2] = {edge.node(0)[0], edge.node(0)[1], edge.node(0)[2]};
+        p_drawing_edges_vector[i*2+1] = {edge.node(1)[0], edge.node(1)[1], edge.node(1)[2]};
+    }
+
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_cells(); ++i) {
+        std::queue<std::pair<const Cell *, CellElement >> cells;
+        cells.emplace(&p_cells[i], p_grid->cell_at(i));
+
+        while (not cells.empty()) {
+            const Cell * c = std::get<0>(cells.front());
+            const CellElement & e = std::get<1>(cells.front());
+
+            if (c->childs) {
+                const auto & childs_elements = get_subcells(e);
+                for (UNSIGNED_INTEGER_TYPE j = 0; j < (*c->childs).size(); ++j) {
+                    cells.emplace(&(*c->childs)[j], childs_elements[j]);
+                }
+            } else {
+                const auto & region_id = c->data->region_id;
+                for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < ((unsigned)1 << Dimension); ++node_id) {
+                    p_drawing_cells_vector[region_id].emplace_back(e.node(node_id)[0], e.node(node_id)[1],e.node(node_id)[2]);
+                }
+                for (const auto & edge : CellElement::edges) {
+                    p_drawing_subdivided_edges_vector.emplace_back(e.node(edge[0])[0], e.node(edge[0])[1], e.node(edge[0])[2]);
+                    p_drawing_subdivided_edges_vector.emplace_back(e.node(edge[1])[0], e.node(edge[1])[1], e.node(edge[1])[2]);
+                }
+            }
+
+            cells.pop();
+        }
+    }
+
+}
+
 
 template <typename DataTypes>
 std::pair<typename FictitiousGrid<DataTypes>::Coord, typename FictitiousGrid<DataTypes>::Coord>

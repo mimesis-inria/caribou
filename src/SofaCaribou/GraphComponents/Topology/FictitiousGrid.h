@@ -74,18 +74,34 @@ public:
     using CellElement = typename GridType::Element;
 
     // Structures
-    enum class Type {
+    enum class Type : INTEGER_TYPE {
         Undefined = -1,
         Inside = 0,
         Outside = 1,
         Boundary = 2
     };
 
+    ///< The Cell structure contains the quadtree (resp. octree) data of a given cell or subcell.
+    struct CellData {
+        CellData(const Type & t, const Float& w, const int & r)
+        : type(t), weight(w), region_id(r) {}
+        Type type = Type::Undefined;
+        Float weight = 0.;
+        int region_id = -1;
+    };
+
+    struct Cell {
+        Cell * parent = nullptr;
+        CellIndex index = 0; // Index relative to the parent cell
+        std::unique_ptr<CellData> data; // Data is only stored on leaf cells
+        std::unique_ptr<std::array<Cell,(unsigned) 1 << Dimension>> childs;
+    };
+
     ///< A region is a cluster of cells sharing the same type and surrounded by either a boundary region or the outside
     ///< of the grid
     struct Region {
         Type type = Type::Undefined;
-        std::vector<CellIndex> cells;
+        std::vector<Cell*> cells;
     };
 
     // Aliases
@@ -98,9 +114,8 @@ public:
     FictitiousGrid();
     void init() override;
     void draw(const sofa::core::visual::VisualParams* vparams) override;
-    void create_grid();
-    void compute_cell_types_from_implicit_surface();
-    void compute_cell_types_from_explicit_surface();
+    virtual void create_grid();
+    std::vector<Cell *> get_neighbors(Cell * cell);
     std::pair<Coord, Coord> compute_bbox_from(const SofaVecCoord & positions);
 
     /**
@@ -121,38 +136,94 @@ public:
         if( !onlyVisible )
             return;
 
-        this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Float>(d_min.getValue().array(),d_max.getValue().array()));
+        this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Float>(
+            d_min.getValue().array(),d_max.getValue().array()));
     }
 
 private:
+    virtual void compute_cell_types_from_implicit_surface();
+    virtual void compute_cell_types_from_explicit_surface();
+    virtual void subdivide_cells();
+    virtual void populate_drawing_vectors();
+
+    std::array<CellElement, (unsigned) 1 << Dimension> get_subcells(const CellElement & e) const;
+
+private:
+    // ------------
+    // Data members
+    // ------------
     Data<SofaVecInt> d_n;
     Data<SofaVecFloat> d_min;
     Data<SofaVecFloat> d_max;
-    Data<unsigned char> d_number_of_subdivision;
+    Data<UNSIGNED_INTEGER_TYPE> d_number_of_subdivision;
     Data<bool> d_use_implicit_surface;
 
     Data< SofaVecCoord > d_surface_positions;
-    Data<sofa::helper::vector<Edge> > d_surface_edges; ///< List of edges (ex: [e1p1 e1p2 e2p1 e2p2 ...]).
-    Data<sofa::helper::vector<Triangle> > d_surface_triangles; ///< List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...]).
 
+    ///< List of edges (ex: [e1p1 e1p2 e2p1 e2p2 ...]).
+    Data<sofa::helper::vector<Edge> > d_surface_edges;
+
+    ///< List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...]).
+    Data<sofa::helper::vector<Triangle> > d_surface_triangles;
+
+    // ---------------
+    // Private members
+    // ---------------
+    ///< The underground grid object. This object do not store any values beside the dimensions and size of the grid.
+    ///< Most of the grid algorithms are defined there.
     std::unique_ptr<GridType> p_grid;
+
+    ///< This is a pointer to a callback function that determines if a position is inside, outside or on the boundary.
+    ///< It is used when an implicit surface definition is avaible.
     f_implicit_test_callback_t p_implicit_test_callback;
 
-    std::vector<Type> p_node_types; ///< Types of the complete regular grid's nodes
-    std::vector<Type> p_cells_types; ///< Types of the complete regular grid's cells
-    std::vector<Region> p_regions; ///< Distinct regions of cells.
-    std::vector<int> p_region_of_cell; ///< Contains the region id of a given cell.
+    ///< Types of the complete regular grid's nodes
+    std::vector<Type> p_node_types;
+
+    ///< Types of the complete regular grid's cells
+    std::vector<Type> p_cells_types;
+
+    ///< List of boundary elements that intersect a given cell.
+    std::vector<std::vector<Index>> p_triangles_of_cell;
+
+    ///< Quadtree (resp. Octree) representation of the 2D (resp 3D) cell.
+    std::vector<Cell> p_cells;
+
+    ///< Distinct regions of cells.
+    std::vector<Region> p_regions;
+
+    ///< Contains the grid's nodes to be draw
+    std::vector<sofa::defaulttype::Vector3> p_drawing_nodes_vector;
+
+    ///< Contains the grid's edges to be draw
+    std::vector<sofa::defaulttype::Vector3> p_drawing_edges_vector;
+
+    ///< Contains the edges of subdivided cells of the grid to be draw
+    std::vector<sofa::defaulttype::Vector3> p_drawing_subdivided_edges_vector;
+
+    ///< Contains the cells for each region to be draw
+    std::vector<std::vector<sofa::defaulttype::Vector3>> p_drawing_cells_vector;
+
 };
 
-template<> void FictitiousGrid<Vec2Types>::create_grid ();
+//template<> void FictitiousGrid<Vec2Types>::create_grid ();
 template<> void FictitiousGrid<Vec3Types>::create_grid ();
 
-template<> void FictitiousGrid<Vec2Types>::compute_cell_types_from_explicit_surface ();
+//template<> void FictitiousGrid<Vec2Types>::compute_cell_types_from_explicit_surface ();
 template<> void FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface ();
+
+//template<> void FictitiousGrid<Vec2Types>::subdivide_cells ();
+template<> void FictitiousGrid<Vec3Types>::subdivide_cells ();
+
+//template<> std::array<FictitiousGrid<Vec2Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec2Types>::Dimension> FictitiousGrid<Vec2Types>::
+//    get_subcells(const CellElement & e) const;
+
+template<> std::array<FictitiousGrid<Vec3Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec3Types>::Dimension> FictitiousGrid<Vec3Types>::
+get_subcells(const CellElement & e) const;
 
 template<> void FictitiousGrid<Vec3Types>::draw (const sofa::core::visual::VisualParams* vparams);
 
-extern template class FictitiousGrid<Vec2Types>;
+//extern template class FictitiousGrid<Vec2Types>;
 extern template class FictitiousGrid<Vec3Types>;
 
 } // namespace SofaCaribou::GraphComponents::topology
