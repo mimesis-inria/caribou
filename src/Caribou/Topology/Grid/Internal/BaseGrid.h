@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <list>
 #include <array>
+#include <vector>
+#include <bitset>
 #include <Caribou/config.h>
 #include <Caribou/macros.h>
 #include <Eigen/Core>
@@ -204,6 +206,95 @@ struct BaseGrid
         return cell_index_at(grid_coordinates_at(coordinates, test_for_boundary));
     }
 
+    /**
+     * Get all the cells around the given world coordinates.
+     * If the position is inside a cell (1D, 2D or 3D), only one cell is returned.
+     * If it is on a node (1D, 2D or 3D), 2 cells are returned in 1D, 4 cells in 2D, and 8 cells in 3D.
+     * If it is on an edge (2D and 3D), two cells are returned in 2D, four in 3D.
+     * If it is on a face (3D), two cells are returned in 3D.
+     */
+    inline std::vector<CellIndex>
+    cells_around(const WorldCoordinates & coordinates) const noexcept
+    {
+
+        struct CwiseRound {
+             Float operator()(const Float& x) const { return std::round(x); }
+        };
+        struct CwiseFloor {
+            Float operator()(const Float& x) const { return std::floor(x); }
+        };
+
+
+        std::vector<CellIndex> cells;
+        cells.reserve((unsigned) 1<<Dimension);
+
+        const CellIndex ncells = number_of_cells();
+        const VecFloat h = H();
+        const VecFloat absolute = ((coordinates - m_anchor_position).array() / h.array()).matrix();
+        const VecFloat rounded = absolute.unaryExpr(CwiseRound());
+        const VecFloat distance = absolute - rounded;
+
+        auto close_to_axis = std::bitset<Dimension>();
+
+        // Let's find the axis for which our coordinate is very close to
+        for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
+            if (distance[axis]*distance[axis] < EPSILON*EPSILON )
+                close_to_axis[axis] = true;
+        }
+
+        if (close_to_axis.none()) {
+            // We are not near any axis, which means we are well inside a cell's boundaries
+            const auto cell_index = cell_index_at(GridCoordinates(absolute.unaryExpr(CwiseFloor()). template cast<Int>()));
+            if (IN_CLOSED_INTERVAL(0, cell_index, ncells-1)) {
+                cells.emplace_back(cell_index);
+            }
+        } else {
+            const VecFloat d = VecFloat::Constant(0.5);
+            const auto & n = N();
+
+            std::array<std::vector<UNSIGNED_INTEGER_TYPE>, Dimension> axis_indices;
+            for (auto & indices  : axis_indices) {
+                indices.reserve(Dimension);
+            }
+
+            for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
+                if (close_to_axis[axis]) {
+                    auto index = floor(rounded[axis]-d[axis]);
+                    if (index >= 0) {
+                        axis_indices[axis].emplace_back(index);
+                    }
+                    index = floor(rounded[axis]+d[axis]);
+                    if (index <= n[axis]-1) {
+                        axis_indices[axis].emplace_back(index);
+                    }
+                } else {
+                    auto index = floor(absolute[axis]);
+                    if (IN_CLOSED_INTERVAL(0, index, n[axis]-1)) {
+                        axis_indices[axis].emplace_back(index);
+                    }
+                }
+            }
+
+            for (UNSIGNED_INTEGER_TYPE i : axis_indices[0]) {
+                if constexpr (Dimension == 1) {
+                    cells.emplace_back(cell_index_at(GridCoordinates{i}));
+                } else {
+                    for (UNSIGNED_INTEGER_TYPE j : axis_indices[1]) {
+                        if constexpr (Dimension == 2) {
+                            cells.emplace_back(cell_index_at(GridCoordinates{i, j}));
+                        } else {
+                            for (UNSIGNED_INTEGER_TYPE k : axis_indices[2]) {
+                                cells.emplace_back(cell_index_at(GridCoordinates{i, j, k}));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return cells;
+    }
+
     /** Get the grid location of the cell at index cell_index */
     inline GridCoordinates
     grid_coordinates_at(const CellIndex & index) const noexcept
@@ -344,38 +435,23 @@ struct BaseGrid
 
     /** Test if the position of a given point is inside this grid */
     inline bool
-    contains(const WorldCoordinates & coordinates) const noexcept
-    {
-        VecFloat epsilon;
-        if constexpr (Dimension == 1)
-            epsilon << 0.;
-        else if constexpr (Dimension == 2)
-            epsilon << 0., 0.;
-        else
-            epsilon << 0., 0., 0.;
-
-        return contains(coordinates, epsilon);
-    }
-
-    /** Test if the position of a given point is inside this grid */
-    inline bool
-    contains(const WorldCoordinates & coordinates, const VecFloat epsilon) const noexcept
+    contains(const WorldCoordinates & coordinates, const Float epsilon = EPSILON) const noexcept
     {
         // @todo (jnbrunet2000@gmail.com): This test should be using inverse mapping function from a regular
         //  hexahedron geometric element defined in the geometry module.
 
         const VecFloat distance_to_anchor = ((coordinates - m_anchor_position).array() / size().array()).matrix();
 
-        if (distance_to_anchor[0] < 0 - epsilon[0] || distance_to_anchor[0] > 1 + epsilon[0])
+        if (distance_to_anchor[0] < 0 - epsilon || distance_to_anchor[0] > 1 + epsilon)
             return false;
 
         if CONSTEXPR_IF (Dimension >= 2) {
-            if (distance_to_anchor[1] < 0 - epsilon[1] || distance_to_anchor[1] > 1 + epsilon[1])
+            if (distance_to_anchor[1] < 0 - epsilon || distance_to_anchor[1] > 1 + epsilon)
                 return false;
         }
 
         if CONSTEXPR_IF (Dimension == 3) {
-            if (distance_to_anchor[2] < 0 - epsilon[2] || distance_to_anchor[2] > 1 + epsilon[2]) {
+            if (distance_to_anchor[2] < 0 - epsilon || distance_to_anchor[2] > 1 + epsilon) {
                 return false;
             }
         }
@@ -400,60 +476,66 @@ struct BaseGrid
         }};
 
         // Grid's boundaries (the enclosing cells must not exceed these boundaries)
-        GridCoordinates lower_grid_boundary = grid_coordinates_at(CellIndex(0));
-        GridCoordinates upper_grid_boundary = grid_coordinates_at(CellIndex(number_of_cells()-1));
+        GridCoordinates lower_grid_boundary = GridCoordinates::Zero();
+        GridCoordinates upper_grid_boundary = N(). template cast<Int>() - GridCoordinates::Ones();
 
         // Tool function that returns the minimum grid coordinates between two grid coordinates
         auto min_between =
-                [&lower_grid_boundary, &upper_grid_boundary]
-                (const GridCoordinates & first_coordinates, const GridCoordinates & second_coordinates) -> GridCoordinates
+                [this, &lower_grid_boundary, &upper_grid_boundary]
+                (const std::vector<CellIndex> & cells_indices, const GridCoordinates & min_coordinates) -> GridCoordinates
                 {
-                    GridCoordinates lower_bound;
-                    for (size_t i = 0; i < Dimension; ++i) {
+                    GridCoordinates lower_bound = min_coordinates;
 
-                        lower_bound[i] = std::min(first_coordinates[i], second_coordinates[i]);
+                    for (const auto & cell_index: cells_indices) {
+                        const GridCoordinates coordinates = grid_coordinates_at(cell_index);
+                        for (size_t i = 0; i < Dimension; ++i) {
+                            lower_bound[i] = std::min(coordinates[i], lower_bound[i]);
 
-                        // Clip to grid boundaries if the coordinates lies outside of the grid
-                        lower_bound[i] = std::max(lower_bound[i], lower_grid_boundary[i]);
-                        lower_bound[i] = std::min(lower_bound[i], upper_grid_boundary[i]);
+                            // Clip to grid boundaries if the coordinates lies outside of the grid
+                            lower_bound[i] = std::max(lower_bound[i], lower_grid_boundary[i]);
+                            lower_bound[i] = std::min(lower_bound[i], upper_grid_boundary[i]);
+                        }
                     }
                     return lower_bound;
                 };
 
         // Tool function that returns the maximum grid coordinates between two grid coordinates
         auto max_between =
-                [&lower_grid_boundary, &upper_grid_boundary]
-                (const GridCoordinates & first_coordinates, const GridCoordinates & second_coordinates) -> GridCoordinates
+                [this, &lower_grid_boundary, &upper_grid_boundary]
+                (const std::vector<CellIndex> & cells_indices, const GridCoordinates & max_coordinates) -> GridCoordinates
                 {
-                    GridCoordinates upper_bound;
-                    for (size_t i = 0; i < Dimension; ++i) {
+                    GridCoordinates upper_bound = max_coordinates;
 
-                        upper_bound[i] = std::max(first_coordinates[i], second_coordinates[i]);
+                    for (const auto & cell_index: cells_indices) {
+                        const GridCoordinates coordinates = grid_coordinates_at(cell_index);
+                        for (size_t i = 0; i < Dimension; ++i) {
 
-                        // Clip to grid boundaries if the coordinate lies outside of the grid
-                        upper_bound[i] = std::max(upper_bound[i], lower_grid_boundary[i]);
-                        upper_bound[i] = std::min(upper_bound[i], upper_grid_boundary[i]);
+                            upper_bound[i] = std::max(coordinates[i], upper_bound[i]);
+
+                            // Clip to grid boundaries if the coordinate lies outside of the grid
+                            upper_bound[i] = std::max(upper_bound[i], lower_grid_boundary[i]);
+                            upper_bound[i] = std::min(upper_bound[i], upper_grid_boundary[i]);
+                        }
                     }
                     return upper_bound;
                 };
 
         // 1. Find the grid coordinates bounding box of the cells that contain each nodes
-        GridCoordinates lower_cell = min_between(grid_coordinates_at(positions[0], true), upper_grid_boundary);
-        GridCoordinates upper_cell = max_between(grid_coordinates_at(positions[0], true), lower_grid_boundary);
+        GridCoordinates lower_cell = min_between(cells_around(positions[0]), upper_grid_boundary);
+        GridCoordinates upper_cell = max_between(cells_around(positions[0]), lower_grid_boundary);
 
         // This is used to discard the bbox computation if all points are outside the grid
-        VecFloat epsilon = H()/1000000.;
-        bool grid_contains_at_least_one_point = contains(WorldCoordinates(positions[0]), epsilon);
+        bool grid_contains_at_least_one_point = contains(WorldCoordinates(positions[0]));
 
         for (size_t i = 1; i < positions.size(); ++ i) {
 
-            if (not grid_contains_at_least_one_point and contains(WorldCoordinates(positions[i]), epsilon))
+            if (not grid_contains_at_least_one_point and contains(WorldCoordinates(positions[i])))
                 grid_contains_at_least_one_point = true;
 
-            GridCoordinates coordinates = grid_coordinates_at(positions[i], true);
+            const auto coordinates = cells_around(positions[i]);
 
-            lower_cell = min_between(lower_cell, coordinates);
-            upper_cell = max_between(upper_cell, coordinates);
+            lower_cell = min_between(coordinates, lower_cell);
+            upper_cell = max_between(coordinates, upper_cell);
         }
 
         if (not grid_contains_at_least_one_point)

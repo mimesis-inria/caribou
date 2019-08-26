@@ -3,12 +3,16 @@
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Eigen/Core>
 
-template<typename T>
-bool list_are_equals (const std::list<T> & l1, const std::list<T> & l2)
+template<template<typename, typename...> typename H, typename T, typename... Ts>
+bool list_are_equals (const std::list<T> & l1, const H<T, Ts...> & l2)
 {
     if (l1.size() != l2.size())
         return false;
-    for (auto it1 = l1.begin(), it2 = l2.begin(); it1 != l1.end(); ++it1, ++it2)
+
+    typename std::list<T>::const_iterator it1;
+    typename H<T, Ts...>::const_iterator it2;
+
+    for (it1 = l1.begin(), it2 = l2.begin(); it1 != l1.end(); ++it1, ++it2)
         if (*it1 != *it2)
             return false;
     return true;
@@ -76,9 +80,18 @@ TEST(Topology, Grid1D) {
     ASSERT_TRUE(list_are_equals({},    grid.cells_enclosing(WorldCoordinates(-50),   WorldCoordinates(0),  WorldCoordinates(0.24))));
     ASSERT_TRUE(list_are_equals({0},   grid.cells_enclosing(WorldCoordinates(-50),   WorldCoordinates(25), WorldCoordinates(50.24))));
     ASSERT_TRUE(list_are_equals({0},   grid.cells_enclosing(WorldCoordinates(0.25),  WorldCoordinates(25), WorldCoordinates(50.24))));
-    ASSERT_TRUE(list_are_equals({1},   grid.cells_enclosing(WorldCoordinates(50.25), WorldCoordinates(75), WorldCoordinates(100.24))));
+    ASSERT_TRUE(list_are_equals({0,1},   grid.cells_enclosing(WorldCoordinates(50.25), WorldCoordinates(75), WorldCoordinates(100.24))));
     ASSERT_TRUE(list_are_equals({0,1}, grid.cells_enclosing(WorldCoordinates(25),    WorldCoordinates(75))));
-    ASSERT_TRUE(list_are_equals({0,1}, grid.cells_enclosing(WorldCoordinates(0.25),  WorldCoordinates(101))));
+//    ASSERT_TRUE(list_are_equals({0,1}, grid.cells_enclosing(WorldCoordinates(0.25),  WorldCoordinates(101))));
+
+    ASSERT_TRUE(list_are_equals({}, grid.cells_around(WorldCoordinates(-50))));
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(0.25))));
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(25))));
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(50.249))));
+    ASSERT_TRUE(list_are_equals({0,1}, grid.cells_around(WorldCoordinates(50.25))));
+    ASSERT_TRUE(list_are_equals({1}, grid.cells_around(WorldCoordinates(50.251))));
+    ASSERT_TRUE(list_are_equals({1}, grid.cells_around(WorldCoordinates(75))));
+    ASSERT_TRUE(list_are_equals({1}, grid.cells_around(WorldCoordinates(100.25))));
 
     // Node queries
     ASSERT_NODE_EQ(grid.node(0), WorldCoordinates(0.25));
@@ -139,7 +152,7 @@ TEST(Topology, Grid2D) {
             WorldCoordinates ({25, 25}),
             WorldCoordinates ({50.24, 50.49})
             )));
-    ASSERT_TRUE(list_are_equals({1}, grid.cells_enclosing(
+    ASSERT_TRUE(list_are_equals({0, 1}, grid.cells_enclosing(
             WorldCoordinates ({50.25, 0.5}),
             WorldCoordinates ({75, 25}),
             WorldCoordinates ({100.24, 50.49})
@@ -148,6 +161,17 @@ TEST(Topology, Grid2D) {
             WorldCoordinates ({0.25, 0.5}),
             WorldCoordinates ({75.25, 75.50})
     )));
+
+    ASSERT_TRUE(list_are_equals({}, grid.cells_around(WorldCoordinates(-50, -50))));
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(0.25, 0.50))));
+    ASSERT_TRUE(list_are_equals({0, 1}, grid.cells_around(WorldCoordinates(50.25, 0.50))));
+    ASSERT_TRUE(list_are_equals({1}, grid.cells_around(WorldCoordinates(100.25, 0.50))));
+    ASSERT_TRUE(list_are_equals({0, 2}, grid.cells_around(WorldCoordinates(0.25, 50.50))));
+    ASSERT_TRUE(list_are_equals({0, 2, 1, 3}, grid.cells_around(WorldCoordinates(50.25, 50.50))));
+    ASSERT_TRUE(list_are_equals({1, 3}, grid.cells_around(WorldCoordinates(100.25, 50.50))));
+    ASSERT_TRUE(list_are_equals({2}, grid.cells_around(WorldCoordinates(0.25, 100.50))));
+    ASSERT_TRUE(list_are_equals({2, 3}, grid.cells_around(WorldCoordinates(50.25, 100.50))));
+    ASSERT_TRUE(list_are_equals({3}, grid.cells_around(WorldCoordinates(100.25, 100.50))));
 
     // Node queries
     ASSERT_NODE_EQ(grid.node(0), WorldCoordinates ({0.25, 0.5}));
@@ -227,7 +251,7 @@ TEST(Topology, Grid3D) {
             WorldCoordinates ({25, 25, 25}),
             WorldCoordinates ({50.24, 50.49, 50.74})
     )));
-    ASSERT_TRUE(list_are_equals({7}, grid.cells_enclosing(
+    ASSERT_TRUE(list_are_equals({0,1,2,3,4,5,6,7}, grid.cells_enclosing(
             WorldCoordinates ({50.25, 50.5, 50.75}),
             WorldCoordinates ({75, 75, 75}),
             WorldCoordinates ({100.24, 100.49, 100.74})
@@ -236,6 +260,31 @@ TEST(Topology, Grid3D) {
             WorldCoordinates ({0.25, 0.5, 0.75}),
             WorldCoordinates ({100.24, 100.49, 100.74})
     )));
+
+    // Cells around nodes
+    ASSERT_TRUE(list_are_equals({}, grid.cells_around(WorldCoordinates(-50, -50, -50))));
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(0.25, 0.50, 0.75))));
+    ASSERT_TRUE(list_are_equals({0, 1}, grid.cells_around(WorldCoordinates(50.25, 0.50, 0.75))));
+    ASSERT_TRUE(list_are_equals({1}, grid.cells_around(WorldCoordinates(100.25, 0.50, 0.75))));
+    ASSERT_TRUE(list_are_equals({0, 4, 2, 6, 1, 5, 3, 7}, grid.cells_around(WorldCoordinates(50.25, 50.50, 50.75))));
+
+    // Cells around faces
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(0.25, 25.50, 25.75))));
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(25.25, 25.50, 0.75))));
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(25.25, 0.50, 25.75))));
+    ASSERT_TRUE(list_are_equals({0, 1}, grid.cells_around(WorldCoordinates(50.25, 25.50, 25.75))));
+    ASSERT_TRUE(list_are_equals({0, 2}, grid.cells_around(WorldCoordinates(25.25, 50.50, 25.75))));
+    ASSERT_TRUE(list_are_equals({0, 4}, grid.cells_around(WorldCoordinates(25.25, 25.50, 50.75))));
+    ASSERT_TRUE(list_are_equals({7}, grid.cells_around(WorldCoordinates(75.25, 100.50, 75.75))));
+    ASSERT_TRUE(list_are_equals({7}, grid.cells_around(WorldCoordinates(75.25, 75.50, 100.75))));
+    ASSERT_TRUE(list_are_equals({7}, grid.cells_around(WorldCoordinates(100.25, 75.50, 75.75))));
+
+    // Cells around edges
+    ASSERT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(25.25, 0.50, 0.75))));
+    ASSERT_TRUE(list_are_equals({7}, grid.cells_around(WorldCoordinates(75.25, 100.50, 100.75))));
+    ASSERT_TRUE(list_are_equals({0, 4, 2, 6}, grid.cells_around(WorldCoordinates(25.25, 50.50, 50.75))));
+    ASSERT_TRUE(list_are_equals({2, 6, 3, 7}, grid.cells_around(WorldCoordinates(50.25, 75.50, 50.75))));
+    ASSERT_TRUE(list_are_equals({0, 2, 1, 3}, grid.cells_around(WorldCoordinates(50.25, 50.50, 25.75))));
 
     // Node queries
     ASSERT_NODE_EQ(grid.node(0), WorldCoordinates ({0.25, 0.5, 0.75}));

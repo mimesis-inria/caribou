@@ -27,6 +27,18 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
                 bool(false),
                 "use_implicit_surface",
                 "Use an implicit surface instead of a tessellated surface. If true, the callback function is_inside must be defined."))
+        , d_draw_boundary_cells(initData(&d_draw_boundary_cells,
+                bool(true),
+                "draw_boundary_cells",
+                "Draw the cells intersected by the surface boundary."))
+        , d_draw_outside_cells(initData(&d_draw_outside_cells,
+                bool(true),
+                "draw_outside_cells",
+                "Draw the cells that are outside of the surface boundary."))
+        , d_draw_inside_cells(initData(&d_draw_inside_cells,
+                bool(true),
+                "draw_inside_cells",
+                "Draw the cells that are inside of the surface boundary."))
         , d_surface_positions(initData(&d_surface_positions, SofaVecCoord(),
                 "surface_positions",
                 "Position vector of nodes contained in the surface boundary of the immersed object."))
@@ -263,23 +275,6 @@ FictitiousGrid<DataTypes>::get_neighbors(Cell * cell)
     const auto & upper_grid_boundary = p_grid->N();
     std::vector<Cell *> neighbors;
 
-    GridCoordinates subcell_coordinates[(unsigned) 1 << Dimension];
-    if constexpr (Dimension == 2) {
-        subcell_coordinates[0] = {0, 0};
-        subcell_coordinates[1] = {1, 0};
-        subcell_coordinates[2] = {1, 1};
-        subcell_coordinates[3] = {0, 1};
-    } else {
-        subcell_coordinates[0] = {0, 0, 0};
-        subcell_coordinates[1] = {1, 0, 0};
-        subcell_coordinates[2] = {0, 1, 0};
-        subcell_coordinates[3] = {1, 1, 0};
-        subcell_coordinates[4] = {0, 0, 1};
-        subcell_coordinates[5] = {1, 0, 1};
-        subcell_coordinates[6] = {0, 1, 1};
-        subcell_coordinates[7] = {1, 1, 1};
-    }
-
     static constexpr INTEGER_TYPE directions[2] = {-1, 1};
 
 
@@ -381,8 +376,10 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
 {
     p_drawing_nodes_vector.resize(p_grid->number_of_nodes());
     p_drawing_edges_vector.resize(p_grid->number_of_edges()*2);
+    // Reset the vector in case we got multiple initializations
     p_drawing_subdivided_edges_vector.resize(0);
-    p_drawing_cells_vector.resize(0); // Reset the vector in case we got multiple initializations
+    p_drawing_cells_vector.resize(0);
+    p_drawing_subdivided_edges_vector.resize(p_regions.size());
     p_drawing_cells_vector.resize(p_regions.size());
 
     for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_nodes(); ++i) {
@@ -411,12 +408,15 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
                 }
             } else {
                 const auto & region_id = c->data->region_id;
-                for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < ((unsigned)1 << Dimension); ++node_id) {
-                    p_drawing_cells_vector[region_id].emplace_back(e.node(node_id)[0], e.node(node_id)[1],e.node(node_id)[2]);
+                for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < ((unsigned) 1 << Dimension); ++node_id) {
+                    p_drawing_cells_vector[region_id].emplace_back(e.node(node_id)[0], e.node(node_id)[1],
+                                                                   e.node(node_id)[2]);
                 }
-                for (const auto & edge : CellElement::edges) {
-                    p_drawing_subdivided_edges_vector.emplace_back(e.node(edge[0])[0], e.node(edge[0])[1], e.node(edge[0])[2]);
-                    p_drawing_subdivided_edges_vector.emplace_back(e.node(edge[1])[0], e.node(edge[1])[1], e.node(edge[1])[2]);
+                for (const auto &edge : CellElement::edges) {
+                    p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[0])[0], e.node(edge[0])[1],
+                                                                   e.node(edge[0])[2]);
+                    p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[1])[0], e.node(edge[1])[1],
+                                                                   e.node(edge[1])[2]);
                 }
             }
 

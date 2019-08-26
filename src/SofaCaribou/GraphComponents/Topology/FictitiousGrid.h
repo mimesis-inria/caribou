@@ -157,6 +157,9 @@ private:
     Data<SofaVecFloat> d_max;
     Data<UNSIGNED_INTEGER_TYPE> d_number_of_subdivision;
     Data<bool> d_use_implicit_surface;
+    Data<bool> d_draw_boundary_cells;
+    Data<bool> d_draw_outside_cells;
+    Data<bool> d_draw_inside_cells;
 
     Data< SofaVecCoord > d_surface_positions;
 
@@ -198,13 +201,22 @@ private:
     ///< Contains the grid's edges to be draw
     std::vector<sofa::defaulttype::Vector3> p_drawing_edges_vector;
 
-    ///< Contains the edges of subdivided cells of the grid to be draw
-    std::vector<sofa::defaulttype::Vector3> p_drawing_subdivided_edges_vector;
+    ///< Contains the edges of subdivided cells for each region to be draw
+    std::vector<std::vector<sofa::defaulttype::Vector3>> p_drawing_subdivided_edges_vector;
 
     ///< Contains the cells for each region to be draw
     std::vector<std::vector<sofa::defaulttype::Vector3>> p_drawing_cells_vector;
 
+    // ----------------------
+    // Private static members
+    // ----------------------
+    ///< Contains the coordinates of each subcells of a quad (resp hexa) in 2D resp(3D)
+    static const GridCoordinates subcell_coordinates[(unsigned) 1 << Dimension];
+
 };
+
+//template<> const FictitiousGrid<Vec2Types>::GridCoordinates FictitiousGrid<Vec2Types>::subcell_coordinates[4];
+template<>  const FictitiousGrid<Vec3Types>::GridCoordinates FictitiousGrid<Vec3Types>::subcell_coordinates[8];
 
 //template<> void FictitiousGrid<Vec2Types>::create_grid ();
 template<> void FictitiousGrid<Vec3Types>::create_grid ();

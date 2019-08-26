@@ -16,6 +16,7 @@
                         n="23 23 82"
                         min="-5 -5 -30"
                         max="5 5 30"
+                        maximum_number_of_subdivision_levels="1"
                         surface_triangles="@../implicit_surface/mesh.triangles"
                         surface_positions="@../implicit_surface/mesh.position"/>
 

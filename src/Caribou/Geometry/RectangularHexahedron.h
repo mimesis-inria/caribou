@@ -184,6 +184,15 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         return p_R.transpose() * ((coordinates - p_center).array() / (p_H/2.).array()).matrix();
     }
 
+    inline bool
+    contains(const WorldCoordinates & coordinates) const
+    {
+        const LocalCoordinates c = Tinv(coordinates);
+        return IN_CLOSED_INTERVAL(-1, c[0], 1) and
+               IN_CLOSED_INTERVAL(-1, c[1], 1) and
+               IN_CLOSED_INTERVAL(-1, c[2], 1);
+    }
+
     /**
      * Test if the cube intersects the given 3D segment (in world coordinates)
      *
@@ -230,14 +239,14 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         // Project the polygon's nodes into the unit cube
         WorldCoordinates local_nodes[NNodes];
         for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
-            local_nodes[i] = Tinv(nodes[i]);
+            local_nodes[i] = Tinv(nodes[i]) / 2.;
         }
 
 
         // Check if any edges of the polygon intersect the hexa
         for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
-            const auto & p1 = local_nodes[i];
-            const auto & p2 = local_nodes[(i+1)%NNodes];
+            const Vector<3> & p1 = local_nodes[i]*2;
+            const Vector<3> & p2 = local_nodes[(i+1)%NNodes]*2;
             const Segment<3> edge(p1, p2);
             if (intersects_local(edge))
                 return true;
@@ -251,13 +260,13 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
                          (((polynormal[2]) < 0) ? -1 : 1);
 
         // Check if the intersection point between the two planes lies inside the cube
-        const auto t = polynormal.dot(nodes[0]) / polynormal.dot(best_diagonal);
-        if (!IN_CLOSED_INTERVAL(-1-EPSILON, t, 1+EPSILON))
+        const FLOATING_POINT_TYPE t = polynormal.dot(local_nodes[0]) / polynormal.dot(best_diagonal);
+        if (!IN_CLOSED_INTERVAL(-.5, t, .5))
             return false;
 
         // Check if the intersection point between the two planes lies inside the polygon
         const Vector<3> p = best_diagonal * t;
-        const Vector<3> abspolynormal = p.array().abs2();
+        const Vector<3> abspolynormal = polynormal.array().abs();
         int zaxis, xaxis, yaxis;
         if (abspolynormal[0] > abspolynormal[1])
             zaxis = (abspolynormal[0] > abspolynormal[2]) ? 0 : 2;
