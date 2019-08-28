@@ -58,8 +58,9 @@ public:
     using SofaVecCoord = sofa::helper::vector<Coord>;
     using ElementId = sofa::core::topology::Topology::index_type;
     using VecElementId = sofa::helper::vector<ElementId>;
-    using Triangle = sofa::core::topology::BaseMeshTopology::Triangle;
-    using Edge = sofa::core::topology::BaseMeshTopology::Edge;
+    using SofaHexahedron = sofa::core::topology::BaseMeshTopology::Hexahedron;
+    using SofaTriangle = sofa::core::topology::BaseMeshTopology::Triangle;
+    using SofaEdge = sofa::core::topology::BaseMeshTopology::Edge;
 
     // Grid data aliases
     using GridType = caribou::topology::Grid<Dimension>;
@@ -142,16 +143,20 @@ public:
 
 private:
     virtual void compute_cell_types_from_implicit_surface();
-    virtual void compute_cell_types_from_explicit_surface();
-    virtual void subdivide_cells();
+    virtual void tag_intersected_cells();
+    virtual void tag_outside_cells();
+    virtual void tag_inside_cells();
+    virtual void subdivide_intersected_cells();
+    virtual void create_regions_from_same_type_cells();
+    virtual void create_sparse_grid();
     virtual void populate_drawing_vectors();
 
     std::array<CellElement, (unsigned) 1 << Dimension> get_subcells(const CellElement & e) const;
 
 private:
-    // ------------
-    // Data members
-    // ------------
+    // ------------------
+    // Input data members
+    // ------------------
     Data<SofaVecInt> d_n;
     Data<SofaVecFloat> d_min;
     Data<SofaVecFloat> d_max;
@@ -164,10 +169,20 @@ private:
     Data< SofaVecCoord > d_surface_positions;
 
     ///< List of edges (ex: [e1p1 e1p2 e2p1 e2p2 ...]).
-    Data<sofa::helper::vector<Edge> > d_surface_edges;
+    Data<sofa::helper::vector<SofaEdge> > d_surface_edges;
 
     ///< List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...]).
-    Data<sofa::helper::vector<Triangle> > d_surface_triangles;
+    Data<sofa::helper::vector<SofaTriangle> > d_surface_triangles;
+
+    // -------------------
+    // Output data members
+    // -------------------
+    ///< Position vector of nodes contained in the sparse grid
+    Data< SofaVecCoord > d_positions;
+
+    ///< List of hexahedrons contained in the sparse grid (ex: [h1p1 h1p2 h1p3 h1p4 h1p5 ... hnp6 hnp7]).
+    Data < sofa::helper::vector<SofaHexahedron> > d_hexahedrons;
+
 
     // ---------------
     // Private members
@@ -221,11 +236,23 @@ template<>  const FictitiousGrid<Vec3Types>::GridCoordinates FictitiousGrid<Vec3
 //template<> void FictitiousGrid<Vec2Types>::create_grid ();
 template<> void FictitiousGrid<Vec3Types>::create_grid ();
 
-//template<> void FictitiousGrid<Vec2Types>::compute_cell_types_from_explicit_surface ();
-template<> void FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface ();
+//template<> void FictitiousGrid<Vec2Types>::create_sparse_grid ();
+template<> void FictitiousGrid<Vec3Types>::create_sparse_grid ();
 
-//template<> void FictitiousGrid<Vec2Types>::subdivide_cells ();
-template<> void FictitiousGrid<Vec3Types>::subdivide_cells ();
+//template<> void FictitiousGrid<Vec2Types>::tag_intersected_cells ();
+template<> void FictitiousGrid<Vec3Types>::tag_intersected_cells ();
+
+//template<> void FictitiousGrid<Vec2Types>::tag_outside_cells ();
+template<> void FictitiousGrid<Vec3Types>::tag_outside_cells ();
+
+//template<> void FictitiousGrid<Vec2Types>::tag_inside_cells ();
+template<> void FictitiousGrid<Vec3Types>::tag_inside_cells ();
+
+//template<> void FictitiousGrid<Vec2Types>::subdivide_intersected_cells ();
+template<> void FictitiousGrid<Vec3Types>::subdivide_intersected_cells ();
+
+//template<> void FictitiousGrid<Vec2Types>::create_regions_from_same_type_cells ();
+template<> void FictitiousGrid<Vec3Types>::create_regions_from_same_type_cells ();
 
 //template<> std::array<FictitiousGrid<Vec2Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec2Types>::Dimension> FictitiousGrid<Vec2Types>::
 //    get_subcells(const CellElement & e) const;

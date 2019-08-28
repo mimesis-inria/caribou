@@ -120,35 +120,37 @@ void FictitiousGrid<Vec3Types>::create_grid()
     p_cells_types.resize(p_grid->number_of_cells(), Type::Undefined);
     p_cells.resize(p_grid->number_of_cells());
 
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     if (d_use_implicit_surface.getValue() and p_implicit_test_callback) {
         compute_cell_types_from_implicit_surface();
     } else {
-        compute_cell_types_from_explicit_surface();
+        tag_intersected_cells();
+        subdivide_intersected_cells();
+        create_regions_from_same_type_cells();
+        tag_outside_cells();
+        tag_inside_cells();
     }
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    msg_info() << "Initialization of the grid finished in " << std::setprecision(3) << std::fixed
-    << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " [ms]";
+
+    create_sparse_grid();
+    populate_drawing_vectors();
 }
 
 //template<>
 //void
-//FictitiousGrid<Vec2Types>::compute_cell_types_from_explicit_surface()
+//FictitiousGrid<Vec2Types>::tag_intersected_cells()
 //{
-//    // We got a edge tesselation representation of the surface.
-//    msg_error() << "Not yet implemented for 2D types.";
+//
 //}
 
 template<>
 void
-FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
+FictitiousGrid<Vec3Types>::tag_intersected_cells()
 {
+    BEGIN_CLOCK;
     // We got a triangle tesselation representation of the surface.
     const auto & positions = d_surface_positions.getValue();
     const auto & triangles = d_surface_triangles.getValue();
     int64_t time_to_find_bounding_boxes = 0;
     int64_t time_to_find_intersections = 0;
-    std::chrono::steady_clock::time_point begin, end;
 
     p_triangles_of_cell.resize(p_grid->number_of_cells());
     std::vector<UNSIGNED_INTEGER_TYPE> outside_triangles;
@@ -179,10 +181,9 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
         const caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
 
         // Get all the cells enclosing the three nodes of the triangles
-        begin = std::chrono::steady_clock::now();
+        TICK;
         const auto enclosing_cells = p_grid->cells_enclosing(nodes[0], nodes[1], nodes[2]);
-        end = std::chrono::steady_clock::now();
-        time_to_find_bounding_boxes += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+        time_to_find_bounding_boxes += TOCK;
 
         if (enclosing_cells.empty()) {
             msg_error() << "Triangle #"<< triangle_index << " has no enclosing cells.";
@@ -194,10 +195,9 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
         } else {
             for (const auto &cell_index : enclosing_cells) {
                 const auto e = p_grid->cell_at(cell_index);
-                begin = std::chrono::steady_clock::now();
+                TICK;
                 const bool intersects = e.intersects(t);
-                end = std::chrono::steady_clock::now();
-                time_to_find_intersections += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+                time_to_find_intersections += TOCK;
                 if (intersects) {
                     p_cells_types[cell_index] = Type::Boundary;
                     p_triangles_of_cell[cell_index].emplace_back(triangle_index);
@@ -211,186 +211,28 @@ FictitiousGrid<Vec3Types>::compute_cell_types_from_explicit_surface()
     msg_info() << "Computing the intersections with the surface in "  << std::setprecision(3) << std::fixed
                << time_to_find_intersections/1000./1000. << " [ms]";
 
-    begin = std::chrono::steady_clock::now();
-    subdivide_cells();
-    end = std::chrono::steady_clock::now();
-    msg_info() << "Computing the subdivisions in "  << std::setprecision(3) << std::fixed
-               << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count()/1000./1000. << " [ms]";
-
     if (!outside_triangles.empty()) {
         std::string triangle_indices = std::accumulate(std::next(outside_triangles.begin()), outside_triangles.end(),
-            std::to_string(outside_triangles[0]),[](std::string s, const UNSIGNED_INTEGER_TYPE & index) {
-            return std::move(s) + ", " + std::to_string(index);
-        } );
+                                                       std::to_string(outside_triangles[0]),[](std::string s, const UNSIGNED_INTEGER_TYPE & index) {
+                return std::move(s) + ", " + std::to_string(index);
+            } );
         msg_error() << "Some triangles lie outside of the grid domain: " << triangle_indices;
         return;
-    }
-
-    // At this point, we have all the boundary cells, let's create regions of cells regrouping neighbors cells
-    // of the same type. Special attention needs to be spent on boundary cells as if the number of subdivision is
-    // greater than zero, we must also add subcells to the regions.
-    begin = std::chrono::steady_clock::now();
-
-    // First, add all leaf cells to a queue.
-    std::queue<Cell*> remaining_cells;
-    for (std::size_t i = 0; i < p_grid->number_of_cells(); ++i) {
-        std::queue<Cell *> cells;
-        cells.emplace(&p_cells[i]);
-        while (not cells.empty()) {
-            Cell * c = cells.front();
-            cells.pop();
-
-            if (c->childs) {
-                for (Cell & child : (*c->childs)) {
-                    cells.emplace(&child);
-                }
-            } else {
-                remaining_cells.emplace(c);
-            }
-
-        }
-    }
-
-    // Iterate over every cells, and for each one, if it isn't yet classified,
-    // start a clustering algorithm to fill the region's cells
-    while (not remaining_cells.empty()) {
-        Cell * c = remaining_cells.front();
-        remaining_cells.pop();
-
-        // If this cell was previously classified, skip it
-        if (c->data->region_id > -1) {
-            continue;
-        }
-
-        // Create a new region
-        p_regions.push_back(Region {c->data->type, std::vector<Cell*> ()});
-        std::size_t current_region_index = p_regions.size() - 1;
-
-        // Tag the current cell
-        c->data->region_id = current_region_index;
-        p_regions[current_region_index].cells.push_back(c);
-
-        // Start the clustering algorithm
-        std::queue<Cell *> cluster_cells;
-        cluster_cells.push(c);
-
-        while (not cluster_cells.empty()) {
-            Cell * cluster_cell = cluster_cells.front();
-            cluster_cells.pop();
-
-            // Add the neighbors that aren't already classified
-            auto neighbors = get_neighbors(cluster_cell);
-            for (Cell * neighbor_cell : neighbors) {
-                if (neighbor_cell->data->region_id < 0 and
-                    neighbor_cell->data->type == p_regions[current_region_index].type) {
-
-                    // Tag the neighbor cell
-                    neighbor_cell->data->region_id = current_region_index;
-                    p_regions[current_region_index].cells.emplace_back(neighbor_cell);
-                    cluster_cells.emplace(neighbor_cell);
-                }
-            }
-        }
-    }
-    end = std::chrono::steady_clock::now();
-    msg_info() << "Computing the " << p_regions.size() << " cells regions in " << std::fixed << std::setprecision(3)
-               << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1000. / 1000.
-               << " [ms]";
-
-    // At this point, all cells have been classified into distinct regions of either boundary type or undefined type.
-
-    // Next, the regions of undefined type which are surrounded by the grid's boundaries are tagged as outside cells
-    begin = std::chrono::steady_clock::now();
-    const auto & upper_grid_boundary = p_grid->N();
-    for (auto & region : p_regions) {
-        if (region.type != Type::Undefined) {
-            continue;
-        }
-
-        for (Cell *cell : region.cells) {
-            auto is_boundary_of_face = std::bitset<6>().flip();
-
-            // First, check if one of the subcell's face is the boundary of all its parent cells
-            CellIndex index = cell->index;
-            Cell *p = cell;
-            while (p->parent) {
-                index = cell->index;
-                const auto &coordinates = subcell_coordinates[index];
-                for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
-                    is_boundary_of_face &= ~((unsigned) coordinates[axis] << (unsigned) (2 * axis + 0));
-                    is_boundary_of_face &=  ((unsigned) coordinates[axis] << (unsigned) (2 * axis + 1));
-                }
-                p = p->parent;
-            }
-
-            // Next, check if any of the top parent's faces are at the boundary of the grid
-            const auto coordinates = p_grid->grid_coordinates_at(index);
-            for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
-                is_boundary_of_face[2 * axis + 0] = is_boundary_of_face[2 * axis + 0] && (coordinates[axis] - 1 < 0);
-                is_boundary_of_face[2 * axis + 1] = is_boundary_of_face[2 * axis + 1] &&
-                                                    ((unsigned) coordinates[axis] + 1 > upper_grid_boundary[axis]);
-            }
-
-            // If the subcell has a face that is both on the boundary of all of its parents, and is also boundary
-            // of the grid, than this subcell is outside of the surface and we can tag all cells in the group as outside
-            // cells
-            if (is_boundary_of_face.any()) {
-                region.type = Type::Outside;
-                for (Cell *c : region.cells) {
-                    c->data->type = Type::Outside;
-                }
-                break;
-            }
-        }
-    }
-
-    // Finally, we have both outside and boundary regions, the remaining regions are inside.
-    for (auto & region : p_regions) {
-        if (region.type != Type::Undefined) {
-            continue;
-        }
-
-        region.type = Type::Inside;
-        for (const auto & cell : region.cells) {
-            cell->data->type = Type::Inside;
-        }
-    }
-    end = std::chrono::steady_clock::now();
-    msg_info() << "Computing the regions types in " << std::setprecision(3)
-               << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1000. / 1000.
-               << " [ms]";
-
-    begin = std::chrono::steady_clock::now();
-    populate_drawing_vectors();
-    end = std::chrono::steady_clock::now();
-    msg_info() << "Populating the drawing vectors in " << std::setprecision(3) << std::fixed
-               << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() / 1000. / 1000.
-               << " [ms]";
-
-    static const std::string types_name[4] {
-        "undefined",
-        "inside",
-        "outside",
-        "boundary"
-    };
-
-    for (UNSIGNED_INTEGER_TYPE i = 0; i < p_regions.size(); ++i) {
-        msg_info() << "Region #" << (i+1) << " has " << p_regions[i].cells.size() << " "
-                   << types_name[(int)(p_regions[i].type)+1] << " cells.";
     }
 }
 
 //template<>
 //void
-//FictitiousGrid<Vec2Types>::subdivide_cells()
+//FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
 //{
 //    msg_error() << "Not yet implemented for 2D types.";
 //}
 
 template<>
 void
-FictitiousGrid<Vec3Types>::subdivide_cells()
+FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
 {
+    BEGIN_CLOCK;
     using Level = UNSIGNED_INTEGER_TYPE;
     using Weight = Float;
 
@@ -398,6 +240,7 @@ FictitiousGrid<Vec3Types>::subdivide_cells()
     const auto & surface_positions = d_surface_positions.getValue();
     const auto & surface_triangles = d_surface_triangles.getValue();
 
+    TICK;
     for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < p_grid->number_of_cells(); ++cell_index) {
         const auto & triangles = p_triangles_of_cell[cell_index];
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
@@ -461,7 +304,251 @@ FictitiousGrid<Vec3Types>::subdivide_cells()
             stack.pop();
         }
     }
+    msg_info() << "Computing the subdivisions in "  << std::setprecision(3) << std::fixed
+               << TOCK/1000./1000. << " [ms]";
 }
+
+//template<>
+//void
+//FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
+//{
+//    msg_error() << "Not yet implemented for 2D types.";
+//}
+
+template<>
+void
+FictitiousGrid<Vec3Types>::create_regions_from_same_type_cells()
+{
+    BEGIN_CLOCK;
+    // At this point, we have all the boundary cells, let's create regions of cells regrouping neighbors cells
+    // of the same type. Special attention needs to be spent on boundary cells as if the number of subdivision is
+    // greater than zero, we must also add subcells to the regions.
+
+    TICK;
+
+    // First, add all leaf cells to a queue.
+    std::queue<Cell*> remaining_cells;
+    for (std::size_t i = 0; i < p_grid->number_of_cells(); ++i) {
+        std::queue<Cell *> cells;
+        cells.emplace(&p_cells[i]);
+        while (not cells.empty()) {
+            Cell * c = cells.front();
+            cells.pop();
+
+            if (c->childs) {
+                for (Cell & child : (*c->childs)) {
+                    cells.emplace(&child);
+                }
+            } else {
+                remaining_cells.emplace(c);
+            }
+
+        }
+    }
+
+    // Iterate over every cells, and for each one, if it isn't yet classified,
+    // start a clustering algorithm to fill the region's cells
+    while (not remaining_cells.empty()) {
+        Cell * c = remaining_cells.front();
+        remaining_cells.pop();
+
+        // If this cell was previously classified, skip it
+        if (c->data->region_id > -1) {
+            continue;
+        }
+
+        // Create a new region
+        p_regions.push_back(Region {c->data->type, std::vector<Cell*> ()});
+        std::size_t current_region_index = p_regions.size() - 1;
+
+        // Tag the current cell
+        c->data->region_id = current_region_index;
+        p_regions[current_region_index].cells.push_back(c);
+
+        // Start the clustering algorithm
+        std::queue<Cell *> cluster_cells;
+        cluster_cells.push(c);
+
+        while (not cluster_cells.empty()) {
+            Cell * cluster_cell = cluster_cells.front();
+            cluster_cells.pop();
+
+            // Add the neighbors that aren't already classified
+            auto neighbors = get_neighbors(cluster_cell);
+            for (Cell * neighbor_cell : neighbors) {
+                if (neighbor_cell->data->region_id < 0 and
+                    neighbor_cell->data->type == p_regions[current_region_index].type) {
+
+                    // Tag the neighbor cell
+                    neighbor_cell->data->region_id = current_region_index;
+                    p_regions[current_region_index].cells.emplace_back(neighbor_cell);
+                    cluster_cells.emplace(neighbor_cell);
+                }
+            }
+        }
+    }
+    msg_info() << "Computing the " << p_regions.size() << " cells regions in " << std::fixed << std::setprecision(3)
+               << TOCK / 1000. / 1000.
+               << " [ms]";
+}
+
+//template<>
+//void
+//FictitiousGrid<Vec2Types>::tag_outside_cells()
+//{
+//    msg_error() << "Not yet implemented for 2D types.";
+//}
+
+template<>
+void
+FictitiousGrid<Vec3Types>::tag_outside_cells()
+{
+    BEGIN_CLOCK;
+    // At this point, all cells have been classified into distinct regions of either boundary type or undefined type.
+    // The regions of undefined type which are surrounded by the grid's boundaries are tagged as outside cells
+
+    TICK;
+    const auto & upper_grid_boundary = p_grid->N();
+    for (auto & region : p_regions) {
+        if (region.type != Type::Undefined) {
+            continue;
+        }
+
+        for (Cell *cell : region.cells) {
+            auto is_boundary_of_face = std::bitset<6>().flip();
+
+            // First, check if one of the subcell's face is the boundary of all its parent cells
+            CellIndex index = cell->index;
+            Cell *p = cell;
+            while (p->parent) {
+                index = cell->index;
+                const auto &coordinates = subcell_coordinates[index];
+                for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
+                    is_boundary_of_face &= ~((unsigned) coordinates[axis] << (unsigned) (2 * axis + 0));
+                    is_boundary_of_face &=  ((unsigned) coordinates[axis] << (unsigned) (2 * axis + 1));
+                }
+                p = p->parent;
+            }
+
+            // Next, check if any of the top parent's faces are at the boundary of the grid
+            const auto coordinates = p_grid->grid_coordinates_at(index);
+            for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
+                is_boundary_of_face[2 * axis + 0] = is_boundary_of_face[2 * axis + 0] && (coordinates[axis] - 1 < 0);
+                is_boundary_of_face[2 * axis + 1] = is_boundary_of_face[2 * axis + 1] &&
+                                                    ((unsigned) coordinates[axis] + 1 > upper_grid_boundary[axis]);
+            }
+
+            // If the subcell has a face that is both on the boundary of all of its parents, and is also boundary
+            // of the grid, than this subcell is outside of the surface and we can tag all cells in the group as outside
+            // cells
+            if (is_boundary_of_face.any()) {
+                region.type = Type::Outside;
+                for (Cell *c : region.cells) {
+                    c->data->type = Type::Outside;
+                }
+                break;
+            }
+        }
+    }
+    msg_info() << "Computing the outside regions types in " << std::setprecision(3)
+               << TOCK / 1000. / 1000.
+               << " [ms]";
+}
+
+//template<>
+//void
+//FictitiousGrid<Vec2Types>::tag_inside_cells()
+//{
+//    msg_error() << "Not yet implemented for 2D types.";
+//}
+
+template<>
+void
+FictitiousGrid<Vec3Types>::tag_inside_cells()
+{
+    // Finally, we have both outside and boundary regions, the remaining regions are inside.
+    BEGIN_CLOCK;
+    TICK;
+    for (auto & region : p_regions) {
+        if (region.type != Type::Undefined) {
+            continue;
+        }
+
+        region.type = Type::Inside;
+        for (const auto & cell : region.cells) {
+            cell->data->type = Type::Inside;
+        }
+    }
+    msg_info() << "Computing the inside regions types in " << std::setprecision(3)
+               << TOCK / 1000. / 1000.
+               << " [ms]";
+}
+
+template<>
+void
+FictitiousGrid<Vec3Types>::create_sparse_grid()
+{
+    BEGIN_CLOCK;
+    TICK;
+
+    std::vector<bool> use_cell(p_grid->number_of_cells(), true);
+
+    for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
+        const auto & cell = p_cells[cell_id];
+        if (not cell.childs and cell.data->type == Type::Outside) {
+            use_cell[cell_id] = false;
+        }
+    }
+
+    sofa::helper::WriteAccessor<Data< SofaVecCoord >> positions = d_positions;
+    positions.reserve(p_grid->number_of_nodes());
+
+    std::vector<INTEGER_TYPE> node_index_in_sparse_grid (p_grid->number_of_nodes(), -1);
+
+    for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < p_grid->number_of_nodes(); ++node_id) {
+        const auto position = p_grid->node(node_id);
+        bool use_node = false;
+        for (const auto & cell_id : p_grid->cells_around(position)) {
+            if (use_cell[cell_id]) {
+                use_node = true;
+                break;
+            }
+        }
+        if (use_node) {
+            positions.wref().emplace_back(position[0], position[1], position[2]);
+            node_index_in_sparse_grid[node_id] = (signed) positions.size() - 1;
+        }
+    }
+
+    sofa::helper::WriteAccessor<Data < sofa::helper::vector<SofaHexahedron> >> hexahedrons = d_hexahedrons;
+    hexahedrons.wref().reserve(p_grid->number_of_cells());
+
+    for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
+        if (not use_cell[cell_id]) {
+            continue;
+        }
+
+        const auto node_indices = p_grid->node_indices_of(cell_id);
+
+        hexahedrons.wref().emplace_back(
+            node_index_in_sparse_grid[node_indices[0]],
+            node_index_in_sparse_grid[node_indices[1]],
+            node_index_in_sparse_grid[node_indices[2]],
+            node_index_in_sparse_grid[node_indices[3]],
+            node_index_in_sparse_grid[node_indices[4]],
+            node_index_in_sparse_grid[node_indices[5]],
+            node_index_in_sparse_grid[node_indices[6]],
+            node_index_in_sparse_grid[node_indices[7]]);
+    }
+
+    positions.wref().shrink_to_fit();
+    hexahedrons.wref().shrink_to_fit();
+
+    msg_info() << "Creating the sparse grid in " << std::setprecision(3)
+               << TOCK / 1000. / 1000.
+               << " [ms]";
+}
+
 
 //template<>
 //std::array<FictitiousGrid<Vec2Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec2Types>::Dimension>
@@ -506,25 +593,25 @@ void FictitiousGrid<Vec3Types>::draw(const sofa::core::visual::VisualParams* vpa
 //    vparams->drawTool()->drawLines(p_drawing_edges_vector, 2, Color(1,0,0, 1));
 //    vparams->drawTool()->drawLines(p_drawing_subdivided_edges_vector, 0.5, Color(1,1,1, 1));
 
-//    if (! vparams->displayFlags().getShowWireFrame()) {
-        for (UNSIGNED_INTEGER_TYPE region_id = 0; region_id < p_drawing_cells_vector.size(); ++region_id) {
-            if ((p_regions[region_id].type == Type::Boundary and draw_boundary_cells) or
-                (p_regions[region_id].type == Type::Outside and draw_outside_cells) or
-                (p_regions[region_id].type == Type::Inside and draw_inside_cells)) {
+    for (UNSIGNED_INTEGER_TYPE region_id = 0; region_id < p_drawing_cells_vector.size(); ++region_id) {
+        if ((p_regions[region_id].type == Type::Boundary and draw_boundary_cells) or
+            (p_regions[region_id].type == Type::Outside and draw_outside_cells) or
+            (p_regions[region_id].type == Type::Inside and draw_inside_cells)) {
 
-                const auto &hex_color = kelly_colors_hex[region_id % 20];
-                const Color cell_color(
-                    (float) (((unsigned char) (hex_color >> (unsigned) 16)) / 255.),
-                    (float) (((unsigned char) (hex_color >> (unsigned) 8)) / 255.),
-                    (float) (((unsigned char) (hex_color >> (unsigned) 0)) / 255.),
-                    (float) (1));
-                const Color edge_color(0, 0, 0, 1);
+            const auto &hex_color = kelly_colors_hex[region_id % 20];
+            const Color cell_color(
+                (float) (((unsigned char) (hex_color >> (unsigned) 16)) / 255.),
+                (float) (((unsigned char) (hex_color >> (unsigned) 8)) / 255.),
+                (float) (((unsigned char) (hex_color >> (unsigned) 0)) / 255.),
+                (float) (1));
+            const Color edge_color(0, 0, 0, 1);
 
+            if (! vparams->displayFlags().getShowWireFrame()) {
                 vparams->drawTool()->drawHexahedra(p_drawing_cells_vector[region_id], cell_color);
-                vparams->drawTool()->drawLines(p_drawing_subdivided_edges_vector[region_id], 0.5, edge_color);
             }
+            vparams->drawTool()->drawLines(p_drawing_subdivided_edges_vector[region_id], 0.5, edge_color);
         }
-//    }
+    }
 
     vparams->drawTool()->restoreLastState();
 }

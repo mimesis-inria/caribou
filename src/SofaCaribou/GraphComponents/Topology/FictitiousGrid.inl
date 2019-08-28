@@ -10,7 +10,13 @@
 
 #include <stack>
 #include <queue>
+#include <iomanip>
 #include <chrono>
+
+#define BEGIN_CLOCK ;std::chrono::steady_clock::time_point __time_point_begin;
+#define TICK ;__time_point_begin = std::chrono::steady_clock::now();
+#define TOCK (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - __time_point_begin).count())
+
 
 namespace SofaCaribou::GraphComponents::topology {
 
@@ -28,15 +34,15 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
                 "use_implicit_surface",
                 "Use an implicit surface instead of a tessellated surface. If true, the callback function is_inside must be defined."))
         , d_draw_boundary_cells(initData(&d_draw_boundary_cells,
-                bool(true),
+                bool(false),
                 "draw_boundary_cells",
                 "Draw the cells intersected by the surface boundary."))
         , d_draw_outside_cells(initData(&d_draw_outside_cells,
-                bool(true),
+                bool(false),
                 "draw_outside_cells",
                 "Draw the cells that are outside of the surface boundary."))
         , d_draw_inside_cells(initData(&d_draw_inside_cells,
-                bool(true),
+                bool(false),
                 "draw_inside_cells",
                 "Draw the cells that are inside of the surface boundary."))
         , d_surface_positions(initData(&d_surface_positions, SofaVecCoord(),
@@ -48,6 +54,12 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
         , d_surface_triangles(initData(&d_surface_triangles,
                 "surface_triangles",
                 "List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...])."))
+        , d_positions(initData(&d_positions, SofaVecCoord(),
+                "positions",
+                "Position vector of nodes contained in the sparse grid."))
+        , d_hexahedrons(initData(&d_hexahedrons,
+                "hexahedrons",
+                "List of hexahedrons contained in the sparse grid (ex: [h1p1 h1p2 h1p3 h1p4 h1p5 ... hnp6 hnp7])."))
 {
 }
 
@@ -92,14 +104,14 @@ void FictitiousGrid<DataTypes>::init() {
                 } else {
                     topology = surface_containers[0];
                     if (Dimension == 2) {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<Edge>>> w_edges = d_surface_edges;
+                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<SofaEdge>>> w_edges = d_surface_edges;
                         for (unsigned int i = 0; i < topology->getNbEdges(); ++i) {
                             w_edges.push_back(topology->getEdge(i));
                         }
                         msg_info() << "Automatically found " << topology->getNbEdges() << " edges in the container '"
                                    << topology->getPathName() << "'.";
                     } else {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<Triangle >>> w_triangles = d_surface_triangles;
+                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<SofaTriangle >>> w_triangles = d_surface_triangles;
                         for (unsigned int i = 0; i < topology->getNbTriangles(); ++i) {
                             w_triangles.push_back(topology->getTriangle(i));
                         }
@@ -111,7 +123,7 @@ void FictitiousGrid<DataTypes>::init() {
                 topology = containers[0];
                 if (Dimension == 2) {
                     if (topology->getNbEdges() > 0) {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<Edge>>> w_edges = d_surface_edges;
+                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<SofaEdge>>> w_edges = d_surface_edges;
                         for (unsigned int i = 0; i < topology->getNbEdges(); ++i) {
                             w_edges.push_back(topology->getEdge(i));
                         }
@@ -122,7 +134,7 @@ void FictitiousGrid<DataTypes>::init() {
                     }
                 } else {
                     if (topology->getNbTriangles() > 0) {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<Triangle >>> w_triangles = d_surface_triangles;
+                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<SofaTriangle >>> w_triangles = d_surface_triangles;
                         for (unsigned int i = 0; i < topology->getNbTriangles(); ++i) {
                             w_triangles.push_back(topology->getTriangle(i));
                         }
@@ -374,6 +386,7 @@ template <typename DataTypes>
 void
 FictitiousGrid<DataTypes>::populate_drawing_vectors()
 {
+    BEGIN_CLOCK;
     p_drawing_nodes_vector.resize(p_grid->number_of_nodes());
     p_drawing_edges_vector.resize(p_grid->number_of_edges()*2);
     // Reset the vector in case we got multiple initializations
@@ -382,6 +395,7 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
     p_drawing_subdivided_edges_vector.resize(p_regions.size());
     p_drawing_cells_vector.resize(p_regions.size());
 
+    TICK;
     for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_nodes(); ++i) {
         const auto p = p_grid->node(i);
         p_drawing_nodes_vector[i] = {p[0], p[1], p[2]};
@@ -423,7 +437,9 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
             cells.pop();
         }
     }
-
+    msg_info() << "Populating the drawing vectors in " << std::setprecision(3) << std::fixed
+               << TOCK / 1000. / 1000.
+               << " [ms]";
 }
 
 
@@ -444,37 +460,6 @@ FictitiousGrid<DataTypes>::compute_bbox_from(const SofaVecCoord & positions)
     }
 
     return {min, max};
-}
-
-template <typename DataTypes>
-void FictitiousGrid<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
-{
-    using Color = sofa::defaulttype::Vec4f;
-    if (!p_grid)
-        return;
-
-    std::vector<sofa::defaulttype::Vector3> points_inside;
-    std::vector<sofa::defaulttype::Vector3> points_boundary;
-    for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_nodes(); ++i) {
-        const auto p = p_grid->node(i);
-        if (p_node_types[i] == Type::Inside)
-            points_inside.push_back({p[0], p[1], p[2]});
-        else if (p_node_types[i] == Type::Boundary)
-            points_boundary.push_back({p[0], p[1], p[2]});
-    }
-    vparams->drawTool()->drawPoints(points_inside, 5, Color(0, 1, 0, 1));
-    vparams->drawTool()->drawPoints(points_boundary, 5, Color(1, 0, 0, 1));
-
-
-    std::vector<sofa::defaulttype::Vector3> edge_points(p_grid->number_of_edges()*2);
-    for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_edges(); ++i) {
-        const auto edge = p_grid->edge(i);
-        edge_points[i*2] = {edge.node(0)[0], edge.node(0)[1], edge.node(0)[2]};
-        edge_points[i*2+1] = {edge.node(1)[0], edge.node(1)[1], edge.node(1)[2]};
-    }
-
-    vparams->drawTool()->drawLines(edge_points, 0.5, Color(1,1,1, 1));
-
 }
 
 } // namespace SofaCaribou::GraphComponents::topology
