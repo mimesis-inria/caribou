@@ -250,7 +250,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
         {
             p_cells[cell_index].index = cell_index;
             const CellElement cell = p_grid->cell_at(cell_index);
-            const Weight weight = cell.jacobian().determinant();
+            const Weight weight = 8*cell.jacobian().determinant();
             stack.emplace(p_grid->cell_at(cell_index), &p_cells[cell_index], weight, 0);
             H = cell.H();
         }
@@ -493,10 +493,28 @@ FictitiousGrid<Vec3Types>::create_sparse_grid()
 
     std::vector<bool> use_cell(p_grid->number_of_cells(), true);
 
+    std::map<UNSIGNED_INTEGER_TYPE, UNSIGNED_INTEGER_TYPE> volume_ratios;
+    FLOATING_POINT_TYPE volume = 0.;
+
     for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
         const auto & cell = p_cells[cell_id];
         if (not cell.childs and cell.data->type == Type::Outside) {
             use_cell[cell_id] = false;
+        } else {
+            const auto leafs = get_leaf_cells(&cell);
+            FLOATING_POINT_TYPE real_volume = 0;
+            FLOATING_POINT_TYPE complete_volume = 8*p_grid->cell_at(cell_id).jacobian().determinant();
+            for (const Cell * leaf : leafs) {
+                const auto & w = leaf->data->weight;
+                volume += w;
+                real_volume += w;
+            }
+
+            const auto ratio = (UNSIGNED_INTEGER_TYPE) std::round((real_volume/complete_volume)*100);
+            if (volume_ratios.find(ratio) == volume_ratios.end())
+                volume_ratios[ratio] = 1;
+            else
+                volume_ratios[ratio] += 1;
         }
     }
 
@@ -547,6 +565,13 @@ FictitiousGrid<Vec3Types>::create_sparse_grid()
     msg_info() << "Creating the sparse grid in " << std::setprecision(3)
                << TOCK / 1000. / 1000.
                << " [ms]";
+
+    msg_info() << "Volume of the sparse grid is " << volume;
+    for (const auto &p : volume_ratios) {
+        if (p.first == 100)
+            continue;
+        msg_info() << p.second << " cells with a volume ratio of " << p.first/100.;
+    }
 }
 
 

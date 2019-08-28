@@ -282,6 +282,34 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
 
 template <typename DataTypes>
 std::vector<typename FictitiousGrid<DataTypes>::Cell *>
+FictitiousGrid<DataTypes>::get_leaf_cells(const Cell * cell) const
+{
+    const auto & number_of_subdivision = d_number_of_subdivision.getValue();
+    std::vector<typename FictitiousGrid<DataTypes>::Cell *> leafs;
+
+    // Reserve the space for a maximum of 2^(nbSudiv*2) leafs in 2D, 2^(nbSudiv*3)  leafs in 3D
+    leafs.reserve((unsigned) 1 << (number_of_subdivision*Dimension));
+
+    std::queue<const Cell *> cells;
+    cells.emplace(cell);
+
+    while (not cells.empty()) {
+        const Cell * c = cells.front();
+        cells.pop();
+        if (not c->childs) {
+            leafs.emplace_back(const_cast<Cell *>(c));
+        } else {
+            for (const Cell & child : *(c->childs)) {
+                cells.emplace(&child);
+            }
+        }
+    }
+
+    return leafs;
+}
+
+template <typename DataTypes>
+std::vector<typename FictitiousGrid<DataTypes>::Cell *>
 FictitiousGrid<DataTypes>::get_neighbors(Cell * cell)
 {
     const auto & upper_grid_boundary = p_grid->N();

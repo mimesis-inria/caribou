@@ -43,14 +43,18 @@ public:
 
     static constexpr unsigned char Dimension = DataTypes::spatial_dimensions;
 
+    // --------------------
     // Caribou data aliases
+    // --------------------
     using Index = std::size_t;
     using VecFloat = caribou::algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
     using VecInt   = caribou::algebra::Vector<Dimension, Index>;
     using Int   = typename VecInt::ValueType;
     using Float = typename VecFloat::ValueType;
 
+    // -----------------
     // Sofa data aliases
+    // -----------------
     using SofaFloat = typename DataTypes::Real;
     using SofaVecInt = sofa::defaulttype::Vec<Dimension, Int>;
     using SofaVecFloat = sofa::defaulttype::Vec<Dimension, SofaFloat>;
@@ -62,7 +66,9 @@ public:
     using SofaTriangle = sofa::core::topology::BaseMeshTopology::Triangle;
     using SofaEdge = sofa::core::topology::BaseMeshTopology::Edge;
 
+    // -----------------
     // Grid data aliases
+    // -----------------
     using GridType = caribou::topology::Grid<Dimension>;
     using NodeIndex = typename GridType::NodeIndex;
     using CellIndex = typename GridType::CellIndex;
@@ -74,7 +80,9 @@ public:
     using CellSet = typename GridType::CellSet;
     using CellElement = typename GridType::Element;
 
+    // -----------------
     // Structures
+    // -----------------
     enum class Type : INTEGER_TYPE {
         Undefined = -1,
         Inside = 0,
@@ -105,13 +113,17 @@ public:
         std::vector<Cell*> cells;
     };
 
+    // -------
     // Aliases
+    // -------
     using f_implicit_test_callback_t = std::function<float(const WorldCoordinates &)>;
 
     template <typename ObjectType>
     using Link = SingleLink<FictitiousGrid<DataTypes>, ObjectType, BaseLink::FLAG_STRONGLINK>;
 
+    // ----------------
     // Public functions
+    // ----------------
     FictitiousGrid();
     void init() override;
     void draw(const sofa::core::visual::VisualParams* vparams) override;
@@ -152,6 +164,8 @@ private:
     virtual void populate_drawing_vectors();
 
     std::array<CellElement, (unsigned) 1 << Dimension> get_subcells(const CellElement & e) const;
+    std::vector<Cell *> get_leaf_cells(const Cell & c) const {return std::move(get_leaf_cells(&c));}
+    std::vector<Cell *> get_leaf_cells(const Cell * c) const;
 
 private:
     // ------------------
