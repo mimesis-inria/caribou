@@ -104,6 +104,8 @@ public:
         CellIndex index = 0; // Index relative to the parent cell
         std::unique_ptr<CellData> data; // Data is only stored on leaf cells
         std::unique_ptr<std::array<Cell,(unsigned) 1 << Dimension>> childs;
+
+        inline bool is_leaf() const {return childs == nullptr;}
     };
 
     ///< A region is a cluster of cells sharing the same type and surrounded by either a boundary region or the outside
@@ -127,9 +129,34 @@ public:
     FictitiousGrid();
     void init() override;
     void draw(const sofa::core::visual::VisualParams* vparams) override;
+
+    /** Initialization of the grid. This must be called before anything else. */
     virtual void create_grid();
+
+    /**
+     * Get neighbors cells around a given cell. A cell is neighbor to another one if they both have a face in common,
+     * of if a face contains one of the face of the other.
+     */
     std::vector<Cell *> get_neighbors(Cell * cell);
-    std::pair<Coord, Coord> compute_bbox_from(const SofaVecCoord & positions);
+
+    /**
+     * Get the list of gauss nodes coordinates and their respective weight inside a cell. Here, all the gauss nodes of
+     * the leafs cells that are within (or onto) the boundary are given. The coordinates are given with respect of the
+     * local frame of the cell (local coordinates).
+     */
+    std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> get_gauss_nodes_of_cell(const CellIndex & index) const;
+
+    /**
+     * Similar to `get_gauss_nodes_of_cell(const CellIndex & index)`, but here only the gauss nodes of inner cells up to
+     * the subdivision level given are returned. Leafs cells bellow the given level are only used to compute the weight
+     * of a gauss node.
+     *
+     * For example, if the grid's subdivision level is 3, calling this function with level = 0 will give the standard
+     * 4 gauss nodes in 2D (8 gauss nodes in 3D), but where each gauss nodes will use their underlying quad tree
+     * (resp. octree in 3D) to compute their weight.
+     */
+    std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>>
+    get_gauss_nodes_of_cell(const CellIndex & index, const UNSIGNED_INTEGER_TYPE level) const;
 
     /**
      * Set the implicit test callback function.
@@ -163,9 +190,10 @@ private:
     virtual void create_sparse_grid();
     virtual void populate_drawing_vectors();
 
-    std::array<CellElement, (unsigned) 1 << Dimension> get_subcells(const CellElement & e) const;
+    std::array<CellElement, (unsigned) 1 << Dimension> get_subcells_elements(const CellElement & e) const;
     std::vector<Cell *> get_leaf_cells(const Cell & c) const {return std::move(get_leaf_cells(&c));}
     std::vector<Cell *> get_leaf_cells(const Cell * c) const;
+    inline FLOATING_POINT_TYPE get_cell_weight(const Cell & c) const;
 
 private:
     // ------------------
@@ -224,6 +252,20 @@ private:
     ///< Distinct regions of cells.
     std::vector<Region> p_regions;
 
+    ///< Contains the index of a node in the sparse grid from its index in the full grid, or -1 if the node isn't
+    ///< present in the sparse grid.
+    std::vector<INTEGER_TYPE> p_node_index_in_sparse_grid;
+
+    ///< Contains the index of a node in the full grid from its index in the sparse grid.
+    std::vector<UNSIGNED_INTEGER_TYPE> p_node_index_in_grid;
+
+    ///< Contains the index of a cell in the sparse grid from its index in the full grid, or -1 if the cell isn't
+    ///< present in the sparse grid.
+    std::vector<INTEGER_TYPE> p_cell_index_in_sparse_grid;
+
+    ///< Contains the index of a cell in the full grid from its index in the sparse grid.
+    std::vector<UNSIGNED_INTEGER_TYPE> p_cell_index_in_grid;
+
     ///< Contains the grid's nodes to be draw
     std::vector<sofa::defaulttype::Vector3> p_drawing_nodes_vector;
 
@@ -269,10 +311,9 @@ template<> void FictitiousGrid<Vec3Types>::subdivide_intersected_cells ();
 template<> void FictitiousGrid<Vec3Types>::create_regions_from_same_type_cells ();
 
 //template<> std::array<FictitiousGrid<Vec2Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec2Types>::Dimension> FictitiousGrid<Vec2Types>::
-//    get_subcells(const CellElement & e) const;
-
+//    get_subcells_elements(const CellElement & e) const;
 template<> std::array<FictitiousGrid<Vec3Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec3Types>::Dimension> FictitiousGrid<Vec3Types>::
-get_subcells(const CellElement & e) const;
+get_subcells_elements(const CellElement & e) const;
 
 template<> void FictitiousGrid<Vec3Types>::draw (const sofa::core::visual::VisualParams* vparams);
 

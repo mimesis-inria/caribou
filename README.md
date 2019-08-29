@@ -10,7 +10,7 @@ be as independent as possible from external projects.
 the SOFA project as a plugin. 
 
 ## Build dependencies
-To build the **Caribou library**, no external projects are needed. Only a c++14 compliant compiler is required.
+To build the **Caribou library**,  a c++17 compliant compiler is required and the external project [Eigen](http://eigen.tuxfamily.org/) has to be installed.
 
 To build the **Sofa caribou library**, SOFA framework binaries and headers must be found. If sofa was build from scratch, 
 the build's installation path can be provided to help cmake find those binaries. It is generated in the sofa's project 

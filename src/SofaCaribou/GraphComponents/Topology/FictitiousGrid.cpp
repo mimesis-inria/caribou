@@ -250,7 +250,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
         {
             p_cells[cell_index].index = cell_index;
             const CellElement cell = p_grid->cell_at(cell_index);
-            const Weight weight = 8*cell.jacobian().determinant();
+            const Weight weight = 1;
             stack.emplace(p_grid->cell_at(cell_index), &p_cells[cell_index], weight, 0);
             H = cell.H();
         }
@@ -294,7 +294,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
                 const Weight w = weight / ((unsigned) 1<<Dimension);
                 cell->childs = std::make_unique<std::array<Cell,(unsigned) 1 << Dimension>>();
                 auto & childs = *(cell->childs);
-                const auto & childs_elements = get_subcells(e);
+                const auto & childs_elements = get_subcells_elements(e);
                 for (UNSIGNED_INTEGER_TYPE i = 0; i < childs.size(); ++i) {
                     childs[i].parent = cell;
                     childs[i].index = i;
@@ -491,55 +491,62 @@ FictitiousGrid<Vec3Types>::create_sparse_grid()
     BEGIN_CLOCK;
     TICK;
 
-    std::vector<bool> use_cell(p_grid->number_of_cells(), true);
+    std::vector<bool> use_cell(p_grid->number_of_cells(), false);
+    std::vector<bool> use_node(p_grid->number_of_nodes(), false);
 
     std::map<UNSIGNED_INTEGER_TYPE, UNSIGNED_INTEGER_TYPE> volume_ratios;
-    FLOATING_POINT_TYPE volume = 0.;
+    FLOATING_POINT_TYPE real_volume = 0.;
+    FLOATING_POINT_TYPE cell_volume = 8*p_grid->cell_at(0).jacobian().determinant();
 
+    // 1. Locate all cells that are within the surface boundaries and their nodes.
     for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
         const auto & cell = p_cells[cell_id];
-        if (not cell.childs and cell.data->type == Type::Outside) {
-            use_cell[cell_id] = false;
-        } else {
-            const auto leafs = get_leaf_cells(&cell);
-            FLOATING_POINT_TYPE real_volume = 0;
-            FLOATING_POINT_TYPE complete_volume = 8*p_grid->cell_at(cell_id).jacobian().determinant();
-            for (const Cell * leaf : leafs) {
-                const auto & w = leaf->data->weight;
-                volume += w;
-                real_volume += w;
-            }
+        if (cell.childs or (cell.data->type != Type::Outside and cell.data->type != Type::Undefined)) {
 
-            const auto ratio = (UNSIGNED_INTEGER_TYPE) std::round((real_volume/complete_volume)*100);
+            const FLOATING_POINT_TYPE weight = get_cell_weight(cell);
+            real_volume += cell_volume*weight;
+
+            const auto ratio = (UNSIGNED_INTEGER_TYPE) std::round(weight*100);
             if (volume_ratios.find(ratio) == volume_ratios.end())
                 volume_ratios[ratio] = 1;
             else
                 volume_ratios[ratio] += 1;
-        }
-    }
 
-    sofa::helper::WriteAccessor<Data< SofaVecCoord >> positions = d_positions;
-    positions.reserve(p_grid->number_of_nodes());
-
-    std::vector<INTEGER_TYPE> node_index_in_sparse_grid (p_grid->number_of_nodes(), -1);
-
-    for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < p_grid->number_of_nodes(); ++node_id) {
-        const auto position = p_grid->node(node_id);
-        bool use_node = false;
-        for (const auto & cell_id : p_grid->cells_around(position)) {
-            if (use_cell[cell_id]) {
-                use_node = true;
-                break;
+            use_cell[cell_id] = true;
+            for (const auto node_index : p_grid->node_indices_of(cell_id)) {
+                use_node[node_index] = true;
             }
         }
-        if (use_node) {
+    }
+
+
+    // 2. Add the sparse nodes and create the bijection between sparse nodes and full grid nodes
+    sofa::helper::WriteAccessor<Data< SofaVecCoord >> positions = d_positions;
+    positions.clear();
+    positions.reserve(p_grid->number_of_nodes());
+
+    p_node_index_in_sparse_grid.clear();
+    p_node_index_in_sparse_grid.resize(p_grid->number_of_nodes(), -1);
+    p_node_index_in_grid.clear();
+    p_node_index_in_grid.reserve(p_grid->number_of_nodes());
+
+    for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < p_grid->number_of_nodes(); ++node_id) {
+        if (use_node[node_id]) {
+            const auto position = p_grid->node(node_id);
             positions.wref().emplace_back(position[0], position[1], position[2]);
-            node_index_in_sparse_grid[node_id] = (signed) positions.size() - 1;
+            p_node_index_in_grid.emplace_back(node_id);
+            p_node_index_in_sparse_grid[node_id] = (signed) positions.size() - 1;
         }
     }
 
+    // 3. Add the sparse cells and create the bijection between sparse cells and full grid cells
     sofa::helper::WriteAccessor<Data < sofa::helper::vector<SofaHexahedron> >> hexahedrons = d_hexahedrons;
+    hexahedrons.clear();
     hexahedrons.wref().reserve(p_grid->number_of_cells());
+    p_cell_index_in_sparse_grid.clear();
+    p_cell_index_in_sparse_grid.resize(p_grid->number_of_cells(), -1);
+    p_cell_index_in_grid.clear();
+    p_cell_index_in_grid.reserve(p_grid->number_of_cells());
 
     for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
         if (not use_cell[cell_id]) {
@@ -549,27 +556,31 @@ FictitiousGrid<Vec3Types>::create_sparse_grid()
         const auto node_indices = p_grid->node_indices_of(cell_id);
 
         hexahedrons.wref().emplace_back(
-            node_index_in_sparse_grid[node_indices[0]],
-            node_index_in_sparse_grid[node_indices[1]],
-            node_index_in_sparse_grid[node_indices[2]],
-            node_index_in_sparse_grid[node_indices[3]],
-            node_index_in_sparse_grid[node_indices[4]],
-            node_index_in_sparse_grid[node_indices[5]],
-            node_index_in_sparse_grid[node_indices[6]],
-            node_index_in_sparse_grid[node_indices[7]]);
+            p_node_index_in_sparse_grid[node_indices[0]],
+            p_node_index_in_sparse_grid[node_indices[1]],
+            p_node_index_in_sparse_grid[node_indices[2]],
+            p_node_index_in_sparse_grid[node_indices[3]],
+            p_node_index_in_sparse_grid[node_indices[4]],
+            p_node_index_in_sparse_grid[node_indices[5]],
+            p_node_index_in_sparse_grid[node_indices[6]],
+            p_node_index_in_sparse_grid[node_indices[7]]
+        );
+
+        p_cell_index_in_grid.emplace_back(cell_id);
+        p_cell_index_in_sparse_grid[cell_id] = (signed) hexahedrons.size() - 1;
     }
 
     positions.wref().shrink_to_fit();
     hexahedrons.wref().shrink_to_fit();
+    p_node_index_in_grid.shrink_to_fit();
+    p_cell_index_in_grid.shrink_to_fit();
 
     msg_info() << "Creating the sparse grid in " << std::setprecision(3)
                << TOCK / 1000. / 1000.
                << " [ms]";
 
-    msg_info() << "Volume of the sparse grid is " << volume;
+    msg_info() << "Volume of the sparse grid is " << real_volume;
     for (const auto &p : volume_ratios) {
-        if (p.first == 100)
-            continue;
         msg_info() << p.second << " cells with a volume ratio of " << p.first/100.;
     }
 }
@@ -577,14 +588,14 @@ FictitiousGrid<Vec3Types>::create_sparse_grid()
 
 //template<>
 //std::array<FictitiousGrid<Vec2Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec2Types>::Dimension>
-//FictitiousGrid<Vec2Types>::get_subcells(const CellElement & e) const
+//FictitiousGrid<Vec2Types>::get_subcells_elements(const CellElement & e) const
 //{
 //    msg_error() << "Not yet implemented for 2D types.";
 //};
 
 template<>
 std::array<FictitiousGrid<Vec3Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec3Types>::Dimension>
-FictitiousGrid<Vec3Types>::get_subcells(const CellElement & e) const
+FictitiousGrid<Vec3Types>::get_subcells_elements(const CellElement & e) const
 {
     const Dimensions h = e.H() /  2;
     return {{

@@ -218,18 +218,6 @@ void FictitiousGrid<DataTypes>::init() {
                 }
             }
         }
-
-        if (not d_min.isSet() or not d_max.isSet()) {
-            sofa::helper::ReadAccessor<Data<SofaVecCoord>> surface_positions = d_surface_positions;
-            const auto bbox = compute_bbox_from(surface_positions.ref());
-
-            d_min.setValue(bbox.first);
-            d_max.setValue(bbox.second);
-
-            msg_info() << "The size of the grid was automatically computed from the bounding box of the surface positions. "
-                       << "If you wish to change this value, use the '" << d_min.getName() << "' and '" << d_max.getName() << "' "
-                       << "attributes of this component.";
-        }
     }
 
     // Create the grid
@@ -304,6 +292,8 @@ FictitiousGrid<DataTypes>::get_leaf_cells(const Cell * cell) const
             }
         }
     }
+
+    leafs.shrink_to_fit();
 
     return leafs;
 }
@@ -411,6 +401,84 @@ FictitiousGrid<DataTypes>::get_neighbors(Cell * cell)
 }
 
 template <typename DataTypes>
+inline FLOATING_POINT_TYPE FictitiousGrid<DataTypes>::get_cell_weight(const Cell & cell) const
+{
+    if (cell.is_leaf()) {
+        if (cell.data->type == Type::Inside or cell.data->type == Type::Boundary)
+            return cell.data->weight;
+        else
+            return 0.;
+    } else {
+        FLOATING_POINT_TYPE w = 0;
+        for (const auto & c : *(cell.childs)) {
+            w += get_cell_weight(c);
+        }
+        return w;
+    }
+}
+
+template <typename DataTypes>
+std::vector<std::pair<typename FictitiousGrid<DataTypes>::LocalCoordinates, FLOATING_POINT_TYPE>>
+FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & index) const
+{
+    return get_gauss_nodes_of_cell(index, d_number_of_subdivision.getValue());
+}
+
+template <typename DataTypes>
+std::vector<std::pair<typename FictitiousGrid<DataTypes>::LocalCoordinates, FLOATING_POINT_TYPE>>
+FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & cell_index, const UNSIGNED_INTEGER_TYPE maximum_level) const
+{
+    using Level = UNSIGNED_INTEGER_TYPE;
+
+    const auto get_gauss_cells = [this, maximum_level] (const CellElement & e, const Cell & c, const Level l) {
+        auto get_gauss_cells_impl = [this, maximum_level] (const CellElement & e, const Cell & c, const Level l, auto & ref) -> std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> {
+            std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> gauss_nodes;
+            // Reserve the space for a maximum of 2^(level*2) nodes in 2D, 2^(level*3) nodes in 3D
+            gauss_nodes.reserve((unsigned) 1 << (((maximum_level-l)+1)*Dimension));
+
+            if (c.is_leaf()) {
+                for (UNSIGNED_INTEGER_TYPE i = 0; i < CellElement::number_of_gauss_nodes; ++i) {
+                    if (c.data->type == Type::Inside or c.data->type == Type::Boundary)
+                        gauss_nodes.emplace_back(LocalCoordinates(CellElement::gauss_nodes[i]), CellElement::gauss_weights[i]*c.data->weight);
+                    else
+                        gauss_nodes.emplace_back(LocalCoordinates(CellElement::gauss_nodes[i]), 0);
+                }
+            } else {
+                if (l >= maximum_level) {
+                    const auto & child_cells = *(c.childs);
+                    for (UNSIGNED_INTEGER_TYPE i = 0; i < CellElement::number_of_gauss_nodes; ++i) {
+                        const auto weight = get_cell_weight(child_cells[i]);
+                        gauss_nodes.emplace_back(LocalCoordinates(CellElement::gauss_nodes[i]), weight);
+                    }
+                } else {
+                    const auto child_elements = get_subcells_elements(e);
+                    const auto & child_cells = *(c.childs);
+                    for (UNSIGNED_INTEGER_TYPE i = 0; i < child_cells.size(); ++i) {
+                        const auto child_gauss_nodes = ref(child_elements[i], child_cells[i], l+1, ref);
+                        for (const auto & child_gauss_node : child_gauss_nodes) {
+                            gauss_nodes.emplace_back(child_elements[i].T(child_gauss_node.first), child_gauss_node.second);
+                        }
+                    }
+                }
+            }
+            gauss_nodes.shrink_to_fit();
+            return gauss_nodes;
+        };
+        return get_gauss_cells_impl(e, c, l, get_gauss_cells_impl);
+    };
+
+    const CellElement top_element = p_grid->cell_at(cell_index);
+    const FLOATING_POINT_TYPE detJ = top_element.jacobian().determinant();
+    std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> gauss_nodes = get_gauss_cells(CellElement(), p_cells[cell_index], 0);
+
+    for (auto & n : gauss_nodes) {
+        n.second *= detJ;
+    }
+
+    return std::move(gauss_nodes);
+}
+
+template <typename DataTypes>
 void
 FictitiousGrid<DataTypes>::populate_drawing_vectors()
 {
@@ -444,7 +512,7 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
             const CellElement & e = std::get<1>(cells.front());
 
             if (c->childs) {
-                const auto & childs_elements = get_subcells(e);
+                const auto & childs_elements = get_subcells_elements(e);
                 for (UNSIGNED_INTEGER_TYPE j = 0; j < (*c->childs).size(); ++j) {
                     cells.emplace(&(*c->childs)[j], childs_elements[j]);
                 }
@@ -468,26 +536,6 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
     msg_info() << "Populating the drawing vectors in " << std::setprecision(3) << std::fixed
                << TOCK / 1000. / 1000.
                << " [ms]";
-}
-
-
-template <typename DataTypes>
-std::pair<typename FictitiousGrid<DataTypes>::Coord, typename FictitiousGrid<DataTypes>::Coord>
-FictitiousGrid<DataTypes>::compute_bbox_from(const SofaVecCoord & positions)
-{
-    Coord min = positions[0];
-    Coord max = min;
-
-    for (const Coord & p : positions) {
-        for (size_t i = 0; i < Dimension; ++i) {
-            if (p[i] < min[i])
-                min[i] = p[i];
-            if (p[i] > max[i])
-                max[i] = p[i];
-        }
-    }
-
-    return {min, max};
 }
 
 } // namespace SofaCaribou::GraphComponents::topology
