@@ -133,6 +133,24 @@ public:
     /** Initialization of the grid. This must be called before anything else. */
     virtual void create_grid();
 
+    /** Get the number of sparse cells in the grid */
+    inline
+    UNSIGNED_INTEGER_TYPE number_of_cells() const {
+        return p_cell_index_in_grid.size();
+    }
+
+    /** Get the number of sparse nodes in the grid */
+    inline
+    UNSIGNED_INTEGER_TYPE number_of_nodes() const {
+        return p_node_index_in_grid.size();
+    }
+
+    /** Get the number of subdivisions in the grid */
+    inline
+    UNSIGNED_INTEGER_TYPE number_of_subdivisions() const {
+        return d_number_of_subdivision.getValue();
+    }
+
     /**
      * Get neighbors cells around a given cell. A cell is neighbor to another one if they both have a face in common,
      * of if a face contains one of the face of the other.
@@ -143,8 +161,10 @@ public:
      * Get the list of gauss nodes coordinates and their respective weight inside a cell. Here, all the gauss nodes of
      * the leafs cells that are within (or onto) the boundary are given. The coordinates are given with respect of the
      * local frame of the cell (local coordinates).
+     *
+     * * @param sparse_cell_index The index of the cell in the sparse grid
      */
-    std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> get_gauss_nodes_of_cell(const CellIndex & index) const;
+    std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> get_gauss_nodes_of_cell(const CellIndex & sparse_cell_index) const;
 
     /**
      * Similar to `get_gauss_nodes_of_cell(const CellIndex & index)`, but here only the gauss nodes of inner cells up to
@@ -154,9 +174,28 @@ public:
      * For example, if the grid's subdivision level is 3, calling this function with level = 0 will give the standard
      * 4 gauss nodes in 2D (8 gauss nodes in 3D), but where each gauss nodes will use their underlying quad tree
      * (resp. octree in 3D) to compute their weight.
+     *
+     * @param sparse_cell_index The index of the cell in the sparse grid
      */
     std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>>
-    get_gauss_nodes_of_cell(const CellIndex & index, const UNSIGNED_INTEGER_TYPE level) const;
+    get_gauss_nodes_of_cell(const CellIndex & sparse_cell_index, const UNSIGNED_INTEGER_TYPE level) const;
+
+    /**
+     * Get the element of a cell from its index in the sparse grid.
+     */
+    inline
+    CellElement get_cell_element(const CellIndex & sparse_cell_index) const {
+        const auto cell_index = p_cell_index_in_grid[sparse_cell_index];
+        return std::move(p_grid->cell_at(cell_index));
+    }
+
+    /**
+     * Get the node indices of a cell from its index in the sparse grid.
+     */
+    inline
+    const SofaHexahedron & get_node_indices_of(const CellIndex & sparse_cell_index) const {
+        return d_hexahedrons.getValue().at(sparse_cell_index);
+    }
 
     /**
      * Set the implicit test callback function.

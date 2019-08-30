@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(SofaCaribou)
 
 set(HEADER_FILES
+    GraphComponents/Forcefield/FictitiousGridElasticForce.h
     GraphComponents/Forcefield/HexahedronElasticForce.h
     GraphComponents/Forcefield/TetrahedronElasticForce.h
     GraphComponents/Forcefield/TractionForce.h
@@ -14,6 +15,7 @@ set(TEMPLATE_FILES
         )
 
 set(SOURCE_FILES
+    GraphComponents/Forcefield/FictitiousGridElasticForce.cpp
     GraphComponents/Forcefield/HexahedronElasticForce.cpp
     GraphComponents/Forcefield/TetrahedronElasticForce.cpp
     GraphComponents/Forcefield/TractionForce.cpp
@@ -54,6 +56,7 @@ find_package(OpenMP)
 find_package(LAPACK)
 find_package(LAPACKE)
 find_package(MKL)
+find_package(Eigen3)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")

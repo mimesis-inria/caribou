@@ -111,7 +111,7 @@ void FictitiousGrid<Vec3Types>::create_grid()
             std::abs(first_corner[1] - second_corner[1]),
             std::abs(first_corner[2] - second_corner[2])
     };
-    Subdivisions grid_n = {n[0], n[1], n[2]};
+    Subdivisions grid_n = {n[0]-1, n[1]-1, n[2]-1};
     p_grid = std::make_unique<GridType> (
             anchor_position, grid_n, grid_size
     );

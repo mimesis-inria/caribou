@@ -419,16 +419,18 @@ inline FLOATING_POINT_TYPE FictitiousGrid<DataTypes>::get_cell_weight(const Cell
 
 template <typename DataTypes>
 std::vector<std::pair<typename FictitiousGrid<DataTypes>::LocalCoordinates, FLOATING_POINT_TYPE>>
-FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & index) const
+FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & sparse_cell_index) const
 {
-    return get_gauss_nodes_of_cell(index, d_number_of_subdivision.getValue());
+    return get_gauss_nodes_of_cell(sparse_cell_index, d_number_of_subdivision.getValue());
 }
 
 template <typename DataTypes>
 std::vector<std::pair<typename FictitiousGrid<DataTypes>::LocalCoordinates, FLOATING_POINT_TYPE>>
-FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & cell_index, const UNSIGNED_INTEGER_TYPE maximum_level) const
+FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & sparse_cell_index, const UNSIGNED_INTEGER_TYPE maximum_level) const
 {
     using Level = UNSIGNED_INTEGER_TYPE;
+
+    const auto cell_index = p_cell_index_in_grid[sparse_cell_index];
 
     const auto get_gauss_cells = [this, maximum_level] (const CellElement & e, const Cell & c, const Level l) {
         auto get_gauss_cells_impl = [this, maximum_level] (const CellElement & e, const Cell & c, const Level l, auto & ref) -> std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> {
@@ -447,8 +449,8 @@ FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & cell_index,
                 if (l >= maximum_level) {
                     const auto & child_cells = *(c.childs);
                     for (UNSIGNED_INTEGER_TYPE i = 0; i < CellElement::number_of_gauss_nodes; ++i) {
-                        const auto weight = get_cell_weight(child_cells[i]);
-                        gauss_nodes.emplace_back(LocalCoordinates(CellElement::gauss_nodes[i]), weight);
+                        const auto weight = CellElement::number_of_gauss_nodes*get_cell_weight(child_cells[i]);
+                        gauss_nodes.emplace_back(LocalCoordinates(CellElement::gauss_nodes[i]), CellElement::gauss_weights[i]*weight);
                     }
                 } else {
                     const auto child_elements = get_subcells_elements(e);

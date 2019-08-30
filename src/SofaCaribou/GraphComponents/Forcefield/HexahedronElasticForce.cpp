@@ -407,6 +407,14 @@ void HexahedronElasticForce::reinit()
                    << p_ignored_hexahedrons_indices.size() << " ignored on a total of " << topology->getNbHexahedra() << ")";
     }
 
+    Real v = 0.;
+    for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+        for (std::size_t gauss_node_id = 0; gauss_node_id < p_quadrature_nodes[index].size(); ++gauss_node_id) {
+            v += p_quadrature_nodes[index][gauss_node_id].weight*p_quadrature_nodes[index][gauss_node_id].jacobian_determinant;
+        }
+    }
+    msg_info() << "Total volume is " << v;
+
     // Initialize the stiffness matrix of every hexahedrons
     p_stiffness_matrices.resize(p_hexahedrons_indices.size());
     p_initial_rotation.resize(p_hexahedrons_indices.size(), Mat33::Identity());
