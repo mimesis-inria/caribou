@@ -98,10 +98,10 @@ B (const ElementType & element, const LocalCoordinates & coordinates)
  *
  * @return  DxD deformation gradient tensor F where D is the dimension of the world coordinates.
  */
-template <int NumberOfNodes, int Dimension>
+template <int NumberOfNodes, int Dimension, int Options>
 static inline
 Matrix<Dimension, Dimension>
-F (const Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> & dN_dx, const Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> & U)
+F (const Matrix<NumberOfNodes, Dimension, Options> & dN_dx, const Matrix<NumberOfNodes, Dimension, Options> & U)
 {
     const auto I = Mat33::Identity();
     Mat33 GradU = dN_dx.row(0).transpose() * U.row(0);
