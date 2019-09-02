@@ -179,11 +179,11 @@ TEST(Geometry, Tetrahedron) {
     ASSERT_FLOAT_EQ(tetra.node(2)[1], node[1]);
     ASSERT_FLOAT_EQ(tetra.node(2)[2], node[2]);
 
-    double r = tetra.gauss_quadrature<double>([](const Tetrahedron<Tetrahedron4> & /*h*/, const auto & /*local_coordinates*/) {
+    auto r = tetra.gauss_quadrature<double>([](const Tetrahedron<Tetrahedron4> & /*h*/, const auto & /*local_coordinates*/) {
         return 1.;
     });
 
-    ASSERT_FLOAT_EQ(r, 8/5/2);
+    ASSERT_FLOAT_EQ(r, 1/6.);
 
     ASSERT_EQ(tetra.frame(), I);
 
