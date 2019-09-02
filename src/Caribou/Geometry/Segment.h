@@ -86,7 +86,7 @@ struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment
     WorldCoordinates
     T(const LocalCoordinates & coordinates) const
     {
-        return CanonicalElementType::interpolate_at_local_position(coordinates, nodes());
+        return CanonicalElementType::interpolate(coordinates, nodes());
     }
 
     /** Compute the jacobian matrix evaluated at local position {u,v} */

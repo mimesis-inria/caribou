@@ -197,7 +197,7 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
     WorldCoordinates
     T(const LocalCoordinates & coordinates) const
     {
-        return CanonicalElementType::interpolate_at_local_position(coordinates, nodes());
+        return CanonicalElementType::interpolate(coordinates, nodes());
     }
 
     /**

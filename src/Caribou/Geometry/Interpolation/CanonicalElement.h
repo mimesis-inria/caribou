@@ -111,8 +111,8 @@ struct CanonicalElement
     template <typename Derived, typename LocalCoordinates>
     static inline
     auto
-    interpolate_at_local_position (LocalCoordinates && coordinates,
-                                   const Eigen::MatrixBase<Derived> & values)
+    interpolate (LocalCoordinates && coordinates,
+                 const Eigen::MatrixBase<Derived> & values)
     {
         static_assert(Eigen::MatrixBase<Derived>::RowsAtCompileTime == NumberOfNodes,
                 "The matrix containing the values at each nodes must have one node-value per row.");

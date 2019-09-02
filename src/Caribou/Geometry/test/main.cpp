@@ -162,7 +162,7 @@ TEST(Geometry, Quad) {
 //        return 5 + 2*u + 3*v;
 //    };
 //
-//    ASSERT_EQ(f(0,0), quad.interpolate_at_local_position(LocalCoordinates {0, 0}, f(-1, -1), f(1, -1), f(1, 1), f(-1, 1)));
+//    ASSERT_EQ(f(0,0), quad.interpolate(LocalCoordinates {0, 0}, f(-1, -1), f(1, -1), f(1, 1), f(-1, 1)));
 
 }
 

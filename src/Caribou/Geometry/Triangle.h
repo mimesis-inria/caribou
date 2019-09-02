@@ -67,7 +67,7 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
     WorldCoordinates
     T(const LocalCoordinates & coordinates) const
     {
-        return CanonicalElementType::interpolate_at_local_position(coordinates, nodes());
+        return CanonicalElementType::interpolate(coordinates, nodes());
     }
 
     /** Compute the jacobian matrix evaluated at local position {u,v} */
