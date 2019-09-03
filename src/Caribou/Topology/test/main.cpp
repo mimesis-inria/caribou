@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <Caribou/Topology/Grid/Grid.h>
+#include <Caribou/Topology/HashGrid.h>
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Eigen/Core>
 
