@@ -2,6 +2,7 @@
 #define CARIBOU_GEOMETRY_TETRAHEDRON_H
 
 #include <Eigen/Dense>
+#include <Caribou/macros.h>
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Interpolation/Tetrahedron.h>
@@ -10,218 +11,85 @@
 namespace caribou::geometry {
 
 template <typename CanonicalElementType>
-struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType, Tetrahedron<CanonicalElementType>>
+struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType::NumberOfNodes, CanonicalElementType, Tetrahedron<CanonicalElementType>>
 {
-    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
+};
 
-    using Base = internal::BaseTetrahedron<CanonicalElementType, Tetrahedron<CanonicalElementType>>;
-
-    using LocalCoordinates = typename Base::LocalCoordinates;
+template <>
+struct Tetrahedron<interpolation::Tetrahedron4> : public internal::BaseTetrahedron<4, interpolation::Tetrahedron4, Tetrahedron<interpolation::Tetrahedron4>>
+{
+    static constexpr INTEGER_TYPE NumberOfNodes = 4;
+    using CanonicalElementType = interpolation::Tetrahedron4;
+    using Base = internal::BaseTetrahedron<NumberOfNodes, CanonicalElementType, Tetrahedron<CanonicalElementType>>;
     using WorldCoordinates = typename Base::WorldCoordinates;
-
     using FaceType = Triangle<3, typename CanonicalElementType::FaceType>;
 
-    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
-    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
-
-    template<int nRows, int nColumns>
-    using Map = Eigen::Map<const Matrix<nRows, nColumns>>;
-
-    template<int nRows, int Options=0>
-    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
-
-    template<int nRows>
-    using MapVector = Eigen::Map<const Vector<nRows>>;
-
-    Tetrahedron()
-        : p_nodes(Map<NumberOfNodes, 3>(&CanonicalElementType::nodes[0][0]))
-    {
-    }
-
-    template <
-        typename ...Nodes,
-        REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
-    >
-    Tetrahedron(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
-    {
-        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
-    }
-
-    Tetrahedron(const Matrix<NumberOfNodes, 3, Eigen::RowMajor> & m)
-        : p_nodes(m)
-    {}
-
-    /** Get the Node at given index */
-    inline
-    auto
-    node(UNSIGNED_INTEGER_TYPE index) const
-    {
-        return p_nodes.row(index).transpose();
-    }
-
-    /** Get the Node at given index */
-    inline
-    auto
-    node(UNSIGNED_INTEGER_TYPE index)
-    {
-        return p_nodes.row(index).transpose();
-    }
-
-    /** Get a reference to the set of nodes */
-    inline
-    const auto &
-    nodes() const
-    {
-        return p_nodes;
-    }
+    using Base::Base;
 
     /**
-     * Get the ith quadrangle face.
+     * Compute the inverse transformation of a world position {x,y,z} to its local position {u,v,w}
      */
     inline
-    FaceType
-    face(UNSIGNED_INTEGER_TYPE index) const
+    LocalCoordinates
+    Tinv(const WorldCoordinates & coordinates) const
     {
-        const auto & face_indices = CanonicalElementType::faces[index];
+        const auto n0 = node(0);
+        const auto n1 = node(1);
+        const auto n2 = node(2);
+        const auto n3 = node(3);
 
-        Matrix<FaceType::NumberOfNodes, 3, Eigen::RowMajor> m;
-        for (std::size_t i = 0; i < FaceType::NumberOfNodes; ++i)
-            m.row(i) = node(face_indices[i]);
+        Matrix<3,3> At;
+        At.row(0) = n1-n0;
+        At.row(1) = n2-n0;
+        At.row(2) = n3-n0;
 
-        return FaceType(m);
+        Matrix<3,3> A = At.transpose();
+        Vector<3>   B = coordinates - n0;
+
+        return A.inverse()*B;
     }
+};
 
-    /** Get the center position */
-    inline
-    WorldCoordinates
-    center() const
-    {
-        return T(LocalCoordinates(1/4., 1/4., 1/4.));
-    }
+template <>
+struct Tetrahedron<interpolation::Tetrahedron10> : public internal::BaseTetrahedron<10, interpolation::Tetrahedron10, Tetrahedron<interpolation::Tetrahedron10>>
+{
+    static constexpr INTEGER_TYPE NumberOfNodes = 10;
+    using CanonicalElementType = interpolation::Tetrahedron10;
+    using Base = internal::BaseTetrahedron<NumberOfNodes, interpolation::Tetrahedron10, Tetrahedron<CanonicalElementType>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+    using FaceType = Triangle<3, typename CanonicalElementType::FaceType>;
 
-    /**
-     * Extract the frame positioned at the first node of the tetrahedron by computing the cross product of the unit
-     * vectors of its adjacent edges.
-     *
-     * This function will return a matrix of the form:
-     * | ux vx wx |
-     * | uy vy wy |
-     * | uz vz wz |
-     *
-     * Where [ux uy uz], [vx, vy, vz] and [wx, wy, wz] are orthogonal unitary vectors representing the u, v and w frame
-     * in the current tetrahedron. If the tetrahedron is regular and not rotated, this matrix is the Identity matrix.
-     * If it is regular but rotated, rotating the tetrahedron by the transposed of this frame should align the u,v,w
-     * axis to the x,y,z world frame (identity matrix).
-     */
-    inline
-    Matrix<3, 3>
-    frame() const
-    {
-        // u-axis
-        const auto u = (node(1) - node(0)).normalized();
+    using Base::Base;
 
-        // v-axis
-        auto v = (node(2) - node(0)).normalized();
+    Tetrahedron(const Matrix<10, 3> & m) : Base(m) {}
 
-        // w-axis
-        const WorldCoordinates w = u.cross(v).normalized();
-
-        // v-axis (recompute the v-axis in case u and v aren't orthogonal
-        v = w.cross(u).normalized();
-
-        Matrix<3, 3> m;
-        m << u, v, w;
-
-        return m;
-    }
-
-    /** Compute the jacobian matrix evaluated at local position {u,v,w}
- * (see interpolation::CanonicalElement::Jacobian for more details).
- * */
-    inline
-    Matrix<3, 3>
-    jacobian (const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::Jacobian(coordinates, nodes());
-    }
-
-    /**
-     * Compute the transformation of a local position {u,v,w} to its world position {x,y,z}
-     */
-    inline
-    WorldCoordinates
-    T(const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::interpolate(coordinates, nodes());
-    }
-
-    /**
-     * Compute an integral approximation by gauss quadrature on the hexahedron of the given evaluation function.
-     *
-     * @example
-     * \code{.cpp}
-     * // Integrate the polynomial 1 + 2x + 2xy + 3*z on an hexahedron.
-     * float result = Hexahedron(x1, x2, x3, x4, x5, x6, x7, x8).gauss_integrate(
-     *   [] (const Hexahedron & hexa, const Hexahedron::LocalCoordinates & coordinates) -> float {
-     *     const auto & xi   = coordinates[0];
-     *     const auto & eta  = coordinates[1];
-     *     const auto & zeta = coordinates[2];
-     *     return 1 + 2*xi + 2*xi*eta + 3*zeta;
-     *   }
-     * );
-     * \endcode
-     *
-     * @tparam EvaluateFunctionType Callback function reference type. See f parameter.
-     *
-     * @param f
-     * Callback function of the signature
-     *
-     *     ValueType f (const Hexahedron & hexa, const LocalCoordinates & coordinates);
-     *
-     * Where hexa is a reference to the current hexahadron on which we integrate, and the coordinates u, v and w
-     * forms the local position of a sample point on which we want to get the evaluation value.
-     *
-     * @return The value of the integral computed on this hexahedron.
-     *
-     */
-    template <typename ValueType, typename EvaluateFunctor>
-    inline
-    ValueType
-    gauss_quadrature(EvaluateFunctor f) const
-    {
-        const auto p0 = MapVector<3>(CanonicalElementType::gauss_nodes[0]);
-        const auto w0 = CanonicalElementType::gauss_weights[0];
-        const auto detJ0 = jacobian(p0).determinant();
-        const auto eval0 = f(*this, p0);
-        ValueType result = eval0 * w0 * detJ0;
-
-        for (std::size_t i = 1; i < CanonicalElementType::number_of_gauss_nodes; ++i) {
-            const auto p = MapVector<3>(CanonicalElementType::gauss_nodes[i]);
-            const auto w = CanonicalElementType::gauss_weights[i];
-            const auto detJ = jacobian(p).determinant();
-            const auto eval = f(*this, p);
-            result += eval * w * detJ;
+    template <typename Derived, REQUIRES(Derived::RowsAtCompileTime == 4), REQUIRES(Derived::ColsAtCompileTime == 3)>
+    Tetrahedron(const Eigen::MatrixBase<Derived> & m) {
+        for (UNSIGNED_INTEGER_TYPE i = 0; i < 4; ++i) {
+            p_nodes.row(i) = m.row(i);
         }
 
-        return result;
+        Tetrahedron<interpolation::Tetrahedron4> linear_tetra(m);
+
+        for (UNSIGNED_INTEGER_TYPE i = 4; i < 10; ++i) {
+            p_nodes.row(i) = linear_tetra.T(LocalCoordinates(&(interpolation::Tetrahedron10::nodes[i][0])));
+        }
     }
 
-private:
-    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
-    inline
-    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
-        p_nodes.row(index) = first_node;
-        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
-    }
+    inline bool can_be_converted_to_linear() const {
+        for (const auto & edge : CanonicalElementType::edges) {
+            const WorldCoordinates edge0 = (Base::node(edge[2]) - Base::node(edge[0])).normalized();
+            const WorldCoordinates edge1 = (Base::node(edge[1]) - Base::node(edge[0])).normalized();
 
-    template <size_t index>
-    inline
-    void construct_from_nodes(const WorldCoordinates & last_node) {
-        p_nodes.row(index) = last_node;
-    }
+            const FLOATING_POINT_TYPE d = (edge0[0]*edge1[0] + edge0[1]*edge1[1] + edge0[2]*edge1[2]) - 1.;
+            if (not IN_CLOSED_INTERVAL(-1e-10, d, 1e-10)) {
+                return false;
+            }
+        }
 
-private:
-    Matrix<NumberOfNodes, 3> p_nodes;
+        return true;
+    }
 };
 
 } // namespace caribou::geometry

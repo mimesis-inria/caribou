@@ -169,12 +169,13 @@ TEST(Geometry, Quad) {
 TEST(Geometry, Tetrahedron) {
     using namespace caribou::geometry;
     using namespace caribou::geometry::interpolation;
-    using WordCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
+    using LocalCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
+    using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
 
     Tetrahedron<interpolation::Tetrahedron4> tetra;
     const auto I = Matrix<3,3>::Identity();
 
-    WordCoordinates node {0, 1, 0};
+    WorldCoordinates node {0, 1, 0};
     ASSERT_FLOAT_EQ(tetra.node(2)[0], node[0]);
     ASSERT_FLOAT_EQ(tetra.node(2)[1], node[1]);
     ASSERT_FLOAT_EQ(tetra.node(2)[2], node[2]);
@@ -204,6 +205,33 @@ TEST(Geometry, Tetrahedron) {
     for (std::size_t i = 0; i < 3; ++i)
         for (std::size_t j = 0; j < 3; ++j)
             ASSERT_FLOAT_EQ(R(i,j), frame(i,j));
+
+    // Inverse mapping
+    Matrix <4,3> deformed_tetra_nodes;
+    deformed_tetra_nodes <<
+        -0.06886030762198948, -4.99952580331717100, -6.041789094307429,
+        -3.48032148052804400,  3.58989726763525700, -5.093784617239020,
+        -0.15948805548731480,  4.99745570867385200, -7.797065927830069,
+        -4.99969192269405700,  0.05550385705329886, -7.367123908795261;
+
+    tetra = Tetrahedron<interpolation::Tetrahedron4>(deformed_tetra_nodes);
+    for (const auto n : interpolation::Tetrahedron10::nodes) {
+        LocalCoordinates local_coordinates(&n[0]);
+        WorldCoordinates  world_coordinates = tetra.T(local_coordinates);
+        LocalCoordinates inverted_coordinates = tetra.Tinv(world_coordinates);
+
+        for (std::size_t i = 0; i < 3; ++i)
+            ASSERT_TRUE(abs(local_coordinates[i]-inverted_coordinates[i]) < 1e-15);
+    }
+    for (const auto n : interpolation::Tetrahedron10::gauss_nodes) {
+        LocalCoordinates local_coordinates(&n[0]);
+        WorldCoordinates  world_coordinates = tetra.T(local_coordinates);
+        LocalCoordinates inverted_coordinates = tetra.Tinv(world_coordinates);
+
+        for (std::size_t i = 0; i < 3; ++i)
+            ASSERT_TRUE(abs(local_coordinates[i]-inverted_coordinates[i]) < 1e-15);
+    }
+
 
 }
 

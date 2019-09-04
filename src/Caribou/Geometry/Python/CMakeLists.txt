@@ -11,10 +11,14 @@ set(PYTHON_TEST_FILES
 )
 
 set(HEADER_FILES
+    Segment.h
+    Tetrahedron.h
 )
 
 set(SOURCE_FILES
     Geometry.cpp
+    Segment.cpp
+    Tetrahedron.cpp
 )
 
 unset(PYTHON_MODULE_PREFIX)
