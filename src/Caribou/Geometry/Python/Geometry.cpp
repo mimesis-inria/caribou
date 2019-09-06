@@ -2,6 +2,7 @@
 
 #include "Segment.h"
 #include "Tetrahedron.h"
+#include "Hexahedron.h"
 
 namespace py = pybind11;
 using namespace caribou::geometry::python;
@@ -11,4 +12,5 @@ PYBIND11_MODULE(CaribouGeometryPython, m) {
 
     create_segments(m);
     create_tetrahedrons(m);
+    create_hexahedrons(m);
 }

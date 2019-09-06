@@ -85,8 +85,8 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     {
         Matrix<NumberOfNodes, 3> m;
         for (size_t i = 0; i < CanonicalElementType::NumberOfNodes; ++i)
-            m.row() = node(i).translate();
-        return nodes;
+            m.row(i) = node(i).transpose();
+        return m;
     }
 
     /** Compute the volume of the hexa */
@@ -184,6 +184,9 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         return p_R.transpose() * ((coordinates - p_center).array() / (p_H/2.).array()).matrix();
     }
 
+    /**
+     * Returns true if the given world coordinates are within the hexahedron's boundaries, false otherwise.
+     */
     inline bool
     contains(const WorldCoordinates & coordinates) const
     {

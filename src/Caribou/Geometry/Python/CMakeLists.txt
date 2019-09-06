@@ -11,12 +11,14 @@ set(PYTHON_TEST_FILES
 )
 
 set(HEADER_FILES
+    Hexahedron.h
     Segment.h
     Tetrahedron.h
 )
 
 set(SOURCE_FILES
     Geometry.cpp
+    Hexahedron.cpp
     Segment.cpp
     Tetrahedron.cpp
 )
