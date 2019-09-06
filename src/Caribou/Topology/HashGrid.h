@@ -25,9 +25,9 @@ public:
     using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
     using VecFloat = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
 
-    HashGrid (const UNSIGNED_INTEGER_TYPE & cell_size) : p_cell_size(cell_size) {}
+    HashGrid (const FLOATING_POINT_TYPE & cell_size) : p_cell_size(cell_size) {}
 
-    HashGrid (const UNSIGNED_INTEGER_TYPE & cell_size, const UNSIGNED_INTEGER_TYPE & number_of_elements) : p_cell_size(cell_size) {
+    HashGrid (const FLOATING_POINT_TYPE & cell_size, const UNSIGNED_INTEGER_TYPE & number_of_elements) : p_cell_size(cell_size) {
         p_hash_table.reserve(2*number_of_elements);
     }
 
@@ -119,9 +119,11 @@ public:
 
         std::vector<Data> elements;
         for (const auto & cell_coordinates : cells) {
-            const auto & cell_elements = p_hash_table.at(cell_coordinates);
-            for (const auto & element_data : cell_elements) {
-                elements.emplace_back(element_data);
+            const auto & iter = p_hash_table.find(cell_coordinates);
+            if (iter != p_hash_table.end()) {
+                for (const auto &element_data : iter->second) {
+                    elements.emplace_back(element_data);
+                }
             }
         }
 
@@ -155,7 +157,7 @@ private:
     };
 
 private:
-    UNSIGNED_INTEGER_TYPE p_cell_size;
+    FLOATING_POINT_TYPE p_cell_size;
     std::unordered_map<GridCoordinates, std::vector<Data>, HashFunction, HashEqual> p_hash_table;
 };
 
