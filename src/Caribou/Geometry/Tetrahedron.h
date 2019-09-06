@@ -48,6 +48,24 @@ struct Tetrahedron<interpolation::Tetrahedron4> : public internal::BaseTetrahedr
 
         return A.inverse()*B;
     }
+
+    /**
+     * Returns true if the given world coordinates are within the tetrahedron's boundaries, false otherwise.
+     */
+    inline bool
+    contains(const WorldCoordinates & p) const
+    {
+        const LocalCoordinates c = Tinv(p);
+        if ((IN_CLOSED_INTERVAL(-1e-15, c[0], 1+1e-15)) and
+            (IN_CLOSED_INTERVAL(-1e-15, c[1], 1+1e-15)) and
+            (IN_CLOSED_INTERVAL(-1e-15, c[2], 1+1e-15))) {
+
+            const LocalCoordinates normal = (node(2) - node(1)).cross((node(3) - node(1)));
+            return (normal.dot(node(0) - node(1)) * normal.dot(p - node(1)) > 0);
+        }
+
+        return false;
+    }
 };
 
 template <>

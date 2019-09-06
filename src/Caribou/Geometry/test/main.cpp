@@ -220,6 +220,10 @@ TEST(Geometry, Tetrahedron) {
         WorldCoordinates  world_coordinates = tetra.T(local_coordinates);
         LocalCoordinates inverted_coordinates = tetra.Tinv(world_coordinates);
 
+        if (not tetra.contains(world_coordinates))
+            std::cout << inverted_coordinates.transpose() << std::endl;
+        ASSERT_TRUE(tetra.contains(world_coordinates));
+
         for (std::size_t i = 0; i < 3; ++i)
             ASSERT_TRUE(abs(local_coordinates[i]-inverted_coordinates[i]) < 1e-15);
     }
@@ -227,6 +231,8 @@ TEST(Geometry, Tetrahedron) {
         LocalCoordinates local_coordinates(&n[0]);
         WorldCoordinates  world_coordinates = tetra.T(local_coordinates);
         LocalCoordinates inverted_coordinates = tetra.Tinv(world_coordinates);
+
+        ASSERT_TRUE(tetra.contains(world_coordinates));
 
         for (std::size_t i = 0; i < 3; ++i)
             ASSERT_TRUE(abs(local_coordinates[i]-inverted_coordinates[i]) < 1e-15);
