@@ -220,7 +220,7 @@ public:
     }
 
 private:
-    virtual void compute_cell_types_from_implicit_surface();
+    virtual void tag_intersected_cells_from_implicit_surface();
     virtual void tag_intersected_cells();
     virtual void tag_outside_cells();
     virtual void tag_inside_cells();
@@ -276,9 +276,6 @@ private:
     ///< This is a pointer to a callback function that determines if a position is inside, outside or on the boundary.
     ///< It is used when an implicit surface definition is avaible.
     f_implicit_test_callback_t p_implicit_test_callback;
-
-    ///< Types of the complete regular grid's nodes
-    std::vector<Type> p_node_types;
 
     ///< Types of the complete regular grid's cells
     std::vector<Type> p_cells_types;

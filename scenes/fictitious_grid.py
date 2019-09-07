@@ -16,7 +16,7 @@ mx = (radius / ((n[0])*pow(2, subdivisions)))/2
 my = (radius / ((n[1])*pow(2, subdivisions)))/2
 mz = (length / ((n[2])*pow(2, subdivisions)))/2
 
-use_implicit = False
+use_implicit = True
 
 m = Tools.cylinder(center1=[0,0,-length/2.], center2=[0,0,length/2.], radius=radius, number_of_cuts=50, dimension=2)
 
@@ -123,7 +123,7 @@ def create_mechanical(node, use_fictitious, color):
 def createScene(root):
     root.addObject('APIVersion', level='17.06')
 
-    create_mechanical(root.addChild('sparse'), False, 'red')
+    # create_mechanical(root.addChild('sparse'), False, 'red')
     create_mechanical(root.addChild('fictitious'), True, 'blue')
 
 

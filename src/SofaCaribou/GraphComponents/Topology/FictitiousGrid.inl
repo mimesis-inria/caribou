@@ -227,7 +227,7 @@ void FictitiousGrid<DataTypes>::init() {
 
 template <typename DataTypes>
 void
-FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
+FictitiousGrid<DataTypes>::tag_intersected_cells_from_implicit_surface()
 {
     if (!p_grid or p_grid->number_of_nodes() == 0)
         return;
@@ -236,18 +236,21 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
         return;
     }
 
+    BEGIN_CLOCK;
+    TICK;
     const auto number_of_nodes = p_grid->number_of_nodes();
     const auto number_of_cells = p_grid->number_of_cells();
+    std::vector<Type> node_types (number_of_nodes, Type::Undefined);
 
     // We first compute the type of every nodes
     for (UNSIGNED_INTEGER_TYPE i = 0; i < number_of_nodes; ++i) {
         const auto t = p_implicit_test_callback(p_grid->node(i));
         if (t < 0)
-            p_node_types[i] = Type::Inside;
+            node_types[i] = Type::Inside;
         else if (t > 0)
-            p_node_types[i] = Type::Outside;
+            node_types[i] = Type::Outside;
         else
-            p_node_types[i] = Type::Boundary;
+            node_types[i] = Type::Boundary;
     }
 
     // Once we got the type of the nodes, we compute the type of their cells
@@ -256,7 +259,7 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
         UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
 
         for (const auto & node_index : node_indices) {
-            types[(UNSIGNED_INTEGER_TYPE) p_node_types[node_index]]++;
+            types[(UNSIGNED_INTEGER_TYPE) node_types[node_index]]++;
         }
 
         if (types[(UNSIGNED_INTEGER_TYPE) Type::Inside] == caribou::traits<CellElement>::NumberOfNodes) {
@@ -267,6 +270,9 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
             p_cells_types[cell_index] = Type::Boundary;
         }
     }
+
+    msg_info() << "Computing the intersections with the surface in "  << std::setprecision(3) << std::fixed
+               << TOCK/1000./1000. << " [ms]";
 }
 
 template <typename DataTypes>

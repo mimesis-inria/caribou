@@ -116,19 +116,25 @@ void FictitiousGrid<Vec3Types>::create_grid()
             anchor_position, grid_n, grid_size
     );
 
-    p_node_types.resize(p_grid->number_of_nodes(), Type::Undefined);
     p_cells_types.resize(p_grid->number_of_cells(), Type::Undefined);
     p_cells.resize(p_grid->number_of_cells());
 
+    // Initialize the full regular grid quadtree (resp. octree) with 0 subdivisions
+    for (auto & cell : p_cells) {
+        cell.data = std::make_unique<CellData>(Type::Undefined, 1, -1);
+        cell.childs.reset();
+    }
+
     if (d_use_implicit_surface.getValue() and p_implicit_test_callback) {
-        compute_cell_types_from_implicit_surface();
+        tag_intersected_cells_from_implicit_surface();
     } else {
         tag_intersected_cells();
-        subdivide_intersected_cells();
-        create_regions_from_same_type_cells();
-        tag_outside_cells();
-        tag_inside_cells();
     }
+
+    subdivide_intersected_cells();
+    create_regions_from_same_type_cells();
+    tag_outside_cells();
+    tag_inside_cells();
 
     create_sparse_grid();
     populate_drawing_vectors();
@@ -239,6 +245,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
     const auto & number_of_subdivision = d_number_of_subdivision.getValue();
     const auto & surface_positions = d_surface_positions.getValue();
     const auto & surface_triangles = d_surface_triangles.getValue();
+    bool use_implicit_surface = (d_use_implicit_surface.getValue() and p_implicit_test_callback);
 
     TICK;
     for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < p_grid->number_of_cells(); ++cell_index) {
@@ -267,22 +274,45 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
             bool subdivide_the_cell = false;
 
             // Checks if the current subcell intersects the boundary
-            for (const auto & triangle_index : triangles) {
-                const auto & triangle = surface_triangles[triangle_index];
-                WorldCoordinates nodes [3];
-                for (unsigned int i = 0; i < 3; ++i) {
-                    const auto & node_index = triangle[i];
 
-                    const Eigen::Map<const WorldCoordinates> p (&surface_positions[node_index][0]);
-                    nodes[i] = p;
+            if (use_implicit_surface) {
+                UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
+                for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::traits<CellElement>::NumberOfNodes; ++i) {
+                    const auto t = p_implicit_test_callback(e.node(i));
+                    if (t < 0)
+                        types[(UNSIGNED_INTEGER_TYPE) Type::Inside]++;
+                    else if (t > 0)
+                        types[(UNSIGNED_INTEGER_TYPE) Type::Outside]++;
+                    else
+                        types[(UNSIGNED_INTEGER_TYPE) Type::Boundary]++;
                 }
-                const caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
-                const bool intersects = e.intersects(t);
 
-                if (intersects) {
-                    subdivide_the_cell = true;
+                if (types[(UNSIGNED_INTEGER_TYPE) Type::Inside] == caribou::traits<CellElement>::NumberOfNodes) {
+                    type = Type::Inside;
+                } else if (types[(UNSIGNED_INTEGER_TYPE) Type::Outside] == caribou::traits<CellElement>::NumberOfNodes) {
+                    type = Type::Outside;
+                } else {
                     type = Type::Boundary;
-                    break;
+                    subdivide_the_cell = true;
+                }
+            } else {
+                for (const auto &triangle_index : triangles) {
+                    const auto &triangle = surface_triangles[triangle_index];
+                    WorldCoordinates nodes[3];
+                    for (unsigned int i = 0; i < 3; ++i) {
+                        const auto &node_index = triangle[i];
+
+                        const Eigen::Map<const WorldCoordinates> p(&surface_positions[node_index][0]);
+                        nodes[i] = p;
+                    }
+                    const caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
+                    const bool intersects = e.intersects(t);
+
+                    if (intersects) {
+                        subdivide_the_cell = true;
+                        type = Type::Boundary;
+                        break;
+                    }
                 }
             }
 
@@ -291,6 +321,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
                 cell->data = std::make_unique<CellData>(type, weight, -1);
             } else {
                 // Split the cell into subcells
+                cell->data.reset();
                 const Weight w = weight / ((unsigned) 1<<Dimension);
                 cell->childs = std::make_unique<std::array<Cell,(unsigned) 1 << Dimension>>();
                 auto & childs = *(cell->childs);
