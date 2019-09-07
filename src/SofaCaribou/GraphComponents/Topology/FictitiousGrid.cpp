@@ -491,6 +491,7 @@ FictitiousGrid<Vec3Types>::create_sparse_grid()
     BEGIN_CLOCK;
     TICK;
 
+    const auto & volume_threshold = d_volume_threshold.getValue();
     std::vector<bool> use_cell(p_grid->number_of_cells(), false);
     std::vector<bool> use_node(p_grid->number_of_nodes(), false);
 
@@ -512,9 +513,11 @@ FictitiousGrid<Vec3Types>::create_sparse_grid()
             else
                 volume_ratios[ratio] += 1;
 
-            use_cell[cell_id] = true;
-            for (const auto node_index : p_grid->node_indices_of(cell_id)) {
-                use_node[node_index] = true;
+            if (weight >= volume_threshold) {
+                use_cell[cell_id] = true;
+                for (const auto node_index : p_grid->node_indices_of(cell_id)) {
+                    use_node[node_index] = true;
+                }
             }
         }
     }
@@ -581,7 +584,11 @@ FictitiousGrid<Vec3Types>::create_sparse_grid()
 
     msg_info() << "Volume of the sparse grid is " << real_volume;
     for (const auto &p : volume_ratios) {
-        msg_info() << p.second << " cells with a volume ratio of " << p.first/100.;
+        if (p.first / 100. >= volume_threshold) {
+            msg_info() << p.second << " cells with a volume ratio of " << p.first / 100.;
+        } else {
+            msg_info() << p.second << " cells with a volume ratio of " << p.first / 100. << " (IGNORED CELLS)";
+        }
     }
 }
 

@@ -242,6 +242,7 @@ private:
     Data<SofaVecFloat> d_min;
     Data<SofaVecFloat> d_max;
     Data<UNSIGNED_INTEGER_TYPE> d_number_of_subdivision;
+    Data<Float> d_volume_threshold;
     Data<bool> d_use_implicit_surface;
     Data<bool> d_draw_boundary_cells;
     Data<bool> d_draw_outside_cells;

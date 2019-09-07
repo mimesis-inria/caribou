@@ -26,9 +26,10 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
         , d_min(initData(&d_min, SofaVecFloat(),"min","First corner node position of the grid's bounding box."))
         , d_max(initData(&d_max, SofaVecFloat(),"max","Second corner node position of the grid's bounding box."))
         , d_number_of_subdivision(initData(&d_number_of_subdivision,
+                (UNSIGNED_INTEGER_TYPE) 0,
                 "maximum_number_of_subdivision_levels",
-                0,
                 "Number of subdivision levels of the boundary cells (one level split the cell in 4 subcells in 2D, and 8 subcells in 3D)."))
+        , d_volume_threshold(initData(&d_volume_threshold, (Float) 0.0, "volume_threshold", "Ignore every cells having a volume ratio smaller than this threshold."))
         , d_use_implicit_surface(initData(&d_use_implicit_surface,
                 bool(false),
                 "use_implicit_surface",
