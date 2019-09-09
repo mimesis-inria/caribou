@@ -12,7 +12,8 @@ struct traits<ElementType<Dim, CanonicalElementType>>
     using WorldCoordinates = typename ElementType<Dim, CanonicalElementType>::WorldCoordinates;
     enum {
         Dimension = Dim,
-        NumberOfNodes = ElementType<Dim, CanonicalElementType>::NumberOfNodes
+        NumberOfNodes = ElementType<Dim, CanonicalElementType>::NumberOfNodes,
+        NumberOfGaussNodes = ElementType<Dim, CanonicalElementType>::number_of_gauss_nodes,
     };
 };
 
@@ -22,7 +23,8 @@ struct traits<ElementType<CanonicalElementType>> {
     using WorldCoordinates = typename ElementType<CanonicalElementType>::WorldCoordinates;
     enum {
         Dimension = 3,
-        NumberOfNodes = ElementType<CanonicalElementType>::NumberOfNodes
+        NumberOfNodes = ElementType<CanonicalElementType>::NumberOfNodes,
+        NumberOfGaussNodes = ElementType<CanonicalElementType>::number_of_gauss_nodes
     };
 };
 } // namespace caribou::geometry

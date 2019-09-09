@@ -3,7 +3,7 @@
 
 #include <Caribou/config.h>
 #include <Caribou/macros.h>
-#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/RectangularQuad.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Interpolation/Hexahedron.h>
@@ -23,7 +23,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
-    using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
+    using QuadType = RectangularQuad<3, typename CanonicalElementType::QuadType>;
 
     template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
@@ -64,15 +64,6 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     inline
     WorldCoordinates
     node(UNSIGNED_INTEGER_TYPE index) const
-    {
-        const auto local_coordinates_of_node = MapVector<3>(CanonicalElementType::nodes[index]);
-        return T(local_coordinates_of_node);
-    }
-
-    /** Get the Node at given index */
-    inline
-    WorldCoordinates
-    node(UNSIGNED_INTEGER_TYPE index)
     {
         const auto local_coordinates_of_node = MapVector<3>(CanonicalElementType::nodes[index]);
         return T(local_coordinates_of_node);

@@ -5,6 +5,7 @@
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/RectangularQuad.h>
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/Tetrahedron.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>

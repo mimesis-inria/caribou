@@ -4,6 +4,7 @@ project(Caribou.Geometry)
 set(HEADER_FILES
     Hexahedron.h
     Quad.h
+    RectangularQuad.h
     RectangularHexahedron.h
     Segment.h
     Traits.h
