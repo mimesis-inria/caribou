@@ -3,7 +3,7 @@
 
 #include <Caribou/config.h>
 #include <Caribou/macros.h>
-#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/RectangularQuad.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Interpolation/Hexahedron.h>
@@ -23,7 +23,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
-    using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
+    using QuadType = RectangularQuad<3, typename CanonicalElementType::QuadType>;
 
     template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
@@ -69,15 +69,6 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         return T(local_coordinates_of_node);
     }
 
-    /** Get the Node at given index */
-    inline
-    WorldCoordinates
-    node(UNSIGNED_INTEGER_TYPE index)
-    {
-        const auto local_coordinates_of_node = MapVector<3>(CanonicalElementType::nodes[index]);
-        return T(local_coordinates_of_node);
-    }
-
     /** Get a reference to the set of nodes */
     inline
     Matrix<NumberOfNodes, 3>
@@ -85,8 +76,8 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     {
         Matrix<NumberOfNodes, 3> m;
         for (size_t i = 0; i < CanonicalElementType::NumberOfNodes; ++i)
-            m.row() = node(i).translate();
-        return nodes;
+            m.row(i) = node(i).transpose();
+        return m;
     }
 
     /** Compute the volume of the hexa */
@@ -184,6 +175,9 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
         return p_R.transpose() * ((coordinates - p_center).array() / (p_H/2.).array()).matrix();
     }
 
+    /**
+     * Returns true if the given world coordinates are within the hexahedron's boundaries, false otherwise.
+     */
     inline bool
     contains(const WorldCoordinates & coordinates) const
     {

@@ -46,6 +46,17 @@ struct Quad4 : public CanonicalElement<2, 4, Quad4>
         {3, 0}  // Edge 3
     };
 
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_gauss_nodes = 4;
+    static constexpr FLOATING_POINT_TYPE gauss_nodes [number_of_gauss_nodes][Dimension] {
+    //          u,                w
+        {-1/1.73205080757, -1/1.73205080757}, // Node 0
+        {+1/1.73205080757, -1/1.73205080757}, // Node 1
+        {-1/1.73205080757, +1/1.73205080757}, // Node 2
+        {+1/1.73205080757, +1/1.73205080757} // Node 3
+    };
+
+    static constexpr FLOATING_POINT_TYPE gauss_weights[number_of_gauss_nodes] {1, 1, 1, 1};
+
     /**
      * Get the Lagrange polynomial values evaluated at local coordinates {u, v} w.r.t each quad's interpolation nodes.
      *

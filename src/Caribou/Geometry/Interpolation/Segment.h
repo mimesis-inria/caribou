@@ -32,6 +32,14 @@ struct Segment2 : public CanonicalElement<1, 2, Segment2>
         {+1}, // Node 1
     };
 
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_gauss_nodes = 1;
+    static constexpr FLOATING_POINT_TYPE gauss_nodes [number_of_gauss_nodes][Dimension] {
+    //   u
+        {0} // Node 0
+    };
+
+    static constexpr FLOATING_POINT_TYPE gauss_weights[number_of_gauss_nodes] {2};
+
     /**
      * Get the Lagrange polynomial values evaluated at local coordinates {u} w.r.t each segment's interpolation nodes.
      *

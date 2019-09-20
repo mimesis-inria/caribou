@@ -12,6 +12,9 @@
 #include <queue>
 #include <iomanip>
 #include <chrono>
+#include <memory>
+#include <tuple>
+#include <bitset>
 
 #define BEGIN_CLOCK ;std::chrono::steady_clock::time_point __time_point_begin;
 #define TICK ;__time_point_begin = std::chrono::steady_clock::now();
@@ -26,9 +29,10 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
         , d_min(initData(&d_min, SofaVecFloat(),"min","First corner node position of the grid's bounding box."))
         , d_max(initData(&d_max, SofaVecFloat(),"max","Second corner node position of the grid's bounding box."))
         , d_number_of_subdivision(initData(&d_number_of_subdivision,
+                (UNSIGNED_INTEGER_TYPE) 0,
                 "maximum_number_of_subdivision_levels",
-                0,
                 "Number of subdivision levels of the boundary cells (one level split the cell in 4 subcells in 2D, and 8 subcells in 3D)."))
+        , d_volume_threshold(initData(&d_volume_threshold, (Float) 0.0, "volume_threshold", "Ignore every cells having a volume ratio smaller than this threshold."))
         , d_use_implicit_surface(initData(&d_use_implicit_surface,
                 bool(false),
                 "use_implicit_surface",
@@ -57,6 +61,9 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
         , d_positions(initData(&d_positions, SofaVecCoord(),
                 "positions",
                 "Position vector of nodes contained in the sparse grid."))
+        , d_quads(initData(&d_quads,
+                "quads",
+                "List of quads contained in the sparse grid (ex: [q1p1 q1p2 q1p3 q1p4 q2p1 ... qnp3 qnp4])."))
         , d_hexahedrons(initData(&d_hexahedrons,
                 "hexahedrons",
                 "List of hexahedrons contained in the sparse grid (ex: [h1p1 h1p2 h1p3 h1p4 h1p5 ... hnp6 hnp7])."))
@@ -224,9 +231,55 @@ void FictitiousGrid<DataTypes>::init() {
     create_grid();
 }
 
+
+template <typename DataTypes>
+void FictitiousGrid<DataTypes>::create_grid()
+{
+    // Initializing the regular grid
+    const auto first_corner = d_min.getValue();
+    const auto second_corner = d_max.getValue();
+    const auto n = d_n.getValue();
+
+    WorldCoordinates anchor_position;
+    Dimensions grid_size;
+    for (UNSIGNED_INTEGER_TYPE axis = 0; axis < caribou::traits<CellElement>::Dimension; ++axis) {
+        anchor_position[axis] = std::min(first_corner[axis], second_corner[axis]);
+        grid_size[axis] = std::abs(first_corner[axis] - second_corner[axis]);
+    }
+
+    Subdivisions grid_n = Subdivisions(&n[0]) - Subdivisions::Ones();
+
+    p_grid = std::make_unique<GridType> (
+        anchor_position, grid_n, grid_size
+    );
+
+    p_cells_types.resize(p_grid->number_of_cells(), Type::Undefined);
+    p_cells.resize(p_grid->number_of_cells());
+
+    // Initialize the full regular grid quadtree (resp. octree) with 0 subdivisions
+    for (auto & cell : p_cells) {
+        cell.data = std::make_unique<CellData>(Type::Undefined, 1, -1);
+        cell.childs.reset();
+    }
+
+    if (d_use_implicit_surface.getValue() and p_implicit_test_callback) {
+        tag_intersected_cells_from_implicit_surface();
+    } else {
+        tag_intersected_cells();
+    }
+
+    subdivide_intersected_cells();
+    create_regions_from_same_type_cells();
+    tag_outside_cells();
+    tag_inside_cells();
+
+    create_sparse_grid();
+    populate_drawing_vectors();
+}
+
 template <typename DataTypes>
 void
-FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
+FictitiousGrid<DataTypes>::tag_intersected_cells_from_implicit_surface()
 {
     if (!p_grid or p_grid->number_of_nodes() == 0)
         return;
@@ -235,18 +288,21 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
         return;
     }
 
+    BEGIN_CLOCK;
+    TICK;
     const auto number_of_nodes = p_grid->number_of_nodes();
     const auto number_of_cells = p_grid->number_of_cells();
+    std::vector<Type> node_types (number_of_nodes, Type::Undefined);
 
     // We first compute the type of every nodes
     for (UNSIGNED_INTEGER_TYPE i = 0; i < number_of_nodes; ++i) {
         const auto t = p_implicit_test_callback(p_grid->node(i));
         if (t < 0)
-            p_node_types[i] = Type::Inside;
+            node_types[i] = Type::Inside;
         else if (t > 0)
-            p_node_types[i] = Type::Outside;
+            node_types[i] = Type::Outside;
         else
-            p_node_types[i] = Type::Boundary;
+            node_types[i] = Type::Boundary;
     }
 
     // Once we got the type of the nodes, we compute the type of their cells
@@ -255,7 +311,7 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
         UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
 
         for (const auto & node_index : node_indices) {
-            types[(UNSIGNED_INTEGER_TYPE) p_node_types[node_index]]++;
+            types[(UNSIGNED_INTEGER_TYPE) node_types[node_index]]++;
         }
 
         if (types[(UNSIGNED_INTEGER_TYPE) Type::Inside] == caribou::traits<CellElement>::NumberOfNodes) {
@@ -266,7 +322,320 @@ FictitiousGrid<DataTypes>::compute_cell_types_from_implicit_surface()
             p_cells_types[cell_index] = Type::Boundary;
         }
     }
+
+    msg_info() << "Computing the intersections with the surface in "  << std::setprecision(3) << std::fixed
+               << TOCK/1000./1000. << " [ms]";
 }
+
+template <typename DataTypes>
+void
+FictitiousGrid<DataTypes>::create_regions_from_same_type_cells()
+{
+    BEGIN_CLOCK;
+    // At this point, we have all the boundary cells, let's create regions of cells regrouping neighbors cells
+    // of the same type. Special attention needs to be spent on boundary cells as if the number of subdivision is
+    // greater than zero, we must also add subcells to the regions.
+
+    TICK;
+
+    // First, add all leaf cells to a queue.
+    std::queue<Cell*> remaining_cells;
+    for (std::size_t i = 0; i < p_grid->number_of_cells(); ++i) {
+        std::queue<Cell *> cells;
+        cells.emplace(&p_cells[i]);
+        while (not cells.empty()) {
+            Cell * c = cells.front();
+            cells.pop();
+
+            if (c->childs) {
+                for (Cell & child : (*c->childs)) {
+                    cells.emplace(&child);
+                }
+            } else {
+                remaining_cells.emplace(c);
+            }
+
+        }
+    }
+
+    // Iterate over every cells, and for each one, if it isn't yet classified,
+    // start a clustering algorithm to fill the region's cells
+    while (not remaining_cells.empty()) {
+        Cell * c = remaining_cells.front();
+        remaining_cells.pop();
+
+        // If this cell was previously classified, skip it
+        if (c->data->region_id > -1) {
+            continue;
+        }
+
+        // Create a new region
+        p_regions.push_back(Region {c->data->type, std::vector<Cell*> ()});
+        std::size_t current_region_index = p_regions.size() - 1;
+
+        // Tag the current cell
+        c->data->region_id = current_region_index;
+        p_regions[current_region_index].cells.push_back(c);
+
+        // Start the clustering algorithm
+        std::queue<Cell *> cluster_cells;
+        cluster_cells.push(c);
+
+        while (not cluster_cells.empty()) {
+            Cell * cluster_cell = cluster_cells.front();
+            cluster_cells.pop();
+
+            // Add the neighbors that aren't already classified
+            auto neighbors = get_neighbors(cluster_cell);
+            for (Cell * neighbor_cell : neighbors) {
+                if (neighbor_cell->data->region_id < 0 and
+                    neighbor_cell->data->type == p_regions[current_region_index].type) {
+
+                    // Tag the neighbor cell
+                    neighbor_cell->data->region_id = current_region_index;
+                    p_regions[current_region_index].cells.emplace_back(neighbor_cell);
+                    cluster_cells.emplace(neighbor_cell);
+                }
+            }
+        }
+    }
+    msg_info() << "Computing the " << p_regions.size() << " cells regions in " << std::fixed << std::setprecision(3)
+               << TOCK / 1000. / 1000.
+               << " [ms]";
+}
+
+template <typename DataTypes>
+void
+FictitiousGrid<DataTypes>::tag_outside_cells()
+{
+    BEGIN_CLOCK;
+    // At this point, all cells have been classified into distinct regions of either boundary type or undefined type.
+    // The regions of undefined type which are surrounded by the grid's boundaries are tagged as outside cells
+
+    TICK;
+    const auto & upper_grid_boundary = p_grid->N();
+    for (auto & region : p_regions) {
+        if (region.type != Type::Undefined) {
+            continue;
+        }
+
+        for (Cell *cell : region.cells) {
+            auto is_boundary_of_face = std::bitset<6>().flip();
+
+            // First, check if one of the subcell's face is the boundary of all its parent cells
+            CellIndex index = cell->index;
+            Cell *p = cell;
+            while (p->parent) {
+                index = cell->index;
+                const auto &coordinates = subcell_coordinates[index];
+                for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
+                    is_boundary_of_face &= ~((unsigned) coordinates[axis] << (unsigned) (2 * axis + 0));
+                    is_boundary_of_face &=  ((unsigned) coordinates[axis] << (unsigned) (2 * axis + 1));
+                }
+                p = p->parent;
+            }
+
+            // Next, check if any of the top parent's faces are at the boundary of the grid
+            const auto coordinates = p_grid->grid_coordinates_at(index);
+            for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
+                is_boundary_of_face[2 * axis + 0] = is_boundary_of_face[2 * axis + 0] && (coordinates[axis] - 1 < 0);
+                is_boundary_of_face[2 * axis + 1] = is_boundary_of_face[2 * axis + 1] &&
+                                                    ((unsigned) coordinates[axis] + 1 > upper_grid_boundary[axis]);
+            }
+
+            // If the subcell has a face that is both on the boundary of all of its parents, and is also boundary
+            // of the grid, than this subcell is outside of the surface and we can tag all cells in the group as outside
+            // cells
+            if (is_boundary_of_face.any()) {
+                region.type = Type::Outside;
+                for (Cell *c : region.cells) {
+                    c->data->type = Type::Outside;
+                }
+                break;
+            }
+        }
+    }
+    msg_info() << "Computing the outside regions types in " << std::setprecision(3)
+               << TOCK / 1000. / 1000.
+               << " [ms]";
+}
+
+template <typename DataTypes>
+void
+FictitiousGrid<DataTypes>::tag_inside_cells()
+{
+    // Finally, we have both outside and boundary regions, the remaining regions are inside.
+    BEGIN_CLOCK;
+    TICK;
+    for (auto & region : p_regions) {
+        if (region.type != Type::Undefined) {
+            continue;
+        }
+
+        region.type = Type::Inside;
+        for (const auto & cell : region.cells) {
+            cell->data->type = Type::Inside;
+        }
+    }
+    msg_info() << "Computing the inside regions types in " << std::setprecision(3)
+               << TOCK / 1000. / 1000.
+               << " [ms]";
+}
+
+template <typename DataTypes>
+void
+FictitiousGrid<DataTypes>::create_sparse_grid()
+{
+    BEGIN_CLOCK;
+    TICK;
+
+    const auto & volume_threshold = d_volume_threshold.getValue();
+    std::vector<bool> use_cell(p_grid->number_of_cells(), false);
+    std::vector<bool> use_node(p_grid->number_of_nodes(), false);
+
+    std::map<UNSIGNED_INTEGER_TYPE, UNSIGNED_INTEGER_TYPE> volume_ratios;
+    FLOATING_POINT_TYPE real_volume = 0.;
+    FLOATING_POINT_TYPE cell_volume = caribou::traits<CellElement>::NumberOfGaussNodes*p_grid->cell_at(0).jacobian().determinant();
+
+    // 1. Locate all cells that are within the surface boundaries and their nodes.
+    for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
+        const auto & cell = p_cells[cell_id];
+        if (cell.childs or (cell.data->type != Type::Outside and cell.data->type != Type::Undefined)) {
+
+            const FLOATING_POINT_TYPE weight = get_cell_weight(cell);
+            real_volume += cell_volume*weight;
+
+            const auto ratio = (UNSIGNED_INTEGER_TYPE) std::round(weight*100);
+            if (volume_ratios.find(ratio) == volume_ratios.end())
+                volume_ratios[ratio] = 1;
+            else
+                volume_ratios[ratio] += 1;
+
+            if (weight >= volume_threshold) {
+                use_cell[cell_id] = true;
+                for (const auto node_index : p_grid->node_indices_of(cell_id)) {
+                    use_node[node_index] = true;
+                }
+            }
+        }
+    }
+
+
+    // 2. Add the sparse nodes and create the bijection between sparse nodes and full grid nodes
+    sofa::helper::WriteAccessor<Data< SofaVecCoord >> positions = d_positions;
+    positions.clear();
+    positions.reserve(p_grid->number_of_nodes());
+
+    p_node_index_in_sparse_grid.clear();
+    p_node_index_in_sparse_grid.resize(p_grid->number_of_nodes(), -1);
+    p_node_index_in_grid.clear();
+    p_node_index_in_grid.reserve(p_grid->number_of_nodes());
+
+    for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < p_grid->number_of_nodes(); ++node_id) {
+        if (use_node[node_id]) {
+            const auto position = p_grid->node(node_id);
+            if constexpr (Dimension == 2) {
+                positions.wref().emplace_back(position[0], position[1]);
+            } else {
+                positions.wref().emplace_back(position[0], position[1], position[2]);
+            }
+            p_node_index_in_grid.emplace_back(node_id);
+            p_node_index_in_sparse_grid[node_id] = (signed) positions.size() - 1;
+        }
+    }
+
+    // 3. Add the sparse cells and create the bijection between sparse cells and full grid cells
+    sofa::helper::WriteAccessor<Data < sofa::helper::vector<SofaHexahedron> >> hexahedrons = d_hexahedrons;
+    sofa::helper::WriteAccessor<Data < sofa::helper::vector<SofaQuad > >> quads = d_quads;
+    if (Dimension == 2) {
+        quads.clear();
+        quads.wref().reserve(p_grid->number_of_cells());
+    } else {
+        hexahedrons.clear();
+        hexahedrons.wref().reserve(p_grid->number_of_cells());
+    }
+
+    p_cell_index_in_sparse_grid.clear();
+    p_cell_index_in_sparse_grid.resize(p_grid->number_of_cells(), -1);
+    p_cell_index_in_grid.clear();
+    p_cell_index_in_grid.reserve(p_grid->number_of_cells());
+
+    for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
+        if (not use_cell[cell_id]) {
+            continue;
+        }
+
+        const auto node_indices = p_grid->node_indices_of(cell_id);
+        if (Dimension == 2) {
+            quads.wref().emplace_back(
+                p_node_index_in_sparse_grid[node_indices[0]],
+                p_node_index_in_sparse_grid[node_indices[1]],
+                p_node_index_in_sparse_grid[node_indices[2]],
+                p_node_index_in_sparse_grid[node_indices[3]]
+            );
+            p_cell_index_in_sparse_grid[cell_id] = (signed) quads.size() - 1;
+        } else {
+            hexahedrons.wref().emplace_back(
+                p_node_index_in_sparse_grid[node_indices[0]],
+                p_node_index_in_sparse_grid[node_indices[1]],
+                p_node_index_in_sparse_grid[node_indices[2]],
+                p_node_index_in_sparse_grid[node_indices[3]],
+                p_node_index_in_sparse_grid[node_indices[4]],
+                p_node_index_in_sparse_grid[node_indices[5]],
+                p_node_index_in_sparse_grid[node_indices[6]],
+                p_node_index_in_sparse_grid[node_indices[7]]
+            );
+            p_cell_index_in_sparse_grid[cell_id] = (signed) hexahedrons.size() - 1;
+        }
+
+        p_cell_index_in_grid.emplace_back(cell_id);
+    }
+
+    positions.wref().shrink_to_fit();
+    hexahedrons.wref().shrink_to_fit();
+    quads.wref().shrink_to_fit();
+    p_node_index_in_grid.shrink_to_fit();
+    p_cell_index_in_grid.shrink_to_fit();
+
+    msg_info() << "Creating the sparse grid in " << std::setprecision(3)
+               << TOCK / 1000. / 1000.
+               << " [ms]";
+
+    msg_info() << "Volume of the sparse grid is " << real_volume;
+    for (const auto &p : volume_ratios) {
+        if (p.first / 100. >= volume_threshold) {
+            msg_info() << p.second << " cells with a volume ratio of " << p.first / 100.;
+        } else {
+            msg_info() << p.second << " cells with a volume ratio of " << p.first / 100. << " (IGNORED CELLS)";
+        }
+    }
+}
+
+template <typename DataTypes>
+std::array<typename FictitiousGrid<DataTypes>::CellElement, (unsigned) 1 << FictitiousGrid<DataTypes>::Dimension>
+FictitiousGrid<DataTypes>::get_subcells_elements(const CellElement & e) const
+{
+    const Dimensions h = e.H() /  2;
+    if constexpr (Dimension == 2) {
+        return {{
+                    CellElement(e.T(LocalCoordinates {-0.5, -0.5}), h),
+                    CellElement(e.T(LocalCoordinates {+0.5, -0.5}), h),
+                    CellElement(e.T(LocalCoordinates {-0.5, +0.5}), h),
+                    CellElement(e.T(LocalCoordinates {+0.5, +0.5}), h)
+        }};
+    } else {
+        return {{
+                   CellElement(e.T(LocalCoordinates {-0.5, -0.5, -0.5}), h),
+                   CellElement(e.T(LocalCoordinates {+0.5, -0.5, -0.5}), h),
+                   CellElement(e.T(LocalCoordinates {-0.5, +0.5, -0.5}), h),
+                   CellElement(e.T(LocalCoordinates {+0.5, +0.5, -0.5}), h),
+                   CellElement(e.T(LocalCoordinates {-0.5, -0.5, +0.5}), h),
+                   CellElement(e.T(LocalCoordinates {+0.5, -0.5, +0.5}), h),
+                   CellElement(e.T(LocalCoordinates {-0.5, +0.5, +0.5}), h),
+                   CellElement(e.T(LocalCoordinates {+0.5, +0.5, +0.5}), h)
+        }};
+    }
+};
 
 template <typename DataTypes>
 std::vector<typename FictitiousGrid<DataTypes>::Cell *>
@@ -496,13 +865,22 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
     TICK;
     for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_nodes(); ++i) {
         const auto p = p_grid->node(i);
-        p_drawing_nodes_vector[i] = {p[0], p[1], p[2]};
+        if (Dimension == 2) {
+            p_drawing_nodes_vector[i] = {p[0], p[1], 0};
+        } else {
+            p_drawing_nodes_vector[i] = {p[0], p[1], p[2]};
+        }
     }
 
     for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_edges(); ++i) {
         const auto edge = p_grid->edge(i);
-        p_drawing_edges_vector[i*2] = {edge.node(0)[0], edge.node(0)[1], edge.node(0)[2]};
-        p_drawing_edges_vector[i*2+1] = {edge.node(1)[0], edge.node(1)[1], edge.node(1)[2]};
+        if (Dimension == 2) {
+            p_drawing_edges_vector[i*2] = {edge.node(0)[0], edge.node(0)[1], 0};
+            p_drawing_edges_vector[i*2+1] = {edge.node(1)[0], edge.node(1)[1], 0};
+        } else {
+            p_drawing_edges_vector[i*2] = {edge.node(0)[0], edge.node(0)[1], edge.node(0)[2]};
+            p_drawing_edges_vector[i*2+1] = {edge.node(1)[0], edge.node(1)[1], edge.node(1)[2]};
+        }
     }
 
     for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_cells(); ++i) {
@@ -521,14 +899,29 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
             } else {
                 const auto & region_id = c->data->region_id;
                 for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < ((unsigned) 1 << Dimension); ++node_id) {
-                    p_drawing_cells_vector[region_id].emplace_back(e.node(node_id)[0], e.node(node_id)[1],
-                                                                   e.node(node_id)[2]);
+                    if (Dimension == 2) {
+                        p_drawing_cells_vector[region_id].emplace_back(e.node(node_id)[0], e.node(node_id)[1], 0);
+                    } else {
+                        p_drawing_cells_vector[region_id].emplace_back(e.node(node_id)[0], e.node(node_id)[1],
+                                                                       e.node(node_id)[2]);
+                    }
                 }
                 for (const auto &edge : CellElement::edges) {
-                    p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[0])[0], e.node(edge[0])[1],
-                                                                   e.node(edge[0])[2]);
-                    p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[1])[0], e.node(edge[1])[1],
-                                                                   e.node(edge[1])[2]);
+                    if (Dimension == 2) {
+                        p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[0])[0],
+                                                                                  e.node(edge[0])[1],
+                                                                                  0);
+                        p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[1])[0],
+                                                                                  e.node(edge[1])[1],
+                                                                                  0);
+                    } else {
+                        p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[0])[0],
+                                                                                  e.node(edge[0])[1],
+                                                                                  e.node(edge[0])[2]);
+                        p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[1])[0],
+                                                                                  e.node(edge[1])[1],
+                                                                                  e.node(edge[1])[2]);
+                    }
                 }
             }
 
@@ -538,6 +931,76 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
     msg_info() << "Populating the drawing vectors in " << std::setprecision(3) << std::fixed
                << TOCK / 1000. / 1000.
                << " [ms]";
+}
+
+static const unsigned long long kelly_colors_hex[] = {
+    0xFFFFB300, // Vivid Yellow
+    0xFF803E75, // Strong Purple
+    0xFFFF6800, // Vivid Orange
+    0xFFA6BDD7, // Very Light Blue
+    0xFFC10020, // Vivid Red
+    0xFFCEA262, // Grayish Yellow
+    0xFF817066, // Medium Gray
+
+    // The following don't work well for people with defective color vision
+    0xFF007D34, // Vivid Green
+    0xFFF6768E, // Strong Purplish Pink
+    0xFF00538A, // Strong Blue
+    0xFFFF7A5C, // Strong Yellowish Pink
+    0xFF53377A, // Strong Violet
+    0xFFFF8E00, // Vivid Orange Yellow
+    0xFFB32851, // Strong Purplish Red
+    0xFFF4C800, // Vivid Greenish Yellow
+    0xFF7F180D, // Strong Reddish Brown
+    0xFF93AA00, // Vivid Yellowish Green
+    0xFF593315, // Deep Yellowish Brown
+    0xFFF13A13, // Vivid Reddish Orange
+    0xFF232C16, // Dark Olive Green
+};
+
+template <typename DataTypes>
+void FictitiousGrid<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
+{
+    using Color = sofa::defaulttype::Vec4f;
+    if (!p_grid)
+        return;
+
+    const auto & draw_boundary_cells = d_draw_boundary_cells.getValue();
+    const auto & draw_outside_cells = d_draw_outside_cells.getValue();
+    const auto & draw_inside_cells = d_draw_inside_cells.getValue();
+
+    vparams->drawTool()->disableLighting();
+
+
+//    vparams->drawTool()->drawPoints(p_drawing_nodes_vector, 1, Color(1, 0, 0, 1));
+//    vparams->drawTool()->drawLines(p_drawing_edges_vector, 2, Color(1,0,0, 1));
+//    vparams->drawTool()->drawLines(p_drawing_subdivided_edges_vector, 0.5, Color(1,1,1, 1));
+
+    for (UNSIGNED_INTEGER_TYPE region_id = 0; region_id < p_drawing_cells_vector.size(); ++region_id) {
+        if ((p_regions[region_id].type == Type::Boundary and draw_boundary_cells) or
+            (p_regions[region_id].type == Type::Outside and draw_outside_cells) or
+            (p_regions[region_id].type == Type::Inside and draw_inside_cells)) {
+
+            const auto &hex_color = kelly_colors_hex[region_id % 20];
+            const Color cell_color(
+                (float) (((unsigned char) (hex_color >> (unsigned) 16)) / 255.),
+                (float) (((unsigned char) (hex_color >> (unsigned) 8)) / 255.),
+                (float) (((unsigned char) (hex_color >> (unsigned) 0)) / 255.),
+                (float) (1));
+            const Color edge_color(0, 0, 0, 1);
+
+            if (! vparams->displayFlags().getShowWireFrame()) {
+                if (Dimension == 2) {
+                    vparams->drawTool()->drawQuads(p_drawing_cells_vector[region_id], cell_color);
+                } else {
+                    vparams->drawTool()->drawHexahedra(p_drawing_cells_vector[region_id], cell_color);
+                }
+            }
+            vparams->drawTool()->drawLines(p_drawing_subdivided_edges_vector[region_id], 0.5, edge_color);
+        }
+    }
+
+    vparams->drawTool()->restoreLastState();
 }
 
 } // namespace SofaCaribou::GraphComponents::topology

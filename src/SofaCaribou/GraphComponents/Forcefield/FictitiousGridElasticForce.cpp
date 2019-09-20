@@ -168,12 +168,20 @@ void FictitiousGridElasticForce::reinit()
     }
 
     Real v = 0.;
+    UNSIGNED_INTEGER_TYPE negative_jacobians = 0;
     for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
         for (std::size_t gauss_node_id = 0; gauss_node_id < p_quadrature_nodes[hexa_id].size(); ++gauss_node_id) {
             v += p_quadrature_nodes[hexa_id][gauss_node_id].weight;
+            
+            if (p_quadrature_nodes[hexa_id][gauss_node_id].weight < 0)
+                negative_jacobians++;
         }
     }
     msg_info() << "Total volume is " << v;
+    
+    if (negative_jacobians > 0) {
+        msg_warning() << negative_jacobians << " gauss points have a negative jacobian";
+    }
 
 
     // Initialize the stiffness matrix of every hexahedrons

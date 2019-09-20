@@ -7,7 +7,7 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 
 #include <Caribou/Algebra/Vector.h>
-#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/RectangularQuad.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
 #include <Caribou/Topology/Grid/Grid.h>
 #include <Caribou/config.h>
@@ -56,13 +56,14 @@ public:
     // Sofa data aliases
     // -----------------
     using SofaFloat = typename DataTypes::Real;
-    using SofaVecInt = sofa::defaulttype::Vec<Dimension, Int>;
+    using SofaVecInt = sofa::defaulttype::Vec<Dimension, UNSIGNED_INTEGER_TYPE>;
     using SofaVecFloat = sofa::defaulttype::Vec<Dimension, SofaFloat>;
     using Coord = typename DataTypes::Coord;
     using SofaVecCoord = sofa::helper::vector<Coord>;
     using ElementId = sofa::core::topology::Topology::index_type;
     using VecElementId = sofa::helper::vector<ElementId>;
     using SofaHexahedron = sofa::core::topology::BaseMeshTopology::Hexahedron;
+    using SofaQuad = sofa::core::topology::BaseMeshTopology::Quad;
     using SofaTriangle = sofa::core::topology::BaseMeshTopology::Triangle;
     using SofaEdge = sofa::core::topology::BaseMeshTopology::Edge;
 
@@ -215,12 +216,32 @@ public:
         if( !onlyVisible )
             return;
 
-        this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Float>(
-            d_min.getValue().array(),d_max.getValue().array()));
+        if (Dimension == 2) {
+            const Float min[3] = {
+                d_min.getValue()[0], d_min.getValue()[1], -1
+            };
+            const Float max[3] = {
+                d_max.getValue()[0], d_max.getValue()[1], +1
+            };
+            this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Float>(min, max));
+        } else {
+            this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Float>(
+                d_min.getValue().array(),d_max.getValue().array()));
+        }
+    }
+
+    virtual std::string getTemplateName() const override
+    {
+        return templateName(this);
+    }
+
+    static std::string templateName(const FictitiousGrid<DataTypes>* = nullptr)
+    {
+        return DataTypes::Name();
     }
 
 private:
-    virtual void compute_cell_types_from_implicit_surface();
+    virtual void tag_intersected_cells_from_implicit_surface();
     virtual void tag_intersected_cells();
     virtual void tag_outside_cells();
     virtual void tag_inside_cells();
@@ -242,6 +263,7 @@ private:
     Data<SofaVecFloat> d_min;
     Data<SofaVecFloat> d_max;
     Data<UNSIGNED_INTEGER_TYPE> d_number_of_subdivision;
+    Data<Float> d_volume_threshold;
     Data<bool> d_use_implicit_surface;
     Data<bool> d_draw_boundary_cells;
     Data<bool> d_draw_outside_cells;
@@ -261,6 +283,9 @@ private:
     ///< Position vector of nodes contained in the sparse grid
     Data< SofaVecCoord > d_positions;
 
+    ///< List of quads contained in the sparse grid (ex: [q1p1 q1p2 q1p3 q1p4 q2p1 ... qnp3 qnp4]).
+    Data < sofa::helper::vector<SofaQuad> > d_quads;
+
     ///< List of hexahedrons contained in the sparse grid (ex: [h1p1 h1p2 h1p3 h1p4 h1p5 ... hnp6 hnp7]).
     Data < sofa::helper::vector<SofaHexahedron> > d_hexahedrons;
 
@@ -275,9 +300,6 @@ private:
     ///< This is a pointer to a callback function that determines if a position is inside, outside or on the boundary.
     ///< It is used when an implicit surface definition is avaible.
     f_implicit_test_callback_t p_implicit_test_callback;
-
-    ///< Types of the complete regular grid's nodes
-    std::vector<Type> p_node_types;
 
     ///< Types of the complete regular grid's cells
     std::vector<Type> p_cells_types;
@@ -325,38 +347,16 @@ private:
 
 };
 
-//template<> const FictitiousGrid<Vec2Types>::GridCoordinates FictitiousGrid<Vec2Types>::subcell_coordinates[4];
+template<> const FictitiousGrid<Vec2Types>::GridCoordinates FictitiousGrid<Vec2Types>::subcell_coordinates[4];
 template<>  const FictitiousGrid<Vec3Types>::GridCoordinates FictitiousGrid<Vec3Types>::subcell_coordinates[8];
 
-//template<> void FictitiousGrid<Vec2Types>::create_grid ();
-template<> void FictitiousGrid<Vec3Types>::create_grid ();
-
-//template<> void FictitiousGrid<Vec2Types>::create_sparse_grid ();
-template<> void FictitiousGrid<Vec3Types>::create_sparse_grid ();
-
-//template<> void FictitiousGrid<Vec2Types>::tag_intersected_cells ();
+template<> void FictitiousGrid<Vec2Types>::tag_intersected_cells ();
 template<> void FictitiousGrid<Vec3Types>::tag_intersected_cells ();
 
-//template<> void FictitiousGrid<Vec2Types>::tag_outside_cells ();
-template<> void FictitiousGrid<Vec3Types>::tag_outside_cells ();
-
-//template<> void FictitiousGrid<Vec2Types>::tag_inside_cells ();
-template<> void FictitiousGrid<Vec3Types>::tag_inside_cells ();
-
-//template<> void FictitiousGrid<Vec2Types>::subdivide_intersected_cells ();
+template<> void FictitiousGrid<Vec2Types>::subdivide_intersected_cells ();
 template<> void FictitiousGrid<Vec3Types>::subdivide_intersected_cells ();
 
-//template<> void FictitiousGrid<Vec2Types>::create_regions_from_same_type_cells ();
-template<> void FictitiousGrid<Vec3Types>::create_regions_from_same_type_cells ();
-
-//template<> std::array<FictitiousGrid<Vec2Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec2Types>::Dimension> FictitiousGrid<Vec2Types>::
-//    get_subcells_elements(const CellElement & e) const;
-template<> std::array<FictitiousGrid<Vec3Types>::CellElement, (unsigned) 1 << FictitiousGrid<Vec3Types>::Dimension> FictitiousGrid<Vec3Types>::
-get_subcells_elements(const CellElement & e) const;
-
-template<> void FictitiousGrid<Vec3Types>::draw (const sofa::core::visual::VisualParams* vparams);
-
-//extern template class FictitiousGrid<Vec2Types>;
+extern template class FictitiousGrid<Vec2Types>;
 extern template class FictitiousGrid<Vec3Types>;
 
 } // namespace SofaCaribou::GraphComponents::topology

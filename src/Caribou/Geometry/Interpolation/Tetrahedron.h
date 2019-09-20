@@ -140,11 +140,11 @@ struct Tetrahedron4 : public CanonicalElement<3, 4, Tetrahedron4>
  *          ,/|`\
  *        ,/  |  `\
  *      ,6    '.   `5
- *    ,/       8     `\
+ *    ,/       9     `\
  *  ,/         |       `\
  * 0--------4--'.--------1 --> u
  *  `\.         |      ,/
- *     `\.      |    ,9
+ *     `\.      |    ,8
  *        `7.   '. ,/
  *           `\. |/
  *              `3
@@ -152,7 +152,7 @@ struct Tetrahedron4 : public CanonicalElement<3, 4, Tetrahedron4>
  *                    ` w
  *
  */
-struct Tetrahedron10 : public CanonicalElement<3, 10, Tetrahedron4>
+struct Tetrahedron10 : public CanonicalElement<3, 10, Tetrahedron10>
 {
     using Index = INTEGER_TYPE;
     using Real = FLOATING_POINT_TYPE;
@@ -175,8 +175,8 @@ struct Tetrahedron10 : public CanonicalElement<3, 10, Tetrahedron4>
         {0.5, 0.5, 0.0}, // Node 5
         {0.0, 0.5, 0.0}, // Node 6
         {0.0, 0.0, 0.5}, // Node 7
-        {0.0, 0.5, 0.5}, // Node 8
-        {0.5, 0.0, 0.5}  // Node 9
+        {0.5, 0.0, 0.5}, // Node 8
+        {0.0, 0.5, 0.5}  // Node 9
     };
 
 
@@ -184,9 +184,9 @@ struct Tetrahedron10 : public CanonicalElement<3, 10, Tetrahedron4>
         {0, 1, 4}, // Edge 0
         {1, 2, 5}, // Edge 1
         {2, 0, 6}, // Edge 2
-        {3, 0, 7}, // Edge 3
-        {3, 2, 8}, // Edge 4
-        {3, 1, 9}  // Edge 5
+        {0, 3, 7}, // Edge 3
+        {1, 3, 8}, // Edge 4
+        {2, 3, 9}  // Edge 5
     };
 
     static constexpr UNSIGNED_INTEGER_TYPE faces[4][6]{

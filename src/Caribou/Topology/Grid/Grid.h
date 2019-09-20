@@ -13,7 +13,7 @@
 #include <Caribou/Topology/Grid/Internal/BaseMultidimensionalGrid.h>
 
 #include <Caribou/Geometry/Segment.h>
-#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/RectangularQuad.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
 
 namespace caribou::topology {
@@ -91,21 +91,15 @@ struct Grid<2> : public internal::BaseMultidimensionalGrid<2, Grid<2>>
     using WorldCoordinates = typename Base::WorldCoordinates;
     using GridCoordinates = typename Base::GridCoordinates;
     using CellSet = std::list<CellIndex>;
-    using Element = geometry::Quad<2, geometry::interpolation::Quad4>;
+    using Element = geometry::RectangularQuad<2, geometry::interpolation::Quad4>;
 
     inline
     Element
-    cell_at(const GridCoordinates & cell_coordinates) const
+    cell_at(const GridCoordinates & coordinates) const
     {
-        GridCoordinates e1; e1 << 1, 0;
-        GridCoordinates e2; e2 << 0, 1;
-
-        const auto n0 = node(node_index_at(cell_coordinates));
-        const auto n1 = node(node_index_at(cell_coordinates + e1));
-        const auto n2 = node(node_index_at(cell_coordinates + e1 + e2));
-        const auto n3 = node(node_index_at(cell_coordinates + e2));
-
-        return Element(n0, n1, n2, n3);
+        const auto H = Base::H();
+        const auto center = Base::m_anchor_position + (coordinates.array().cast<FLOATING_POINT_TYPE>() * H.array()).matrix() + H/2.;
+        return Element (center, H);
     }
 
     inline
