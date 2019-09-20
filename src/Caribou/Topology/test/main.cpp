@@ -2,6 +2,7 @@
 #include <Caribou/Topology/Grid/Grid.h>
 #include <Caribou/Topology/HashGrid.h>
 #include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/Quad.h>
 #include <Eigen/Core>
 
 template<template<typename, typename...> typename H, typename T, typename... Ts>
@@ -122,7 +123,7 @@ TEST(Topology, Grid2D) {
     using GridCoordinates = Grid::GridCoordinates;
     using CellIndex = Grid::CellIndex;
     using Edge = Grid::Edge;
-    using Quad = Grid::Element;
+    using Quad = caribou::geometry::Quad<2>;
 
     Grid grid(WorldCoordinates {0.25, 0.5}, Subdivisions {2, 2}, Dimensions {100, 100});
 

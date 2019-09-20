@@ -36,14 +36,14 @@ struct Quad : public CanonicalElementType
     {}
 
     inline
-    auto
+    WorldCoordinates
     node(UNSIGNED_INTEGER_TYPE index) const
     {
         return p_nodes.row(index).transpose();
     }
 
     inline
-    auto
+    WorldCoordinates
     node(UNSIGNED_INTEGER_TYPE index)
     {
         return p_nodes.row(index).transpose();
