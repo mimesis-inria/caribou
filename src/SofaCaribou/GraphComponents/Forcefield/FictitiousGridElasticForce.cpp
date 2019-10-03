@@ -247,7 +247,7 @@ void FictitiousGridElasticForce::addForce(
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addForce");
-#pragma omp parallel for default(none) shared(grid, current_rotation, corotated, x, x0, f)
+#pragma omp parallel for
         for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
             Hexahedron hexa = hexahedron(hexa_id, x);
 
@@ -308,7 +308,7 @@ void FictitiousGridElasticForce::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
-#pragma omp parallel for default(none) shared(grid, current_rotation, corotated, x, x0, f, l, m)
+#pragma omp parallel for
         for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
             const auto &hexa = grid->get_node_indices_of(hexa_id);
 
@@ -389,7 +389,7 @@ void FictitiousGridElasticForce::addDForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addDForce");
-#pragma omp parallel for default (none) shared (grid, current_rotation, dx, df, kFactor)
+#pragma omp parallel for
     for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
         const Mat33 & R  = current_rotation[hexa_id];
         const Mat33 & Rt = R.transpose();
@@ -445,7 +445,7 @@ void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * ma
 
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addKToMatrix");
 
-#pragma omp parallel for default (none) shared (grid, current_rotation, matrix, kFact)
+#pragma omp parallel for
     for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
         const auto & node_indices = grid->get_node_indices_of(hexa_id);
         const Mat33 & R  = current_rotation[hexa_id];
@@ -499,7 +499,7 @@ void FictitiousGridElasticForce::compute_K()
 
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::compute_k");
 
-#pragma omp parallel for default (none) shared (grid, l, m)
+#pragma omp parallel for
     for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
         auto & K = p_stiffness_matrices[hexa_id];
         K.fill(0.);

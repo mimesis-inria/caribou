@@ -478,7 +478,7 @@ void HexahedronElasticForce::addForce(
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
-        #pragma omp parallel for default(none) shared(topology, current_rotation, corotated, x, x0, f)
+        #pragma omp parallel for
         for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
             const auto & hexa_id = p_hexahedrons_indices[index];
             Hexahedron hexa = hexahedron(hexa_id, x);
@@ -540,7 +540,7 @@ void HexahedronElasticForce::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
-    #pragma omp parallel for default(none) shared(topology, current_rotation, corotated, x, x0, f, l, m)
+    #pragma omp parallel for
         for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
             const auto & hexa_id = p_hexahedrons_indices[index];
             const auto &hexa = topology->getHexahedron(hexa_id);
@@ -626,7 +626,7 @@ void HexahedronElasticForce::addDForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
-    #pragma omp parallel for default (none) shared (topology, current_rotation, dx, df, kFactor)
+    #pragma omp parallel for
     for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
         const auto & hexa_id = p_hexahedrons_indices[index];
 
@@ -684,7 +684,7 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addKToMatrix");
 
-    #pragma omp parallel for default (none) shared (topology, current_rotation, matrix, kFact)
+    #pragma omp parallel for
     for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
         const auto & hexa_id = p_hexahedrons_indices[index];
         const auto & node_indices = topology->getHexahedron(hexa_id);
@@ -739,7 +739,7 @@ void HexahedronElasticForce::compute_K()
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::compute_k");
 
-    #pragma omp parallel for default (none) shared (topology, l, m)
+    #pragma omp parallel for
     for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
         auto & K = p_stiffness_matrices[index];
         K.fill(0.);
