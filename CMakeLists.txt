@@ -11,14 +11,26 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
 include(caribouTools)
 # OPTIONS
 
-option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." ON)
+option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." OFF)
 option(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON)
 
-find_package(PythonLibs 2 QUIET)
-option(CARIBOU_WITH_PYTHON_2 "Compile the plugin with python 2 support" ${PYTHONLIBS_FOUND})
+find_package(pybind11 CONFIG QUIET)
 
+# Python 2 option
+find_package(PythonLibs 2 QUIET)
+if (${PYTHONLIBS_FOUND} AND ${pybind11_FOUND})
+    option(CARIBOU_WITH_PYTHON_2 "Compile the plugin with python 2 support" ON)
+else()
+    option(CARIBOU_WITH_PYTHON_2 "Compile the plugin with python 2 support" OFF)
+endif()
+
+# Python 3 option
 find_package(Python3 QUIET)
-option(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ${Python3_FOUND})
+if (${Python3_FOUND} AND ${pybind11_FOUND})
+    option(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON)
+else()
+    option(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" OFF)
+endif()
 
 find_package(OpenMP)
 
