@@ -1,4 +1,9 @@
 #include <sofa/core/ObjectFactory.h>
+
+#ifdef CARIBOU_WITH_OPENMP
+#include <omp.h>
+#endif
+
 #include "FictitiousGrid.inl"
 
 #include <Caribou/Geometry/Triangle.h>
@@ -159,20 +164,23 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
             // Checks if the current subcell intersects the boundary
 
             if (use_implicit_surface) {
+                constexpr UNSIGNED_INTEGER_TYPE INSIDE = 0;
+                constexpr UNSIGNED_INTEGER_TYPE OUTSIDE = 1;
+                constexpr UNSIGNED_INTEGER_TYPE BOUNDARY = 2;
                 UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
                 for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::traits<CellElement>::NumberOfNodes; ++i) {
                     const auto t = p_implicit_test_callback(e.node(i));
                     if (t < 0)
-                        types[(UNSIGNED_INTEGER_TYPE) Type::Inside]++;
+                        types[INSIDE]++;
                     else if (t > 0)
-                        types[(UNSIGNED_INTEGER_TYPE) Type::Outside]++;
+                        types[OUTSIDE]++;
                     else
-                        types[(UNSIGNED_INTEGER_TYPE) Type::Boundary]++;
+                        types[BOUNDARY]++;
                 }
 
-                if (types[(UNSIGNED_INTEGER_TYPE) Type::Inside] == caribou::traits<CellElement>::NumberOfNodes) {
+                if (types[INSIDE] == caribou::traits<CellElement>::NumberOfNodes) {
                     type = Type::Inside;
-                } else if (types[(UNSIGNED_INTEGER_TYPE) Type::Outside] == caribou::traits<CellElement>::NumberOfNodes) {
+                } else if (types[OUTSIDE] == caribou::traits<CellElement>::NumberOfNodes) {
                     type = Type::Outside;
                 } else {
                     type = Type::Boundary;
@@ -219,6 +227,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
     bool use_implicit_surface = (d_use_implicit_surface.getValue() and p_implicit_test_callback);
 
     TICK;
+#pragma omp parallel for default(none) shared(use_implicit_surface, surface_triangles, surface_positions, number_of_subdivision)
     for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < p_grid->number_of_cells(); ++cell_index) {
         const auto & triangles = p_triangles_of_cell[cell_index];
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
@@ -247,20 +256,24 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
             // Checks if the current subcell intersects the boundary
 
             if (use_implicit_surface) {
+                constexpr UNSIGNED_INTEGER_TYPE INSIDE = 0;
+                constexpr UNSIGNED_INTEGER_TYPE OUTSIDE = 1;
+                constexpr UNSIGNED_INTEGER_TYPE BOUNDARY = 2;
+
                 UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
                 for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::traits<CellElement>::NumberOfNodes; ++i) {
                     const auto t = p_implicit_test_callback(e.node(i));
                     if (t < 0)
-                        types[(UNSIGNED_INTEGER_TYPE) Type::Inside]++;
+                        types[INSIDE]++;
                     else if (t > 0)
-                        types[(UNSIGNED_INTEGER_TYPE) Type::Outside]++;
+                        types[OUTSIDE]++;
                     else
-                        types[(UNSIGNED_INTEGER_TYPE) Type::Boundary]++;
+                        types[BOUNDARY]++;
                 }
 
-                if (types[(UNSIGNED_INTEGER_TYPE) Type::Inside] == caribou::traits<CellElement>::NumberOfNodes) {
+                if (types[INSIDE] == caribou::traits<CellElement>::NumberOfNodes) {
                     type = Type::Inside;
-                } else if (types[(UNSIGNED_INTEGER_TYPE) Type::Outside] == caribou::traits<CellElement>::NumberOfNodes) {
+                } else if (types[OUTSIDE] == caribou::traits<CellElement>::NumberOfNodes) {
                     type = Type::Outside;
                 } else {
                     type = Type::Boundary;

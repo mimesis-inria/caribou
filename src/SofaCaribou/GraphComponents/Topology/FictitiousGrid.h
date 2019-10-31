@@ -16,6 +16,7 @@
 #include <exception>
 #include <bitset>
 #include <functional>
+#include <sstream>
 
 // Forward declarations
 namespace caribou::topology::engine {
@@ -85,10 +86,10 @@ public:
     // Structures
     // -----------------
     enum class Type : INTEGER_TYPE {
-        Undefined = -1,
-        Inside = 0,
-        Outside = 1,
-        Boundary = 2
+        Undefined = std::numeric_limits<INTEGER_TYPE>::lowest(),
+        Inside =   (unsigned) 1 << (unsigned) 0,
+        Outside =  (unsigned) 1 << (unsigned) 1,
+        Boundary = (unsigned) 1 << (unsigned) 2
     };
 
     ///< The Cell structure contains the quadtree (resp. octree) data of a given cell or subcell.
@@ -154,7 +155,7 @@ public:
 
     /**
      * Get neighbors cells around a given cell. A cell is neighbor to another one if they both have a face in common,
-     * of if a face contains one of the face of the other.
+     * of if a face contains one of the face of the other. Neighbors outside of the surface boundary are excluded.
      */
     std::vector<Cell *> get_neighbors(Cell * cell);
 
@@ -196,6 +197,48 @@ public:
     inline
     const SofaHexahedron & get_node_indices_of(const CellIndex & sparse_cell_index) const {
         return d_hexahedrons.getValue().at(sparse_cell_index);
+    }
+
+    /**
+     * Get the type (inside, outside, boundary or undefined) of a given point in space.
+     */
+    inline
+    Type get_type_at(const WorldCoordinates & p) const {
+        if (p_grid->contains(p)) {
+            const auto cells = p_grid->cells_around(p);
+
+            if (cells.size() == 1) {
+                return p_cells_types[cells[0]];
+            }
+
+            // The position p is on the boundary of multiple cells, gather the different cells types
+            INTEGER_TYPE types = 0;
+            for (const auto & cell_index : cells) {
+                types |= static_cast<INTEGER_TYPE>(p_cells_types[cell_index]);
+            }
+
+            if (types & static_cast<INTEGER_TYPE>(Type::Boundary)) {
+                // If one of the cells around p is of type boundary, return the type boundary
+                return Type::Boundary;
+            } else if((types & static_cast<INTEGER_TYPE>(Type::Inside)) and (types & static_cast<INTEGER_TYPE>(Type::Outside))) {
+                // If one of the cells around p is of type inside, and another one is of type outside, return the type boundary
+                return Type::Boundary;
+            } else {
+                // We cannot decide which type it is...this should never happen. Report it.
+                std::ostringstream error;
+                if (cells.empty()) {
+                    // Normally should have been caught by the grid->contains test
+                    error << "The position " << p << " was found within the boundaries of the grid, but is not part of any grid cells.";
+                } else {
+                    error << "The position " << p << " is contained inside multiple cells of different types, and"
+                                                     " the type of the position cannot be determined.";
+                }
+
+                throw std::runtime_error(error.str());
+            }
+        } else {
+            return Type::Outside;
+        }
     }
 
     /**

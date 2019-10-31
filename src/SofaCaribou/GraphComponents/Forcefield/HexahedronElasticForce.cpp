@@ -23,7 +23,9 @@ namespace SofaCaribou::GraphComponents::forcefield {
 using namespace sofa::core::topology;
 using namespace caribou::geometry;
 using namespace caribou::mechanics;
-using sofa::component::topology::SparseGridTopology;
+
+using sofa::defaulttype::Vec3Types;
+using FictitiousGrid = SofaCaribou::GraphComponents::topology::FictitiousGrid<Vec3Types>;
 
 /**
  * Split an hexahedron into 8 subcells. Subcells have their node position relative to the center of the outer hexahedron.
@@ -57,7 +59,7 @@ split_in_local_hexahedrons(const Hexahedron & h) {
  */
 template<typename Hexahedron>
 std::array<std::vector<std::pair<typename Hexahedron::LocalCoordinates, typename Hexahedron::Real>>, 8>
-recursively_get_subcells_gauss_points(SparseGridTopology & grid, const Hexahedron & hexa, const std::size_t & max_number_of_subdivisions) {
+recursively_get_subcells_gauss_points(const FictitiousGrid & grid, const Hexahedron & hexa, const std::size_t & max_number_of_subdivisions) {
     using LocalHexahedron = RectangularHexahedron<typename Hexahedron::CanonicalElement>;
     using LocalCoordinates = typename Hexahedron::LocalCoordinates;
     using Real = typename Hexahedron::Real;
@@ -68,14 +70,20 @@ recursively_get_subcells_gauss_points(SparseGridTopology & grid, const Hexahedro
     // First, check if all the top level hexa gauss points are inside to avoid the subdivision
     {
         bool all_local_gauss_points_are_inside = true;
+        bool all_local_gauss_points_are_outside = true;
         for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
             const auto &gauss_node = MapVector(Hexahedron::gauss_nodes[gauss_node_id]);
             const auto gauss_position = hexa.T(gauss_node);
-            Real fx, fy, fz; // unused
-            const auto gauss_cube_id = grid.findCube({gauss_position[0], gauss_position[1], gauss_position[2]}, fx, fy,fz);
-            if (gauss_cube_id < 0) {
+            const auto gauss_type = grid.get_type_at(gauss_position);
+            if (gauss_type == FictitiousGrid::Type::Outside) {
                 all_local_gauss_points_are_inside = false;
+            } else {
+                all_local_gauss_points_are_outside = false;
             }
+        }
+
+        if (all_local_gauss_points_are_outside) {
+            return gauss_points;
         }
 
         if (all_local_gauss_points_are_inside) {
@@ -117,9 +125,8 @@ recursively_get_subcells_gauss_points(SparseGridTopology & grid, const Hexahedro
                 const auto &gauss_node = MapVector(Hexahedron::gauss_nodes[gauss_node_id]);
                 const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
                 const auto gauss_position = hexa.T(local_hexahedron.T(gauss_node));
-                Real fx,fy,fz; // unused
-                const auto gauss_cube_id = grid.findCube({gauss_position[0], gauss_position[1], gauss_position[2]}, fx, fy, fz);
-                if (gauss_cube_id < 0) {
+                const auto gauss_type = grid.get_type_at(gauss_position);
+                if (gauss_type == FictitiousGrid::Type::Outside) {
                     all_local_gauss_points_are_inside = false;
                 } else {
                     local_gauss_points.push_back({
@@ -190,8 +197,8 @@ HexahedronElasticForce::HexahedronElasticForce()
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_topology_container(initLink(
         "topology_container", "Topology that contains the elements on which this force will be computed."))
-, d_integration_grid(initLink(
-        "integration_grid", "Sparse grid used for subdivided integration methods (see 'integration_method')."))
+, d_grid_container(initLink(
+        "fictitious_grid", "Fictitious grid that contains the elements on which this force will be computed."))
 {
     d_integration_method.setValue(sofa::helper::OptionsGroup(std::vector<std::string> {
         "Regular", "SubdividedVolume", "SubdividedGauss"
@@ -244,15 +251,15 @@ void HexahedronElasticForce::reinit()
     if (integration_method() == IntegrationMethod::SubdividedVolume or
         integration_method() == IntegrationMethod::SubdividedGauss) {
 
-        if (not d_integration_grid.get()) {
+        if (not d_grid_container.get()) {
             msg_error() << "Integration method '" << integration_method_as_string()
-                        << "' requires a sparse grid topology.";
+                        << "' requires a fictitious grid topology.";
             set_integration_method(IntegrationMethod::Regular);
         } else {
 
-            if (d_integration_grid.get()->getNbHexas() == 0) {
-                msg_error() << "Integration grid '" << d_integration_grid.get()->getPathName()
-                            << "' does not contain any hexahedron.";
+            if (d_grid_container.get()->number_of_cells() == 0) {
+                msg_error() << "Integration grid '" << d_grid_container.get()->getPathName()
+                            << "' does not contain any cells.";
                 set_integration_method(IntegrationMethod::Regular);
             }
 
@@ -305,7 +312,7 @@ void HexahedronElasticForce::reinit()
                 gauss_points.emplace_back(gauss_node, gauss_weight);
             }
         } else {
-            auto & grid = *d_integration_grid.get();
+            auto & grid = *d_grid_container.get();
 
             auto gauss_points_per_subcells = recursively_get_subcells_gauss_points(grid, hexa, d_number_of_subdivisions.getValue());
             if (integration_method() == IntegrationMethod::SubdividedVolume) {

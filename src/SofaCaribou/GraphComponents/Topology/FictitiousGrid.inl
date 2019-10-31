@@ -635,7 +635,7 @@ FictitiousGrid<DataTypes>::get_subcells_elements(const CellElement & e) const
                    CellElement(e.T(LocalCoordinates {+0.5, +0.5, +0.5}), h)
         }};
     }
-};
+}
 
 template <typename DataTypes>
 std::vector<typename FictitiousGrid<DataTypes>::Cell *>
@@ -846,7 +846,7 @@ FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & sparse_cell
         n.second *= detJ;
     }
 
-    return std::move(gauss_nodes);
+    return gauss_nodes;
 }
 
 template <typename DataTypes>

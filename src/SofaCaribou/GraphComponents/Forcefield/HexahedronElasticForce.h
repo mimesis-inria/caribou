@@ -7,7 +7,7 @@
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <SofaBaseTopology/SparseGridTopology.h>
+#include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
 
 #include <Caribou/Geometry/Hexahedron.h>
 
@@ -18,7 +18,6 @@ using namespace sofa::core::objectmodel;
 using namespace sofa::core::behavior;
 using namespace sofa::core::topology;
 using sofa::defaulttype::Vec3Types;
-using sofa::component::topology::SparseGridTopology;
 
 class HexahedronElasticForce : public ForceField<Vec3Types>
 {
@@ -33,6 +32,8 @@ public:
     using Coord    = typename DataTypes::Coord;
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
+
+    using FictitiousGrid = SofaCaribou::GraphComponents::topology::FictitiousGrid<DataTypes>;
 
     using Hexahedron = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
     static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodes;
@@ -187,7 +188,7 @@ protected:
     Data< Real > d_ignore_volume_threshold;
     Data< sofa::helper::OptionsGroup > d_integration_method;
     Link<BaseMeshTopology>   d_topology_container;
-    Link<SparseGridTopology> d_integration_grid;
+    Link<FictitiousGrid> d_grid_container;
 
 private:
     bool recompute_compute_tangent_stiffness = false;
