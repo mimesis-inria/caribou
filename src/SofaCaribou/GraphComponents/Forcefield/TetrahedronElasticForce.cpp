@@ -1,7 +1,3 @@
-#ifdef CARIBOU_WITH_OPENMP
-#include <omp.h>
-#endif
-
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/Node.h>
@@ -181,7 +177,6 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addForce");
-        #pragma omp parallel for
         for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
             Tetrahedron tetra = tetrahedron(element_id, x);
 
@@ -221,13 +216,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
                 Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
                 force = R*force;
 
-                #pragma omp atomic
                 f[node_id][0] -= force[0];
-
-                #pragma omp atomic
                 f[node_id][1] -= force[1];
-
-                #pragma omp atomic
                 f[node_id][2] -= force[2];
                 ++i;
             }
@@ -242,7 +232,6 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
-        #pragma omp parallel for
         for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
             const auto &tetra = topology->getTetrahedron(element_id);
 
@@ -290,13 +279,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
             }
 
             for (size_t i = 0; i < NumberOfNodes; ++i) {
-                #pragma omp atomic
                 f[tetra[i]][0] -= forces.row(i)[0];
-
-                #pragma omp atomic
                 f[tetra[i]][1] -= forces.row(i)[1];
-
-                #pragma omp atomic
                 f[tetra[i]][2] -= forces.row(i)[2];
             }
         }
@@ -328,7 +312,6 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addDForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addDForce");
-    #pragma omp parallel for
     for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
 
         const Mat33 & R  = current_rotation[element_id];
@@ -356,13 +339,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addDForce(
             Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
             force = R*force;
 
-            #pragma omp atomic
             df[node_id][0] -= force[0];
-
-            #pragma omp atomic
             df[node_id][1] -= force[1];
-
-            #pragma omp atomic
             df[node_id][2] -= force[2];
 
             ++i;
@@ -389,7 +367,6 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addKToMatrix(
 
     sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addKToMatrix");
 
-    #pragma omp parallel for
     for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
         const auto & node_indices = topology->getTetrahedron(element_id);
         const Mat33 & R  = current_rotation[element_id];
@@ -414,7 +391,6 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addKToMatrix(
                         const auto x = node_indices[i]*3+m;
                         const auto y = node_indices[j]*3+n;
 
-                        #pragma omp critical
                         matrix->add(x, y, k(m,n));
                     }
                 }
@@ -536,7 +512,6 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::compute_K()
 
     sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::compute_k");
 
-    #pragma omp parallel for
     for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
         auto & K = p_stiffness_matrices[element_id];
         K.fill(0.);

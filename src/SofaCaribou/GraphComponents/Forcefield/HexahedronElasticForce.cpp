@@ -1,9 +1,6 @@
 #include <numeric>
 #include <queue>
 #include <array>
-#ifdef CARIBOU_WITH_OPENMP
-#include <omp.h>
-#endif
 #include <Eigen/Sparse>
 
 #include <sofa/core/visual/VisualParams.h>
@@ -439,15 +436,6 @@ void HexahedronElasticForce::reinit()
         }
     }
 
-#ifdef CARIBOU_WITH_OPENMP
-    const auto * env = std::getenv("OMP_NUM_THREADS");
-    if (env) {
-        msg_info() << "Using " << env << " threads for computations.";
-    } else {
-        msg_info() << "Using 1 threads for computations.";
-    }
-#endif
-
     // Compute the initial tangent stiffness matrix
     compute_K();
 }
@@ -485,7 +473,6 @@ void HexahedronElasticForce::addForce(
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
-        #pragma omp parallel for
         for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
             const auto & hexa_id = p_hexahedrons_indices[index];
             Hexahedron hexa = hexahedron(hexa_id, x);
@@ -526,13 +513,8 @@ void HexahedronElasticForce::addForce(
                 Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
                 force = R*force;
 
-                #pragma omp atomic
                 f[node_id][0] -= force[0];
-
-                #pragma omp atomic
                 f[node_id][1] -= force[1];
-
-                #pragma omp atomic
                 f[node_id][2] -= force[2];
                 ++i;
             }
@@ -547,7 +529,6 @@ void HexahedronElasticForce::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
-    #pragma omp parallel for
         for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
             const auto & hexa_id = p_hexahedrons_indices[index];
             const auto &hexa = topology->getHexahedron(hexa_id);
@@ -596,13 +577,8 @@ void HexahedronElasticForce::addForce(
             }
 
             for (size_t i = 0; i < 8; ++i) {
-                #pragma omp atomic
                 f[hexa[i]][0] -= forces.row(i)[0];
-
-                #pragma omp atomic
                 f[hexa[i]][1] -= forces.row(i)[1];
-
-                #pragma omp atomic
                 f[hexa[i]][2] -= forces.row(i)[2];
             }
         }
@@ -633,7 +609,6 @@ void HexahedronElasticForce::addDForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
-    #pragma omp parallel for
     for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
         const auto & hexa_id = p_hexahedrons_indices[index];
 
@@ -662,13 +637,8 @@ void HexahedronElasticForce::addDForce(
             Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
             force = R*force;
 
-            #pragma omp atomic
             df[node_id][0] -= force[0];
-
-            #pragma omp atomic
             df[node_id][1] -= force[1];
-
-            #pragma omp atomic
             df[node_id][2] -= force[2];
 
             ++i;
@@ -691,7 +661,6 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addKToMatrix");
 
-    #pragma omp parallel for
     for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
         const auto & hexa_id = p_hexahedrons_indices[index];
         const auto & node_indices = topology->getHexahedron(hexa_id);
@@ -717,7 +686,6 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
                         const auto x = node_indices[i]*3+m;
                         const auto y = node_indices[j]*3+n;
 
-                        #pragma omp critical
                         matrix->add(x, y, k(m,n));
                     }
                 }
@@ -746,7 +714,6 @@ void HexahedronElasticForce::compute_K()
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::compute_k");
 
-    #pragma omp parallel for
     for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
         auto & K = p_stiffness_matrices[index];
         K.fill(0.);
