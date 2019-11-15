@@ -277,14 +277,14 @@ struct BaseGrid
 
             for (UNSIGNED_INTEGER_TYPE i : axis_indices[0]) {
                 if constexpr (Dimension == 1) {
-                    cells.emplace_back(cell_index_at(GridCoordinates{i}));
+                    cells.emplace_back(cell_index_at(GridCoordinates(i)));
                 } else {
                     for (UNSIGNED_INTEGER_TYPE j : axis_indices[1]) {
                         if constexpr (Dimension == 2) {
-                            cells.emplace_back(cell_index_at(GridCoordinates{i, j}));
+                            cells.emplace_back(cell_index_at(GridCoordinates(i, j)));
                         } else {
                             for (UNSIGNED_INTEGER_TYPE k : axis_indices[2]) {
-                                cells.emplace_back(cell_index_at(GridCoordinates{i, j, k}));
+                                cells.emplace_back(cell_index_at(GridCoordinates(i, j, k)));
                             }
                         }
                     }
@@ -302,14 +302,14 @@ struct BaseGrid
         const auto & n = m_number_of_subdivisions;
 
         if CONSTEXPR_IF (Dimension == 1) {
-            return GridCoordinates {index};
+            return GridCoordinates (index);
         } else if CONSTEXPR_IF (Dimension == 2) {
             const auto & nx = n[0];
 
             const auto j = index / nx;
             const auto i = index - (j*nx);
 
-            return GridCoordinates {i,j};
+            return GridCoordinates (i,j);
         } else {
             const auto & nx = n[0];
             const auto & ny = n[1];
@@ -318,7 +318,7 @@ struct BaseGrid
             const auto j = (index - (k*nx*ny)) / nx;
             const auto i = index - ((k*nx*ny) + (j*nx));
 
-            return GridCoordinates {i, j, k};
+            return GridCoordinates (i, j, k);
         }
     }
 
@@ -371,7 +371,7 @@ struct BaseGrid
 
             const auto j = index / nx;
             const auto i = index - (j*nx);
-            const GridCoordinates coordinates {i, j};
+            const GridCoordinates coordinates (i, j);
 
             return m_anchor_position + (H().array() * coordinates.array().template cast<FLOATING_POINT_TYPE>()).matrix();
         } else {
@@ -381,7 +381,7 @@ struct BaseGrid
             const auto k = index / (nx*ny);
             const auto j = (index - (k*nx*ny)) / nx;
             const auto i = index - ((k*nx*ny) + (j*nx));
-            const GridCoordinates coordinates {i, j, k};
+            const GridCoordinates coordinates (i, j, k);
 
             return m_anchor_position + (H().array() * coordinates.array().template cast<FLOATING_POINT_TYPE>()).matrix();
         }
