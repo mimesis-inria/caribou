@@ -177,7 +177,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addForce");
-        for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
+        const auto number_of_elements = topology->getNbTetrahedra();
+        for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
             Tetrahedron tetra = tetrahedron(element_id, x);
 
             const Mat33 & R0 = initial_rotation[element_id];
@@ -232,7 +233,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
-        for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
+        const auto number_of_elements = topology->getNbTetrahedra();
+        for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
             const auto &tetra = topology->getTetrahedron(element_id);
 
             Matrix<NumberOfNodes, 3, Eigen::RowMajor> U;
@@ -312,7 +314,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addDForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addDForce");
-    for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
+    const auto number_of_elements = topology->getNbTetrahedra();
+    for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
 
         const Mat33 & R  = current_rotation[element_id];
         const Mat33 & Rt = R.transpose();
@@ -367,7 +370,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addKToMatrix(
 
     sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addKToMatrix");
 
-    for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
+    const auto number_of_elements = topology->getNbTetrahedra();
+    for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
         const auto & node_indices = topology->getTetrahedron(element_id);
         const Mat33 & R  = current_rotation[element_id];
         const Mat33   Rt = R.transpose();
@@ -443,7 +447,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::draw(const sofa::core::visua
     const VecCoord &x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
 
     std::vector< sofa::defaulttype::Vec<3, double> > points[4];
-    for(Topology::TetrahedronID i = 0 ; i<topology->getNbTetrahedra();++i)
+    const auto number_of_elements = topology->getNbTetrahedra();
+    for(Topology::TetrahedronID i = 0 ; i<number_of_elements;++i)
     {
         const auto t=topology->getTetra(i);
 
@@ -512,7 +517,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::compute_K()
 
     sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::compute_k");
 
-    for (std::size_t element_id = 0; element_id < topology->getNbTetrahedra(); ++element_id) {
+    const auto number_of_elements = topology->getNbTetrahedra();
+    for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
         auto & K = p_stiffness_matrices[element_id];
         K.fill(0.);
 

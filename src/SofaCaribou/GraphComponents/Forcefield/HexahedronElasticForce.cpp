@@ -217,7 +217,7 @@ void HexahedronElasticForce::init()
             msg_error() <<
             "Multiple topology were found in the node '" << node->getPathName() << "'." <<
             " Please specify which one contains the elements on which this force field will be computed " <<
-            "by explicitly setting the container's path in the 'topology_container' parameter.";
+            "by explicitly setting the container's path in the  '" << d_topology_container.getName() << "'  parameter.";
         } else {
             d_topology_container.set(containers[0]);
             msg_info() << "Automatically found the topology '" << d_topology_container.get()->getPathName() << "'.";
@@ -473,7 +473,8 @@ void HexahedronElasticForce::addForce(
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
-        for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+        const auto number_of_elements = p_hexahedrons_indices.size();
+        for (std::size_t index = 0; index < number_of_elements; ++index) {
             const auto & hexa_id = p_hexahedrons_indices[index];
             Hexahedron hexa = hexahedron(hexa_id, x);
 
@@ -529,7 +530,8 @@ void HexahedronElasticForce::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
-        for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+        const auto number_of_elements = p_hexahedrons_indices.size();
+        for (std::size_t index = 0; index < number_of_elements; ++index) {
             const auto & hexa_id = p_hexahedrons_indices[index];
             const auto &hexa = topology->getHexahedron(hexa_id);
 
@@ -609,7 +611,8 @@ void HexahedronElasticForce::addDForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
-    for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+    const auto number_of_elements = p_hexahedrons_indices.size();
+    for (std::size_t index = 0; index < number_of_elements; ++index) {
         const auto & hexa_id = p_hexahedrons_indices[index];
 
         const Mat33 & R  = current_rotation[index];
@@ -714,7 +717,8 @@ void HexahedronElasticForce::compute_K()
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::compute_k");
 
-    for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
+    const auto number_of_elements = p_hexahedrons_indices.size();
+    for (std::size_t index = 0; index < number_of_elements; ++index) {
         auto & K = p_stiffness_matrices[index];
         K.fill(0.);
 
