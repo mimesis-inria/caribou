@@ -4,6 +4,8 @@
 #include <omp.h>
 #endif
 
+#include <numeric>
+
 #include "FictitiousGrid.inl"
 
 #include <Caribou/Geometry/Triangle.h>

@@ -6,7 +6,6 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 
-#include <Caribou/Algebra/Vector.h>
 #include <Caribou/Geometry/RectangularQuad.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
 #include <Caribou/Topology/Grid/Grid.h>
@@ -48,10 +47,8 @@ public:
     // Caribou data aliases
     // --------------------
     using Index = std::size_t;
-    using VecFloat = caribou::algebra::Vector<Dimension, FLOATING_POINT_TYPE>;
-    using VecInt   = caribou::algebra::Vector<Dimension, Index>;
-    using Int   = typename VecInt::ValueType;
-    using Float = typename VecFloat::ValueType;
+    using Int   = INTEGER_TYPE;
+    using Float = FLOATING_POINT_TYPE;
 
     // -----------------
     // Sofa data aliases
