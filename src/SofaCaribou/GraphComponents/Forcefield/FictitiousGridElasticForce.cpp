@@ -196,7 +196,7 @@ void FictitiousGridElasticForce::reinit()
         } else {
             for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
                 Hexahedron hexa = hexahedron(hexa_id, X);
-                p_initial_rotation[hexa_id] = hexa.frame();
+                p_initial_rotation[hexa_id] = hexa.frame({0, 0, 0});
             }
         }
     }
@@ -259,7 +259,7 @@ void FictitiousGridElasticForce::addForce(
 
             // Extract the hexahedron's frame
             if (corotated)
-                R = hexa.frame();
+                R = hexa.frame({0, 0, 0});
 
             const Mat33 & Rt = R.transpose();
 

@@ -22,134 +22,6 @@ using namespace caribou::geometry;
 using namespace caribou::mechanics;
 
 using sofa::defaulttype::Vec3Types;
-using FictitiousGrid = SofaCaribou::GraphComponents::topology::FictitiousGrid<Vec3Types>;
-
-/**
- * Split an hexahedron into 8 subcells. Subcells have their node position relative to the center of the outer hexahedron.
- */
-template<typename Hexahedron>
-std::array<RectangularHexahedron<typename Hexahedron::CanonicalElement>, 8>
-split_in_local_hexahedrons(const Hexahedron & h) {
-    using LocalHexahedron = RectangularHexahedron<typename Hexahedron::CanonicalElement>;
-    const auto hx = (h.node(1) - h.node(0)).norm();
-    const auto hy = (h.node(3) - h.node(0)).norm();
-    const auto hz = (h.node(4) - h.node(0)).norm();
-    return {{
-        LocalHexahedron({-0.5, -0.5, -0.5}, {hx/2., hy/2., hz/2.}),
-        LocalHexahedron({+0.5, -0.5, -0.5}, {hx/2., hy/2., hz/2.}),
-        LocalHexahedron({+0.5, +0.5, -0.5}, {hx/2., hy/2., hz/2.}),
-        LocalHexahedron({-0.5, +0.5, -0.5}, {hx/2., hy/2., hz/2.}),
-        LocalHexahedron({-0.5, -0.5, +0.5}, {hx/2., hy/2., hz/2.}),
-        LocalHexahedron({+0.5, -0.5, +0.5}, {hx/2., hy/2., hz/2.}),
-        LocalHexahedron({+0.5, +0.5, +0.5}, {hx/2., hy/2., hz/2.}),
-        LocalHexahedron({-0.5, +0.5, +0.5}, {hx/2., hy/2., hz/2.})
-    }};
-}
-
-/**
- * Recursively get all the gauss positions that are inside the surface domain with their correct weight.
- * @tparam Hexahedron
- * @param grid
- * @param h
- * @return An array of 8 vectors of gauss points (one per subcell). A gauss point is represented by the tuple (xi, w)
- *         where xi is the local coordinates vector of the gauss point and w is its weight.
- */
-template<typename Hexahedron>
-std::array<std::vector<std::pair<typename Hexahedron::LocalCoordinates, typename Hexahedron::Real>>, 8>
-recursively_get_subcells_gauss_points(const FictitiousGrid & grid, const Hexahedron & hexa, const std::size_t & max_number_of_subdivisions) {
-    using LocalHexahedron = RectangularHexahedron<typename Hexahedron::CanonicalElement>;
-    using LocalCoordinates = typename Hexahedron::LocalCoordinates;
-    using Real = typename Hexahedron::Real;
-    using MapVector = Eigen::Map<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>, Eigen::ColMajor>;
-
-    std::array<std::vector<std::pair<typename Hexahedron::LocalCoordinates, typename Hexahedron::Real>>, 8> gauss_points;
-
-    // First, check if all the top level hexa gauss points are inside to avoid the subdivision
-    {
-        bool all_local_gauss_points_are_inside = true;
-        bool all_local_gauss_points_are_outside = true;
-        for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
-            const auto &gauss_node = MapVector(Hexahedron::gauss_nodes[gauss_node_id]);
-            const auto gauss_position = hexa.T(gauss_node);
-            const auto gauss_type = grid.get_type_at(gauss_position);
-            if (gauss_type == FictitiousGrid::Type::Outside) {
-                all_local_gauss_points_are_inside = false;
-            } else {
-                all_local_gauss_points_are_outside = false;
-            }
-        }
-
-        if (all_local_gauss_points_are_outside) {
-            return gauss_points;
-        }
-
-        if (all_local_gauss_points_are_inside) {
-            // They are all inside the boundary, let's add them and return since the hexa is not cut by the boundary
-            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
-                const auto &gauss_node = MapVector(Hexahedron::gauss_nodes[gauss_node_id]);
-                const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
-                gauss_points[gauss_node_id].push_back({gauss_node, gauss_weight});
-            }
-            return gauss_points;
-        }
-    }
-
-    // At this point, we got an hexa that is either outside, or on the boundary of the surface
-    const auto subcells = split_in_local_hexahedrons(LocalHexahedron({0,0,0}));
-
-    for (std::size_t i = 0; i < subcells.size(); ++i) {
-
-        // FIFO which will store final sub-cells. A sub-cell is final when it is fully inside
-        // the surface domain, or when the maximum number of subdivisions has been reach. If it is not final,
-        // then the sub-cell is removed from the top of the queue and its 8 sub-cells are added to the end
-        // of the queue.
-        struct SubCell {
-            LocalHexahedron hexahedron;
-            UNSIGNED_INTEGER_TYPE subdivision_level;
-        };
-
-        std::queue<SubCell> stack ({
-            SubCell {subcells[i], 1}
-        });
-
-        while (not stack.empty()) {
-            const auto & subcell = stack.front();
-            const auto & local_hexahedron = subcell.hexahedron;
-
-            bool all_local_gauss_points_are_inside = true;
-            std::vector<std::pair<LocalCoordinates, Real>> local_gauss_points;
-            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
-                const auto &gauss_node = MapVector(Hexahedron::gauss_nodes[gauss_node_id]);
-                const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
-                const auto gauss_position = hexa.T(local_hexahedron.T(gauss_node));
-                const auto gauss_type = grid.get_type_at(gauss_position);
-                if (gauss_type == FictitiousGrid::Type::Outside) {
-                    all_local_gauss_points_are_inside = false;
-                } else {
-                    local_gauss_points.push_back({
-                        local_hexahedron.T(gauss_node),
-                        gauss_weight*local_hexahedron.jacobian().determinant()
-                    });
-                }
-            }
-
-            if (all_local_gauss_points_are_inside or subcell.subdivision_level == max_number_of_subdivisions) {
-                for (const auto & gauss_point : local_gauss_points) {
-                    gauss_points[i].push_back(gauss_point);
-                }
-            } else {
-                const auto local_hexahedrons = split_in_local_hexahedrons(subcell.hexahedron);
-                for (const auto & local_cell : local_hexahedrons) {
-                    stack.push({local_cell, subcell.subdivision_level+1});
-                }
-            }
-
-            stack.pop();
-        }
-    }
-
-    return gauss_points;
-}
 
 HexahedronElasticForce::HexahedronElasticForce()
 : d_youngModulus(initData(&d_youngModulus,
@@ -160,10 +32,6 @@ HexahedronElasticForce::HexahedronElasticForce()
         Real(0.3),  "poissonRatio",
         "Poisson's ratio of the material",
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
-, d_number_of_subdivisions(initData(&d_number_of_subdivisions,
-        (UNSIGNED_INTEGER_TYPE) 0,  "number_of_subdivisions",
-        "Number of subdivisions for the integration method (see 'integration_method').",
-        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_linear_strain(initData(&d_linear_strain,
         bool(true), "linearStrain",
         "True if the small (linear) strain tensor is used, otherwise the nonlinear Green-Lagrange strain is used.",
@@ -172,33 +40,21 @@ HexahedronElasticForce::HexahedronElasticForce()
         bool(true), "corotated",
         "Whether or not to use corotated elements for the strain computation.",
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
-, d_ignore_volume_threshold(initData(&d_ignore_volume_threshold,
-        Real(0.),  "ignore_volume_threshold",
-        "Ignore hexahedrons for which the ratio of the volume inside the boundary against the hexa's volume is "
-              "lower than the given threshold",
-        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_integration_method(initData(&d_integration_method,
         "integration_method",
         R"(
                 Integration method used to integrate the stiffness matrix.
 
                 Methods are:
-                  Regular:          Regular 8 points gauss integration.
-                  SubdividedVolume: Hexas are recursively subdivided into cubic subcells and these subcells are used to
-                  compute the inside volume of the regular hexa's gauss points.
-                  ** Requires a sparse grid topology **
-                  SubdividedGauss:  Hexas are recursively subdivided into cubic subcells and these subcells are used to
-                  add new gauss points. Gauss points outside of the boundary are ignored.
-                  ** Requires a sparse grid topology **
+                  Regular:       Regular 8 points gauss integration (default).
+                  OnePointGauss: One gauss point integration at the center of the hexahedron
                 )",
         true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_topology_container(initLink(
         "topology_container", "Topology that contains the elements on which this force will be computed."))
-, d_grid_container(initLink(
-        "fictitious_grid", "Fictitious grid that contains the elements on which this force will be computed."))
 {
     d_integration_method.setValue(sofa::helper::OptionsGroup(std::vector<std::string> {
-        "Regular", "SubdividedVolume", "SubdividedGauss"
+        "Regular", "OnePointGauss"
     }));
 
     sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> integration_method = d_integration_method;
@@ -245,29 +101,6 @@ void HexahedronElasticForce::reinit()
         return;
     }
 
-    if (integration_method() == IntegrationMethod::SubdividedVolume or
-        integration_method() == IntegrationMethod::SubdividedGauss) {
-
-        if (not d_grid_container.get()) {
-            msg_error() << "Integration method '" << integration_method_as_string()
-                        << "' requires a fictitious grid topology.";
-            set_integration_method(IntegrationMethod::Regular);
-        } else {
-
-            if (d_grid_container.get()->number_of_cells() == 0) {
-                msg_error() << "Integration grid '" << d_grid_container.get()->getPathName()
-                            << "' does not contain any cells.";
-                set_integration_method(IntegrationMethod::Regular);
-            }
-
-            if (d_number_of_subdivisions.getValue() == 0) {
-                msg_error() << "Integration method '" << integration_method_as_string()
-                            << "' requires the number of subdivisions to be greater than 0";
-                set_integration_method(IntegrationMethod::Regular);
-            }
-        }
-    }
-
     const sofa::helper::ReadAccessor<Data<VecCoord>> X = state->readRestPositions();
 
     // Make sure every node of the hexahedrons have its coordinates inside the mechanical state vector
@@ -285,15 +118,8 @@ void HexahedronElasticForce::reinit()
     }
 
     // Gather the integration points for each hexahedron
-    const Real volume_ratio_threshold = d_ignore_volume_threshold.getValue();
     std::vector<std::vector<GaussNode>> quadrature_nodes(topology->getNbHexahedra());
     p_quadrature_nodes.resize(topology->getNbHexahedra());
-    p_hexahedrons_indices.resize(topology->getNbHexahedra());
-    p_ignored_hexahedrons_indices.resize(topology->getNbHexahedra());
-
-    UNSIGNED_INTEGER_TYPE next_hexahedron_id = 0;
-    UNSIGNED_INTEGER_TYPE next_ignored_hexahedron_id = 0;
-    std::map<float, UNSIGNED_INTEGER_TYPE> volume_ratios;
 
     for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         auto   hexa = hexahedron(hexa_id, X);
@@ -301,137 +127,60 @@ void HexahedronElasticForce::reinit()
         // List of pair (Xi, w) where Xi is the local coordinates vector of the gauss point and w is its weight.
         std::vector<std::pair<Vec3, Real>> gauss_points;
 
-        if (integration_method() == IntegrationMethod::Regular) {
+        if (integration_method() == IntegrationMethod::OnePointGauss) {
+            gauss_points.emplace_back(Vector<3>(0, 0, 0), 8);
+        } else {
             for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
                 const auto &gauss_node   = MapVector<3>(Hexahedron::gauss_nodes[gauss_node_id]);
                 const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
 
                 gauss_points.emplace_back(gauss_node, gauss_weight);
             }
-        } else {
-            auto & grid = *d_grid_container.get();
-
-            auto gauss_points_per_subcells = recursively_get_subcells_gauss_points(grid, hexa, d_number_of_subdivisions.getValue());
-            if (integration_method() == IntegrationMethod::SubdividedVolume) {
-                // SubdividedVolume method keeps only the top level hexahedron gauss points, but adjust their weight
-                // by integrating the volume of the subcell.
-                for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
-                    const auto &gauss_node   = MapVector<3>(Hexahedron::gauss_nodes[gauss_node_id]);
-                    const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
-
-                    Real volume = 0.;
-                    for (const auto & subcell_gauss_point : gauss_points_per_subcells[gauss_node_id]) {
-                        volume += subcell_gauss_point.second;
-                    }
-                    if (volume > 0) {
-                        gauss_points.emplace_back(gauss_node, gauss_weight * volume);
-                    }
-                }
-            } else { /* IntegrationMethod::SubdividedGauss */
-                // SubdividedGauss method keeps all gauss points found recursively in the subcells
-                for (const auto & gauss_points_in_subcell : gauss_points_per_subcells) {
-                    for (const auto & gauss_point : gauss_points_in_subcell) {
-                        gauss_points.push_back(gauss_point);
-                    }
-                }
-            }
         }
 
-        // At this point, we have all the gauss points of the hexa and their corrected weight.
-        // 1. Ignore hexahedrons for which their internal volume ratio is lower than the given threshold
-        bool ignore_hexahedron = false;
-        if (integration_method() != IntegrationMethod::Regular) {
-            Real full_volume = 0.;
-            Real true_volume = 0.;
+        // 2. At this point, we have all the gauss points of the hexa and their corrected weight.
+        //    We now compute constant values required by the simulation for each of them
+        auto &hexa_quadrature_nodes = p_quadrature_nodes[hexa_id];
+        for (const auto &gauss_point : gauss_points) {
+            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
+            const auto J = hexa.jacobian(gauss_point.first);
+            const Mat33 Jinv = J.inverse();
+            const auto detJ = J.determinant();
 
-            for (std::size_t gauss_node_id = 0;
-                 gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
-                const auto &gauss_node = MapVector<3>(Hexahedron::gauss_nodes[gauss_node_id]);
-                const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
-                const auto J = hexa.jacobian(gauss_node);
-                const auto detJ = J.determinant();
-                full_volume += gauss_weight*detJ;
-            }
+            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
+            const Matrix<NumberOfNodes, 3, Eigen::RowMajor> dN_dx = (Jinv.transpose() * Hexahedron::dL(
+                gauss_point.first).transpose()).transpose();
 
-            for (const auto & gauss_point : gauss_points) {
-                const auto J = hexa.jacobian(gauss_point.first);
-                const auto &gauss_weight = gauss_point.second;
-                const auto detJ = J.determinant();
-                true_volume += gauss_weight*detJ;
-            }
-
-            const auto volume_ratio = (true_volume / full_volume);
-            ignore_hexahedron = (volume_ratio < volume_ratio_threshold);
-            if (volume_ratios.find(volume_ratio) == volume_ratios.end())
-                volume_ratios[volume_ratio] = 1;
-            else
-                volume_ratios[volume_ratio] += 1;
-        } else if (volume_ratio_threshold > 0) {
-            msg_warning() << "Giving a volume threshold value has no effect when using the regular integration method.";
+            hexa_quadrature_nodes.push_back(GaussNode({
+                                                          gauss_point.second,
+                                                          detJ,
+                                                          dN_dx,
+                                                          Mat33::Identity()
+                                                      }));
         }
-
-        // 2. We now compute constant values required by the simulation for each of them
-        if (not ignore_hexahedron) {
-            auto &hexa_quadrature_nodes = p_quadrature_nodes[next_hexahedron_id];
-            for (const auto &gauss_point : gauss_points) {
-                // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-                const auto J = hexa.jacobian(gauss_point.first);
-                const Mat33 Jinv = J.inverse();
-                const auto detJ = J.determinant();
-
-                // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-                const Matrix<NumberOfNodes, 3, Eigen::RowMajor> dN_dx = (Jinv.transpose() * Hexahedron::dL(
-                    gauss_point.first).transpose()).transpose();
-
-                hexa_quadrature_nodes.push_back(GaussNode({
-                                                              gauss_point.second,
-                                                              detJ,
-                                                              dN_dx,
-                                                              Mat33::Identity()
-                                                          }));
-            }
-
-            p_hexahedrons_indices[next_hexahedron_id] = hexa_id;
-            ++next_hexahedron_id;
-        } else {
-            p_ignored_hexahedrons_indices[next_ignored_hexahedron_id] = hexa_id;
-            ++next_ignored_hexahedron_id;
-        }
-    }
-
-    p_quadrature_nodes.resize(next_hexahedron_id);
-    p_hexahedrons_indices.resize(next_hexahedron_id);
-    p_ignored_hexahedrons_indices.resize(next_ignored_hexahedron_id);
-
-    if (integration_method() != IntegrationMethod::Regular) {
-        for (const auto &p : volume_ratios) {
-            msg_info() << p.second << " hexahedrons with a volume ratio of " << p.first;
-        }
-        msg_info() << p_hexahedrons_indices.size() << " hexahedrons ("
-                   << p_ignored_hexahedrons_indices.size() << " ignored on a total of " << topology->getNbHexahedra() << ")";
     }
 
     Real v = 0.;
-    for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
-        for (std::size_t gauss_node_id = 0; gauss_node_id < p_quadrature_nodes[index].size(); ++gauss_node_id) {
-            v += p_quadrature_nodes[index][gauss_node_id].weight*p_quadrature_nodes[index][gauss_node_id].jacobian_determinant;
+    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+        for (std::size_t gauss_node_id = 0; gauss_node_id < p_quadrature_nodes[hexa_id].size(); ++gauss_node_id) {
+            v += p_quadrature_nodes[hexa_id][gauss_node_id].weight*p_quadrature_nodes[hexa_id][gauss_node_id].jacobian_determinant;
         }
     }
     msg_info() << "Total volume is " << v;
 
     // Initialize the stiffness matrix of every hexahedrons
-    p_stiffness_matrices.resize(p_hexahedrons_indices.size());
-    p_initial_rotation.resize(p_hexahedrons_indices.size(), Mat33::Identity());
-    p_current_rotation.resize(p_hexahedrons_indices.size(), Mat33::Identity());
+    p_stiffness_matrices.resize(topology->getNbHexahedra());
+    p_initial_rotation.resize(topology->getNbHexahedra(), Mat33::Identity());
+    p_current_rotation.resize(topology->getNbHexahedra(), Mat33::Identity());
 
     // Initialize the initial frame of each hexahedron
     if (d_corotated.getValue()) {
         if (not d_linear_strain.getValue()) {
             msg_warning() << "The corotated method won't be computed since nonlinear strain is used.";
         } else {
-            for (const auto & hexa_id : p_hexahedrons_indices) {
+            for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
                 Hexahedron hexa = hexahedron(hexa_id, X);
-                p_initial_rotation[hexa_id] = hexa.frame();
+                p_initial_rotation[hexa_id] = hexa.frame({0, 0, 0});
             }
         }
     }
@@ -473,20 +222,19 @@ void HexahedronElasticForce::addForce(
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
-        const auto number_of_elements = p_hexahedrons_indices.size();
-        for (std::size_t index = 0; index < number_of_elements; ++index) {
-            const auto & hexa_id = p_hexahedrons_indices[index];
+        const auto number_of_elements = topology->getNbHexahedra();
+        for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
             Hexahedron hexa = hexahedron(hexa_id, x);
 
-            const Mat33 & R0 = initial_rotation[index];
+            const Mat33 & R0 = initial_rotation[hexa_id];
             const Mat33 R0t = R0.transpose();
 
-            Mat33 & R = current_rotation[index];
+            Mat33 & R = current_rotation[hexa_id];
 
 
             // Extract the hexahedron's frame
             if (corotated)
-                R = hexa.frame();
+                R = hexa.frame({0, 0, 0});
 
             const Mat33 & Rt = R.transpose();
 
@@ -505,7 +253,7 @@ void HexahedronElasticForce::addForce(
             }
 
             // Compute the force vector
-            const auto &K = p_stiffness_matrices[index];
+            const auto &K = p_stiffness_matrices[hexa_id];
             Vec24 F = K * U;
 
             // Write the forces into the output vector
@@ -530,9 +278,8 @@ void HexahedronElasticForce::addForce(
         const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
-        const auto number_of_elements = p_hexahedrons_indices.size();
-        for (std::size_t index = 0; index < number_of_elements; ++index) {
-            const auto & hexa_id = p_hexahedrons_indices[index];
+        const auto number_of_elements = topology->getNbHexahedra();
+        for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
             const auto &hexa = topology->getHexahedron(hexa_id);
 
             Matrix<8, 3, Eigen::RowMajor> U;
@@ -546,7 +293,7 @@ void HexahedronElasticForce::addForce(
 
             Matrix<8, 3, Eigen::RowMajor> forces;
             forces.fill(0);
-            for (GaussNode &gauss_node : p_quadrature_nodes[index]) {
+            for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
 
                 // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
                 const auto detJ = gauss_node.jacobian_determinant;
@@ -599,7 +346,7 @@ void HexahedronElasticForce::addDForce(
     if (!topology or !state)
         return;
 
-    if (p_stiffness_matrices.size() != p_hexahedrons_indices.size())
+    if (p_stiffness_matrices.size() != topology->getNbHexahedra())
         return;
 
     if (recompute_compute_tangent_stiffness)
@@ -611,11 +358,10 @@ void HexahedronElasticForce::addDForce(
     std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
-    const auto number_of_elements = p_hexahedrons_indices.size();
-    for (std::size_t index = 0; index < number_of_elements; ++index) {
-        const auto & hexa_id = p_hexahedrons_indices[index];
+    const auto number_of_elements = topology->getNbHexahedra();
+    for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
 
-        const Mat33 & R  = current_rotation[index];
+        const Mat33 & R  = current_rotation[hexa_id];
         const Mat33 & Rt = R.transpose();
 
         // Gather the displacement vector
@@ -631,7 +377,7 @@ void HexahedronElasticForce::addDForce(
         }
 
         // Compute the force vector
-        const auto & K = p_stiffness_matrices[index];
+        const auto & K = p_stiffness_matrices[hexa_id];
         Vec24 F = K*U*kFactor;
 
         // Write the forces into the output vector
@@ -664,13 +410,13 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addKToMatrix");
 
-    for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
-        const auto & hexa_id = p_hexahedrons_indices[index];
+    const auto number_of_elements = topology->getNbHexahedra();
+    for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(hexa_id);
-        const Mat33 & R  = current_rotation[index];
+        const Mat33 & R  = current_rotation[hexa_id];
         const Mat33   Rt = R.transpose();
 
-        const auto & K = p_stiffness_matrices[index];
+        const auto & K = p_stiffness_matrices[hexa_id];
 
         for (size_t i = 0; i < 8; ++i) {
             for (size_t j = 0; j < 8; ++j) {
@@ -705,7 +451,7 @@ void HexahedronElasticForce::compute_K()
     if (!topology)
         return;
 
-    if (p_stiffness_matrices.size() != p_hexahedrons_indices.size())
+    if (p_stiffness_matrices.size() != topology->getNbHexahedra())
         return;
 
     static const auto I = Matrix<3,3, Eigen::RowMajor>::Identity();
@@ -717,12 +463,12 @@ void HexahedronElasticForce::compute_K()
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::compute_k");
 
-    const auto number_of_elements = p_hexahedrons_indices.size();
-    for (std::size_t index = 0; index < number_of_elements; ++index) {
-        auto & K = p_stiffness_matrices[index];
+    const auto number_of_elements = topology->getNbHexahedra();
+    for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
+        auto & K = p_stiffness_matrices[hexa_id];
         K.fill(0.);
 
-        for (GaussNode &gauss_node : p_quadrature_nodes[index]) {
+        for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const Real detJ = gauss_node.jacobian_determinant;
 
@@ -804,13 +550,13 @@ const Eigen::SparseMatrix<HexahedronElasticForce::Real> & HexahedronElasticForce
 
             const std::vector<Mat33> &current_rotation = p_current_rotation;
 
-            for (std::size_t index = 0; index < p_hexahedrons_indices.size(); ++index) {
-                const auto & hexa_id = p_hexahedrons_indices[index];
+            const auto number_of_elements = topology->getNbHexahedra();
+            for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
                 const auto &node_indices = topology->getHexahedron(hexa_id);
-                const Mat33 &R = current_rotation[index];
+                const Mat33 &R = current_rotation[hexa_id];
                 const Mat33 Rt = R.transpose();
 
-                const auto &Ke = p_stiffness_matrices[index];
+                const auto &Ke = p_stiffness_matrices[hexa_id];
 
                 for (size_t i = 0; i < 8; ++i) {
                     for (size_t j = 0; j < 8; ++j) {
@@ -908,7 +654,8 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
     const VecCoord& x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
 
     std::vector< sofa::defaulttype::Vector3 > points[6];
-    for (const auto & hexa_id : p_hexahedrons_indices) {
+    const auto number_of_elements = topology->getNbHexahedra();
+    for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(hexa_id);
 
         auto a = node_indices[0];
@@ -986,7 +733,7 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
 
 
     std::vector< sofa::defaulttype::Vector3 > ignored_points[6];
-    for (const auto & hexa_id : p_ignored_hexahedrons_indices) {
+    for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(hexa_id);
 
         auto a = node_indices[0];

@@ -7,7 +7,6 @@
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
 
 #include <Caribou/Geometry/Hexahedron.h>
 
@@ -32,8 +31,6 @@ public:
     using Coord    = typename DataTypes::Coord;
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
-
-    using FictitiousGrid = SofaCaribou::GraphComponents::topology::FictitiousGrid<DataTypes>;
 
     using Hexahedron = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
     static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodes;
@@ -73,15 +70,8 @@ public:
         /// Regular 8 points gauss integration
         Regular = 0,
 
-        /// Hexas are recursively subdivided into cuboid subcells and the later
-        /// are used to compute the inside volume of the regular hexa's gauss points.
-        /// ** Requires a sparse grid topology **
-        SubdividedVolume = 1,
-
-        /// Hexas are recursively subdivided into cuboid subcells and the later
-        /// are used to add new gauss points. Gauss points outside of the boundary are ignored.
-        /// ** Requires a sparse grid topology **
-        SubdividedGauss = 2
+        /// One gauss point integration at the center of the hexahedron
+        OnePointGauss = 1
     };
 
     // Public methods
@@ -133,16 +123,11 @@ public:
     IntegrationMethod integration_method() const
     {
         const auto m = static_cast<IntegrationMethod> (d_integration_method.getValue().getSelectedId());
-        switch (m) {
-            case IntegrationMethod::Regular:
-                return IntegrationMethod::Regular;
-            case IntegrationMethod::SubdividedVolume:
-                return IntegrationMethod::SubdividedVolume;
-            case IntegrationMethod::SubdividedGauss:
-                return IntegrationMethod::SubdividedGauss;
-            default:
-                return IntegrationMethod::Regular;
-        }
+
+        if (m == IntegrationMethod::OnePointGauss)
+            return IntegrationMethod::OnePointGauss;
+
+        return IntegrationMethod::Regular;
     }
 
     inline
@@ -182,26 +167,21 @@ private:
 protected:
     Data< Real > d_youngModulus;
     Data< Real > d_poissonRatio;
-    Data< UNSIGNED_INTEGER_TYPE > d_number_of_subdivisions;
     Data< bool > d_linear_strain;
     Data< bool > d_corotated;
-    Data< Real > d_ignore_volume_threshold;
     Data< sofa::helper::OptionsGroup > d_integration_method;
     Link<BaseMeshTopology>   d_topology_container;
-    Link<FictitiousGrid> d_grid_container;
 
 private:
     bool recompute_compute_tangent_stiffness = false;
-    std::vector<UNSIGNED_INTEGER_TYPE> p_hexahedrons_indices;
-    std::vector<UNSIGNED_INTEGER_TYPE> p_ignored_hexahedrons_indices;
     std::vector<Matrix<24, 24>> p_stiffness_matrices;
     std::vector<std::vector<GaussNode>> p_quadrature_nodes;
     std::vector<Mat33> p_initial_rotation;
     std::vector<Mat33> p_current_rotation;
     Eigen::SparseMatrix<Real> p_K;
     Vector<Eigen::Dynamic> p_eigenvalues;
-    bool K_is_up_to_date;
-    bool eigenvalues_are_up_to_date;
+    bool K_is_up_to_date = false;
+    bool eigenvalues_are_up_to_date = false;
 
 };
 

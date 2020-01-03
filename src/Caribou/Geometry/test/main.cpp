@@ -261,7 +261,7 @@ TEST(Geometry, Hexahedron) {
 
     ASSERT_FLOAT_EQ(r, 8);
 
-    ASSERT_EQ(hexa.frame(), I);
+    ASSERT_EQ(hexa.frame({0, 0, 0}), I);
 
     // Rotate the hexa by R and extract the resulting frame
     Matrix<3, 3> R;
@@ -275,7 +275,7 @@ TEST(Geometry, Hexahedron) {
     }
     hexa = Hexahedron<interpolation::Hexahedron8>(rotated_nodes);
 
-    const auto frame = hexa.frame();
+    const auto frame = hexa.frame({0, 0, 0});
     for (std::size_t i = 0; i < 3; ++i)
         for (std::size_t j = 0; j < 3; ++j)
             ASSERT_FLOAT_EQ(R(i,j), frame(i,j));

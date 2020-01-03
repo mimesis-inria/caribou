@@ -143,32 +143,33 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
      */
     inline
    Matrix<3, 3>
-    frame() const
+    frame(const LocalCoordinates & local_point) const
     {
-        const auto hexa_center = T( LocalCoordinates {0,0,0} ); // Hexahedron's center position
+        // Position of the point inside the hexahedron where the frame should be computed
+        const auto p = T( local_point );
 
-        const auto quad_faced_to_u_axis = face(2); // Quad that lies in front of the u axis
-        const auto face_u_center = quad_faced_to_u_axis.T({0,0}); // Center position of this quad
+        // Project of the point on the quad facing the u axis
+        const auto projected_on_u = T({1, local_point[1],local_point[2]});
 
-        const auto quad_faced_to_v_axis = face(4); // Quad that lies in front of the v axis
-        const auto face_v_center = quad_faced_to_v_axis.T({0,0}); // Center position of this quad
+        // Project of the point on the quad facing the v axis
+        const auto projected_on_v = T({local_point[0], 1,local_point[2]});
 
         /* @todo(jnbrunet2000@gmail.com): select between the pairs of axis (center-to-u, center-to-v),
           (center-to-u, center-to-w) and (center-to-v, center-to-w) to find the best match (closer to orthogonal) */
 
-        // Vector from the hexa's center to the center of the quad faced to the u axis
-        const auto center_to_u = face_u_center - hexa_center;
+        // Vector from the point to its projection on the quad facing the u axis
+        const auto point_to_u = projected_on_u - p;
 
-        // Vector from the hexa's center to the center of the quad faced to the v axis
-        const auto center_to_v = face_v_center - hexa_center;
+        // Vector from the point to its projection on the quad facing the v axis
+        const auto point_to_v = projected_on_v - p;
 
-        // u-axis
-        const auto u = center_to_u.normalized();
+        // The u-axis of the computed frame
+        const auto u = point_to_u.normalized();
 
-        // v-axis
-        auto v = center_to_v.normalized();
+        // The v-axis of the computed frame
+        auto v = point_to_v.normalized();
 
-        // w-axis
+        // The w-axis of the computed frame
         const WorldCoordinates w = u.cross(v).normalized();
 
         // v-axis (recompute the v-axis in case u and v aren't orthogonal
