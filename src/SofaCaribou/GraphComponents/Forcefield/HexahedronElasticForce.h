@@ -59,10 +59,13 @@ public:
     // Data structures
 
     struct GaussNode {
+        Vec3 position = Vec3::Zero();
         Real weight = 0;
         Real jacobian_determinant = 0;
         Matrix<NumberOfNodes, 3> dN_dx = Matrix<NumberOfNodes, 3, Eigen::RowMajor>::Zero();
         Mat33 F = Mat33::Identity();
+        Mat33 R0 = Mat33::Identity();
+        Mat33 R = Mat33::Identity();
     };
 
     /// Integration method used to integrate the stiffness matrix.
@@ -175,8 +178,8 @@ protected:
 private:
     bool recompute_compute_tangent_stiffness = false;
     std::vector<Matrix<24, 24>> p_stiffness_matrices;
-    std::vector<std::vector<GaussNode>> p_quadrature_nodes;
-    std::vector<Mat33> p_initial_rotation;
+    std::vector<std::vector<GaussNode>> p_quadrature_nodes; // Set of quadrature nodes for every hexahedrons
+    std::vector<Matrix<NumberOfNodes, 3, Eigen::RowMajor>> p_center_shape_derivatives; // Shape derivatives at the center of every hexahedrons
     std::vector<Mat33> p_current_rotation;
     Eigen::SparseMatrix<Real> p_K;
     Vector<Eigen::Dynamic> p_eigenvalues;
