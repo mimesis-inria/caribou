@@ -232,14 +232,18 @@ void HexahedronElasticForce::addForce(
 
     const bool corotated = d_corotated.getValue();
     const bool linear = d_linear_strain.getValue();
-    std::vector<Mat33> & current_rotation = p_current_rotation;
+    const Real youngModulus = d_youngModulus.getValue();
+    const Real poissonRatio = d_poissonRatio.getValue();
+
+    const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
+    const Real m = youngModulus / (2 * (1 + poissonRatio));
+
     recompute_compute_tangent_stiffness = (not linear) and mparams->implicit();
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
         const auto number_of_elements = topology->getNbHexahedra();
         for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
-//            const Hexahedron hexa = hexahedron(hexa_id, x);
             const auto hexa_node_indices = topology->getHexahedron(hexa_id);
 
             // Gather the displacement vector
@@ -253,56 +257,56 @@ void HexahedronElasticForce::addForce(
                 ++i;
             }
 
-            // Extract the rotation from the displacement
-            Mat33 & R = current_rotation[hexa_id];
-            if (corotated) {
-                R.fill(0.);
-                for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
-                    // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-                    const auto detJ = gauss_node.jacobian_determinant;
+            // Integrate the stiffness
+//            Matrix<8, 3, Eigen::RowMajor> u;
+            for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
+                // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
+                const auto & detJ = gauss_node.jacobian_determinant;
 
-                    // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-                    const auto dN_dx = gauss_node.dN_dx;
+                // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
+                const auto & dN_dx = gauss_node.dN_dx;
 
-                    // Gauss quadrature node weight
-                    const auto w = gauss_node.weight;
+                // Gauss quadrature node weight
+                const auto & w = gauss_node.weight;
 
-                    const Mat33 F = elasticity::strain::F(dN_dx, U);
+                // Rotation at the gauss quadrature node
+                Mat33 & R = gauss_node.R;
+
+                // Compute the co-rotated deformation gradient
+                Mat33 F = elasticity::strain::F(dN_dx, U);
+
+                // Compute the stress
+                Mat33 S;
+                if (corotated) {
+                    // Extract the singular values and the rotation matrix
                     const auto SVD = F.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV);
-                    R += w * (SVD.matrixU() * SVD.matrixV().transpose()) * detJ;
+                    const Mat33 V = SVD.singularValues().asDiagonal();
+                    R = (SVD.matrixU() * SVD.matrixV().transpose());
+                    S = SVD.matrixU()*(2*m*(V - I) + l*(V - I).trace()*I)*SVD.matrixV().transpose();
+                } else {
+                    // Compute the strain
+                    const Mat33 E2 = (F + F.transpose()) - 2*I; // Twice the strain tensor (2*E)
+
+                    // Compute the stress
+                    S = m*E2 + 0.5*(l*(E2.trace())*I);
                 }
-                const Mat33 & Rt = R.transpose();
 
-                for (i = 0; i<8;++i) {
-                    U.row(i) = Rt*U.row(i).transpose();
+                // Write the forces into the output vector
+                i = 0;
+                for (const auto &node_id : hexa_node_indices) {
+                    const auto dNi_dx = dN_dx.row(i).transpose();
+                    const Vec3 force = w * detJ * S * dNi_dx;
+                    f[node_id][0] -= force[0];
+                    f[node_id][1] -= force[1];
+                    f[node_id][2] -= force[2];
+                    ++i;
                 }
-            }
-
-            // Compute the force vector
-            const auto &K = p_stiffness_matrices[hexa_id];
-            Vec24 F = K * Eigen::Map<Vector<24>>(U.data());
-
-            // Write the forces into the output vector
-            i = 0;
-            for (const auto &node_id : hexa_node_indices) {
-                Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
-                force = R*force;
-
-                f[node_id][0] -= force[0];
-                f[node_id][1] -= force[1];
-                f[node_id][2] -= force[2];
-                ++i;
             }
         }
         sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addForce");
     } else {
         // Nonlinear Green-Lagrange strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
-        const Real youngModulus = d_youngModulus.getValue();
-        const Real poissonRatio = d_poissonRatio.getValue();
-
-        const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
-        const Real m = youngModulus / (2 * (1 + poissonRatio));
 
         const auto number_of_elements = topology->getNbHexahedra();
         for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
@@ -378,45 +382,89 @@ void HexahedronElasticForce::addDForce(
     if (recompute_compute_tangent_stiffness)
         compute_K();
 
+    static const auto I = Matrix<3,3, Eigen::RowMajor>::Identity();
+
+    const bool corotated = d_corotated.getValue();
+    const bool linear = d_linear_strain.getValue();
+    const Real youngModulus = d_youngModulus.getValue();
+    const Real poissonRatio = d_poissonRatio.getValue();
+
+    const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
+    const Real m = youngModulus / (2 * (1 + poissonRatio));
+
     auto kFactor = (Real)mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue());
     sofa::helper::ReadAccessor<Data<VecDeriv>> dx = d_dx;
     sofa::helper::WriteAccessor<Data<VecDeriv>> df = d_df;
-    std::vector<Mat33> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addDForce");
     const auto number_of_elements = topology->getNbHexahedra();
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
-
-        const Mat33 & R  = current_rotation[hexa_id];
-        const Mat33 & Rt = R.transpose();
+        const auto hexa_node_indices = topology->getHexahedron(hexa_id);
 
         // Gather the displacement vector
         Vec24 U;
         size_t i = 0;
-        for (const auto & node_id : topology->getHexahedron(hexa_id)) {
-            const Vec3 v = {dx[node_id][0], dx[node_id][1], dx[node_id][2]};
-            const Vec3 u = Rt*v;
-
-            U[i++] = u[0];
-            U[i++] = u[1];
-            U[i++] = u[2];
+        for (const auto & node_id : hexa_node_indices) {
+            U[i++] = dx[node_id][0];
+            U[i++] = dx[node_id][1];
+            U[i++] = dx[node_id][2];
         }
 
-        // Compute the force vector
-        const auto & K = p_stiffness_matrices[hexa_id];
-        Vec24 F = K*U*kFactor;
+        if (corotated and linear) {
+            Matrix<8, 3, Eigen::RowMajor> u;
+            for (GaussNode &gauss_node : p_quadrature_nodes[hexa_id]) {
+                // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
+                const auto & detJ = gauss_node.jacobian_determinant;
 
-        // Write the forces into the output vector
-        i = 0;
-        for (const auto & node_id : topology->getHexahedron(hexa_id)) {
-            Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
-            force = R*force;
+                // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
+                const auto & dN_dx = gauss_node.dN_dx;
 
-            df[node_id][0] -= force[0];
-            df[node_id][1] -= force[1];
-            df[node_id][2] -= force[2];
+                // Gauss quadrature node weight
+                const auto & w = gauss_node.weight;
 
-            ++i;
+                // Rotation at the gauss quadrature node
+                const Mat33 & R = gauss_node.R;
+                const Mat33 & Rt = R.transpose();
+
+                // Get the co-rotated nodal displacements
+                for (i = 0; i<8;++i) {
+                    u.row(i) = Rt*Vec3(U[i*3+0],U[i*3+1], U[i*3+2]);
+                }
+
+                // Compute the co-rotated deformation gradient
+                Mat33 F = elasticity::strain::F(dN_dx, u);
+
+                // Compute the strain
+                const Mat33 E2 = (F + F.transpose()) - 2*I; // Twice the strain tensor (2*E)
+
+                // Compute the stress
+                const Mat33 S = m*E2 + 0.5*(l*(E2.trace())*I);
+
+                // Write the forces into the output vector
+                i = 0;
+                for (const auto &node_id : hexa_node_indices) {
+                    const auto dNi_dx = dN_dx.row(i).transpose();
+                    const Vec3 force = w * detJ * R * S * dNi_dx * kFactor;
+                    df[node_id][0] -= force[0];
+                    df[node_id][1] -= force[1];
+                    df[node_id][2] -= force[2];
+                    ++i;
+                }
+            }
+        } else {
+            // Compute the force vector
+            const auto &K = p_stiffness_matrices[hexa_id];
+            Vec24 F = K * U * kFactor;
+
+            // Write the forces into the output vector
+            i = 0;
+            for (const auto &node_id : hexa_node_indices) {
+                df[node_id][0] -= F[i * 3 + 0];
+                df[node_id][1] -= F[i * 3 + 1];
+                df[node_id][2] -= F[i * 3 + 2];
+
+                ++i;
+            }
         }
     }
     sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addDForce");

@@ -42,12 +42,15 @@ def createScene(root):
     addBeam(root, True, [0, 0, 0])
     addBeam(root, False, [0, 45, 0])
 
-
-if __name__ == "__main__":
+def createRoot():
     import SofaRuntime
     SofaRuntime.importPlugin('SofaComponentAll')
     root = Sofa.Core.Node()
     createScene(root)
+    return root
+
+if __name__ == "__main__":
+    root = createRoot()
     Sofa.Simulation.init(root)
     Sofa.Simulation.animate(root, 1)
 
