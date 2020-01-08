@@ -6,3 +6,5 @@ cmake-build*
 venv
 *.pyc
 build/
+doc/
+scenes/*.log
