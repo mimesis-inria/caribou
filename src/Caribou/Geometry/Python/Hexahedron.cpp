@@ -35,8 +35,22 @@ void create_hexahedrons(pybind11::module & m) {
     py::class_<RectangularHexahedron8> rec8 (m, "RectangularHexahedron8");
     rec8.def(py::init<>());
     rec8.def(py::init<Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>> >(), py::arg("center"));
-    rec8.def(py::init<Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>>, Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>> >(), py::arg("center"), py::arg("dimensions"));
-    rec8.def(py::init<Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>>, Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>>, Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3, Eigen::RowMajor>> >(), py::arg("center"), py::arg("dimensions"), py::arg("rotation"));
+    rec8.def(py::init<Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>>, Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>> >(), py::arg("center"), py::arg("size"));
+    rec8.def(py::init<Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>>, Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>>, Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 3, Eigen::RowMajor>> >(), py::arg("center"), py::arg("size"), py::arg("rotation"));
+    rec8.def(py::init([](Eigen::Ref<const Eigen::Matrix<FLOATING_POINT_TYPE, 8, 3, Eigen::RowMajor>> nodes) {
+        Hexahedron8 hex(nodes);
+
+        const auto center = hex.T(Hexahedron8::LocalCoordinates(0,0,0));
+        const RectangularHexahedron8 ::Size size (
+            (nodes.row(0)-nodes.row(1)).norm(),
+            (nodes.row(0)-nodes.row(3)).norm(),
+            (nodes.row(0)-nodes.row(4)).norm()
+        );
+
+        const auto frame = hex.frame();
+
+        return RectangularHexahedron8(center, size, frame);
+    }));
     rec8.def("nodes", &RectangularHexahedron8::nodes);
     rec8.def("T", &RectangularHexahedron8::T);
     rec8.def("Tinv", &RectangularHexahedron8::Tinv);
