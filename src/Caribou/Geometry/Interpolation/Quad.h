@@ -3,6 +3,7 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Interpolation/CanonicalElement.h>
+#include <Caribou/Geometry/Interpolation/Segment.h>
 #include <Eigen/Core>
 
 namespace caribou::geometry::interpolation {
@@ -29,6 +30,8 @@ struct Quad4 : public CanonicalElement<2, 4, Quad4>
     static constexpr INTEGER_TYPE Dimension = 2;
     static constexpr INTEGER_TYPE NumberOfNodes = 4;
     using LocalCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
+
+    using BoundaryType = Segment2;
 
     static constexpr FLOATING_POINT_TYPE nodes [NumberOfNodes][Dimension] = {
     //    u,  v

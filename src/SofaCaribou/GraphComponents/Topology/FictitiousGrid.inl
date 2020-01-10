@@ -436,7 +436,7 @@ FictitiousGrid<DataTypes>::tag_outside_cells()
             }
 
             // Next, check if any of the top parent's faces are at the boundary of the grid
-            const auto coordinates = p_grid->grid_coordinates_at(index);
+            const auto coordinates = p_grid->cell_coordinates_at(index);
             for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
                 is_boundary_of_face[2 * axis + 0] = is_boundary_of_face[2 * axis + 0] && (coordinates[axis] - 1 < 0);
                 is_boundary_of_face[2 * axis + 1] = is_boundary_of_face[2 * axis + 1] &&
@@ -705,7 +705,7 @@ FictitiousGrid<DataTypes>::get_neighbors(Cell * cell)
             // If we can no longer move up, we are at the cell top most parent. Check if we can move in the
             // axis-direction within the grid
             if (not found_suitable_parent) {
-                const GridCoordinates coordinates = p_grid->grid_coordinates_at(index);
+                const GridCoordinates coordinates = p_grid->cell_coordinates_at(index);
                 const int new_coordinate = coordinates[axis] + direction;
                 const int upper_limit = upper_grid_boundary[axis]-1;
                 if (0 <= new_coordinate and new_coordinate <= upper_limit) {
@@ -874,12 +874,14 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
 
     for (UNSIGNED_INTEGER_TYPE i = 0; i < p_grid->number_of_edges(); ++i) {
         const auto edge = p_grid->edge(i);
+        const auto p0 = p_grid->node(edge[0]);
+        const auto p1 = p_grid->node(edge[1]);
         if (Dimension == 2) {
-            p_drawing_edges_vector[i*2] = {edge.node(0)[0], edge.node(0)[1], 0};
-            p_drawing_edges_vector[i*2+1] = {edge.node(1)[0], edge.node(1)[1], 0};
+            p_drawing_edges_vector[i*2] = {p0[0], p0[1], 0};
+            p_drawing_edges_vector[i*2+1] = {p1[0], p1[1], 0};
         } else {
-            p_drawing_edges_vector[i*2] = {edge.node(0)[0], edge.node(0)[1], edge.node(0)[2]};
-            p_drawing_edges_vector[i*2+1] = {edge.node(1)[0], edge.node(1)[1], edge.node(1)[2]};
+            p_drawing_edges_vector[i*2] = {p0[0], p0[1], p0[2]};
+            p_drawing_edges_vector[i*2+1] = {p1[0], p1[1], p1[2]};
         }
     }
 

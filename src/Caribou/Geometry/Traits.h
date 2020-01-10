@@ -24,7 +24,8 @@ struct traits<ElementType<CanonicalElementType>> {
     enum {
         Dimension = 3,
         NumberOfNodes = ElementType<CanonicalElementType>::NumberOfNodes,
-        NumberOfGaussNodes = ElementType<CanonicalElementType>::number_of_gauss_nodes
+        NumberOfGaussNodes = ElementType<CanonicalElementType>::number_of_gauss_nodes,
+        NumberOfFaces = ElementType<CanonicalElementType>::number_of_faces,
     };
 };
 } // namespace caribou::geometry

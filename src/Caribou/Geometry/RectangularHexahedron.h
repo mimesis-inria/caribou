@@ -23,7 +23,7 @@ struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementT
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
-    using QuadType = RectangularQuad<3, typename CanonicalElementType::QuadType>;
+    using BoundaryType = RectangularQuad<3, typename CanonicalElementType::BoundaryType>;
 
     template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;

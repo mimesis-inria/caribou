@@ -31,7 +31,7 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
     using Index = INTEGER_TYPE;
     using Real = FLOATING_POINT_TYPE;
 
-    using QuadType = Quad4;
+    using BoundaryType = Quad4;
 
     static constexpr INTEGER_TYPE Dimension = 3;
     static constexpr INTEGER_TYPE NumberOfNodes = 8;
@@ -50,7 +50,8 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
     };
 
 
-    static constexpr UNSIGNED_INTEGER_TYPE edges [12][2] {
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_edges = 12;
+    static constexpr UNSIGNED_INTEGER_TYPE edges [number_of_edges][2] {
             {0, 1}, // Edge 0
             {1, 2}, // Edge 1
             {2, 3}, // Edge 2
@@ -65,7 +66,8 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
             {7, 4}  // Edge 11
     };
 
-    static constexpr UNSIGNED_INTEGER_TYPE faces[6][4]{
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_faces = 6;
+    static constexpr UNSIGNED_INTEGER_TYPE faces[number_of_faces][4]{
             {0, 3, 2, 1}, // Face 0
             {0, 4, 7, 3}, // Face 1
             {1, 2, 6, 5}, // Face 2

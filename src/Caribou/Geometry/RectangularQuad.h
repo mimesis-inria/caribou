@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 
 #include <Caribou/config.h>
+#include <Caribou/Geometry/Segment.h>
 #include <Caribou/Traits.h>
 #include <Caribou/Geometry/Interpolation/Quad.h>
 
@@ -16,6 +17,8 @@ struct RectangularQuad : public CanonicalElementType
 
     using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
     using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
+
+    using BoundaryType = Segment<3, typename CanonicalElementType::BoundaryType>;
 
     template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;

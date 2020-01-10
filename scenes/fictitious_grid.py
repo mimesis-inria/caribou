@@ -5,7 +5,8 @@ import SofaCaribou
 import numpy as np
 from numpy import pi
 from math import sqrt
-import Tools
+import meshio
+import os
 
 radius = 5
 length = 60
@@ -16,9 +17,9 @@ mx = (radius / ((n[0])*pow(2, subdivisions)))/2
 my = (radius / ((n[1])*pow(2, subdivisions)))/2
 mz = (length / ((n[2])*pow(2, subdivisions)))/2
 
-use_implicit = True
+use_implicit = False
 
-m = Tools.cylinder(center1=[0,0,-length/2.], center2=[0,0,length/2.], radius=radius, number_of_cuts=50, dimension=2)
+m = meshio.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cylinder_surface.vtu'))
 
 
 def is_inside(p):

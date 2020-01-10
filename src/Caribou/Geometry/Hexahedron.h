@@ -20,7 +20,7 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
-    using QuadType = Quad<3, typename CanonicalElementType::QuadType>;
+    using BoundaryType = Quad<3, typename CanonicalElementType::BoundaryType>;
 
     template<int nRows, int nColumns, int Options=Eigen::RowMajor>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
@@ -80,13 +80,13 @@ struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahe
      * Get the ith quadrangle face.
      */
     inline
-    QuadType
+    BoundaryType
     face(UNSIGNED_INTEGER_TYPE index) const
     {
         const auto & face_indices = CanonicalElementType::faces[index];
 
-        Matrix<QuadType::NumberOfNodes, 3> m;
-        for (std::size_t i = 0; i < QuadType::NumberOfNodes; ++i)
+        Matrix<BoundaryType::NumberOfNodes, 3> m;
+        for (std::size_t i = 0; i < BoundaryType::NumberOfNodes; ++i)
             m.row(i) = node(face_indices[i]);
 
         return QuadType(m);
