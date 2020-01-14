@@ -36,7 +36,7 @@ struct Tetrahedron4 : public CanonicalElement<3, 4, Tetrahedron4>
     using Index = INTEGER_TYPE;
     using Real = FLOATING_POINT_TYPE;
 
-    using FaceType = Triangle3;
+    using BoundaryType = Triangle3;
 
     static constexpr INTEGER_TYPE Dimension = 3;
     static constexpr INTEGER_TYPE NumberOfNodes = 4;
@@ -52,8 +52,8 @@ struct Tetrahedron4 : public CanonicalElement<3, 4, Tetrahedron4>
             {0, 0, 1}  // Node 3
     };
 
-
-    static constexpr UNSIGNED_INTEGER_TYPE edges [6][2] {
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_edges = 6;
+    static constexpr UNSIGNED_INTEGER_TYPE edges [number_of_edges][2] {
         {0, 1}, // Edge 0
         {1, 2}, // Edge 1
         {2, 0}, // Edge 2
@@ -62,7 +62,8 @@ struct Tetrahedron4 : public CanonicalElement<3, 4, Tetrahedron4>
         {3, 1}  // Edge 5
     };
 
-    static constexpr UNSIGNED_INTEGER_TYPE faces[4][3]{
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_faces = 4;
+    static constexpr UNSIGNED_INTEGER_TYPE faces[number_of_faces][3]{
         {0, 2, 1}, // Face 0
         {0, 1, 3}, // Face 1
         {0, 3, 2}, // Face 2
@@ -157,7 +158,7 @@ struct Tetrahedron10 : public CanonicalElement<3, 10, Tetrahedron10>
     using Index = INTEGER_TYPE;
     using Real = FLOATING_POINT_TYPE;
 
-    using FaceType = Triangle3;
+    using BoundaryType = Triangle6;
 
     static constexpr INTEGER_TYPE Dimension = 3;
     static constexpr INTEGER_TYPE NumberOfNodes = 10;
@@ -179,8 +180,8 @@ struct Tetrahedron10 : public CanonicalElement<3, 10, Tetrahedron10>
         {0.0, 0.5, 0.5}  // Node 9
     };
 
-
-    static constexpr UNSIGNED_INTEGER_TYPE edges [6][3] {
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_edges = 6;
+    static constexpr UNSIGNED_INTEGER_TYPE edges [number_of_edges][3] {
         {0, 1, 4}, // Edge 0
         {1, 2, 5}, // Edge 1
         {2, 0, 6}, // Edge 2
@@ -189,6 +190,7 @@ struct Tetrahedron10 : public CanonicalElement<3, 10, Tetrahedron10>
         {2, 3, 9}  // Edge 5
     };
 
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_faces = 4;
     static constexpr UNSIGNED_INTEGER_TYPE faces[4][6]{
         {0, 2, 1, 6, 5, 4}, // Face 0
         {0, 1, 3, 4, 9, 7}, // Face 1

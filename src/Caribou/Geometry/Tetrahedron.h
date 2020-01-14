@@ -22,7 +22,7 @@ struct Tetrahedron<interpolation::Tetrahedron4> : public internal::BaseTetrahedr
     using CanonicalElementType = interpolation::Tetrahedron4;
     using Base = internal::BaseTetrahedron<NumberOfNodes, CanonicalElementType, Tetrahedron<CanonicalElementType>>;
     using WorldCoordinates = typename Base::WorldCoordinates;
-    using FaceType = Triangle<3, typename CanonicalElementType::FaceType>;
+    using BoundaryType = Triangle<3, typename CanonicalElementType::BoundaryType>;
 
     using Base::Base;
 
@@ -76,7 +76,7 @@ struct Tetrahedron<interpolation::Tetrahedron10> : public internal::BaseTetrahed
     using Base = internal::BaseTetrahedron<NumberOfNodes, interpolation::Tetrahedron10, Tetrahedron<CanonicalElementType>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
-    using FaceType = Triangle<3, typename CanonicalElementType::FaceType>;
+    using BoundaryType = Triangle<3, typename CanonicalElementType::BoundaryType>;
 
     using Base::Base;
 

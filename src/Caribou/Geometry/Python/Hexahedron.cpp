@@ -47,7 +47,7 @@ void create_hexahedrons(pybind11::module & m) {
             (nodes.row(0)-nodes.row(4)).norm()
         );
 
-        const auto frame = hex.frame();
+        const auto frame = hex.frame({0, 0, 0});
 
         return RectangularHexahedron8(center, size, frame);
     }));
