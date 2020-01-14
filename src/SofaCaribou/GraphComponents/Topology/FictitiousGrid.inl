@@ -426,21 +426,21 @@ FictitiousGrid<DataTypes>::tag_outside_cells()
             CellIndex index = cell->index;
             Cell *p = cell;
             while (p->parent) {
-                index = cell->index;
                 const auto &coordinates = subcell_coordinates[index];
                 for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
-                    is_boundary_of_face &= ~((unsigned) coordinates[axis] << (unsigned) (2 * axis + 0));
-                    is_boundary_of_face &=  ((unsigned) coordinates[axis] << (unsigned) (2 * axis + 1));
+                    is_boundary_of_face[2 * axis + 0] = is_boundary_of_face[2 * axis + 0] &&  (coordinates[axis] == 0);
+                    is_boundary_of_face[2 * axis + 1] = is_boundary_of_face[2 * axis + 1] &&  (coordinates[axis] == 1);
                 }
                 p = p->parent;
+                index = p->index;
             }
 
             // Next, check if any of the top parent's faces are at the boundary of the grid
             const auto coordinates = p_grid->cell_coordinates_at(index);
             for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
-                is_boundary_of_face[2 * axis + 0] = is_boundary_of_face[2 * axis + 0] && (coordinates[axis] - 1 < 0);
+                is_boundary_of_face[2 * axis + 0] = is_boundary_of_face[2 * axis + 0] && (coordinates[axis] == 0);
                 is_boundary_of_face[2 * axis + 1] = is_boundary_of_face[2 * axis + 1] &&
-                                                    ((unsigned) coordinates[axis] + 1 > upper_grid_boundary[axis]);
+                                                    ((unsigned) coordinates[axis] == upper_grid_boundary[axis]-1);
             }
 
             // If the subcell has a face that is both on the boundary of all of its parents, and is also boundary
