@@ -10,11 +10,13 @@ set(PYTHON_TEST_FILES
     )
 
 set(HEADER_FILES
+    FictitiousGridElasticForce.h
     HexahedronElasticForce.h
     )
 
 set(SOURCE_FILES
     SofaCaribou.cpp
+    FictitiousGridElasticForce.cpp
     HexahedronElasticForce.cpp
     )
 

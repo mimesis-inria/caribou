@@ -131,7 +131,7 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
     using Weight = Float;
 
     const auto & number_of_subdivision = d_number_of_subdivision.getValue();
-    bool use_implicit_surface = (d_use_implicit_surface.getValue() and p_implicit_test_callback);
+    const bool use_implicit_surface = (d_use_implicit_surface.getValue() and p_implicit_test_callback);
 
     if (not use_implicit_surface) {
         msg_error() << "Not yet implemented for 2D types.";

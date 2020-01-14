@@ -94,7 +94,7 @@ public:
         CellData(const Type & t, const Float& w, const int & r)
         : type(t), weight(w), region_id(r) {}
         Type type = Type::Undefined;
-        Float weight = 0.;
+        Float weight = 0.; // 1 for full cell, 1/4 (resp. 1/8) for the first level of subdivision in 2D (resp. 3D), etc.
         int region_id = -1;
     };
 
@@ -104,7 +104,7 @@ public:
         std::unique_ptr<CellData> data; // Data is only stored on leaf cells
         std::unique_ptr<std::array<Cell,(unsigned) 1 << Dimension>> childs;
 
-        inline bool is_leaf() const {return childs == nullptr;}
+        inline bool is_leaf() const {return childs.get() == nullptr;}
     };
 
     ///< A region is a cluster of cells sharing the same type and surrounded by either a boundary region or the outside
@@ -152,7 +152,7 @@ public:
 
     /**
      * Get neighbors cells around a given cell. A cell is neighbor to another one if they both have a face in common,
-     * of if a face contains one of the face of the other. Neighbors outside of the surface boundary are excluded.
+     * or if a face contains one of the face of the other. Neighbors outside of the surface boundary are excluded.
      */
     std::vector<Cell *> get_neighbors(Cell * cell);
 

@@ -6,6 +6,7 @@
 #include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
 #include <SofaCaribou/GraphComponents/Forcefield/HexahedronElasticForce.h>
 #include "HexahedronElasticForce.h"
+#include "FictitiousGridElasticForce.h"
 
 namespace py = pybind11;
 
@@ -23,4 +24,5 @@ PYBIND11_MODULE(SofaCaribouPython, m) {
     fictitious_grid.def("set_implicit_test_function", &FictitiousGrid3D::set_implicit_test_function);
 
     SofaCaribou::Python::addHexahedronElasticForce(m);
+    SofaCaribou::Python::addFictitiousGridElasticForce(m);
 }

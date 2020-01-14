@@ -339,7 +339,7 @@ FictitiousGrid<DataTypes>::create_regions_from_same_type_cells()
     TICK;
 
     // First, add all leaf cells to a queue.
-    std::queue<Cell*> remaining_cells;
+    std::queue<Cell*> leaf_cells;
     for (std::size_t i = 0; i < p_grid->number_of_cells(); ++i) {
         std::queue<Cell *> cells;
         cells.emplace(&p_cells[i]);
@@ -352,17 +352,17 @@ FictitiousGrid<DataTypes>::create_regions_from_same_type_cells()
                     cells.emplace(&child);
                 }
             } else {
-                remaining_cells.emplace(c);
+                leaf_cells.emplace(c);
             }
-
         }
     }
 
     // Iterate over every cells, and for each one, if it isn't yet classified,
     // start a clustering algorithm to fill the region's cells
-    while (not remaining_cells.empty()) {
-        Cell * c = remaining_cells.front();
-        remaining_cells.pop();
+    p_regions.clear();
+    while (not leaf_cells.empty()) {
+        Cell * c = leaf_cells.front();
+        leaf_cells.pop();
 
         // If this cell was previously classified, skip it
         if (c->data->region_id > -1) {
@@ -893,7 +893,7 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
             const Cell * c = std::get<0>(cells.front());
             const CellElement & e = std::get<1>(cells.front());
 
-            if (c->childs) {
+            if (not c->is_leaf()) {
                 const auto & childs_elements = get_subcells_elements(e);
                 for (UNSIGNED_INTEGER_TYPE j = 0; j < (*c->childs).size(); ++j) {
                     cells.emplace(&(*c->childs)[j], childs_elements[j]);
