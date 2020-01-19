@@ -1,6 +1,12 @@
 #ifndef CARIBOU_TOPOLOGY_TEST_GRID_3D_H
 #define CARIBOU_TOPOLOGY_TEST_GRID_3D_H
+
 #include <Caribou/Geometry/Hexahedron.h>
+#include <vector>
+#include <chrono>
+#define BEGIN_CLOCK ;std::chrono::steady_clock::time_point __time_point_begin;
+#define TICK ;__time_point_begin = std::chrono::steady_clock::now();
+#define TOCK (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - __time_point_begin).count())
 
 TEST(Topology_Grid_3D, Grid3D) {
     using namespace caribou::topology;
@@ -221,6 +227,73 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_EQ(grid.face(33), Grid::FaceNodes({{s + 1, s + 2, s + 5, s + 4}}));
     EXPECT_EQ(grid.face(34), Grid::FaceNodes({{s + 3, s + 4, s + 7, s + 6}}));
     EXPECT_EQ(grid.face(35), Grid::FaceNodes({{s + 4, s + 5, s + 8, s + 7}}));
+}
+
+TEST(Topology_Grid_3D, BenchMark)
+{
+    using namespace caribou::topology;
+    using Grid = Grid<3>;
+
+    using WorldCoordinates = Grid::WorldCoordinates;
+    using Subdivisions = Grid::Subdivisions;
+    using Dimensions = Grid::Dimensions;
+    using GridCoordinates = Grid::GridCoordinates;
+    using CellIndex = Grid::CellIndex;
+    using Hexa = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
+    BEGIN_CLOCK;
+
+    Grid grid(WorldCoordinates{0, 0, 0}, Subdivisions{100, 100, 1000}, Dimensions{100, 100, 100});
+
+    std::vector<WorldCoordinates> positions(grid.number_of_nodes());
+    std::vector<Grid::ElementNodes> hexahedrons(grid.number_of_cells());
+
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < grid.number_of_nodes(); ++i) {
+        positions[i] = grid.node(i);
+    }
+
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < grid.number_of_cells(); ++i) {
+        hexahedrons[i] = grid.node_indices_of(i);
+    }
+
+    // Memory-bound test
+    FLOATING_POINT_TYPE volume_1 = 0;
+    TICK;
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < hexahedrons.size(); ++i) {
+        const auto & node_indices = hexahedrons[i];
+        std::array<WorldCoordinates, 8> nodes;
+        for (UNSIGNED_INTEGER_TYPE j = 0; j < 8; ++j) {
+            nodes[j] = positions[node_indices[j]];
+        }
+
+        for (UNSIGNED_INTEGER_TYPE n = 0; n < 8; ++n) {
+            for (UNSIGNED_INTEGER_TYPE m = 0; m < 8; ++m) {
+                volume_1 += (nodes[n] - nodes[m]).norm();
+            }
+        }
+    }
+    std::cout <<"Memory-bound grid 3d: " << TOCK / 1000. / 1000. << " [ms]" << std::endl;
+
+
+    // CPU-bound test
+    FLOATING_POINT_TYPE volume_2 = 0;
+    const auto ncells = grid.number_of_cells();
+    TICK;
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < ncells; ++i) {
+        Grid::ElementNodes node_indices = grid.node_indices_of(i);
+        std::array<WorldCoordinates, 8> nodes;
+        for (UNSIGNED_INTEGER_TYPE j = 0; j < 8; ++j) {
+            nodes[j] = grid.node(node_indices[j]);
+        }
+
+        for (UNSIGNED_INTEGER_TYPE n = 0; n < 8; ++n) {
+            for (UNSIGNED_INTEGER_TYPE m = 0; m < 8; ++m) {
+                volume_2 += (nodes[n] - nodes[m]).norm();
+            }
+        }
+    }
+    std::cout <<"CPU-bound grid 3d: " << TOCK / 1000. / 1000. << " [ms]" << std::endl;
+
+    EXPECT_EQ(volume_1, volume_2);
 }
 
 #endif //CARIBOU_TOPOLOGY_TEST_GRID_3D_H
