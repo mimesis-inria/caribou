@@ -69,10 +69,14 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
     while (n_it < newton_iterations) {
         sofa::helper::AdvancedTimer::stepBegin("NewtonStep");
 
-        // assemble matrix, CG: does nothing
-        // LDL non-mapped: addKToMatrix added to system matrix
-        // LDL mapped: addKToMatrix not added to the system matrix, needs mapped FF (TODO)
         sofa::helper::AdvancedTimer::stepBegin("MBKBuild");
+        // 1. The MechanicalMatrix::K is an empty matrix that stores three floats called factors: m, b and k.
+        // 2. the * operator simply multiplies each of the three factors a value. No matrix is built yet.
+        // 3. The = operator first search for a linear solver in the current context.
+        //    A. For LinearSolver using a GraphScatteredMatrix, nothing appends.
+        //    B. For LinearSolver using other type of matrices (FullMatrix, SparseMatrix, CompressedRowSparseMatrix),
+        //       the "addMBKToMatrix" method is called on each BaseForceField objects and the "applyConstraint" method
+        //       is called on every BaseProjectiveConstraintSet objects.
         sofa::core::behavior::MultiMatrix<sofa::simulation::common::MechanicalOperations> matrix(&mop);
         matrix = MechanicalMatrix::K * -1.0;
         sofa::helper::AdvancedTimer::stepEnd("MBKBuild");
@@ -81,12 +85,22 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
         if (n_it == 0) {
             // compute addForce, in mapped: addForce + applyJT (vec)
             sofa::helper::AdvancedTimer::stepBegin("ComputeForce");
+
+            // Reset the force vectors on every mechanical objects found in the current context tree
+            // todo(jnbrunet): force.clear is probably not needed since mop.computeForce clears the forces by default
             force.clear();
+
+            // Accumulate the force vectors
+            // 1. Go down in the current context tree calling addForce on every forcefields
+            // 2. Go up from the current context tree leaves calling applyJT on every mechanical mappings
             mop.computeForce(force);
+
+            // Calls the "projectResponse" method of every BaseProjectiveConstraintSet objects found in the
+            // current context tree.
             mop.projectResponse(force);
             sofa::helper::AdvancedTimer::stepEnd("ComputeForce");
 
-            // Residual
+            // Compute the initial residual
             R = sqrt(force.dot(force));
             R0 = R;
 
@@ -108,6 +122,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             x.eq(x_start, dx, 1);
 
             // Solving constraints
+            // Calls "solveConstraint" method of every ConstraintSolver objects found in the current context tree.
             mop.solveConstraint(x, sofa::core::ConstraintParams::POS);
 
             //propagate positions to mapped nodes (calls apply, applyJ)
