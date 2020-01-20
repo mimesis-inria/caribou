@@ -7,6 +7,7 @@ set(HEADER_FILES
     GraphComponents/Forcefield/TetrahedronElasticForce.h
     GraphComponents/Forcefield/TractionForce.h
     GraphComponents/Ode/StaticODESolver.h
+        GraphComponents/Solver/ConjugateGradientSolver.h
     GraphComponents/Topology/FictitiousGrid.h
     Traits.h)
 
@@ -20,6 +21,7 @@ set(SOURCE_FILES
     GraphComponents/Forcefield/TetrahedronElasticForce.cpp
     GraphComponents/Forcefield/TractionForce.cpp
     GraphComponents/Ode/StaticODESolver.cpp
+        GraphComponents/Solver/ConjugateGradientSolver.cpp
     GraphComponents/Topology/FictitiousGrid.cpp
     init.cpp)
 

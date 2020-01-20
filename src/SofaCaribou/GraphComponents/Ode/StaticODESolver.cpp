@@ -72,7 +72,9 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
         sofa::helper::AdvancedTimer::stepBegin("MBKBuild");
         // 1. The MechanicalMatrix::K is an empty matrix that stores three floats called factors: m, b and k.
         // 2. the * operator simply multiplies each of the three factors a value. No matrix is built yet.
-        // 3. The = operator first search for a linear solver in the current context.
+        // 3. The = operator first search for a linear solver in the current context. It then calls the "setSystemMBKMatrix"
+        //    method of the linear solver.
+
         //    A. For LinearSolver using a GraphScatteredMatrix, nothing appends.
         //    B. For LinearSolver using other type of matrices (FullMatrix, SparseMatrix, CompressedRowSparseMatrix),
         //       the "addMBKToMatrix" method is called on each BaseForceField objects and the "applyConstraint" method
@@ -111,10 +113,12 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
         }
 
         if (not converged) {
-            // Solving the equations
+            // Solving the system
             // for CG: calls iteratively addDForce, mapped:  [applyJ, addDForce, applyJt(vec)]+
             // for LDL: solves the system, everything's already assembled
             sofa::helper::AdvancedTimer::stepBegin("MBKSolve");
+
+            // Calls methods "setSystemRHVector", "setSystemLHVector" and "solveSystem" of the LinearSolver component
             matrix.solve(dx, force);
             sofa::helper::AdvancedTimer::stepEnd("MBKSolve");
 

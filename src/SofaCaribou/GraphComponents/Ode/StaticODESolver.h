@@ -5,9 +5,7 @@
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
 #include <sofa/core/behavior/MultiVec.h>
 
-namespace SofaCaribou {
-namespace GraphComponents {
-namespace ode {
+namespace SofaCaribou::GraphComponents::ode {
 
 using sofa::core::objectmodel::Data;
 
@@ -112,8 +110,6 @@ protected:
 };
 
 
-} // namespace ode
-} // namespace GraphComponents
-} // namespace SofaCaribou
+} // namespace SofaCaribou::GraphComponents::ode
 
 #endif //SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICODESOLVER_H
