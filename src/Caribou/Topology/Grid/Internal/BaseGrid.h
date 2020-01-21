@@ -265,8 +265,8 @@ struct BaseGrid
     inline auto
     node(const GridCoordinates & coordinates) const noexcept -> WorldCoordinates
     {
-        const auto & n = m_number_of_subdivisions;
-        return m_anchor_position + coordinates*H();
+        const WorldCoordinates relative_position = coordinates. template cast<FLOATING_POINT_TYPE>().cwiseProduct(H());
+        return m_anchor_position + relative_position;
     }
 
     /** Test if the position of a given point is inside this grid */

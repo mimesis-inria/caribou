@@ -237,9 +237,6 @@ TEST(Topology_Grid_3D, BenchMark)
     using WorldCoordinates = Grid::WorldCoordinates;
     using Subdivisions = Grid::Subdivisions;
     using Dimensions = Grid::Dimensions;
-    using GridCoordinates = Grid::GridCoordinates;
-    using CellIndex = Grid::CellIndex;
-    using Hexa = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
     BEGIN_CLOCK;
 
     Grid grid(WorldCoordinates{0, 0, 0}, Subdivisions{100, 100, 1000}, Dimensions{100, 100, 100});

@@ -98,6 +98,7 @@ void ConjugateGradientSolver::solveSystem() {
 
             // 5. Check for convergence: |r|/|b| < threshold
             if (r_norm< residual_tolerance_threshold*b_norm) {
+                msg_info() << "CG converged!";
                 break;
             }
 

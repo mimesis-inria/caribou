@@ -8,7 +8,7 @@ namespace py = pybind11;
 namespace caribou::geometry::python
 {
 
-void create_segments(pybind11::module & m) {
+void create_segments(pybind11::module & /*m*/) {
 }
 
 } // namespace caribou::geometry::python
