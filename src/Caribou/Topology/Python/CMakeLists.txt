@@ -10,12 +10,14 @@ set(PYTHON_TEST_FILES
 )
 
 set(HEADER_FILES
-    HashGrid.h
+        Grid.h
+        HashGrid.h
 )
 
 set(SOURCE_FILES
-    HashGrid.cpp
-    Topology.cpp
+        Grid.cpp
+        HashGrid.cpp
+        Topology.cpp
 )
 
 unset(PYTHON_MODULE_PREFIX)
