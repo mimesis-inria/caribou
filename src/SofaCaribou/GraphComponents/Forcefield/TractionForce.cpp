@@ -7,10 +7,9 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Triangle.h>
+#include <Caribou/Geometry/Quad.h>
 
-namespace SofaCaribou {
-namespace GraphComponents {
-namespace forcefield {
+namespace SofaCaribou::GraphComponents::forcefield {
 
 template<class DataTypes>
 TractionForce<DataTypes>::TractionForce()
@@ -22,15 +21,15 @@ TractionForce<DataTypes>::TractionForce()
     , d_triangles(initData(&d_triangles,
             "triangles",
             "List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...])."))
+    , d_quads(initData(&d_quads,
+            "quads",
+            "List of quads (ex: [q1p1 q1p2 q1p3 q1p4 q2p1 q2p2 q2p3 ...])."))
     , d_slope(initData(&d_slope,
             (Real) 0,
             "slope",
             "Slope of load increment, the resulting tractive force will be p^t = p^{t-1} + p*slope where p is the "
             "traction force passed as a data and p^t is the traction force applied at time step t. "
             "If slope = 0, the traction will be constant."))
-    , d_triangleContainer(initLink(
-            "triangle_container",
-            "Triangle set topology container that contains the triangle indices."))
     , d_mechanicalState(initLink(
             "state",
             "Mechanical state that contains the positions of the surface elements."))
@@ -39,10 +38,10 @@ TractionForce<DataTypes>::TractionForce()
             "number_of_steps_before_increment",
             "Number of time steps to wait before adding an increment. "
             "This can be used to simulate Newton-Raphson solving process where the time steps are the Newton iterations."))
-    , d_draw_triangles(initData(&d_draw_triangles,
+    , d_draw_faces(initData(&d_draw_faces,
             (bool) true,
-            "draw_triangles",
-            "Draw the triangles on which the traction will be applied"))
+            "draw_faces",
+            "Draw the faces on which the traction will be applied"))
 
     // Outputs
     , d_nodal_forces(initData(&d_nodal_forces,
@@ -61,26 +60,21 @@ void TractionForce<DataTypes>::init()
 {
     sofa::core::behavior::ForceField<DataTypes>::init();
 
-    // If no triangle container specified, but a link is set for the triangles, use the linked container
-    if ( !  d_triangleContainer.get()
-         && d_triangles.getParent()
-         && dynamic_cast<sofa::component::topology::TriangleSetTopologyContainer*> (d_triangles.getParent()->getOwner())) {
+    // if no faces are provided (and no links are specified for these)
+    if (d_triangles.getValue().empty() and ! d_triangles.getParent() and
+        d_quads.getValue().empty() and ! d_quads.getParent()) {
+        // Try to find a triangle container
+        auto triangle_container = this->getContext()->template get<sofa::component::topology::TriangleSetTopologyContainer>();
+        if (triangle_container) {
+            d_triangles.setParent(&triangle_container->getTriangleDataArray());
+            msg_info() << "Using the triangles of the container '" << triangle_container->getPathName() << "'";
+        }
 
-        d_triangleContainer.set(dynamic_cast<sofa::component::topology::TriangleSetTopologyContainer*> (d_triangles.getParent()->getOwner()));
-    }
-
-    // If no triangle indices set, get the ones from the container (if one was provided, or automatically found in the context)
-    if (d_triangles.getValue().empty()) {
-        if (!d_triangleContainer.get()) {
-            auto container = this->getContext()->template get<sofa::component::topology::TriangleSetTopologyContainer>();
-            if (container) {
-                d_triangleContainer.set(container);
-                d_triangles.setParent(&d_triangleContainer.get()->getTriangleDataArray());
-                if (d_triangles.getValue().empty()) {
-                    msg_error() << "A triangle topology container was found, but contained an empty set of triangles.";
-                }
-            } else
-                msg_error() << "A set of triangles or a triangle topology containing a set of triangles must be provided.";
+        // Try to find a quad container
+        auto quad_container = this->getContext()->template get<sofa::component::topology::QuadSetTopologyContainer>();
+        if (quad_container) {
+            d_quads.setParent(&quad_container->getQuadDataArray());
+            msg_info() << "Using the quads of the container '" << quad_container->getPathName() << "'";
         }
     }
 
@@ -90,7 +84,7 @@ void TractionForce<DataTypes>::init()
         if (state)
             d_mechanicalState.set(state);
         else
-            msg_error() << "No mechanical state provided or found in the current context.";
+            msg_warning() << "No mechanical state provided or found in the current context.";
     }
 
 
@@ -173,10 +167,12 @@ void TractionForce<DataTypes>::handleEvent(sofa::core::objectmodel::Event* event
 template<class DataTypes>
 void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_area)
 {
+    using QuadElement = caribou::geometry::Quad<3>;
     sofa::helper::WriteAccessor<Data<VecDeriv>> nodal_forces = d_nodal_forces;
     sofa::helper::WriteAccessor<Data<Real>> current_load = d_total_load;
 
     const auto & triangles = d_triangles.getValue();
+    const auto & quads = d_quads.getValue();
     const auto rest_positions = d_mechanicalState.get()->readRestPositions();
 
     msg_info() << "Incrementing the load by " << traction_increment_per_unit_area << " (tractive force per unit area).";
@@ -199,6 +195,40 @@ void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_
         nodal_forces[triangle_node_indices[2]] += integrated_force_increment / (Real) 3;
 
         load += integrated_force_increment;
+    }
+
+    for (size_t i = 0; i < quads.size(); ++i) {
+        const auto & quad_node_indices = quads[i];
+        const auto p1 = MapVector<3>(&(rest_positions[quad_node_indices[0]][0]));
+        const auto p2 = MapVector<3>(&(rest_positions[quad_node_indices[1]][0]));
+        const auto p3 = MapVector<3>(&(rest_positions[quad_node_indices[2]][0]));
+        const auto p4 = MapVector<3>(&(rest_positions[quad_node_indices[3]][0]));
+
+        const auto quad = QuadElement(p1, p2, p3, p4);
+
+        // Integration of the traction increment over the element.
+        for (size_t gauss_node_id = 0; gauss_node_id < QuadElement::number_of_gauss_nodes; ++gauss_node_id) {
+            const auto & g = Vector<2>(QuadElement::gauss_nodes[gauss_node_id]);
+            const auto & w = QuadElement::gauss_weights[gauss_node_id];
+
+            const auto J = quad.jacobian(g);
+            const auto detJ = J.col(0).cross(J.col(1)).norm();
+
+            // Traction evaluated at the gauss point position
+            const auto F = traction_increment_per_unit_area * w * detJ;
+
+            // Shape values at each nodes evaluated at the gauss point position
+            const auto S = QuadElement::L(g);
+
+            for (size_t j = 0; j < QuadElement::NumberOfNodes; ++j) {
+                nodal_forces[quad_node_indices[j]] += F*S[j];
+                load += F*S[j];;
+            }
+
+            nodal_forces[quad_node_indices[1]] += F*S[1];
+            nodal_forces[quad_node_indices[2]] += F*S[2];
+            nodal_forces[quad_node_indices[3]] += F*S[3];
+        }
     }
 
     current_load += load.norm();
@@ -227,22 +257,25 @@ void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vpar
     using Color = sofa::core::visual::DrawTool::RGBAColor;
     using Vector3 = sofa::core::visual::DrawTool::Vector3;
 
-    const auto & draw_triangles = d_draw_triangles.getValue();
+    const auto & draw_faces = d_draw_faces.getValue();
 
     if (! vparams->displayFlags().getShowForceFields() )
         return;
 
     const auto & triangles = d_triangles.getValue();
+    const auto & quads = d_quads.getValue();
     const auto positions = d_mechanicalState.get()->readPositions();
 
     sofa::helper::vector<Vector3> triangles_points;
+    sofa::helper::vector<Vector3> quads_points;
     sofa::helper::vector<Vector3> line_points;
-    if (draw_triangles) {
+    if (draw_faces) {
         triangles_points.resize(triangles.size() * 3);
+        quads_points.resize(quads.size() * 4);
     }
 
-    line_points.resize(triangles.size() * 2);
-
+    line_points.resize((triangles.size() + quads.size()) * 2);
+    size_t line_index = 0;
     for (size_t i = 0; i < triangles.size(); ++i) {
         const auto & triangle_node_indices = triangles[i];
         const auto p1 = MapVector<3>(&(positions[triangle_node_indices[0]][0]));
@@ -257,7 +290,7 @@ void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vpar
         const auto n = triangle.normal();
         const Vector3 normal(n[0], n[1], n[2]);
 
-        if (draw_triangles) {
+        if (draw_faces) {
             const auto pp1 = c + (p1-c)*0.666667 + n*0.001;
             const auto pp2 = c + (p2-c)*0.666667 + n*0.001;
             const auto pp3 = c + (p3-c)*0.666667 + n*0.001;
@@ -266,12 +299,45 @@ void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vpar
             triangles_points[3 * i + 2] = {pp3[0], pp3[1], pp3[2]};
         }
 
-        line_points[2 * i] = center;
-        line_points[2 * i + 1] = center + normal;
+        line_points[line_index++] = center;
+        line_points[line_index++] = center + normal;
     }
 
-    if (draw_triangles) {
+    for (size_t i = 0; i < quads.size(); ++i) {
+        const auto & quad_node_indices = quads[i];
+        const auto p1 = MapVector<3>(&(positions[quad_node_indices[0]][0]));
+        const auto p2 = MapVector<3>(&(positions[quad_node_indices[1]][0]));
+        const auto p3 = MapVector<3>(&(positions[quad_node_indices[2]][0]));
+        const auto p4 = MapVector<3>(&(positions[quad_node_indices[3]][0]));
+
+        const auto quad = caribou::geometry::Quad<3>(p1, p2, p3, p4);
+
+        const auto c = quad.center();
+        const Vector3 center(c[0], c[1], c[2]);
+
+        const auto t1 = caribou::geometry::Triangle<3>(p1, p2, p3);
+        const auto t2 = caribou::geometry::Triangle<3>(p2, p3, p4);
+        const auto n = ((t1.normal()+t2.normal())/2).normalized().eval();
+        const Vector3 normal(n[0], n[1], n[2]);
+
+        if (draw_faces) {
+            const auto pp1 = c + (p1-c)*0.666667 + n*0.001;
+            const auto pp2 = c + (p2-c)*0.666667 + n*0.001;
+            const auto pp3 = c + (p3-c)*0.666667 + n*0.001;
+            const auto pp4 = c + (p4-c)*0.666667 + n*0.001;
+            quads_points[4 * i + 0] = {pp1[0], pp1[1], pp1[2]};
+            quads_points[4 * i + 1] = {pp2[0], pp2[1], pp2[2]};
+            quads_points[4 * i + 2] = {pp3[0], pp3[1], pp3[2]};
+            quads_points[4 * i + 3] = {pp4[0], pp4[1], pp4[2]};
+        }
+
+        line_points[line_index++] = center;
+        line_points[line_index++] = center + normal;
+    }
+
+    if (draw_faces) {
         vparams->drawTool()->drawTriangles(triangles_points, Color(1, 0, 0, 0.5));
+        vparams->drawTool()->drawQuads(quads_points, Color(1, 0, 0, 0.5));
     }
 
     vparams->drawTool()->drawLines(line_points, 1.f, Color(0, 1, 0, 1));
@@ -283,6 +349,4 @@ static int TractionForceClass = sofa::core::RegisterObject("Traction forcefield.
                                           .add< TractionForce<sofa::defaulttype::Vec3dTypes> >(true)
 ;
 
-} // namespace forcefield
-} // namespace GraphComponents
-} // namespace SofaCaribou
+} // namespace SofaCaribou::GraphComponents::forcefield

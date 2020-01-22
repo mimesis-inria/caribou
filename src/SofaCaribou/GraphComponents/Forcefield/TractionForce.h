@@ -4,6 +4,7 @@
 #include <sofa/defaulttype/MatSym.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <SofaBaseTopology/TriangleSetTopologyContainer.h>
+#include <SofaBaseTopology/QuadSetTopologyContainer.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
 namespace SofaCaribou::GraphComponents::forcefield {
@@ -46,9 +47,7 @@ public:
     using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
 
     using Triange = TriangleSetTopologyContainer::Triangle;
-
-    using TriangleTopologyLink =
-        SingleLink<TractionForce, TriangleSetTopologyContainer, BaseLink::FLAG_STRONGLINK>;
+    using Quad = QuadSetTopologyContainer::Quad;
 
     using MechanicalStateLink =
         SingleLink<TractionForce, MechanicalState<DataTypes>, BaseLink::FLAG_STRONGLINK>;
@@ -75,11 +74,11 @@ public:
     // Inputs
     Data<Deriv> d_traction; ///< Tractive force per unit area
     Data<sofa::helper::vector<Triange> > d_triangles; ///< List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...])
+    Data<sofa::helper::vector<Quad> > d_quads; ///< List of quads (ex: [q1p1 q1p2 q1p3 q1p4 q2p1 q2p2 q2p3 ...])
     Data<Real> d_slope; ///< Slope of force increment, the resulting traction will be p^t = p^{t-1} + p*slope. If slope = 0, the force will be constant
-    TriangleTopologyLink d_triangleContainer; ///< Triangle set topology container that contains the triangle indices
     MechanicalStateLink d_mechanicalState; ///< Mechanical state that contains the triangle positions
     Data<unsigned int> d_number_of_steps_before_increment; ///< Number of steps to wait before a load increment. This can be used to simulate a Newton-Raphson solver.
-    Data<bool> d_draw_triangles; ///< Draw the triangles on which the traction will be applied
+    Data<bool> d_draw_faces; ///< Draw the faces on which the traction will be applied
 
     // Outputs
     Data<VecDeriv> d_nodal_forces; /// Tractive force for each nodes of the surface on which we are applying the traction
