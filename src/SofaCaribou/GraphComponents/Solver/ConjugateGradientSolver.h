@@ -9,6 +9,7 @@
 #include <sofa/helper/OptionsGroup.h>
 #include <Eigen/Sparse>
 #include <Eigen/Core>
+#include <Eigen/IterativeLinearSolvers>
 
 namespace SofaCaribou::GraphComponents::solver {
 
@@ -30,13 +31,18 @@ class ConjugateGradientSolver : public LinearSolver {
 public:
     SOFA_CLASS(ConjugateGradientSolver, LinearSolver);
 
+    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
+
     /// Preconditioning methods
     enum class PreconditioningMethod : unsigned int {
         /// No preconditioning, hence the complete matrix won't be built. (default)
-                Identity = 0,
+        Identity = 0,
 
         /// Preconditioning based on the incomplete Cholesky factorization.
-                IncompleteCholesky = 1
+        IncompleteCholesky = 1,
+
+        /// Preconditioning based on the incomplete LU factorization.
+        IncompleteLU = 2
     };
 
     /**
@@ -78,6 +84,34 @@ protected:
     /// Constructor
     ConjugateGradientSolver();
 
+    /// Methods
+    /**
+     * Solve the linear system Ax = b using Sofa's graph scene.
+     *
+     * Here, the matrix A is never built. The matrix-vector product Ax is done by going down in the subgraph
+     * of the current context and doing the multiplication directly in the vectors of mechanical objects found.
+     *
+     * \warning Since the matrix A is never built, no preconditioning method can be used with this method.
+     *
+     * @param b The right-hand side vector of the system
+     * @param x The solution vector of the system. It should be filled with an initial guess or the previous solution.
+     */
+    void solve(MultiVecDeriv & b, MultiVecDeriv & x);
+
+    /**
+     * Solve the linear system Ax = b using a preconditioner.
+     *
+     * @tparam Derived The type of the matrix A, can be a dense or a sparse matrix.
+     * @tparam Preconditioner The type of the preconditioner.
+     *
+     * @param precond The preconditioner (must be a
+     * @param A The system matrix as an Eigen matrix
+     * @param b The right-hand side vector of the system
+     * @param x The solution vector of the system. It should be filled with an initial guess or the previous solution.
+     */
+    template <typename Matrix, typename Preconditioner>
+    void solve(const Preconditioner & precond, const Matrix & A, const Vector & b, Vector & x);
+
     /// INPUTS
     Data<unsigned int> d_maximum_number_of_iterations;
     Data<FLOATING_POINT_TYPE> d_residual_tolerance_threshold;
@@ -100,10 +134,16 @@ private:
     Eigen::SparseMatrix<FLOATING_POINT_TYPE> p_A;
 
     ///< Global system solution vector (usually filled with an initial guess or the previous solution)
-    Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1> p_x;
+    Vector p_x;
 
     ///< Global system right-hand side vector
-    Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1> p_b;
+    Vector p_b;
+
+    ///< Incomplete Cholesky preconditioner
+    Eigen::IncompleteCholesky<FLOATING_POINT_TYPE> p_ichol;
+
+    ///< Incomplete LU preconditioner
+    Eigen::IncompleteLUT<FLOATING_POINT_TYPE> p_iLU;
 };
 
 } // namespace SofaCaribou::GraphComponents::solver
