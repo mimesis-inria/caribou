@@ -5,8 +5,10 @@
 #include <sofa/core/behavior/LinearSolver.h>
 #include <SofaBaseLinearSolver/FullVector.h>
 #include <SofaBaseLinearSolver/FullMatrix.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
-#include <SofaBaseLinearSolver/SparseMatrix.h>
+#include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+#include <sofa/helper/OptionsGroup.h>
+#include <Eigen/Sparse>
+#include <Eigen/Core>
 
 namespace SofaCaribou::GraphComponents::solver {
 
@@ -27,6 +29,15 @@ class ConjugateGradientSolver : public LinearSolver {
 
 public:
     SOFA_CLASS(ConjugateGradientSolver, LinearSolver);
+
+    /// Preconditioning methods
+    enum class PreconditioningMethod : unsigned int {
+        /// No preconditioning, hence the complete matrix won't be built. (default)
+                Identity = 0,
+
+        /// Preconditioning based on the incomplete Cholesky factorization.
+                IncompleteCholesky = 1
+    };
 
     /**
      * Reset the complete system (A, x and b are cleared). This does absolutely nothing here since the complete
@@ -70,16 +81,29 @@ protected:
     /// INPUTS
     Data<unsigned int> d_maximum_number_of_iterations;
     Data<FLOATING_POINT_TYPE> d_residual_tolerance_threshold;
+    Data< sofa::helper::OptionsGroup > d_preconditioning_method;
 
 private:
     ///< The mechanical parameters containing the m, b and k coefficients.
     const sofa::core::MechanicalParams * p_mechanical_params;
+
+    ///< Accessor used to determine the index of each mechanical object matrix and vector in the global system.
+    DefaultMultiMatrixAccessor p_accessor;
 
     ///< The identifier of the b vector
     sofa::core::MultiVecDerivId p_b_id;
 
     ///< The identifier of the x vector
     sofa::core::MultiVecDerivId p_x_id;
+
+    ///< Global system matrix (only built when a preconditioning method needs it)
+    Eigen::SparseMatrix<FLOATING_POINT_TYPE> p_A;
+
+    ///< Global system solution vector (usually filled with an initial guess or the previous solution)
+    Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1> p_x;
+
+    ///< Global system right-hand side vector
+    Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1> p_b;
 };
 
 } // namespace SofaCaribou::GraphComponents::solver

@@ -53,6 +53,7 @@ endif()
 
 
 find_package(SofaBase REQUIRED)
+find_package(SofaCommon REQUIRED)
 find_package(SofaFramework REQUIRED)
 find_package(OpenMP)
 find_package(LAPACK)
@@ -65,7 +66,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOU
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology Caribou.Geometry)
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SofaCore)
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology)
+target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology SofaBaseLinearSolver SofaEigen2Solver)
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou.Topology Caribou.Geometry)
 
 
