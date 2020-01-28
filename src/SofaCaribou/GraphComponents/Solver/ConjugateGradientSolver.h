@@ -7,8 +7,17 @@
 #include <SofaBaseLinearSolver/FullMatrix.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <Eigen/Sparse>
 #include <Eigen/Core>
+
+// Do not activate openMP for the SofaEigen2Solver since it is broken
+#ifdef _OPENMP
+#undef _OPENMP
+#include <SofaEigen2Solver/EigenBaseSparseMatrix.h>
+#define _OPENMP
+#else
+#include <SofaEigen2Solver/EigenBaseSparseMatrix.h>
+#endif
+
 #include <Eigen/IterativeLinearSolvers>
 
 namespace SofaCaribou::GraphComponents::solver {
@@ -131,7 +140,7 @@ private:
     sofa::core::MultiVecDerivId p_x_id;
 
     ///< Global system matrix (only built when a preconditioning method needs it)
-    Eigen::SparseMatrix<FLOATING_POINT_TYPE> p_A;
+    EigenBaseSparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor> p_A;
 
     ///< Global system solution vector (usually filled with an initial guess or the previous solution)
     Vector p_x;

@@ -73,9 +73,8 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
         Timer::stepEnd("SetupMatrixIndices");
 
         Timer::stepBegin("Clear");
-        FullMatrix<FLOATING_POINT_TYPE> A((int) n, (int) n);
-        std::fill(A.ptr(), A.ptr()+n*n, (FLOATING_POINT_TYPE)0);
-        p_accessor.setGlobalMatrix(&A);
+        p_A.resize((int) n, (int) n);
+        p_accessor.setGlobalMatrix(&p_A);
         Timer::stepEnd("Clear");
 
         Timer::stepEnd("PrepareMatrix");
@@ -102,29 +101,16 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
 
         // Step 4. Convert the system matrix to a compressed sparse matrix
         Timer::stepBegin("ConvertToSparse");
-        std::vector<Eigen::Triplet<double>> entries;
-        entries.reserve(n*3);
-        for (size_t i = 0; i < n; ++i) {
-            for (size_t j = 0; j < n; ++j) {
-                const auto & v = A[i][j];
-                if (not IN_CLOSED_INTERVAL(-EPSILON, v, EPSILON)) {
-                    entries.emplace_back(i, j, v);
-                }
-            }
-        }
-        entries.shrink_to_fit();
-        p_A.resize(n, n);
-        p_A.setFromTriplets(entries.begin(), entries.end());
-        p_A.makeCompressed();
+        p_A.compress();
         Timer::stepEnd("ConvertToSparse");
         Timer::stepEnd("BuildMatrix");
 
         // Step 5. Factorize the preconditioner
         Timer::stepBegin("PreconditionerFactorization");
         if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
-            p_ichol.compute(p_A);
+            p_ichol.compute(p_A.compressedMatrix);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteLU) {
-            p_iLU.compute(p_A);
+            p_iLU.compute(p_A.compressedMatrix);
         }
         Timer::stepEnd("PreconditionerFactorization");
     }
@@ -143,7 +129,7 @@ void ConjugateGradientSolver::setSystemRHVector(sofa::core::MultiVecDerivId b_id
 
     // If we have a preconditioning method, we copy the vectors of the mechanical objects into a global eigen vector.
     if (preconditioning_method != PreconditioningMethod::Identity) {
-        p_b.resize(p_A.rows());
+        p_b.resize(p_A.rowSize());
         EigenVectorWrapper<FLOATING_POINT_TYPE> b(p_b);
         mop.multiVector2BaseVector(p_b_id, &b, &p_accessor);
     }
@@ -162,7 +148,7 @@ void ConjugateGradientSolver::setSystemLHVector(sofa::core::MultiVecDerivId x_id
 
     // If we have a preconditioning method, we copy the vectors of the mechanical objects into a global eigen vector.
     if (preconditioning_method != PreconditioningMethod::Identity) {
-        p_x.resize(p_A.rows());
+        p_x.resize(p_A.rowSize());
         EigenVectorWrapper<FLOATING_POINT_TYPE> x(p_x);
         mop.multiVector2BaseVector(p_x_id, &x, &p_accessor);
     }
@@ -357,9 +343,9 @@ void ConjugateGradientSolver::solveSystem() {
         // previously during the calls to setSystemMBKMatrix, setSystemLHVector and setSystemRHVector, respectively.
 
         if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
-            solve(p_ichol, p_A, p_b, p_x);
+            solve(p_ichol, p_A.compressedMatrix, p_b, p_x);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteLU) {
-            solve(p_iLU, p_A, p_b, p_x);
+            solve(p_iLU, p_A.compressedMatrix, p_b, p_x);
         }
 
         // Copy the solution into the mechanical objects of the current context sub-graph.
