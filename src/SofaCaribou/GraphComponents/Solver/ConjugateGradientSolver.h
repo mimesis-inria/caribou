@@ -45,13 +45,22 @@ public:
     /// Preconditioning methods
     enum class PreconditioningMethod : unsigned int {
         /// No preconditioning, hence the complete matrix won't be built. (default)
-        Identity = 0,
+        None = 0,
+
+        /// A naive preconditioner which approximates any matrix as the identity matrix.
+        Identity = 1,
+
+        /// Preconditioning using an approximation of A.x = b by ignoring all off-diagonal entries of A.
+        Diagonal = 2,
+
+        /// Preconditioning using an approximation of A'A.x = A'.b and ignoring all off-diagonal entries of A' A.
+        LeastSquareDiagonal = 3,
 
         /// Preconditioning based on the incomplete Cholesky factorization.
-        IncompleteCholesky = 1,
+        IncompleteCholesky = 4,
 
         /// Preconditioning based on the incomplete LU factorization.
-        IncompleteLU = 2
+        IncompleteLU = 5
     };
 
     /**
@@ -147,6 +156,15 @@ private:
 
     ///< Global system right-hand side vector
     Vector p_b;
+
+    ///< Identity preconditioner
+    Eigen::IdentityPreconditioner p_identity;
+
+    ///< Diagonal preconditioner
+    Eigen::DiagonalPreconditioner<FLOATING_POINT_TYPE> p_diag;
+
+    ///< Least-Square Diagonal preconditioner
+    Eigen::LeastSquareDiagonalPreconditioner<FLOATING_POINT_TYPE> p_ls_diag;
 
     ///< Incomplete Cholesky preconditioner
     Eigen::IncompleteCholesky<FLOATING_POINT_TYPE> p_ichol;
