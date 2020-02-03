@@ -53,11 +53,13 @@ public:
         /// Preconditioning using an approximation of A.x = b by ignoring all off-diagonal entries of A.
         Diagonal = 2,
 
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
         /// Preconditioning using an approximation of A'A.x = A'.b and ignoring all off-diagonal entries of A' A.
         LeastSquareDiagonal = 3,
 
         /// Preconditioning based on the incomplete Cholesky factorization.
         IncompleteCholesky = 4,
+#endif
 
         /// Preconditioning based on the incomplete LU factorization.
         IncompleteLU = 5
@@ -136,6 +138,13 @@ protected:
     Data< sofa::helper::OptionsGroup > d_preconditioning_method;
 
 private:
+    /// Private methods
+    /**
+     * @brief Get the identifier of the preconditioning method from its name
+     */
+    PreconditioningMethod get_preconditioning_method_from_string(const std::string & preconditioner_name) const;
+
+    /// Private members
     ///< The mechanical parameters containing the m, b and k coefficients.
     const sofa::core::MechanicalParams * p_mechanical_params;
 
@@ -163,14 +172,19 @@ private:
     ///< Diagonal preconditioner
     Eigen::DiagonalPreconditioner<FLOATING_POINT_TYPE> p_diag;
 
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
     ///< Least-Square Diagonal preconditioner
     Eigen::LeastSquareDiagonalPreconditioner<FLOATING_POINT_TYPE> p_ls_diag;
 
     ///< Incomplete Cholesky preconditioner
     Eigen::IncompleteCholesky<FLOATING_POINT_TYPE> p_ichol;
+#endif
 
     ///< Incomplete LU preconditioner
     Eigen::IncompleteLUT<FLOATING_POINT_TYPE> p_iLU;
+
+    ///< Contains the list of available preconditioners with their respective identifier
+    std::vector<std::pair<std::string, PreconditioningMethod>> p_preconditioners;
 };
 
 } // namespace SofaCaribou::GraphComponents::solver

@@ -29,23 +29,60 @@ ConjugateGradientSolver::ConjugateGradientSolver()
             None:                No preconditioning, hence the complete matrix won't be built. (default)
             Identity:            A naive preconditioner which approximates any matrix as the identity matrix.
             Diagonal:            Preconditioning using an approximation of A.x = b by ignoring all off-diagonal entries of A.
+    )"
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
+    R"(
             LeastSquareDiagonal: Preconditioning using an approximation of A'A.x = A'.b by ignoring all off-diagonal entries of A' A.
             IncompleteCholesky:  Preconditioning based on the incomplete Cholesky factorization.
+    )"
+#endif
+    R"(
             IncompleteLU:        Preconditioning based on the incomplete LU factorization.
     )",
     true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 {
-    d_preconditioning_method.setValue(sofa::helper::OptionsGroup(std::vector<std::string> {
-            "None",
-            "Identity",
-            "Diagonal",
-            "LeastSquareDiagonal",
-            "IncompleteCholesky",
-            "IncompleteLU"
-    }));
+    // Explicitly state the available preconditioning methods
+    p_preconditioners.emplace_back("None", PreconditioningMethod::None);
+    p_preconditioners.emplace_back("Identity", PreconditioningMethod::Identity);
+    p_preconditioners.emplace_back("Diagonal", PreconditioningMethod::Diagonal);
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
+    p_preconditioners.emplace_back("LeastSquareDiagonal", PreconditioningMethod::LeastSquareDiagonal);
+    p_preconditioners.emplace_back("IncompleteCholesky", PreconditioningMethod::IncompleteCholesky);
+#endif
+    p_preconditioners.emplace_back("IncompleteLU", PreconditioningMethod::IncompleteLU);
 
+    // Fill-in the data option group with the available preconditioning methods
+    std::vector<std::string> preconditioner_names;
+    for (const auto & preconditioner : p_preconditioners) {
+        const std::string & preconditioner_name = preconditioner.first;
+        preconditioner_names.emplace_back(preconditioner_name);
+    }
+    d_preconditioning_method.setValue(sofa::helper::OptionsGroup(preconditioner_names));
     sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> preconditioning_method = d_preconditioning_method;
     preconditioning_method->setSelectedItem((unsigned int) 0);
+}
+
+auto ConjugateGradientSolver::get_preconditioning_method_from_string(const std::string & preconditioner_name) const -> PreconditioningMethod{
+    auto to_lower = [](const std::string & input_string) {
+        std::string output_string;
+        std::transform(input_string.begin(), input_string.end(), output_string.begin(),
+            [](unsigned char c){ return std::tolower(c); }
+        );
+        return output_string;
+    };
+
+    const std::string query = to_lower(preconditioner_name);
+
+    for (const auto & preconditioner : p_preconditioners) {
+        const std::string & preconditioner_name = preconditioner.first;
+        const PreconditioningMethod & preconditioner_id = preconditioner.second;
+
+        if (to_lower(preconditioner_name) == query) {
+            return preconditioner_id;
+        }
+    }
+
+    return PreconditioningMethod::None;
 }
 
 void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) {
@@ -55,7 +92,7 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
     p_mechanical_params = mparams;
 
     // Get the preconditioning method
-    const auto preconditioning_method = static_cast<PreconditioningMethod>(d_preconditioning_method.getValue().getSelectedId());
+    const PreconditioningMethod preconditioning_method = get_preconditioning_method_from_string(d_preconditioning_method.getValue().getSelectedItem());
 
     // If we have a preconditioning method, the global system matrix has to be constructed from the current context subgraph.
     if (preconditioning_method != PreconditioningMethod::None) {
@@ -117,10 +154,12 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
             p_identity.compute(p_A.compressedMatrix);
         } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
             p_diag.compute(p_A.compressedMatrix);
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
         } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
             p_ls_diag.compute(p_A.compressedMatrix);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
             p_ichol.compute(p_A.compressedMatrix);
+#endif
         } else if (preconditioning_method == PreconditioningMethod::IncompleteLU) {
             p_iLU.compute(p_A.compressedMatrix);
         }
@@ -137,7 +176,7 @@ void ConjugateGradientSolver::setSystemRHVector(sofa::core::MultiVecDerivId b_id
     p_b_id = b_id;
 
     // Get the preconditioning method
-    const auto preconditioning_method = static_cast<PreconditioningMethod>(d_preconditioning_method.getValue().getSelectedId());
+    const PreconditioningMethod preconditioning_method = get_preconditioning_method_from_string(d_preconditioning_method.getValue().getSelectedItem());
 
     // If we have a preconditioning method, we copy the vectors of the mechanical objects into a global eigen vector.
     if (preconditioning_method != PreconditioningMethod::None) {
@@ -156,7 +195,7 @@ void ConjugateGradientSolver::setSystemLHVector(sofa::core::MultiVecDerivId x_id
     p_x_id = x_id;
 
     // Get the preconditioning method
-    const auto preconditioning_method = static_cast<PreconditioningMethod>(d_preconditioning_method.getValue().getSelectedId());
+    const PreconditioningMethod preconditioning_method = get_preconditioning_method_from_string(d_preconditioning_method.getValue().getSelectedItem());
 
     // If we have a preconditioning method, we copy the vectors of the mechanical objects into a global eigen vector.
     if (preconditioning_method != PreconditioningMethod::None) {
@@ -281,7 +320,11 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
 
     // Compute the tolerance w.r.t |b| since |r|/|b| < threshold is equivalent to  r^2 < b^2 * threshold^2
     // threshold = b^2 * residual_tolerance_threshold^2
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
     auto threshold = Eigen::numext::maxi(residual_tolerance_threshold*residual_tolerance_threshold*b_norm_2,zero);
+#else
+    auto threshold = std::max(residual_tolerance_threshold*residual_tolerance_threshold*b_norm_2,zero);
+#endif
 
     // INITIAL RESIDUAL
     Vector r = b - A*x;
@@ -343,7 +386,7 @@ void ConjugateGradientSolver::solveSystem() {
     MultiVecDeriv b(&vop, p_b_id);
 
     // Get the preconditioning method
-    const auto preconditioning_method = static_cast<PreconditioningMethod>(d_preconditioning_method.getValue().getSelectedId());
+    const PreconditioningMethod preconditioning_method = get_preconditioning_method_from_string(d_preconditioning_method.getValue().getSelectedItem());
 
 
     Timer::stepBegin("ConjugateGradient::solve");
@@ -358,10 +401,12 @@ void ConjugateGradientSolver::solveSystem() {
             solve(p_identity, p_A.compressedMatrix, p_b, p_x);
         } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
             solve(p_diag, p_A.compressedMatrix, p_b, p_x);
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
         } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
             solve(p_ls_diag, p_A.compressedMatrix, p_b, p_x);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
             solve(p_ichol, p_A.compressedMatrix, p_b, p_x);
+#endif
         } else if (preconditioning_method == PreconditioningMethod::IncompleteLU) {
             solve(p_iLU, p_A.compressedMatrix, p_b, p_x);
         }
