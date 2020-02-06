@@ -12,10 +12,54 @@ template<typename T> struct traits<const T> : traits<T> {};
  * REQUIRES(condition)
  *
  * Same thing as std::enable_if, just easier to read for the user.
+ *
+ * \example
+ * \code{.cpp}
+ * #include <Caribou/Traits.h>
+ *
+ * template <typename Scalar, REQUIRES(std::is_integral_v<Scalar>)>
+ * Scalar add(const Scalar & x, const Scalar & y) {
+ *     // Integer addition
+ *     return x + y;
+ * }
+ *
+ * void main() {
+ *    int result = add(1, 1); // Ok, returns 2
+ *    // float result = add(1.0, 1.0); // Compile error, the function isn't define for non-integer types
+ * }
+ * \endcode
  */
 # define REQUIRES(...)                                      \
   typename std::enable_if<(__VA_ARGS__), bool>::type = true
 
+/**
+ * CLASS_REQUIRES(condition)
+ *
+ * Same thing as std::enable_if, just easier to read for the user.
+ *
+ * \example
+ * \code{.cpp}
+ * #include <iostream>
+ * #include <Caribou/Traits.h>
+ *
+ * template <typename T, typename Enable = void>
+ * class MyObject {
+ *     void print() const {std::cout << "Generic object\n";}
+ * };
+ *
+ * template <typename T>
+ * class MyObject<T, CLASS_REQUIRES(std::is_integral_v<Scalar>)> {
+ *     void print() const {std::cout << "Integral object\n";}
+ * };
+ *
+ * void main() {
+ *    MyObject<float> o1; o1.print(); // Prints "Generic object"
+ *    MyObject<int>   o2; o2.print(); // Prints "Integral object"
+ * }
+ * \endcode
+ */
+# define CLASS_REQUIRES(...)                                      \
+  typename std::enable_if<(__VA_ARGS__)>::type
 
 /**
  * is_detect

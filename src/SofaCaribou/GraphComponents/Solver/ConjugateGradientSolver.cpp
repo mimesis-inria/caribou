@@ -413,7 +413,7 @@ void ConjugateGradientSolver::solveSystem() {
 
         // Copy the solution into the mechanical objects of the current context sub-graph.
         EigenVectorWrapper<FLOATING_POINT_TYPE> x_wrapper(p_x);
-        mop.baseVector2MultiVector(p_x_id, &x_wrapper, &p_accessor);
+        mop.baseVector2MultiVector(&x_wrapper, p_x_id, &p_accessor);
     }
 
     Timer::stepEnd("ConjugateGradient::solve");
