@@ -154,8 +154,9 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
         }
 
         if (not converged) {
-            msg_info() << "Newton iteration #" << n_it + 1 << ": R = " << R << ", R0 = " << R0 << " |du| = " << dx_norm
-                       << " |u| = " << du_norm;
+            msg_info() << "Newton iteration #" << n_it + 1
+                       << ": |R|/|R0| = " << R/R0    << " (threshold of " << residual_tolerance_threshold   << ")"
+                       << "  |du| = "     << dx_norm << " (threshold of " << correction_tolerance_threshold << ")";
         }
         sofa::helper::AdvancedTimer::valSet("residual", R);
         sofa::helper::AdvancedTimer::valSet("correction", dx_norm);
@@ -192,7 +193,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
 
     if (n_it >= newton_iterations) {
         n_it--;
-        msg_info() << "[DIVERGED] The number of Newton iterations reached the threshold of " << newton_iterations << " iterations";
+        msg_info() << "[DIVERGED] The number of Newton iterations reached the maximum of " << newton_iterations << " iterations";
     }
 
     d_converged.setValue(converged);
