@@ -1,4 +1,5 @@
 #include "ConjugateGradientSolver.h"
+#include<SofaCaribou/Algebra/EigenMatrixWrapper.h>
 #include <Caribou/macros.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/helper/AdvancedTimer.h>
@@ -11,6 +12,7 @@
 namespace SofaCaribou::GraphComponents::solver {
 
 using Timer = sofa::helper::AdvancedTimer;
+using Algebra::EigenMatrixWrapper;
 
 ConjugateGradientSolver::ConjugateGradientSolver()
 : d_maximum_number_of_iterations(initData(&d_maximum_number_of_iterations,
@@ -64,7 +66,7 @@ ConjugateGradientSolver::ConjugateGradientSolver()
 
 auto ConjugateGradientSolver::get_preconditioning_method_from_string(const std::string & preconditioner_name) const -> PreconditioningMethod{
     auto to_lower = [](const std::string & input_string) {
-        std::string output_string;
+        std::string output_string = input_string;
         std::transform(input_string.begin(), input_string.end(), output_string.begin(),
             [](unsigned char c){ return std::tolower(c); }
         );
@@ -76,7 +78,6 @@ auto ConjugateGradientSolver::get_preconditioning_method_from_string(const std::
     for (const auto & preconditioner : p_preconditioners) {
         const std::string & preconditioner_name = preconditioner.first;
         const PreconditioningMethod & preconditioner_id = preconditioner.second;
-
         if (to_lower(preconditioner_name) == query) {
             return preconditioner_id;
         }
@@ -116,8 +117,9 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
         Timer::stepEnd("SetupMatrixIndices");
 
         Timer::stepBegin("Clear");
-        p_A.resize((int) n, (int) n);
-        p_accessor.setGlobalMatrix(&p_A);
+        p_A.resize(static_cast<Eigen::Index>(n), static_cast<Eigen::Index>(n));
+        EigenMatrixWrapper<SparseMatrix &> wrapper (p_A);
+        p_accessor.setGlobalMatrix(&wrapper);
         Timer::stepEnd("Clear");
 
         Timer::stepEnd("PrepareMatrix");
@@ -144,25 +146,29 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
 
         // Step 4. Convert the system matrix to a compressed sparse matrix
         Timer::stepBegin("ConvertToSparse");
-        p_A.compress();
+        wrapper.compress();
         Timer::stepEnd("ConvertToSparse");
         Timer::stepEnd("BuildMatrix");
 
         // Step 5. Factorize the preconditioner
         Timer::stepBegin("PreconditionerFactorization");
         if (preconditioning_method == PreconditioningMethod::Identity) {
-            p_identity.compute(p_A.compressedMatrix);
+            p_identity.compute(p_A);
         } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
-            p_diag.compute(p_A.compressedMatrix);
+            p_diag.compute(p_A);
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
         } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
-            p_ls_diag.compute(p_A.compressedMatrix);
+            p_ls_diag.compute(p_A);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
-            p_ichol.compute(p_A.compressedMatrix);
+            p_ichol.compute(p_A);
 #endif
         } else if (preconditioning_method == PreconditioningMethod::IncompleteLU) {
-            p_iLU.compute(p_A.compressedMatrix);
+            p_iLU.compute(p_A);
         }
+
+        // Remove the global matrix from the accessor since the wrapper was temporary
+        p_accessor.setGlobalMatrix(nullptr);
+
         Timer::stepEnd("PreconditionerFactorization");
     }
 
@@ -180,7 +186,7 @@ void ConjugateGradientSolver::setSystemRHVector(sofa::core::MultiVecDerivId b_id
 
     // If we have a preconditioning method, we copy the vectors of the mechanical objects into a global eigen vector.
     if (preconditioning_method != PreconditioningMethod::None) {
-        p_b.resize(p_A.rowSize());
+        p_b.resize(p_A.rows());
         EigenVectorWrapper<FLOATING_POINT_TYPE> b(p_b);
         mop.multiVector2BaseVector(p_b_id, &b, &p_accessor);
     }
@@ -199,7 +205,7 @@ void ConjugateGradientSolver::setSystemLHVector(sofa::core::MultiVecDerivId x_id
 
     // If we have a preconditioning method, we copy the vectors of the mechanical objects into a global eigen vector.
     if (preconditioning_method != PreconditioningMethod::None) {
-        p_x.resize(p_A.rowSize());
+        p_x.resize(p_A.rows());
         EigenVectorWrapper<FLOATING_POINT_TYPE> x(p_x);
         mop.multiVector2BaseVector(p_x_id, &x, &p_accessor);
     }
@@ -236,7 +242,7 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     if (IN_OPEN_INTERVAL(-EPSILON, b_norm, EPSILON)) {
         msg_info() << "Right-hand side of the system is zero, hence x = 0.";
         x.clear();
-        return;
+        goto end;
     }
 
     // INITIAL RESIDUAL
@@ -256,12 +262,13 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     if (r_norm < residual_tolerance_threshold*b_norm) {
         msg_info() << "The linear system has already reached an equilibrium state";
         msg_info() << "|R| = " << r_norm << ", |b| = " << b_norm << ", threshold = " << residual_tolerance_threshold;
-        return;
+        goto end;
     }
 
     // ITERATIONS
     p = r; // p(0) = r(0)
     while (iteration_number < maximum_number_of_iterations) {
+        Timer::stepBegin("cg_iteration");
         // 1. Computes q(k+1) = A*p(k)
         mop.propagateDxAndResetDf(p, q); // Set q = 0 and calls applyJ(p) on every mechanical mappings
         mop.addMBKdx(q, m_coef, b_coef, k_coef, false); // q = (m M + b B + k K) x
@@ -283,8 +290,10 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
 
         // 5. Check for convergence: |r|/|b| < threshold
         if (r_norm< residual_tolerance_threshold*b_norm) {
+            Timer::stepEnd("cg_iteration");
             msg_info() << "CG converged!";
-            break;
+            ++iteration_number; // For the Timer value 'nb_iterations'
+            goto end;
         }
 
         // 6. Compute p(k+1)
@@ -293,7 +302,11 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
 
         rho0 = rho1;
         ++iteration_number;
+        Timer::stepEnd("cg_iteration");
     }
+
+    end:
+    sofa::helper::AdvancedTimer::valSet("nb_iterations", iteration_number);
 }
 
 template <typename Matrix, typename Preconditioner>
@@ -307,43 +320,46 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     FLOATING_POINT_TYPE b_norm_2; // RHS norm
     FLOATING_POINT_TYPE rho0, rho1; // Stores r*r as it is used two times per iterations
     FLOATING_POINT_TYPE alpha, beta; // Alpha and Beta coefficients
+    FLOATING_POINT_TYPE threshold; // Residual threshold
     UNSIGNED_INTEGER_TYPE iteration_number = 0; // Current iteration number
     UNSIGNED_INTEGER_TYPE n = A.cols();
+    Vector p(n), z(n); // Search directions
+    Vector r; // Residual
 
     // Make sure that the right hand side isn't zero
     b_norm_2 = b.squaredNorm();
     if (b_norm_2 < EPSILON) {
         msg_info() << "Right-hand side of the system is zero, hence x = 0.";
         x.setZero();
-        return;
+        goto end;
     }
 
     // Compute the tolerance w.r.t |b| since |r|/|b| < threshold is equivalent to  r^2 < b^2 * threshold^2
     // threshold = b^2 * residual_tolerance_threshold^2
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
-    auto threshold = Eigen::numext::maxi(residual_tolerance_threshold*residual_tolerance_threshold*b_norm_2,zero);
+    threshold = Eigen::numext::maxi(residual_tolerance_threshold*residual_tolerance_threshold*b_norm_2,zero);
 #else
-    auto threshold = std::max(residual_tolerance_threshold*residual_tolerance_threshold*b_norm_2,zero);
+    threshold = std::max(residual_tolerance_threshold*residual_tolerance_threshold*b_norm_2,zero);
 #endif
 
     // INITIAL RESIDUAL
-    Vector r = b - A*x;
+    r = b - A*x;
 
     // Check for initial convergence
     rho0 = r.dot(r);
     if (rho0 < threshold) {
         msg_info() << "The linear system has already reached an equilibrium state";
         msg_info() << "|r0|/|b| = " << sqrt(rho0/b_norm_2) << ", threshold = " << residual_tolerance_threshold;
-        return;
+        goto end;
     }
 
     // Compute the initial search direction
-    Vector p(n), z(n);
     p = precond.solve(r);
     rho0 = r.dot(p); // |M-1 * r|^2
 
     // ITERATIONS
     while (iteration_number < maximum_number_of_iterations) {
+        Timer::stepBegin("cg_iteration");
         // 1. Computes q(k+1) = A*p(k)
         Vector q = A * p;
 
@@ -362,8 +378,10 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
 
         // 5. Check for convergence: |r|/|b| < threshold
         if (rho0 < threshold) {
+            Timer::stepEnd("cg_iteration");
             msg_info() << "CG converged!";
-            return;
+            ++iteration_number; // For the Timer value 'nb_iterations'
+            goto end;
         }
 
         // 6. Compute the next search direction
@@ -374,7 +392,11 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
 
         rho0 = rho1;
         ++iteration_number;
+        Timer::stepEnd("cg_iteration");
     }
+
+    end:
+    sofa::helper::AdvancedTimer::valSet("nb_iterations", iteration_number);
 }
 
 void ConjugateGradientSolver::solveSystem() {
@@ -398,17 +420,17 @@ void ConjugateGradientSolver::solveSystem() {
         // previously during the calls to setSystemMBKMatrix, setSystemLHVector and setSystemRHVector, respectively.
 
         if (preconditioning_method == PreconditioningMethod::Identity) {
-            solve(p_identity, p_A.compressedMatrix, p_b, p_x);
+            solve(p_identity, p_A, p_b, p_x);
         } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
-            solve(p_diag, p_A.compressedMatrix, p_b, p_x);
+            solve(p_diag, p_A, p_b, p_x);
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
         } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
-            solve(p_ls_diag, p_A.compressedMatrix, p_b, p_x);
+            solve(p_ls_diag, p_A, p_b, p_x);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
-            solve(p_ichol, p_A.compressedMatrix, p_b, p_x);
+            solve(p_ichol, p_A, p_b, p_x);
 #endif
         } else if (preconditioning_method == PreconditioningMethod::IncompleteLU) {
-            solve(p_iLU, p_A.compressedMatrix, p_b, p_x);
+            solve(p_iLU, p_A, p_b, p_x);
         }
 
         // Copy the solution into the mechanical objects of the current context sub-graph.

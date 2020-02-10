@@ -39,7 +39,7 @@ class ConjugateGradientSolver : public LinearSolver {
 
 public:
     SOFA_CLASS(ConjugateGradientSolver, LinearSolver);
-
+    using SparseMatrix = Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor>;
     using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
 
     /// Preconditioning methods
@@ -158,7 +158,7 @@ private:
     sofa::core::MultiVecDerivId p_x_id;
 
     ///< Global system matrix (only built when a preconditioning method needs it)
-    EigenBaseSparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor> p_A;
+    SparseMatrix p_A;
 
     ///< Global system solution vector (usually filled with an initial guess or the previous solution)
     Vector p_x;
