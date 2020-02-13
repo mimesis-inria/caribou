@@ -21,10 +21,14 @@ void test_core(SofaCaribou::Algebra::EigenMatrixWrapper<Derived> & mm) {
 
     // Resize
     mm.resize(50, 50);
+    mm.compress();
     EXPECT_EQ(mm.rows(), 50);
     EXPECT_EQ(mm.cols(), 50);
+    int nb_not_equal = 0;
     for (Index i=0;i<mm.rows();++i) for (Index j=0;j<mm.cols();++j)
-        EXPECT_EQ(mm(i, j), 0);
+        if (mm(i,j) != 0) nb_not_equal++;
+
+    EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to zero (and they should).";
 
     // Clear
     mm.clear();
@@ -33,21 +37,31 @@ void test_core(SofaCaribou::Algebra::EigenMatrixWrapper<Derived> & mm) {
     // 3x3 doubles
     mm.add(0, 0, sofa::defaulttype::Mat3x3d(5));
     mm.compress();
+    nb_not_equal = 0;
     for (Index i=0;i<3;++i) for (Index j=0;j<3;++j)
-        EXPECT_EQ(mm(i,j), 5);
+        if (mm(i,j) !=5) nb_not_equal++;
+    EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to 5 (and they should).";
+
     // 3x3 floats
     mm.add(0, 0, sofa::defaulttype::Mat3x3f(5));
+    nb_not_equal = 0;
     for (Index i=0;i<3;++i) for (Index j=0;j<3;++j)
-        EXPECT_EQ(mm(i,j), 10);
+        if (mm(i,j) != 10) nb_not_equal++;
+    EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to 10 (and they should).";
 
     // 2x2 doubles
     mm.add(0, 0, sofa::defaulttype::Mat2x2d(5));
+    nb_not_equal = 0;
     for (Index i=0;i<2;++i) for (Index j=0;j<2;++j)
-        EXPECT_EQ(mm(i,j), 15);
+        if (mm(i,j) !=15) nb_not_equal++;
+    EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to 15 (and they should).";
+
     // 2x2 floats
     mm.add(0, 0, sofa::defaulttype::Mat2x2f(5));
+    nb_not_equal = 0;
     for (Index i=0;i<2;++i) for (Index j=0;j<2;++j)
-        EXPECT_EQ(mm(i,j), 20);
+        if (mm(i,j) !=20) nb_not_equal++;
+    EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to 20 (and they should).";
 
     // Clearing
     for (Index i=0;i<mm.rows();++i) for (Index j=0;j<mm.cols();++j)
@@ -55,23 +69,31 @@ void test_core(SofaCaribou::Algebra::EigenMatrixWrapper<Derived> & mm) {
 
     // Clear row
     mm.clearRow(0);
+    nb_not_equal = 0;
     for (Index i=0;i<mm.cols();++i)
-        EXPECT_EQ(mm(0,i), 0);
+        if (mm(0,i) !=0) nb_not_equal++;
+    EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to zero (and they should).";
 
     // clear middle rows
     mm.clearRows(20, 30);
+    nb_not_equal = 0;
     for (Index i=0;i<=10;++i) for (Index j=0;j<mm.cols();++j)
-        ASSERT_EQ(mm(20+i, j), 0);
+        if (mm(20+i,j) !=0) nb_not_equal++;
+    EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to zero (and they should).";
 
     // Clear col
     mm.clearCol(0);
+    nb_not_equal = 0;
     for (Index i=0;i<mm.rows();++i)
-        EXPECT_EQ(mm(i,0), 0);
+        if (mm(i,0) !=0) nb_not_equal++;
+     EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to zero (and they should).";
 
     // clear middle cols
     mm.clearCols(20, 30);
+    nb_not_equal = 0;
     for (Index i=0;i<mm.rows();++i) for (Index j=0;j<=10;++j)
-        ASSERT_EQ(mm(i, 20+j), 0);
+        if (mm(i, 20+j) !=0) nb_not_equal++;
+    EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to zero (and they should).";
 }
 
 TEST(Algebra, DenseMatrixByCopy) {
@@ -122,6 +144,9 @@ TEST(Algebra, SparseMatrixByCopy) {
     EigenWrapper mm(m);
     EXPECT_EQ(mm.rows(), N);
     EXPECT_EQ(mm.cols(), N);
+
+    ASSERT_DEBUG_DEATH(mm(30,30), "Accessing an element on an uninitialized matrix.");
+    mm.compress();
 
     // Testing the core functionalities
     test_core(mm);

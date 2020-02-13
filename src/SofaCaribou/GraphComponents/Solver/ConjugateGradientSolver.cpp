@@ -9,6 +9,12 @@
 #include <SofaEigen2Solver/EigenVectorWrapper.h>
 #include <iomanip>
 
+#if !EIGEN_VERSION_AT_LEAST(3,3,0)
+namespace Eigen {
+using Index = EIGEN_DEFAULT_DENSE_INDEX_TYPE;
+}
+#endif
+
 namespace SofaCaribou::GraphComponents::solver {
 
 using Timer = sofa::helper::AdvancedTimer;
@@ -97,6 +103,7 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
 
     // If we have a preconditioning method, the global system matrix has to be constructed from the current context subgraph.
     if (preconditioning_method != PreconditioningMethod::None) {
+        bool matrix_shape_has_changed = false;
         // Step 1. Preparation stage
         //         This stage go down on the sub-graph and gather the top-level mechanical objects (mechanical objects that
         //         aren't slaved of another mechanical object through a mechanical mapping). The matrix isn't built yet,
@@ -109,7 +116,8 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
 
         Timer::stepBegin("Dimension");
         mops.getMatrixDimension(nullptr, nullptr, &p_accessor);
-        const auto n = static_cast<size_t>(p_accessor.getGlobalDimension());
+        const auto n = static_cast<Eigen::Index>(p_accessor.getGlobalDimension());
+        matrix_shape_has_changed = (n != p_A.rows());
         Timer::stepEnd("Dimension");
 
         Timer::stepBegin("SetupMatrixIndices");
@@ -117,7 +125,7 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
         Timer::stepEnd("SetupMatrixIndices");
 
         Timer::stepBegin("Clear");
-        p_A.resize(static_cast<Eigen::Index>(n), static_cast<Eigen::Index>(n));
+        p_A.resize(n, n);
         EigenMatrixWrapper<SparseMatrix &> wrapper (p_A);
         p_accessor.setGlobalMatrix(&wrapper);
         Timer::stepEnd("Clear");
@@ -150,26 +158,44 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
         Timer::stepEnd("ConvertToSparse");
         Timer::stepEnd("BuildMatrix");
 
+        // Step 5. Let the preconditioner analyse the matrix
+        if (matrix_shape_has_changed) {
+            Timer::stepBegin("PreconditionerAnalysis");
+            if (preconditioning_method == PreconditioningMethod::Identity) {
+                p_identity.analyzePattern(p_A);
+            } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
+                p_diag.analyzePattern(p_A);
+#if EIGEN_VERSION_AT_LEAST(3,3,0)
+            } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
+                p_ls_diag.analyzePattern(p_A);
+            } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
+                p_ichol.analyzePattern(p_A);
+#endif
+            } else if (preconditioning_method == PreconditioningMethod::IncompleteLU) {
+                p_iLU.analyzePattern(p_A);
+            }
+            Timer::stepEnd("PreconditionerAnalysis");
+        }
+
         // Step 5. Factorize the preconditioner
         Timer::stepBegin("PreconditionerFactorization");
         if (preconditioning_method == PreconditioningMethod::Identity) {
-            p_identity.compute(p_A);
+            p_identity.factorize(p_A);
         } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
-            p_diag.compute(p_A);
+            p_diag.factorize(p_A);
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
         } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
-            p_ls_diag.compute(p_A);
+            p_ls_diag.factorize(p_A);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
-            p_ichol.compute(p_A);
+            p_ichol.factorize(p_A);
 #endif
         } else if (preconditioning_method == PreconditioningMethod::IncompleteLU) {
-            p_iLU.compute(p_A);
+            p_iLU.factorize(p_A);
         }
+        Timer::stepEnd("PreconditionerFactorization");
 
         // Remove the global matrix from the accessor since the wrapper was temporary
         p_accessor.setGlobalMatrix(nullptr);
-
-        Timer::stepEnd("PreconditionerFactorization");
     }
 
     Timer::stepEnd("ConjugateGradient::ComputeGlobalMatrix");

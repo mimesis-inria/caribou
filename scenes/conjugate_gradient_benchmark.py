@@ -20,7 +20,7 @@ cg_solvers = [
     {'name':'None', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'None',     'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
     {'name':'Id',   'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Identity', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
     {'name':'Dia',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Diagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
-    {'name':'LSDia', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'LeastSquareDiagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
+#    {'name':'LSDia', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'LeastSquareDiagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
     {'name':'iChol',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteCholesky',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
     {'name':'iLU',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteLU',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
 ]
@@ -31,19 +31,24 @@ def extract_newton_steps(record):
     newton_steps_records = record['StaticODESolver::Solve']['NewtonStep']
     newton_steps = []
     for newton_record in newton_steps_records:
+        if not 'MBKBuild' in newton_record or not 'MBKSolve' in newton_record:
+            continue
         MBKBuild = newton_record['MBKBuild']
         MBKSolve = newton_record['MBKSolve']
         data = {}
         data['Total time'] = newton_record['total_time']
         data['Update global matrix'] = 0
-        data['Update preconditioner'] = 0
+        data['Precond Analysis'] = 0
+        data['Precond Factorize'] = 0
         data['Nb of CG iterations'] = 0
         data['Mean CG iteration time'] = 0
         data['Total CG time'] = 0
         if 'ConjugateGradient::ComputeGlobalMatrix' in MBKBuild:
             if 'BuildMatrix' in MBKBuild['ConjugateGradient::ComputeGlobalMatrix']:
                 data['Update global matrix'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['BuildMatrix']['total_time']
-                data['Update preconditioner'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerFactorization']['total_time']
+                data['Precond Factorize'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerFactorization']['total_time']
+                if 'PreconditionerAnalysis' in MBKBuild['ConjugateGradient::ComputeGlobalMatrix']:
+                    data['Precond Analysis'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerAnalysis']['total_time']
             else:
                 data['Update global matrix'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['total_time']
 

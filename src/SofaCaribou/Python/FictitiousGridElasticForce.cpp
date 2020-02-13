@@ -3,6 +3,7 @@
 
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
+#include <memory>
 
 PYBIND11_MAKE_OPAQUE(const std::vector<SofaCaribou::GraphComponents::forcefield::FictitiousGridElasticForce::GaussNode>&)
 
@@ -19,7 +20,8 @@ void addFictitiousGridElasticForce(py::module &m) {
     g.def_property_readonly("dN_dx", [](const FictitiousGridElasticForce::GaussNode & self){return self.dN_dx;});
     g.def_property_readonly("F", [](const FictitiousGridElasticForce::GaussNode & self){return self.F;});
 
-    py::class_<FictitiousGridElasticForce, std::shared_ptr<FictitiousGridElasticForce>> c(m, "FictitiousGridElasticForce");
+//    py::object BaseObject = (py::object) py::module::import("Sofa.Core").attr("Base");
+    py::class_<FictitiousGridElasticForce> c(m, "FictitiousGridElasticForce");
     c.def("gauss_nodes_of", &FictitiousGridElasticForce::gauss_nodes_of, py::arg("hexahedron_id"), py::return_value_policy::reference_internal);
     c.def("stiffness_matrix_of", &FictitiousGridElasticForce::stiffness_matrix_of, py::arg("hexahedron_id"), py::return_value_policy::reference_internal);
     c.def("K", &FictitiousGridElasticForce::K);

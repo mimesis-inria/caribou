@@ -29,11 +29,17 @@ using namespace sofa::core::behavior;
 /**
  * Implements a Conjugate Gradient method for solving a linear system of the type Ax = b.
  *
- * No actual system is built by this component, meaning that the matrix A, and the vectors
- * x and b are never accumulated into memory. Instead, this solver relies on the vectors stored
- * in the mechanical objects of the current scene context graph. The multiplication of the matrix
- * A and a given vector x is computed by accumulating the result b=Ax from ff.addDForce(x, b) of
- * every forcefields acting on a given mechanical object.
+ * When using no preconditioner, no actual system is built by this component, meaning that
+ * the matrix A, and the vectors x and b are never accumulated into memory. Instead, this
+ * solver relies on the vectors stored in the mechanical objects of the current scene context
+ * graph. The multiplication of the matrix A and a given vector x is computed by accumulating
+ * the result b=Ax from ff.addDForce(x, b) of every forcefields acting on a given mechanical
+ * object.
+ *
+ * When using a preconditioner, the matrix has to be assembled since the preconditioner needs
+ * to factorize it. In this case, the complete system matrix A and dense vector b are first
+ * accumulated from the mechanical objects of the current scene context graph. Once the dense
+ * vector x is found, it is propagated back to the mechanical object's vectors.
  */
 class ConjugateGradientSolver : public LinearSolver {
 
@@ -76,21 +82,28 @@ public:
     /**
      * Set the linear system matrix A = (mM + bB + kK), storing the coefficients m, b and k of
      * the mechanical M,B,K matrices.
-     * No actual matrix is built by this method since it is not required by the Conjugate Gradient algorithm.
-     * Only the coefficients m, b and k are stored.
+     *
+     * When using no preconditioner (None), no actual matrix is built by this method since it is not
+     * required by the Conjugate Gradient algorithm. Only the coefficients m, b and k are stored.
+     *
+     * When using a preconditioner, the complete system A is accumulated into a sparse matrix, and the
+     * preconditioner factorize this resulting matrix for later use during the solve step.
+     *
      * @param mparams Contains the coefficients m, b and k of the matrices M, B and K
      */
     void setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) final;
 
     /**
      * Gives the identifier of the right-hand side vector b. This identifier will be used to find the actual vector
-     * in the mechanical objects of the system.
+     * in the mechanical objects of the system.When using a preconditioner (other than None), the complete
+     * dense vector is accumulated from the mechanical objects found in the graph subtree of the current context.
      */
     void setSystemRHVector(sofa::core::MultiVecDerivId b_id) final;
 
     /**
      * Gives the identifier of the left-hand side vector x. This identifier will be used to find the actual vector
-     * in the mechanical objects of the system.
+     * in the mechanical objects of the system. When using a preconditioner (other than None), the complete
+     * dense vector is accumulated from the mechanical objects found in the graph subtree of the current context.
      */
     void setSystemLHVector(sofa::core::MultiVecDerivId x_id) final;
 
