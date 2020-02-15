@@ -61,7 +61,7 @@ struct Tetrahedron<interpolation::Tetrahedron4> : public internal::BaseTetrahedr
             (IN_CLOSED_INTERVAL(-1e-15, c[2], 1+1e-15))) {
 
             const LocalCoordinates normal = (node(2) - node(1)).cross((node(3) - node(1)));
-            return (normal.dot(node(0) - node(1)) * normal.dot(p - node(1)) > 0);
+            return (normal.dot(node(0) - node(1)) * normal.dot(p - node(1)) > -1e-15);
         }
 
         return false;

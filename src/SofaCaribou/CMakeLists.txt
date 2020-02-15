@@ -2,14 +2,15 @@ cmake_minimum_required(VERSION 3.1)
 project(SofaCaribou)
 
 set(HEADER_FILES
+    Algebra/EigenMatrixWrapper.h
     GraphComponents/Forcefield/FictitiousGridElasticForce.h
     GraphComponents/Forcefield/HexahedronElasticForce.h
     GraphComponents/Forcefield/TetrahedronElasticForce.h
     GraphComponents/Forcefield/TractionForce.h
     GraphComponents/Ode/StaticODESolver.h
-        GraphComponents/Solver/ConjugateGradientSolver.h
+    GraphComponents/Solver/ConjugateGradientSolver.h
     GraphComponents/Topology/FictitiousGrid.h
-    Traits.h)
+    )
 
 set(TEMPLATE_FILES
     GraphComponents/Topology/FictitiousGrid.inl
@@ -21,7 +22,7 @@ set(SOURCE_FILES
     GraphComponents/Forcefield/TetrahedronElasticForce.cpp
     GraphComponents/Forcefield/TractionForce.cpp
     GraphComponents/Ode/StaticODESolver.cpp
-        GraphComponents/Solver/ConjugateGradientSolver.cpp
+    GraphComponents/Solver/ConjugateGradientSolver.cpp
     GraphComponents/Topology/FictitiousGrid.cpp
     init.cpp)
 
@@ -53,6 +54,7 @@ endif()
 
 
 find_package(SofaBase REQUIRED)
+find_package(SofaCommon REQUIRED)
 find_package(SofaFramework REQUIRED)
 find_package(OpenMP)
 find_package(LAPACK)
@@ -60,12 +62,12 @@ find_package(LAPACKE)
 find_package(MKL)
 find_package(Eigen3)
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology Caribou.Geometry)
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SofaCore)
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology)
+target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology SofaBaseLinearSolver SofaEigen2Solver)
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou.Topology Caribou.Geometry)
 
 
@@ -88,6 +90,10 @@ endif()
 if (Caribou_with_OpenMP)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
     target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_OPENMP)
+endif()
+
+if (CARIBOU_BUILD_TESTS)
+    add_subdirectory(test)
 endif()
 
 if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)

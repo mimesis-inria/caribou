@@ -28,8 +28,8 @@ def createScene(root):
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showCollisionModels hideMappings showForceFields')
 
     meca = root.addChild("meca")
-    meca.addObject('StaticODESolver', newton_iterations=20, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=100, residual_tolerance_threshold=1e-5, printLog=True)
+    meca.addObject('StaticODESolver', newton_iterations=2, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
+    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=100, residual_tolerance_threshold=1e-5, preconditioning_method="IncompleteCholesky", printLog=True)
     meca.addObject('MechanicalObject', position=m.points.tolist())
     meca.addObject('HexahedronSetTopologyContainer', name='topo', hexahedra=m.cells['hexahedron'].tolist())
     meca.addObject('HexahedronElasticForce', topology_container='@topo', youngModulus=3000, poissonRatio=0, corotated=False, linearStrain=False)
