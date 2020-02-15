@@ -8,6 +8,7 @@ import SofaCaribou
 
 number_of_newton_iterations = 3
 number_of_cg_iterations = 1000
+threshold = 1e-15
 cell_size = 1.5
 radius = 5
 length = 60
@@ -17,12 +18,17 @@ nz = int(length / cell_size) + 1
 eps = cell_size/10
 
 cg_solvers = [
-    {'name':'None', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'None',     'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
-    {'name':'Id',   'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Identity', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
-    {'name':'Dia',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Diagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
-#    {'name':'LSDia', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'LeastSquareDiagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
-    {'name':'iChol',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteCholesky',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
-    {'name':'iLU',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteLU',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':1e-5}},
+    {'name':'None', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'None',     'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+    {'name':'Id',   'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Identity', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+    {'name':'Dia',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Diagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+# #    {'name':'LSDia', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'LeastSquareDiagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+#     {'name':'iChol',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteCholesky',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+#     {'name':'iLU',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteLU',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+
+# Sofa solvers
+    {'name':'sNone', 'solver':'CGLinearSolver', 'arguments':  {'tolerance':threshold, 'iterations':number_of_cg_iterations}},
+    {'name':'bJac',  'solver':'PCGLinearSolver', 'arguments': {'tolerance':threshold, 'iterations':number_of_cg_iterations}, 'precond':'BlockJacobiPreconditioner'},
+    {'name':'SSOR',  'solver':'PCGLinearSolver', 'arguments': {'tolerance':threshold, 'iterations':number_of_cg_iterations}, 'precond':'SSORPreconditioner'},
 ]
 
 def extract_newton_steps(record):
@@ -35,22 +41,28 @@ def extract_newton_steps(record):
             continue
         MBKBuild = newton_record['MBKBuild']
         MBKSolve = newton_record['MBKSolve']
+
+        if 'PCGLinearSolver::solve' in MBKSolve:
+            MBKSolve = MBKSolve['PCGLinearSolver::solve']
+
         data = {}
         data['Total time'] = newton_record['total_time']
-        data['Update global matrix'] = 0
-        data['Precond Analysis'] = 0
-        data['Precond Factorize'] = 0
-        data['Nb of CG iterations'] = 0
-        data['Mean CG iteration time'] = 0
-        data['Total CG time'] = 0
+        data['Update global matrix'] = '-'
+        data['Precond Analysis'] = '-'
+        data['Precond Factorize'] = '-'
+        data['Nb of CG iterations'] = '-'
+        data['Mean CG iteration time'] = '-'
+        data['Total CG time'] = '-'
         if 'ConjugateGradient::ComputeGlobalMatrix' in MBKBuild:
             if 'BuildMatrix' in MBKBuild['ConjugateGradient::ComputeGlobalMatrix']:
-                data['Update global matrix'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['BuildMatrix']['total_time']
-                data['Precond Factorize'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerFactorization']['total_time']
+                data['Update global matrix'] = MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['BuildMatrix']['total_time']
+                data['Precond Factorize'] = MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerFactorization']['total_time']
                 if 'PreconditionerAnalysis' in MBKBuild['ConjugateGradient::ComputeGlobalMatrix']:
-                    data['Precond Analysis'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerAnalysis']['total_time']
+                    data['Precond Analysis'] = MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerAnalysis']['total_time']
             else:
-                data['Update global matrix'] += MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['total_time']
+                data['Update global matrix'] = MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['total_time']
+        else:
+            data['Update global matrix'] = MBKBuild['total_time']
 
         if 'ConjugateGradient::solve' in MBKSolve:
             update_matrix_time = 0.
@@ -65,6 +77,25 @@ def extract_newton_steps(record):
                 if len(MBKSolve['ConjugateGradient::solve']['cg_iteration']):
                     data['Mean CG iteration time'] = mean_time / len(MBKSolve['ConjugateGradient::solve']['cg_iteration'])
             data['Total CG time'] = MBKSolve['ConjugateGradient::solve']['total_time'] - update_matrix_time
+        elif 'HexahedronElasticForce::addDForce' in MBKSolve:
+            update_matrix_time = 0
+            if 'HexahedronElasticForce::compute_k' in MBKSolve:
+                update_matrix_time = MBKSolve['HexahedronElasticForce::compute_k']['total_time']
+                data['Update global matrix'] += update_matrix_time
+            data['Nb of CG iterations'] = MBKSolve['CG iterations'] if 'CG iterations' in MBKSolve else MBKSolve['PCG iterations']
+            data['Total CG time'] = MBKSolve['total_time'] - update_matrix_time
+            mean_time = 0.
+            for cg_iteration in MBKSolve['HexahedronElasticForce::addDForce']:
+                mean_time += cg_iteration['total_time']
+            data['Mean CG iteration time'] = mean_time / len(MBKSolve['HexahedronElasticForce::addDForce'])
+
+        for k, v in zip(data.keys(), data.values()):
+            if isinstance(v, str):
+                continue
+            if v < 1e-4:
+                data[k] = '0'
+
+
         newton_steps.append(data)
     return newton_steps
 
@@ -83,7 +114,10 @@ def pretty_print_methods(methods, number_format='{:.3f}'):
                 if method_name not in fields[k]['methods']:
                     fields[k]['methods'][method_name] = {'width': len(method_name), 'values':[]}
                 fields[k]['methods'][method_name]['values'].append(v)
-                fields[k]['methods'][method_name]['width'] = max(fields[k]['methods'][method_name]['width'], len(number_format.format(v)))
+                if isinstance(v, str):
+                    fields[k]['methods'][method_name]['width'] = max(fields[k]['methods'][method_name]['width'], len(v))
+                else:
+                    fields[k]['methods'][method_name]['width'] = max(fields[k]['methods'][method_name]['width'], len(number_format.format(v)))
     for field in fields.values():
         field['width'] = max(field['width'], len(' '.join(['{{: ^{}}}'.format(m['width']).format('') for m in field['methods'].values()]))+2)
 
@@ -99,7 +133,7 @@ def pretty_print_methods(methods, number_format='{:.3f}'):
     # Print newton iterations
     for it in range(maximum_number_of_newton_steps):
         cols = ["Newton iteration # " + "{{: >{}}} ".format(len(str(maximum_number_of_newton_steps))).format(it)] + \
-               [" {{: ^{}}} ".format(f['width']).format(' '.join(["{{: ^{}}}".format(m['width']).format('-' if it>=len(m['values']) else number_format.format(m['values'][it])) for m in f['methods'].values()])) for f in fields.values()]
+               [" {{: ^{}}} ".format(f['width']).format(' '.join(["{{: ^{}}}".format(m['width']).format('-' if it>=len(m['values']) else (m['values'][it] if isinstance(m['values'][it], str) else number_format.format(m['values'][it]))) for m in f['methods'].values()])) for f in fields.values()]
         print("|".join(cols))
 
 
@@ -166,7 +200,12 @@ def createScene(root):
 
         meca = root.addChild(name)
         meca.addObject('StaticODESolver', newton_iterations=number_of_newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=False)
-        meca.addObject(cg_solver, **arguments)
+
+        if 'precond' in s:
+            meca.addObject(cg_solver, preconditioners='precond', **arguments)
+            meca.addObject(s['precond'], name='precond')
+        else:
+            meca.addObject(cg_solver, **arguments)
 
         meca.addObject('MechanicalObject', name='mo', position='@../grid.position')
         meca.addObject('HexahedronSetTopologyContainer', name='mechanical_topology', src='@../grid')
