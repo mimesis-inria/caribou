@@ -69,20 +69,6 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
     while (n_it < newton_iterations) {
         sofa::helper::AdvancedTimer::stepBegin("NewtonStep");
 
-        sofa::helper::AdvancedTimer::stepBegin("MBKBuild");
-        // 1. The MechanicalMatrix::K is an empty matrix that stores three floats called factors: m, b and k.
-        // 2. the * operator simply multiplies each of the three factors a value. No matrix is built yet.
-        // 3. The = operator first search for a linear solver in the current context. It then calls the "setSystemMBKMatrix"
-        //    method of the linear solver.
-
-        //    A. For LinearSolver using a GraphScatteredMatrix, nothing appends.
-        //    B. For LinearSolver using other type of matrices (FullMatrix, SparseMatrix, CompressedRowSparseMatrix),
-        //       the "addMBKToMatrix" method is called on each BaseForceField objects and the "applyConstraint" method
-        //       is called on every BaseProjectiveConstraintSet objects.
-        sofa::core::behavior::MultiMatrix<sofa::simulation::common::MechanicalOperations> matrix(&mop);
-        matrix = MechanicalMatrix::K * -1.0;
-        sofa::helper::AdvancedTimer::stepEnd("MBKBuild");
-
         // If this is the first newton step, compute the first residual and make sure we didn't already reach the equilibrium.
         if (n_it == 0) {
             // compute addForce, in mapped: addForce + applyJT (vec)
@@ -111,6 +97,20 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
                 converged = true;
             }
         }
+
+        sofa::helper::AdvancedTimer::stepBegin("MBKBuild");
+        // 1. The MechanicalMatrix::K is an empty matrix that stores three floats called factors: m, b and k.
+        // 2. the * operator simply multiplies each of the three factors a value. No matrix is built yet.
+        // 3. The = operator first search for a linear solver in the current context. It then calls the "setSystemMBKMatrix"
+        //    method of the linear solver.
+
+        //    A. For LinearSolver using a GraphScatteredMatrix, nothing appends.
+        //    B. For LinearSolver using other type of matrices (FullMatrix, SparseMatrix, CompressedRowSparseMatrix),
+        //       the "addMBKToMatrix" method is called on each BaseForceField objects and the "applyConstraint" method
+        //       is called on every BaseProjectiveConstraintSet objects.
+        sofa::core::behavior::MultiMatrix<sofa::simulation::common::MechanicalOperations> matrix(&mop);
+        matrix = MechanicalMatrix::K * -1.0;
+        sofa::helper::AdvancedTimer::stepEnd("MBKBuild");
 
         if (not converged) {
             // Solving the system
