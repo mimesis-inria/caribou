@@ -5,22 +5,29 @@ set(HEADER_FILES
     Algebra/EigenMatrixWrapper.h
     GraphComponents/Forcefield/FictitiousGridElasticForce.h
     GraphComponents/Forcefield/HexahedronElasticForce.h
+    GraphComponents/Forcefield/HyperelasticForcefield.h
     GraphComponents/Forcefield/TetrahedronElasticForce.h
     GraphComponents/Forcefield/TractionForce.h
+    GraphComponents/Material/HyperelasticMaterial.h
+    GraphComponents/Material/NeoHookeanMaterial.h
+    GraphComponents/Material/SaintVenantKirchhoffMaterial.h
     GraphComponents/Ode/StaticODESolver.h
     GraphComponents/Solver/ConjugateGradientSolver.h
     GraphComponents/Topology/FictitiousGrid.h
     )
 
 set(TEMPLATE_FILES
+    GraphComponents/Forcefield/HyperelasticForcefield.inl
     GraphComponents/Topology/FictitiousGrid.inl
-        )
+    )
 
 set(SOURCE_FILES
     GraphComponents/Forcefield/FictitiousGridElasticForce.cpp
     GraphComponents/Forcefield/HexahedronElasticForce.cpp
+    GraphComponents/Forcefield/HyperelasticForcefield.cpp
     GraphComponents/Forcefield/TetrahedronElasticForce.cpp
     GraphComponents/Forcefield/TractionForce.cpp
+    GraphComponents/Material/HyperelasticMaterial.cpp
     GraphComponents/Ode/StaticODESolver.cpp
     GraphComponents/Solver/ConjugateGradientSolver.cpp
     GraphComponents/Topology/FictitiousGrid.cpp
@@ -62,10 +69,10 @@ find_package(LAPACKE)
 find_package(MKL)
 find_package(Eigen3)
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology Caribou.Geometry)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology Caribou.Geometry Caribou.Algebra)
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SofaCore)
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology SofaBaseLinearSolver SofaEigen2Solver)
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou.Topology Caribou.Geometry)

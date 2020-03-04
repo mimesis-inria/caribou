@@ -25,32 +25,38 @@ def createScene(root):
     root.addObject('RequiredPlugin', name='SofaOpenglVisual')
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showCollisionModels hideMappings showForceFields')
 
-    root.addObject('RegularGridTopology', name='mesh', min=[-7.5, -7.5, 0], max=[7.5, 7.5, 80], n=[5, 5, 21])
+    root.addObject('RegularGridTopology', name='mesh', min=[-7.5, -7.5, 0], max=[7.5, 7.5, 80], n=[9, 9, 21])
 
-    tx = 0
-    meca = root.addChild("caribou_stVk")
-    meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
-    meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
-    meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
-    meca.addObject('HexahedronElasticForce', topology_container='@topo', youngModulus=youngModulus, poissonRatio=poissonRatio, corotated=False, linearStrain=False)
+    i = 0
+    # tx = 20*i
+    # meca = root.addChild("caribou_StVk_hexa")
+    # meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
+    # meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
+    # meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
+    # meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
+    # # meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+    # meca.addObject('NeoHookeanMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+    # meca.addObject('HyperelasticForcefield', template="Hexahedron", printLog=True)
+    #
+    # meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
+    # meca.addObject('FixedConstraint', indices='@fixed_roi.indices')
+    #
+    # meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
+    # meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
+    # meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads', printLog=True)
 
-    meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
-    meca.addObject('FixedConstraint', indices='@fixed_roi.indices')
-
-    meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
-    meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads', printLog=True)
-
-    tx = 20
-    meca = root.addChild("sofa_stVk")
+    i += 1
+    tx = 20*i
+    meca = root.addChild("caribou_hyperelastic_tetra")
     meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
     meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
     meca.addObject('TetrahedronSetTopologyContainer', name='topo')
     meca.addObject('TetrahedronSetTopologyModifier')
     meca.addObject('Hexa2TetraTopologicalMapping', input='@../mesh', output='@topo', swapping=True)
-    meca.addObject('TetrahedronHyperelasticityFEMForceField', topology="@topo", materialName="StVenantKirchhoff", ParameterSet=F"{mu} {l}")
+    # meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+    meca.addObject('NeoHookeanMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+    meca.addObject('HyperelasticForcefield', template="Tetrahedron", printLog=True)
 
     meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
     meca.addObject('FixedConstraint', indices='@fixed_roi.indices')
@@ -59,35 +65,56 @@ def createScene(root):
     meca.addObject('TriangleSetTopologyContainer', name='triangle_container', triangles='@top_roi.trianglesInROI')
     meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, triangles='@triangle_container.triangles', printLog=True)
 
-    tx = 40
-    meca = root.addChild("caribou_corotated")
+
+    i += 1
+    tx = 20*i
+    meca = root.addChild("sofa_stVk")
     meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
     meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
-    meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
-    meca.addObject('HexahedronElasticForce', topology_container='@topo', youngModulus=youngModulus, poissonRatio=poissonRatio, corotated=True, linearStrain=True)
+    meca.addObject('TetrahedronSetTopologyContainer', name='topo')
+    meca.addObject('TetrahedronSetTopologyModifier')
+    meca.addObject('Hexa2TetraTopologicalMapping', input='@../mesh', output='@topo', swapping=True)
+    meca.addObject('TetrahedronHyperelasticityFEMForceField', topology="@topo", materialName="NeoHookean", ParameterSet=F"{mu} {l}")
 
     meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
     meca.addObject('FixedConstraint', indices='@fixed_roi.indices')
 
     meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
-    meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads')
+    meca.addObject('TriangleSetTopologyContainer', name='triangle_container', triangles='@top_roi.trianglesInROI')
+    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, triangles='@triangle_container.triangles', printLog=True)
 
-    tx = 60
-    meca = root.addChild("sofa_corotated")
-    meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
-    meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
-    meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
-    meca.addObject('HexahedronFEMForceField', topology='@topo', youngModulus=youngModulus, poissonRatio=poissonRatio, method='large')
-
-    meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
-    meca.addObject('FixedConstraint', indices='@fixed_roi.indices')
-
-    meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
-    meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads')
+    # i += 1
+    # tx = 20*i
+    # meca = root.addChild("caribou_corotated")
+    # meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
+    # meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
+    # meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
+    # meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
+    # meca.addObject('HexahedronElasticForce', topology_container='@topo', youngModulus=youngModulus, poissonRatio=poissonRatio, corotated=True, linearStrain=True)
+    #
+    # meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
+    # meca.addObject('FixedConstraint', indices='@fixed_roi.indices')
+    #
+    # meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
+    # meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
+    # meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads')
+    #
+    # i += 1
+    # tx = 20*i
+    # meca = root.addChild("sofa_corotated")
+    # meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
+    # meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
+    # meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
+    # meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
+    # meca.addObject('HexahedronFEMForceField', topology='@topo', youngModulus=youngModulus, poissonRatio=poissonRatio, method='large')
+    #
+    # meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
+    # meca.addObject('FixedConstraint', indices='@fixed_roi.indices')
+    #
+    # meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
+    # meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
+    # meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads')
 
 
 

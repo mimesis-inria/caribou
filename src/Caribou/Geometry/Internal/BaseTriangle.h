@@ -12,7 +12,7 @@ struct BaseTriangle : public CanonicalElementType
 template<typename CanonicalElementType, typename TriangleType>
 struct BaseTriangle<3, CanonicalElementType, TriangleType> : public CanonicalElementType
 {
-    inline auto normal() const noexcept {
+    inline auto normal() const noexcept ->  Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> {
         const auto v1 = self().node(1) - self().node(0);
         const auto v2 = self().node(2) - self().node(1);
 

@@ -104,7 +104,7 @@ struct BaseTetrahedron : public CanonicalElementType
         return FaceType(m);
     }
 
-    /** Get the center position */
+    /** Get the position at the center of the element */
     inline
     WorldCoordinates
     center() const

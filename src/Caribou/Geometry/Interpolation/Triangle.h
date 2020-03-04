@@ -46,6 +46,13 @@ struct Triangle3 : public CanonicalElement<2, 3, Triangle3>
         {2, 0}  // Edge 2
     };
 
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_gauss_nodes = 1;
+    static constexpr FLOATING_POINT_TYPE gauss_nodes [number_of_gauss_nodes][Dimension] {
+        //  u,    w
+          {1/3., 1/3.} // Node 0
+    };
+    static constexpr FLOATING_POINT_TYPE gauss_weights[number_of_gauss_nodes] {1/2.};
+
     /**
      * Get the Lagrange polynomial values evaluated at local coordinates {u, v} w.r.t each triangle's interpolation nodes.
      *
@@ -135,6 +142,17 @@ struct Triangle6 : public CanonicalElement<2, 6, Triangle3>
         {0, 1, 3}, // Edge 0
         {1, 2, 4}, // Edge 1
         {2, 0, 5}  // Edge 2
+    };
+
+    static constexpr UNSIGNED_INTEGER_TYPE number_of_gauss_nodes = 3;
+    static constexpr FLOATING_POINT_TYPE gauss_nodes [number_of_gauss_nodes][Dimension] {
+    //   u,     w
+        {2/3., 1/6.}, // Node 0
+        {1/6., 2/3.}, // Node 1
+        {1/6., 1/6.}  // Node 2
+    };
+    static constexpr FLOATING_POINT_TYPE gauss_weights[number_of_gauss_nodes] {
+        1/6., 1/6., 1/6.
     };
 
     /**

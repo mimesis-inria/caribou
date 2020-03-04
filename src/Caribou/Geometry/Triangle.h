@@ -55,7 +55,7 @@ struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Trian
 
     /** Compute the center position **/
     auto
-    center() const noexcept
+    center() const noexcept -> WorldCoordinates
     {
         return T(LocalCoordinates({1/3., 1/3.}));
     }
