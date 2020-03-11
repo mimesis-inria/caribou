@@ -22,8 +22,8 @@ cg_solvers = [
     {'name':'Id',   'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Identity', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
     {'name':'Dia',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Diagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
 # #    {'name':'LSDia', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'LeastSquareDiagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
-#     {'name':'iChol',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteCholesky',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
-#     {'name':'iLU',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteLU',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+    {'name':'iChol',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteCholesky',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+    {'name':'iLU',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteLU',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
 
 # Sofa solvers
     {'name':'sNone', 'solver':'CGLinearSolver', 'arguments':  {'tolerance':threshold, 'iterations':number_of_cg_iterations}},
@@ -66,8 +66,8 @@ def extract_newton_steps(record):
 
         if 'ConjugateGradient::solve' in MBKSolve:
             update_matrix_time = 0.
-            if 'HexahedronElasticForce::compute_k' in MBKSolve['ConjugateGradient::solve']:
-                update_matrix_time = MBKSolve['ConjugateGradient::solve']['HexahedronElasticForce::compute_k']['total_time']
+            if 'HyperelasticForcefield::update_stiffness' in MBKSolve['ConjugateGradient::solve']:
+                update_matrix_time = MBKSolve['ConjugateGradient::solve']['HyperelasticForcefield::update_stiffness']['total_time']
                 data['Update global matrix'] += update_matrix_time
             data['Nb of CG iterations'] = MBKSolve['ConjugateGradient::solve']['nb_iterations']
             mean_time = 0.
@@ -77,17 +77,17 @@ def extract_newton_steps(record):
                 if len(MBKSolve['ConjugateGradient::solve']['cg_iteration']):
                     data['Mean CG iteration time'] = mean_time / len(MBKSolve['ConjugateGradient::solve']['cg_iteration'])
             data['Total CG time'] = MBKSolve['ConjugateGradient::solve']['total_time'] - update_matrix_time
-        elif 'HexahedronElasticForce::addDForce' in MBKSolve:
+        elif 'HyperelasticForcefield::addDForce' in MBKSolve:
             update_matrix_time = 0
-            if 'HexahedronElasticForce::compute_k' in MBKSolve:
-                update_matrix_time = MBKSolve['HexahedronElasticForce::compute_k']['total_time']
+            if 'HyperelasticForcefield::update_stiffness' in MBKSolve:
+                update_matrix_time = MBKSolve['HyperelasticForcefield::update_stiffness']['total_time']
                 data['Update global matrix'] += update_matrix_time
             data['Nb of CG iterations'] = MBKSolve['CG iterations'] if 'CG iterations' in MBKSolve else MBKSolve['PCG iterations']
             data['Total CG time'] = MBKSolve['total_time'] - update_matrix_time
             mean_time = 0.
-            for cg_iteration in MBKSolve['HexahedronElasticForce::addDForce']:
+            for cg_iteration in MBKSolve['HyperelasticForcefield::addDForce']:
                 mean_time += cg_iteration['total_time']
-            data['Mean CG iteration time'] = mean_time / len(MBKSolve['HexahedronElasticForce::addDForce'])
+            data['Mean CG iteration time'] = mean_time / len(MBKSolve['HyperelasticForcefield::addDForce'])
 
         for k, v in zip(data.keys(), data.values()):
             if isinstance(v, str):
@@ -209,7 +209,8 @@ def createScene(root):
 
         meca.addObject('MechanicalObject', name='mo', position='@../grid.position')
         meca.addObject('HexahedronSetTopologyContainer', name='mechanical_topology', src='@../grid')
-        meca.addObject('HexahedronElasticForce', topology_container='@mechanical_topology', youngModulus=3000, poissonRatio=0, corotated=False, linearStrain=False)
+        meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=3000, poisson_ratio=0)
+        meca.addObject('HyperelasticForcefield')
 
         meca.addObject('BoxROI', name='base_roi', box=[-radius-eps, -radius-eps, -length/2-eps, radius+eps, radius+eps, -length/2+eps])
         meca.addObject('BoxROI', name='top_roi',  box=[-radius-eps, -radius-eps, +length/2-eps, radius+eps, radius+eps, +length/2+eps], quad='@mechanical_topology.quads')
@@ -217,11 +218,12 @@ def createScene(root):
         meca.addObject('FixedConstraint', indices='@base_roi.indices')
         meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/5, quads='@top_roi.quadInROI')
 
+
 if __name__ == "__main__":
     import Sofa.Simulation
     import Sofa.Core
     import SofaRuntime
-    SofaRuntime.PluginRepository.addFirstPath('/Users/jnbrunet/Sources/sofa/build/lib')
+
     root = Sofa.Core.Node()
     createScene(root)
     Sofa.Simulation.init(root)

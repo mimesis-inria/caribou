@@ -2,9 +2,7 @@
 
 import Sofa
 import SofaCaribou
-import numpy as np
-from numpy import pi
-from math import sqrt
+
 import meshio
 import os
 
@@ -21,7 +19,6 @@ use_implicit = False
 
 m = meshio.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cylinder_surface.vtu'))
 
-
 def is_inside(p):
     x, y, z = p
     if z < -length/2.:
@@ -33,7 +30,14 @@ def is_inside(p):
 
 
 def create_mechanical(node, use_fictitious, color):
-    node.addObject('Mesh', name='mesh', position=m.points.tolist(), triangles=m.cells['triangle'].tolist())
+    if isinstance(m.cells, dict):
+        node.addObject('Mesh', name='surface_mesh', position=m.points.tolist(), triangles=m.cells['triangle'].tolist())
+    else:
+        for cells in m.cells:
+            if cells.type == 'triangle':
+                node.addObject('Mesh', name='surface_mesh', position=m.points.tolist(), triangles=cells.data.tolist())
+                break
+
     if use_fictitious:
         grid = node.addObject('FictitiousGrid',
                               name='integration_grid',
@@ -51,7 +55,7 @@ def create_mechanical(node, use_fictitious, color):
                               n=[(n[0]*pow(2, subdivisions))+1, (n[1]*pow(2, subdivisions))+1, (n[2]*pow(2, subdivisions))+1],
                               min=[-radius-mx, -radius-my, -length/2-mz],
                               max=[+radius+mx, +radius+my, +length/2+mz],
-                              src='@mesh',
+                              src='@surface_mesh',
                               printLog=True)
 
     meca = node.addChild('meca')
@@ -61,7 +65,7 @@ def create_mechanical(node, use_fictitious, color):
                    correction_tolerance_threshold=1e-5,
                    residual_tolerance_threshold=1e-5,
                    printLog=True)
-    meca.addObject('CGLinearSolver', iterations=1000)
+    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=1000, residual_tolerance_threshold=1e-5, preconditioning_method='Diagonal')
 
     if use_fictitious:
         meca.addObject('MechanicalObject', position='@../integration_grid.positions')
@@ -80,22 +84,14 @@ def create_mechanical(node, use_fictitious, color):
                        n=[n[0]+1, n[1]+1, n[2]+1],
                        min=[-radius-mx, -radius-my, -length/2-mz],
                        max=[+radius+mx, +radius+my, +length/2+mz],
-                       src='@../mesh',
+                       src='@../surface_mesh',
                        printLog=True)
 
         meca.addObject('MechanicalObject', position='@grid.position')
-        meca.addObject('HexahedronSetTopologyContainer', name='hexahedrons_contaier', hexahedra='@grid.hexahedra')
+        meca.addObject('HexahedronSetTopologyContainer', name='hexahedrons_container', hexahedra='@grid.hexahedra')
 
-        meca.addObject('HexahedronElasticForce',
-                       youngModulus=5000,
-                       poissonRatio=0.49,
-                       corotated=False,
-                       linearStrain=False,
-                       topology_container='@hexahedrons_contaier',
-                       integration_method='SubdividedGauss',
-                       integration_grid='@../integration_grid',
-                       number_of_subdivisions=subdivisions,
-                       printLog=True)
+        meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=5000, poisson_ratio=0.49)
+        meca.addObject('HyperelasticForcefield', topology='@hexahedrons_container')
 
     meca.addObject('BoxROI', name='left_roi',
                    box=[-radius - 1.5*mx, -radius - 1.5*my, -length / 2.0 - mz - mz/2,
@@ -110,14 +106,11 @@ def create_mechanical(node, use_fictitious, color):
                         +radius + 1.5*mx, +radius + 1.5*mx, +length / 2.0 + mz + mz/2],
                    drawBoxes=True)
     meca.addObject('QuadSetTopologyContainer', name='quads_container', quads='@right_roi.quadInROI')
-    meca.addObject('TriangleSetTopologyContainer', name='triangles_container')
-    meca.addObject('TriangleSetTopologyModifier')
-    meca.addObject('Quad2TriangleTopologicalMapping', input='@quads_container', output='@triangles_container')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/5., triangles='@triangles_container.triangles')
+    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/5., quads='@quads_container.quads')
 
 
     v = meca.addChild('visual')
-    v.addObject('OglModel', src='@../../mesh', color=color)
+    v.addObject('OglModel', src='@../../surface_mesh', color=color)
     v.addObject('BarycentricMapping')
 
 

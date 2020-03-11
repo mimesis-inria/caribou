@@ -25,7 +25,7 @@ void HyperelasticForcefield<Element>::init()
 
     if (d_topology_container.get() and number_of_elements() == 0) {
         msg_warning() << "No element found in the mesh topology '" << d_topology_container->getPathName() << "'.";
-    } else {
+    } else if (not d_topology_container.get()) {
         // No topology specified. Try to find one suitable.
         auto containers = this->getContext()->template getObjects<sofa::core::topology::BaseMeshTopology>(BaseContext::Local);
         if (containers.empty()) {
@@ -704,7 +704,7 @@ auto HyperelasticForcefield<Element>::canCreate(HyperelasticForcefield<Element>*
         // Make sure the specified topology has elements of type Element
         auto topology = context->get<sofa::core::topology::BaseMeshTopology>(topology_path);
         if (not topology or not mesh_is_compatible(topology)) {
-            arg->logError("Cannot deduce the element type from the specified mesh topology '" + topology_path + "'.");
+            arg->logError("Cannot deduce the element type from the specified mesh topology '" + topology_path + "'. Add template=\""+this_element_type+"\" to use it.");
             return false;
         }
     } else {
@@ -719,7 +719,7 @@ auto HyperelasticForcefield<Element>::canCreate(HyperelasticForcefield<Element>*
             }
         }
         if (not topology) {
-            arg->logError("Cannot find a topology with the requested element type in the current context.");
+            arg->logError("Cannot find a topology in the current context from which the template '"+this_element_type+"' can be deduced.");
             return false;
         }
 
