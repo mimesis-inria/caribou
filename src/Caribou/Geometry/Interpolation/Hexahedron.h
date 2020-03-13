@@ -67,7 +67,7 @@ struct Hexahedron8 : public CanonicalElement<3, 8, Hexahedron8>
     };
 
     static constexpr UNSIGNED_INTEGER_TYPE number_of_faces = 6;
-    static constexpr UNSIGNED_INTEGER_TYPE faces[number_of_faces][4]{
+    static constexpr UNSIGNED_INTEGER_TYPE faces[number_of_faces][BoundaryType::NumberOfNodes]{
             {0, 3, 2, 1}, // Face 0
             {0, 4, 7, 3}, // Face 1
             {1, 2, 6, 5}, // Face 2

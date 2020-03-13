@@ -22,6 +22,14 @@ struct BaseHexahedron : public CanonicalElementType
     template<int nRows>
     using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
 
+    /** Get the position at the center of the element */
+    inline
+    WorldCoordinates
+    center() const
+    {
+        return self().T(LocalCoordinates(0, 0, 0));
+    }
+
     /** Compute the volume of the hexahedron */
     inline
     FLOATING_POINT_TYPE

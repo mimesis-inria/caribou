@@ -58,7 +58,7 @@ HexahedronElasticForce::HexahedronElasticForce()
     }));
 
     sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> integration_method = d_integration_method;
-    integration_method->setSelectedItem((unsigned int) 0);
+    integration_method->setSelectedItem(static_cast<unsigned int>(0));
 }
 
 void HexahedronElasticForce::init()
@@ -218,7 +218,7 @@ void HexahedronElasticForce::addForce(
 
     bool corotated = d_corotated.getValue();
     bool linear = d_linear_strain.getValue();
-    recompute_compute_tangent_stiffness = (not linear) and mparams->implicit();
+    recompute_compute_tangent_stiffness = (not linear);
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("HexahedronElasticForce::addForce");
@@ -240,8 +240,8 @@ void HexahedronElasticForce::addForce(
 
             // Gather the displacement vector
             Vec24 U;
-            size_t i = 0;
-            for (const auto &node_id : topology->getHexahedron(hexa_id)) {
+            Eigen::Index i = 0;
+            for (const auto &node_id : topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id))) {
                 const Vec3 r0 {x0[node_id][0], x0[node_id][1],  x0[node_id][2]};
                 const Vec3 r  {x [node_id][0],  x [node_id][1], x [node_id][2]};
 
@@ -258,7 +258,7 @@ void HexahedronElasticForce::addForce(
 
             // Write the forces into the output vector
             i = 0;
-            for (const auto &node_id : topology->getHexahedron(hexa_id)) {
+            for (const auto &node_id : topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id))) {
                 Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
                 force = R*force;
 
@@ -280,12 +280,12 @@ void HexahedronElasticForce::addForce(
 
         const auto number_of_elements = topology->getNbHexahedra();
         for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
-            const auto &hexa = topology->getHexahedron(hexa_id);
+            const auto &hexa = topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id));
 
             Matrix<8, 3, Eigen::RowMajor> U;
 
-            for (size_t i = 0; i < 8; ++i) {
-                const auto u = x[hexa[i]] - x0[hexa[i]];
+            for (Eigen::Index i = 0; i < 8; ++i) {
+                const auto u = x[hexa[static_cast<std::size_t>(i)]] - x0[hexa[static_cast<std::size_t>(i)]];
                 U(i, 0) = u[0];
                 U(i, 1) = u[1];
                 U(i, 2) = u[2];
@@ -316,7 +316,7 @@ void HexahedronElasticForce::addForce(
                 const Mat33 S = 2.*m*E + (l * E.trace() * I);
 
                 // Elastic forces w.r.t the gauss node applied on each nodes
-                for (size_t i = 0; i < 8; ++i) {
+                for (Eigen::Index i = 0; i < 8; ++i) {
                     const Vec3 dx = dN_dx.row(i).transpose();
                     const Vec3 f_ = (detJ * w) * F.transpose() * (S * dx);
                     forces(i, 0) += f_[0];
@@ -326,9 +326,9 @@ void HexahedronElasticForce::addForce(
             }
 
             for (size_t i = 0; i < 8; ++i) {
-                f[hexa[i]][0] -= forces.row(i)[0];
-                f[hexa[i]][1] -= forces.row(i)[1];
-                f[hexa[i]][2] -= forces.row(i)[2];
+                f[hexa[i]][0] -= forces.row(static_cast<Eigen::Index>(i))[0];
+                f[hexa[i]][1] -= forces.row(static_cast<Eigen::Index>(i))[1];
+                f[hexa[i]][2] -= forces.row(static_cast<Eigen::Index>(i))[2];
             }
         }
         sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addForce");
@@ -352,7 +352,7 @@ void HexahedronElasticForce::addDForce(
     if (recompute_compute_tangent_stiffness)
         compute_K();
 
-    auto kFactor = (Real)mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue());
+    auto kFactor = static_cast<Real>(mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue()));
     sofa::helper::ReadAccessor<Data<VecDeriv>> dx = d_dx;
     sofa::helper::WriteAccessor<Data<VecDeriv>> df = d_df;
     std::vector<Mat33> & current_rotation = p_current_rotation;
@@ -366,8 +366,8 @@ void HexahedronElasticForce::addDForce(
 
         // Gather the displacement vector
         Vec24 U;
-        size_t i = 0;
-        for (const auto & node_id : topology->getHexahedron(hexa_id)) {
+        Eigen::Index i = 0;
+        for (const auto & node_id : topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id))) {
             const Vec3 v = {dx[node_id][0], dx[node_id][1], dx[node_id][2]};
             const Vec3 u = Rt*v;
 
@@ -382,7 +382,7 @@ void HexahedronElasticForce::addDForce(
 
         // Write the forces into the output vector
         i = 0;
-        for (const auto & node_id : topology->getHexahedron(hexa_id)) {
+        for (const auto & node_id : topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id))) {
             Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
             force = R*force;
 
@@ -412,7 +412,7 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
 
     const auto number_of_elements = topology->getNbHexahedra();
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
-        const auto & node_indices = topology->getHexahedron(hexa_id);
+        const auto & node_indices = topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id));
         const Mat33 & R  = current_rotation[hexa_id];
         const Mat33   Rt = R.transpose();
 
