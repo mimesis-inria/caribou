@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.1)
-
 set(DIRECTORY Caribou/Geometry)
 
 set(PYTHON_FILES
@@ -33,7 +31,7 @@ if (CARIBOU_WITH_PYTHON_2)
                               SOURCE_FILES ${SOURCE_FILES}
                               PYTHON_FILES ${PYTHON_FILES}
                               PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
-                              DEPENDS Caribou.Geometry)
+                              DEPENDS Geometry)
 endif()
 
 if (CARIBOU_WITH_PYTHON_3)
@@ -43,5 +41,5 @@ if (CARIBOU_WITH_PYTHON_3)
                               SOURCE_FILES ${SOURCE_FILES}
                               PYTHON_FILES ${PYTHON_FILES}
                               PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
-                              DEPENDS Caribou.Geometry)
+                              DEPENDS Geometry)
 endif()

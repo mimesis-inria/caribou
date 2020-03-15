@@ -1,0 +1,4 @@
+@PACKAGE_INIT@
+
+find_package(Eigen3 REQUIRED NO_MODULE)
+

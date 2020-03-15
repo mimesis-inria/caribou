@@ -1,4 +1,4 @@
-#include "HyperelasticMaterial.h"
+#include <SofaCaribou/GraphComponents/Material/HyperelasticMaterial.h>
 #include <SofaCaribou/GraphComponents/Material/SaintVenantKirchhoffMaterial.h>
 #include <SofaCaribou/GraphComponents/Material/NeoHookeanMaterial.h>
 

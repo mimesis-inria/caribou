@@ -15,11 +15,6 @@ function(caribou_add_python_module NAME)
         set(TARGET_NAME "${NAME}.python.${A_PYTHON_VERSION}")
     endif()
 
-    if (A_PREFIX)
-        set(PREFIX "${A_PREFIX}")
-    else()
-        set(PREFIX "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/${A_PYTHON_VERSION}")
-    endif()
 
     if (A_TESTS_PREFIX)
         set(TESTS_PREFIX "${A_TESTS_PREFIX}")
@@ -58,6 +53,17 @@ function(caribou_add_python_module NAME)
             set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
         endif ()
 
+        if (A_PREFIX)
+            set(PREFIX "${A_PREFIX}")
+        else()
+            if ("${Python3_VERSION_MINOR}" STREQUAL "0")
+                set(PREFIX "python${Python3_VERSION_MAJOR}/site-packages")
+            else()
+
+                set(PREFIX "python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages")
+            endif()
+        endif()
+
         find_package(pybind11 CONFIG REQUIRED)
 
         set(MODULENAME ${NAME})
@@ -71,7 +77,7 @@ function(caribou_add_python_module NAME)
         target_link_libraries(${TARGET_NAME} PUBLIC ${A_DEPENDS} ${PYTHON_LIBRARIES} pybind11::module)
 
         target_include_directories(${TARGET_NAME}
-                                   PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>"
+                                   PUBLIC "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/>"
                                    PUBLIC $<INSTALL_INTERFACE:include>
                                    )
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -87,14 +93,18 @@ function(caribou_add_python_module NAME)
             OUTPUT_NAME ${NAME}
             PREFIX "${PYTHON_MODULE_PREFIX}"
             SUFFIX "${PYTHON_MODULE_EXTENSION}"
-            LIBRARY_OUTPUT_DIRECTORY "${PREFIX}/${DESTINATION}"
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PREFIX}/${DESTINATION}"
+        )
+        install(
+               TARGETS ${TARGET_NAME}
+               LIBRARY DESTINATION "lib/${PREFIX}/${DESTINATION}" COMPONENT libraries
         )
     endif ()
 
     if (A_PYTHON_FILES)
         foreach(t ${A_PYTHON_FILES})
-            configure_file(${t} "${PREFIX}/${DESTINATION}/${t}")
-            install(FILES "${PREFIX}/${DESTINATION}/${t}" DESTINATION ${PREFIX}/${DESTINATION})
+            configure_file(${t} "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PREFIX}/${DESTINATION}/${t}")
+            install(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PREFIX}/${DESTINATION}/${t}" DESTINATION lib/${PREFIX}/${DESTINATION})
         endforeach()
     endif()
 
@@ -106,3 +116,68 @@ function(caribou_add_python_module NAME)
     endif()
 
 endfunction()
+
+
+# caribou_install_target(target[, headers])
+macro(caribou_install_target package target)
+    set(target_version ${${target}_VERSION})
+    set(package_version ${${package}_VERSION})
+
+    if(NOT target_version VERSION_GREATER "0.0")
+        set(target_version ${package_version})
+    endif()
+
+
+    install(TARGETS ${target}
+        EXPORT ${package}Targets
+        RUNTIME DESTINATION "bin" COMPONENT applications
+        LIBRARY DESTINATION "lib" COMPONENT libraries
+        ARCHIVE DESTINATION "lib" COMPONENT libraries
+        PUBLIC_HEADER DESTINATION "include/${package}/${target}/${include_install_dir}" COMPONENT headers
+    )
+
+    get_target_property(target_type ${target} TYPE)
+    if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
+        if(target_version VERSION_GREATER "0.0")
+            set_target_properties(${target} PROPERTIES VERSION "${target_version}")
+        endif()
+    endif()
+
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${target}Config.cmake.in")
+        configure_package_config_file(
+                "${CMAKE_CURRENT_SOURCE_DIR}/${target}Config.cmake.in"
+                "${CMAKE_BINARY_DIR}/cmake/${package}/${target}Config.cmake"
+                INSTALL_DESTINATION
+                lib/cmake/${PROJECT_NAME}
+        )
+
+        write_basic_package_version_file(
+                "${CMAKE_BINARY_DIR}/cmake/${package}/${target}ConfigVersion.cmake"
+                VERSION ${target_version}
+                COMPATIBILITY ExactVersion)
+
+        install(
+                FILES
+                "${CMAKE_BINARY_DIR}/cmake/${package}/${target}Config.cmake"
+                "${CMAKE_BINARY_DIR}/cmake/${package}/${target}ConfigVersion.cmake"
+                DESTINATION
+                "lib/cmake/${package}"
+        )
+    endif()
+
+    set(optional_headers ${ARGN})
+    if (optional_headers)
+        foreach(header ${optional_headers})
+            file(RELATIVE_PATH path_from_package "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
+            get_filename_component(dir_from_package ${path_from_package} DIRECTORY)
+            get_filename_component(output_filename ${path_from_package} NAME)
+            string(REGEX REPLACE "\\.in$" "" output_filename ${output_filename})
+            configure_file("${header}" "${CMAKE_CURRENT_BINARY_DIR}/${dir_from_package}/${output_filename}")
+            install(
+                FILES "${CMAKE_CURRENT_BINARY_DIR}/${dir_from_package}/${output_filename}"
+                DESTINATION "include/${package}/${target}/${dir_from_package}"
+                COMPONENT headers
+            )
+        endforeach()
+    endif()
+endmacro()

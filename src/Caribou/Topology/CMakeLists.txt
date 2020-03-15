@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
-project(Caribou.Topology)
+project(Topology)
 
 set(HEADER_FILES
     Grid/Grid.h
@@ -9,11 +8,13 @@ set(HEADER_FILES
     HashGrid.h)
 
 add_library(${PROJECT_NAME} INTERFACE)
+add_library(Caribou::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-target_include_directories(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 target_include_directories(${PROJECT_NAME} INTERFACE "$<INSTALL_INTERFACE:include>")
+target_link_libraries(${PROJECT_NAME} INTERFACE Geometry)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE Caribou.Geometry)
+caribou_install_target(Caribou ${PROJECT_NAME} ${HEADER_FILES})
 
 if (CARIBOU_BUILD_TESTS)
     add_subdirectory(test)

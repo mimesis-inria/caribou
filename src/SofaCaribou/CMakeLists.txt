@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.1)
 project(SofaCaribou)
 
 set(HEADER_FILES
@@ -37,6 +36,10 @@ set(SOURCE_FILES
 # First, make sure it isn't already been manually set by the user's cmake variables
 find_path (SOFA_PREFIX SofaFramework/SofaFrameworkConfig.cmake)
 if (SOFA_PREFIX)
+    find_package(SofaFramework QUIET)
+    if (NOT SofaFramework_FOUND AND NOT "${SOFA_PREFIX}" IN_LIST CMAKE_PREFIX_PATH)
+        list(APPEND CMAKE_PREFIX_PATH "${SOFA_PREFIX}")
+    endif()
     # The user already set the correct sofa cmake prefix
     message(STATUS "Sofa prefix already specified at path ${SOFA_PREFIX}")
 else()
@@ -59,10 +62,17 @@ else()
     endif()
 endif()
 
+# Caribou
+if (NOT TARGET Caribou::Algebra)
+    find_package(Caribou COMPONENTS Algebra Geometry Topology Mechanics REQUIRED)
+endif()
 
+# Sofa's packages
+find_package(SofaFramework REQUIRED)
 find_package(SofaBase REQUIRED)
 find_package(SofaCommon REQUIRED)
-find_package(SofaFramework REQUIRED)
+
+# Optional packages
 find_package(OpenMP)
 find_package(LAPACK)
 find_package(LAPACKE)
@@ -70,21 +80,21 @@ find_package(MKL)
 find_package(Eigen3)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/>")
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC Caribou.Topology Caribou.Geometry Caribou.Algebra)
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC SofaCore)
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology SofaBaseLinearSolver SofaEigen2Solver)
-target_link_libraries(${PROJECT_NAME} PUBLIC Caribou.Topology Caribou.Geometry)
+target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry Caribou::Topology Caribou::Mechanics)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
 
 if (LAPACK_FOUND AND LAPACKE_FOUND AND MKL_FOUND)
-    OPTION(Caribou_with_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" ON)
+    OPTION(CARIBOU_WITH_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" ON)
 else()
-    OPTION(Caribou_with_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" OFF)
+    OPTION(CARIBOU_WITH_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" OFF)
 endif()
 
-if (Caribou_with_EIGEN_MKL)
+if (CARIBOU_WITH_EIGEN_MKL)
     find_package(LAPACK REQUIRED)
     find_package(LAPACKE REQUIRED)
     find_package(MKL REQUIRED)
@@ -94,7 +104,8 @@ if (Caribou_with_EIGEN_MKL)
 endif()
 
 
-if (Caribou_with_OpenMP)
+if (CARIBOU_WITH_OPENMP)
+    find_package(OpenMP REQUIRED)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
     target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_OPENMP)
 endif()
@@ -106,3 +117,42 @@ endif()
 if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
     add_subdirectory(Python)
 endif()
+
+# CMake files
+list(APPEND HEADER_FILES ${TEMPLATE_FILES})
+foreach(header ${HEADER_FILES})
+    file(RELATIVE_PATH path_from_package "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
+    string(REGEX REPLACE "\\.in$" "" output_filepath ${path_from_package})
+    get_filename_component(output_directory "${output_filepath}" DIRECTORY)
+    configure_file("${header}" "${CMAKE_CURRENT_BINARY_DIR}/${output_filepath}")
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${output_filepath} DESTINATION "include/SofaCaribou/${output_directory}" COMPONENT headers)
+endforeach()
+
+install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}Targets
+    RUNTIME DESTINATION "bin" COMPONENT applications
+    LIBRARY DESTINATION "lib" COMPONENT libraries
+    ARCHIVE DESTINATION "lib" COMPONENT libraries
+    PUBLIC_HEADER DESTINATION "include/${PROJECT_NAME}" COMPONENT headers
+)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/SofaCaribouConfig.cmake.in"
+    "${CMAKE_BINARY_DIR}/cmake/SofaCaribou/SofaCaribouConfig.cmake"
+    INSTALL_DESTINATION
+    lib/cmake/SofaCaribou
+)
+write_basic_package_version_file(
+        ${CMAKE_BINARY_DIR}/cmake/SofaCaribou/SofaCaribouConfigVersion.cmake
+        VERSION ${Caribou_VERSION}
+        COMPATIBILITY AnyNewerVersion)
+
+install(
+    EXPORT SofaCaribouTargets 
+    DESTINATION "lib/cmake/SofaCaribou" 
+    COMPONENT headers)
+install(FILES 
+        "${CMAKE_BINARY_DIR}/cmake/SofaCaribou/SofaCaribouConfig.cmake"
+        "${CMAKE_BINARY_DIR}/cmake/SofaCaribou/SofaCaribouConfigVersion.cmake"
+        DESTINATION 
+        "lib/cmake/SofaCaribou")

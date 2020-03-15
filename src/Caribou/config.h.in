@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#define CARIBOU_USE_DOUBLE
+#cmakedefine CARIBOU_USE_DOUBLE
 
 #ifdef CARIBOU_USE_DOUBLE
 #define FLOATING_POINT_TYPE double
