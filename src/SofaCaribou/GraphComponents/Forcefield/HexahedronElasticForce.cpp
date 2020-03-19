@@ -14,6 +14,12 @@
 
 #include "HexahedronElasticForce.h"
 
+#if !EIGEN_VERSION_AT_LEAST(3,3,0)
+namespace Eigen {
+using Index = EIGEN_DEFAULT_DENSE_INDEX_TYPE;
+}
+#endif
+
 
 namespace SofaCaribou::GraphComponents::forcefield {
 
