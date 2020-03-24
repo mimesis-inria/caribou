@@ -6,9 +6,13 @@ set(header_files
 )
 
 foreach(header_file ${header_files})
-    string(REGEX REPLACE "\\.in$" "" filename ${header_file})
-    configure_file("${header_file}" "${CMAKE_CURRENT_BINARY_DIR}/${filename}")
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${filename} DESTINATION "include/Caribou" COMPONENT headers)
+    if (header_file MATCHES "\\.in$")
+        string(REGEX REPLACE "\\.in$" "" filename ${header_file})
+        configure_file("${header_file}" "${CMAKE_CURRENT_BINARY_DIR}/${filename}")
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${filename} DESTINATION "include/Caribou" COMPONENT headers)
+    else()
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${header_file} DESTINATION "include/Caribou" COMPONENT headers)
+    endif()
 endforeach()
 
 # Caribou's component

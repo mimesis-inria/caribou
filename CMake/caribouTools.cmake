@@ -19,7 +19,7 @@ function(caribou_add_python_module NAME)
     if (A_TESTS_PREFIX)
         set(TESTS_PREFIX "${A_TESTS_PREFIX}")
     else()
-        set(TESTS_PREFIX "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/python_tests/${A_PYTHON_VERSION}")
+        set(TESTS_PREFIX "bin/python_tests/python${A_PYTHON_VERSION}")
     endif()
 
     if (A_DESTINATION)
@@ -59,7 +59,6 @@ function(caribou_add_python_module NAME)
             if ("${Python3_VERSION_MINOR}" STREQUAL "0")
                 set(PREFIX "python${Python3_VERSION_MAJOR}/site-packages")
             else()
-
                 set(PREFIX "python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages")
             endif()
         endif()
@@ -77,7 +76,6 @@ function(caribou_add_python_module NAME)
         target_link_libraries(${TARGET_NAME} PUBLIC ${A_DEPENDS} ${PYTHON_LIBRARIES} pybind11::module)
 
         target_include_directories(${TARGET_NAME}
-                                   PUBLIC "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/>"
                                    PUBLIC $<INSTALL_INTERFACE:include>
                                    )
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -93,7 +91,7 @@ function(caribou_add_python_module NAME)
             OUTPUT_NAME ${NAME}
             PREFIX "${PYTHON_MODULE_PREFIX}"
             SUFFIX "${PYTHON_MODULE_EXTENSION}"
-            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PREFIX}/${DESTINATION}"
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/${PREFIX}/${DESTINATION}"
         )
         install(
                TARGETS ${TARGET_NAME}
@@ -103,15 +101,15 @@ function(caribou_add_python_module NAME)
 
     if (A_PYTHON_FILES)
         foreach(t ${A_PYTHON_FILES})
-            configure_file(${t} "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PREFIX}/${DESTINATION}/${t}")
-            install(FILES "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PREFIX}/${DESTINATION}/${t}" DESTINATION lib/${PREFIX}/${DESTINATION})
+            configure_file(${t} "${CMAKE_BINARY_DIR}/lib/${PREFIX}/${DESTINATION}/${t}")
+            install(FILES "${CMAKE_BINARY_DIR}/lib/${PREFIX}/${DESTINATION}/${t}" DESTINATION lib/${PREFIX}/${DESTINATION})
         endforeach()
     endif()
 
     if (A_PYTHON_TEST_FILES)
         foreach(t ${A_PYTHON_TEST_FILES})
-            configure_file(${t} "${TESTS_PREFIX}/${TESTS_DESTINATION}/${t}")
-            install(FILES "${TESTS_PREFIX}/${TESTS_DESTINATION}/${t}" DESTINATION ${TESTS_PREFIX}/${TESTS_DESTINATION})
+            configure_file(${t} "${CMAKE_BINARY_DIR}/${TESTS_PREFIX}/${TESTS_DESTINATION}/${t}")
+            install(FILES "${CMAKE_BINARY_DIR}/${TESTS_PREFIX}/${TESTS_DESTINATION}/${t}" DESTINATION ${TESTS_PREFIX}/${TESTS_DESTINATION})
         endforeach()
     endif()
 
@@ -171,13 +169,23 @@ macro(caribou_install_target package target)
             file(RELATIVE_PATH path_from_package "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
             get_filename_component(dir_from_package ${path_from_package} DIRECTORY)
             get_filename_component(output_filename ${path_from_package} NAME)
-            string(REGEX REPLACE "\\.in$" "" output_filename ${output_filename})
-            configure_file("${header}" "${CMAKE_CURRENT_BINARY_DIR}/${dir_from_package}/${output_filename}")
-            install(
-                FILES "${CMAKE_CURRENT_BINARY_DIR}/${dir_from_package}/${output_filename}"
-                DESTINATION "include/${package}/${target}/${dir_from_package}"
-                COMPONENT headers
-            )
+
+            if (output_filename MATCHES "\\.in$")
+                string(REGEX REPLACE "\\.in$" "" output_filename ${output_filename})
+                configure_file("${header}" "${CMAKE_CURRENT_BINARY_DIR}/${dir_from_package}/${output_filename}")
+
+                install(
+                    FILES "${CMAKE_CURRENT_BINARY_DIR}/${dir_from_package}/${output_filename}"
+                    DESTINATION "include/${package}/${target}/${dir_from_package}"
+                    COMPONENT headers
+                )
+            else()
+                install(
+                        FILES "${CMAKE_CURRENT_SOURCE_DIR}/${header}"
+                        DESTINATION "include/${package}/${target}/${dir_from_package}"
+                        COMPONENT headers
+                )
+            endif()
         endforeach()
     endif()
 endmacro()
