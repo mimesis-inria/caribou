@@ -1,5 +1,5 @@
-#ifndef CARIBOU_TOPOLOGY_ENGINE_GRID_GRID_H
-#define CARIBOU_TOPOLOGY_ENGINE_GRID_GRID_H
+#ifndef CARIBOU_TOPOLOGY_GRID_GRID_H
+#define CARIBOU_TOPOLOGY_GRID_GRID_H
 
 #include <vector>
 #include <memory>
@@ -437,4 +437,4 @@ struct Grid<3> : public internal::BaseMultidimensionalGrid<3, Grid<3>>
 
 } // namespace caribou::topology
 
-#endif //CARIBOU_TOPOLOGY_ENGINE_GRID_GRID_H
+#endif //CARIBOU_TOPOLOGY_GRID_GRID_H

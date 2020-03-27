@@ -1,6 +1,7 @@
 # Configure and install Caribou's main header files
 set(header_files
     config.h.in
+    Constants.h
     macros.h
     Traits.h
 )

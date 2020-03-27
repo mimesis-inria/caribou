@@ -1,119 +1,175 @@
-#ifndef CARIBOU_GEOMETRY_SEGMENT_H
-#define CARIBOU_GEOMETRY_SEGMENT_H
+#pragma once
 
 #include <Caribou/config.h>
-#include <Caribou/Traits.h>
-#include <Caribou/Geometry/Interpolation/Segment.h>
-#include <Caribou/Geometry/Internal/BaseSegment.h>
-
+#include <Caribou/Geometry/BaseSegment.h>
 #include <Eigen/Core>
 
 namespace caribou::geometry {
 
-template <size_t Dim, typename CanonicalElementType = interpolation::Segment2>
-struct Segment : public internal::BaseSegment<Dim, CanonicalElementType, Segment<Dim, CanonicalElementType>>
-{
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
 
-    using Base = internal::BaseSegment<Dim, CanonicalElementType, Segment<Dim, CanonicalElementType>>;
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+ struct traits<Segment <_Dimension, Linear>> {
+     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 1;
+     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
+     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 2;
+     static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 1;
+ };
 
-    using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
-    using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
+/**
+ * Linear segment
+ *
+ * P1 : 0-----+-----1 --> u
+ *
+ * @tparam _Dimension The world coordinates dimension
+ */
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct Segment <_Dimension, Linear> : public BaseSegment<Segment <_Dimension, Linear>> {
+    // Types
+    using Base = BaseSegment<Segment <_Dimension, Linear>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
 
-    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
-    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+    using GaussNode = typename Base::GaussNode;
 
-    using NodesContainer = typename Base::template NodesContainer<NumberOfNodes>;
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
 
-    static_assert(Dim == 1 or Dim == 2 or Dim == 3, "Only 1D, 2D and 3D segments are supported.");
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
 
-    template <
-        typename ...Nodes,
-        REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
-    >
-    Segment(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
-    {
-        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
-    }
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    template <
-        typename ...Nodes,
-        REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
-    >
-    constexpr
-    Segment(const FLOATING_POINT_TYPE & first_node, Nodes&&...remaining_nodes)
-        : p_nodes {first_node, std::forward<Nodes>(remaining_nodes)...}
-    {
-        static_assert(Dim == 1 and "Constructor with floating point coordinate is only available for 1D segments.");
-    }
+    // Constructors
+    using Base::Base;
+    Segment() : Base() {
+        if constexpr (Dimension == 1) {
+            this->p_nodes[0] = -1;
+            this->p_nodes[1] = +1;
+        } else if constexpr (Dimension == 2) {
+            this->p_nodes.row(0) = WorldCoordinates(-1, 0);
+            this->p_nodes.row(1) = WorldCoordinates(+1, 0);
+        } else {
+            this->p_nodes.row(0) = WorldCoordinates(-1, 0, 0);
+            this->p_nodes.row(1) = WorldCoordinates(+1, 0, 0);
+        }
+    };
 
-    /** Get the Node at given index */
-    inline
-    auto
-    node(UNSIGNED_INTEGER_TYPE index) const
-    {
-        return p_nodes.row(index).transpose();
-    }
-
-    /** Get the Node at given index */
-    inline
-    auto
-    node(UNSIGNED_INTEGER_TYPE index)
-    {
-        return p_nodes.row(index).transpose();
-    }
-
-    /** Get a reference to the set of nodes */
-    inline
-    const auto &
-    nodes() const
-    {
-        return p_nodes;
-    }
-
-    /** Compute the center position **/
-    inline
-    WorldCoordinates
-    center() const noexcept
-    {
-        return T(LocalCoordinates(0.));
-    }
-
-    /**
-     * Compute the transformation of a local position {u} to its world position {x,y,z}
-     */
-    inline
-    WorldCoordinates
-    T(const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::interpolate(coordinates, nodes());
-    }
-
-    /** Compute the jacobian matrix evaluated at local position {u,v} */
-    template <typename LocalCoordinates>
-    Matrix<Dim, 1>
-    jacobian (LocalCoordinates && coordinates) const
-    {
-        return CanonicalElementType::Jacobian(std::forward<LocalCoordinates>(coordinates), p_nodes);
-    }
 
 private:
-    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
-    inline
-    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
-        p_nodes.row(index) = first_node;
-        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
-    }
+    // Implementations
+    friend struct Element<Segment <_Dimension, Linear>>;
+    friend struct BaseSegment<Segment <_Dimension, Linear>>;
+    inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
+        const auto  & u = xi[0];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(1/2. * (1 - u)),
+            static_cast<FLOATING_POINT_TYPE>(1/2. * (1 + u))
+        };
+    };
 
-    template <size_t index>
-    inline
-    void construct_from_nodes(const WorldCoordinates & last_node) {
-        p_nodes.row(index) = last_node;
+    inline auto get_dL(const LocalCoordinates & /*xi*/) const -> Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> {
+        return {
+            static_cast<FLOATING_POINT_TYPE>(-1/2.),
+            static_cast<FLOATING_POINT_TYPE>(+1/2.)
+        };
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        static std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(0), 2} // Node 0
+        };
+        return gauss_nodes;
     }
-private:
-    NodesContainer p_nodes;
 };
 
-} // namespace caribou::geometry
 
-#endif //CARIBOU_GEOMETRY_SEGMENT_H
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct traits<Segment <_Dimension, Quadratic>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 1;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 2;
+};
+
+/**
+ * Quadratic segment
+ *
+ * P2 : 0-----2-----1 --> u
+ *
+ * @tparam _Dimension The world coordinates dimension
+ */
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct Segment <_Dimension, Quadratic> : public BaseSegment<Segment <_Dimension, Quadratic>> {
+// Types
+    using Base = BaseSegment<Segment <_Dimension, Quadratic>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+
+    // Constructors
+    using Base::Base;
+    Segment() : Base() {
+        if constexpr (Dimension == 1) {
+            this->p_nodes[0] = -1;
+            this->p_nodes[1] = +1;
+            this->p_nodes[2] =  0;
+        } else if constexpr (Dimension == 2) {
+            this->p_nodes.row(0) = WorldCoordinates(-1, 0);
+            this->p_nodes.row(1) = WorldCoordinates(+1, 0);
+            this->p_nodes.row(2) = WorldCoordinates( 0, 0);
+        } else {
+            this->p_nodes.row(0) = WorldCoordinates(-1, 0, 0);
+            this->p_nodes.row(1) = WorldCoordinates(+1, 0, 0);
+            this->p_nodes.row(2) = WorldCoordinates( 0, 0, 0);
+        }
+    };
+
+
+private:
+    // Implementations
+    friend struct Element<Segment <_Dimension, Quadratic>>;
+    friend struct BaseSegment<Segment <_Dimension, Quadratic>>;
+    inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
+        const auto  & u = xi[0];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(1/2. * u * (u - 1)),
+            static_cast<FLOATING_POINT_TYPE>(1/2. * u * (u + 1)),
+            static_cast<FLOATING_POINT_TYPE>(1 - (u * u))
+        };
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const -> Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> {
+        const auto  & u = xi[0];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(u - 1/2.),
+            static_cast<FLOATING_POINT_TYPE>(u + 1/2.),
+            static_cast<FLOATING_POINT_TYPE>( -2 * u )
+        };
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        static std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(-1/sqrt(3)), 1}, // Node 0
+            GaussNode {LocalCoordinates(+1/sqrt(3)), 1}  // Node 1
+        };
+        return gauss_nodes;
+    }
+};
+
+}

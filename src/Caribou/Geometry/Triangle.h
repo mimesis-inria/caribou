@@ -1,122 +1,251 @@
-#ifndef CARIBOU_GEOMETRY_TRIANGLE_H
-#define CARIBOU_GEOMETRY_TRIANGLE_H
+#pragma once
 
 #include <Caribou/config.h>
-#include <Caribou/Traits.h>
-#include <Caribou/Geometry/Interpolation/Triangle.h>
-#include <Caribou/Geometry/Internal/BaseTriangle.h>
-#include <Eigen/Dense>
+#include <Caribou/Geometry/BaseTriangle.h>
+#include <Caribou/Geometry/Segment.h>
+#include <Eigen/Core>
 
 namespace caribou::geometry {
 
-template <size_t Dim, typename CanonicalElementType = interpolation::Triangle3>
-struct Triangle : public internal::BaseTriangle<Dim, CanonicalElementType, Triangle<Dim, CanonicalElementType>>
-{
-    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
 
-    using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
-    using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct traits<Triangle <_Dimension, Linear>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 1;
 
-    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
-    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
-
-    static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D triangles are supported.");
-
-    template <
-            typename ...Nodes,
-            REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
-    >
-    Triangle(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
-    {
-        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
-    }
-
-    inline
-    auto
-    node(UNSIGNED_INTEGER_TYPE index) const
-    {
-        return p_nodes.row(index).transpose();
-    }
-
-    inline
-    auto
-    node(UNSIGNED_INTEGER_TYPE index)
-    {
-        return p_nodes.row(index).transpose();
-    }
-
-    /** Get a reference to the set of nodes */
-    inline
-    const Matrix<NumberOfNodes, Dim> &
-    nodes() const
-    {
-        return p_nodes;
-    }
-
-    /** Compute the center position **/
-    auto
-    center() const noexcept -> WorldCoordinates
-    {
-        return T(LocalCoordinates({1/3., 1/3.}));
-    }
-
-    /**
-     * Compute the transformation of a local position {u} to its world position {x,y,z}
-     */
-    inline
-    WorldCoordinates
-    T(const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::interpolate(coordinates, nodes());
-    }
-
-    /** Compute the jacobian matrix evaluated at local position {u,v} */
-    Matrix<Dim, 2>
-    jacobian (const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::Jacobian(coordinates, p_nodes);
-    }
-
-    /** Compute the surface area **/
-    FLOATING_POINT_TYPE
-    area() const noexcept
-    {
-        auto n1 = node(0);
-        auto n2 = node(1);
-        auto n3 = node(2);
-
-        if constexpr (Dim == 2) {
-            Matrix<3, 3> m;
-            m << n1[0], n2[0], n3[0],
-                n1[1], n2[1], n3[1],
-                1. ,   1. ,   1. ;
-
-            return 1 / 2. * std::abs(m.determinant());
-        } else {
-            auto v1 = n3 - n1;
-            auto v2 = n2 - n1;
-
-            return v1.cross(v2).norm() / 2.;
-        }
-    }
-
-private:
-    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
-    inline
-    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
-        p_nodes.row(index) = first_node;
-        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
-    }
-
-    template <size_t index>
-    inline
-    void construct_from_nodes(const WorldCoordinates & last_node) {
-        p_nodes.row(index) = last_node;
-    }
-
-private:
-    Matrix<NumberOfNodes, Dim> p_nodes;
+    using BoundaryElementType = Segment<_Dimension, Linear>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 3;
 };
 
-} // namespace caribou::geometry
-#endif //CARIBOU_GEOMETRY_TRIANGLE_H
+/**
+ * Linear Triangle
+ *
+ * v
+ * ^
+ * |
+ * 2
+ * |`\
+ * |  `\
+ * |    `\
+ * |      `\
+ * |        `\
+ * 0----------1 --> u
+ *
+ * @tparam _Dimension The world coordinates dimension
+ */
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct Triangle <_Dimension, Linear> : public BaseTriangle<Triangle <_Dimension, Linear>> {
+    // Types
+    using Base = BaseTriangle<Triangle <_Dimension, Linear>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
+
+    // Constructors
+    using Base::Base;
+    Triangle() : Base() {
+        if constexpr (Dimension == 2) {
+            this->p_nodes.row(0) = WorldCoordinates(0, 0);
+            this->p_nodes.row(1) = WorldCoordinates(1, 0);
+            this->p_nodes.row(2) = WorldCoordinates(0, 1);
+        } else {
+            this->p_nodes.row(0) = WorldCoordinates(0, 0, 0);
+            this->p_nodes.row(1) = WorldCoordinates(1, 0, 0);
+            this->p_nodes.row(2) = WorldCoordinates(0, 1, 0);
+        }
+    };
+
+
+private:
+    // Implementations
+    friend struct Element<Triangle <_Dimension, Linear>>;
+    friend struct BaseTriangle<Triangle <_Dimension, Linear>>;
+    inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(1 - u - v),
+            static_cast<FLOATING_POINT_TYPE>(u),
+            static_cast<FLOATING_POINT_TYPE>(v)
+        };
+    };
+
+    inline auto get_dL(const LocalCoordinates & /*xi*/) const {
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+        //    dL/du dL/dv
+        m <<   -1,   -1,   // Node 0
+                1,    0,   // Node 1
+                0,    1;   // Node 2
+        return m;
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(1/3., 1/3.), Weight(1/2.)} // Node 0
+        };
+        return gauss_nodes;
+    }
+
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 2>, 3> indices = {{
+            {0, 1}, // Edge 0
+            {1, 2}, // Edge 1
+            {2, 0}  // Edge 2
+        }};
+        return indices;
+    }
+};
+
+
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct traits<Triangle <_Dimension, Quadratic>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 6;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 3;
+
+    using BoundaryElementType = Segment<_Dimension, Quadratic>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 3;
+};
+
+/**
+ * Quadratic Triangle
+ *
+ * v
+ * ^
+ * |
+ * 2
+ * |`\
+ * |  `\
+ * 5    `4
+ * |      `\
+ * |        `\
+ * 0-----3----1 --> u
+ *
+ * @tparam _Dimension The world coordinates dimension
+ */
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct Triangle <_Dimension, Quadratic> : public BaseTriangle<Triangle <_Dimension, Quadratic>> {
+    // Types
+    using Base = BaseTriangle<Triangle <_Dimension, Quadratic>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
+
+    // Constructors
+    using Base::Base;
+    Triangle() : Base() {
+        if constexpr (Dimension == 2) {
+            this->p_nodes.row(0) = WorldCoordinates(0.0, 0.0); // Node 0
+            this->p_nodes.row(1) = WorldCoordinates(1.0, 0.0); // Node 1
+            this->p_nodes.row(2) = WorldCoordinates(0.0, 1.0); // Node 2
+            this->p_nodes.row(3) = WorldCoordinates(0.5, 0.0); // Node 3
+            this->p_nodes.row(4) = WorldCoordinates(0.5, 0.5); // Node 4
+            this->p_nodes.row(5) = WorldCoordinates(0.0, 0.5); // Node 5
+        } else {
+            this->p_nodes.row(0) = WorldCoordinates(0.0, 0.0, 0.0); // Node 0
+            this->p_nodes.row(1) = WorldCoordinates(1.0, 0.0, 0.0); // Node 1
+            this->p_nodes.row(2) = WorldCoordinates(0.0, 1.0, 0.0); // Node 2
+            this->p_nodes.row(3) = WorldCoordinates(0.5, 0.0, 0.0); // Node 3
+            this->p_nodes.row(4) = WorldCoordinates(0.5, 0.5, 0.0); // Node 4
+            this->p_nodes.row(5) = WorldCoordinates(0.0, 0.5, 0.0); // Node 5
+        }
+    };
+
+    // Construct a quadratic triangle from a linear one
+    Triangle(const Triangle<Dimension, Linear> & linear_triangle) : Base() {
+        this->p_nodes.row(0) = linear_triangle.node(0); // Node 0
+        this->p_nodes.row(1) = linear_triangle.node(1); // Node 1
+        this->p_nodes.row(2) = linear_triangle.node(2); // Node 2
+        this->p_nodes.row(3) = linear_triangle.T(LocalCoordinates(0.5, 0.0)); // Node 3
+        this->p_nodes.row(4) = linear_triangle.T(LocalCoordinates(0.5, 0.5)); // Node 4
+        this->p_nodes.row(5) = linear_triangle.T(LocalCoordinates(0.0, 0.5)); // Node 5
+    }
+
+
+private:
+    // Implementations
+    friend struct Element<Triangle <_Dimension, Quadratic>>;
+    friend struct BaseTriangle<Triangle <_Dimension, Quadratic>>;
+    inline auto get_L(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto l = 1 - u - v;
+
+        Vector<NumberOfNodesAtCompileTime> m;
+        m << l * (2*l - 1),   // Node 0
+             u * (2*u - 1),   // Node 1
+             v * (2*v - 1),   // Node 2
+             4 * u * l,       // Node 3
+             4 * u * v,       // Node 4
+             4 * v * l;       // Node 5
+
+        return m;
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const {
+        const auto & u = xi[0];
+        const auto & v = xi[1];
+        const auto l = 1 - u - v;
+
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+        //       dL/du              dL/dv
+        m <<   1 - 4 * l  ,       1 - 4 * l  ,   // Node 0
+               4 * u - 1  ,          0       ,   // Node 1
+                    0     ,       4 * v - 1  ,   // Node 2
+               4 * (l - u),      -4 * u      ,   // Node 3
+                  4 * v   ,       4 * u      ,   // Node 4
+                - 4 * v   ,       4 * (l - v);   // Node 5
+        return m;
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(2/3., 1/6.), Weight(1/6.)}, // Node 0
+            GaussNode {LocalCoordinates(1/6., 2/3.), Weight(1/6.)}, // Node 1
+            GaussNode {LocalCoordinates(1/6., 1/6.), Weight(1/6.)}  // Node 2
+        };
+        return gauss_nodes;
+    }
+
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 3> indices = {{
+            {0, 1, 3}, // Edge 0
+            {1, 2, 4}, // Edge 1
+            {2, 0, 5}  // Edge 2
+        }};
+        return indices;
+    }
+};
+
+}

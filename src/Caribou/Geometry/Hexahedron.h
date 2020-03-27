@@ -1,282 +1,345 @@
-#ifndef CARIBOU_GEOMETRY_HEXAHEDRON_H
-#define CARIBOU_GEOMETRY_HEXAHEDRON_H
-
-#include <Eigen/Dense>
+#pragma once
 
 #include <Caribou/config.h>
+#include <Caribou/Geometry/BaseHexahedron.h>
 #include <Caribou/Geometry/Quad.h>
-#include <Caribou/Geometry/Interpolation/Hexahedron.h>
-#include <Caribou/Geometry/Internal/BaseHexahedron.h>
+#include <Eigen/Core>
 
 namespace caribou::geometry {
 
-template <typename CanonicalElementType>
-struct Hexahedron : public internal::BaseHexahedron<CanonicalElementType, Hexahedron<CanonicalElementType>>
-{
-    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
 
-    using Base = internal::BaseHexahedron<CanonicalElementType, Hexahedron<CanonicalElementType>>;
+template<>
+struct traits<Hexahedron <Linear>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
 
+    using BoundaryElementType = Quad<3, Linear>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
+};
+
+/**
+ * Linear Hexahedron
+ *
+ *        v
+ * 3----------2
+ * |\     ^   |\
+ * | \    |   | \
+ * |  \   |   |  \
+ * |   7------+---6
+ * |   |  +-- |-- | -> u
+ * 0---+---\--1   |
+ *  \  |    \  \  |
+ *   \ |     \  \ |
+ *    \|      w  \|
+ *     4----------5
+ *
+ */
+template<>
+struct Hexahedron <Linear> : public BaseHexahedron<Hexahedron <Linear>> {
+    // Types
+    using Base = BaseHexahedron<Hexahedron <Linear>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
-    using BoundaryType = Quad<3, typename CanonicalElementType::BoundaryType>;
+    using GaussNode = typename Base::GaussNode;
 
-    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
-    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
 
-    template<int nRows, int nColumns>
-    using Map = Eigen::Map<const Matrix<nRows, nColumns>>;
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
 
-    template<int nRows, int Options=0>
-    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    template<int nRows>
-    using MapVector = Eigen::Map<const Vector<nRows>>;
+    // Constructors
+    using Base::Base;
+    Hexahedron() : Base() {
+        this->p_nodes.row(0) = WorldCoordinates(-1, -1, -1);
+        this->p_nodes.row(1) = WorldCoordinates(+1, -1, -1);
+        this->p_nodes.row(2) = WorldCoordinates(+1, +1, -1);
+        this->p_nodes.row(3) = WorldCoordinates(-1, +1, -1);
+        this->p_nodes.row(4) = WorldCoordinates(-1, -1, +1);
+        this->p_nodes.row(5) = WorldCoordinates(+1, -1, +1);
+        this->p_nodes.row(6) = WorldCoordinates(+1, +1, +1);
+        this->p_nodes.row(7) = WorldCoordinates(-1, +1, +1);
+    };
 
-    Hexahedron()
-    : p_nodes(Map<NumberOfNodes, 3>(&CanonicalElementType::nodes[0][0]))
-    {
-    }
 
-    template <
-            typename ...Nodes,
-            REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
-    >
-    Hexahedron(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
-    {
-        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
-    }
+private:
+    // Implementations
+    friend struct Element<Hexahedron <Linear>>;
+    friend struct BaseHexahedron<Hexahedron <Linear>>;
+    inline auto get_L(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto  & w = xi[2];
 
-    Hexahedron(const Matrix<NumberOfNodes, 3> & m)
-    : p_nodes(m)
-    {}
-
-    /** Get the Node at given index */
-    inline
-    auto
-    node(UNSIGNED_INTEGER_TYPE index) const
-    {
-        return WorldCoordinates(p_nodes.row(index));
-    }
-
-    /** Get the Node at given index */
-    inline
-    auto
-    node(UNSIGNED_INTEGER_TYPE index)
-    {
-        return WorldCoordinates(p_nodes.row(index));
-    }
-
-    /** Get a reference to the set of nodes */
-    inline
-    const auto &
-    nodes() const
-    {
-        return p_nodes;
-    }
-
-    /**
-     * Get the ith quadrangle face.
-     */
-    inline
-    BoundaryType
-    face(UNSIGNED_INTEGER_TYPE index) const
-    {
-        const auto & face_indices = CanonicalElementType::faces[index];
-
-        Matrix<BoundaryType::NumberOfNodes, 3> m;
-        for (std::size_t i = 0; i < BoundaryType::NumberOfNodes; ++i)
-            m.row(i) = node(face_indices[i]);
-
-        return QuadType(m);
-    }
-
-    /**
-    * Check whether the hexahedron is a parallelepiped.
-    *
-    * A parallelepiped:
-    * - Has six faces, each of which is a parallelogram
-    * - Has three pairs of parallel faces
-    *
-    * The transformation from its elemental frame to its world frame can be defined as
-    *                      | x1 + 1/2 (1 + u) hx |
-    * (x,y,z) = Q(u,v,w) = | y1 + 1/2 (1 + v) hy |
-    *                      | z1 + 1/2 (1 + w) hz |
-    *
-    * where (x1,y1,z1) are the world coordinates of the node #0 on the hexahedron, and (hx,hy,hz) denote the hexahedron
-    * size w.r.t the x,y and z directions.
-    *
-    * And the Jacobian of this transformation is constant and defined as
-    *                          | hx 0  0  |
-    * J = gradQ^T(u,v,w) = 1/2 | 0  hy 0  |
-    *                          | 0  0  hz |
-    */
-    inline
-    bool
-    is_a_parallelepiped() const noexcept
-    {
-        const auto lx = node(1) - node(0);
-        const auto lz = node(4) - node(0);
-
-        return (
-                (node(3)-node(2) + lx).squaredNorm() < EPSILON && // edges 0-1 and 2-3 have the same length
-                (node(1)-node(5) + lz).squaredNorm() < EPSILON && // edges 0-4 and 1-5 have the same length
-                (node(2)-node(6) + lz).squaredNorm() < EPSILON && // edges 0-4 and 2-6 have the same length
-                (node(3)-node(7) + lz).squaredNorm() < EPSILON    // edges 0-4 and 3-7 have the same length
-        );
-    }
-
-    /**
-     * Extract the frame positioned at the center of the hexahedron by computing the cross product of the unit vectors
-     * from the center of the hexahedron to the center of the opposite faces.
-     *
-     * This function will return a matrix of the form:
-     * | ux vx wx |
-     * | uy vy wy |
-     * | uz vz wz |
-     *
-     * Where [ux uy uz], [vx, vy, vz] and [wx, wy, wz] are orthogonal unitary vectors representing the u, v and w frame
-     * in the current hexahedron. If the hexahedron is regular and not rotated, this matrix is the Identity matrix.
-     * If it is regular but rotated, rotating the hexa by the transposed of this frame should align the u,v,w axis to the
-     * x,y,z world frame (identity matrix).
-     */
-    inline
-   Matrix<3, 3>
-    frame(const LocalCoordinates & local_point) const
-    {
-        // Position of the point inside the hexahedron where the frame should be computed
-        const auto p = T( local_point );
-
-        // Project of the point on the quad facing the u axis
-        const auto projected_on_u = T({1, local_point[1],local_point[2]});
-
-        // Project of the point on the quad facing the v axis
-        const auto projected_on_v = T({local_point[0], 1,local_point[2]});
-
-        /* @todo(jnbrunet2000@gmail.com): select between the pairs of axis (center-to-u, center-to-v),
-          (center-to-u, center-to-w) and (center-to-v, center-to-w) to find the best match (closer to orthogonal) */
-
-        // Vector from the point to its projection on the quad facing the u axis
-        const auto point_to_u = projected_on_u - p;
-
-        // Vector from the point to its projection on the quad facing the v axis
-        const auto point_to_v = projected_on_v - p;
-
-        // The u-axis of the computed frame
-        const auto u = point_to_u.normalized();
-
-        // The v-axis of the computed frame
-        auto v = point_to_v.normalized();
-
-        // The w-axis of the computed frame
-        const WorldCoordinates w = u.cross(v).normalized();
-
-        // v-axis (recompute the v-axis in case u and v aren't orthogonal
-        v = w.cross(u).normalized();
-
-        Matrix<3, 3> m;
-        m << u, v, w;
-
+        Vector<NumberOfNodesAtCompileTime> m;
+        m << (1/8.) * (1 - u) * (1 - v) * (1 - w),
+             (1/8.) * (1 + u) * (1 - v) * (1 - w),
+             (1/8.) * (1 + u) * (1 + v) * (1 - w),
+             (1/8.) * (1 - u) * (1 + v) * (1 - w),
+             (1/8.) * (1 - u) * (1 - v) * (1 + w),
+             (1/8.) * (1 + u) * (1 - v) * (1 + w),
+             (1/8.) * (1 + u) * (1 + v) * (1 + w),
+             (1/8.) * (1 - u) * (1 + v) * (1 + w);
         return m;
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto  & w = xi[2];
+
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+        //            dL/du                         dL/dv                         dL/dw
+        m << -1/8. * (1 - v) * (1 - w),    -1/8. * (1 - u) * (1 - w),    -1/8. * (1 - u) * (1 - v),   // Node 0
+             +1/8. * (1 - v) * (1 - w),    -1/8. * (1 + u) * (1 - w),    -1/8. * (1 + u) * (1 - v),   // Node 1
+             +1/8. * (1 + v) * (1 - w),    +1/8. * (1 + u) * (1 - w),    -1/8. * (1 + u) * (1 + v),   // Node 2
+             -1/8. * (1 + v) * (1 - w),    +1/8. * (1 - u) * (1 - w),    -1/8. * (1 - u) * (1 + v),   // Node 3
+             -1/8. * (1 - v) * (1 + w),    -1/8. * (1 - u) * (1 + w),    +1/8. * (1 - u) * (1 - v),   // Node 4
+             +1/8. * (1 - v) * (1 + w),    -1/8. * (1 + u) * (1 + w),    +1/8. * (1 + u) * (1 - v),   // Node 5
+             +1/8. * (1 + v) * (1 + w),    +1/8. * (1 + u) * (1 + w),    +1/8. * (1 + u) * (1 + v),   // Node 6
+             -1/8. * (1 + v) * (1 + w),    +1/8. * (1 - u) * (1 + w),    +1/8. * (1 - u) * (1 + v);   // Node 7
+        return m;
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 0
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 1
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 2
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 3
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 4
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 5
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 6
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3), +1/sqrt(3)), Weight(1)}  // Node 7
+        };
+        return gauss_nodes;
     }
 
-    /** Compute the jacobian matrix evaluated at local position {u,v,w}
- * (see interpolation::CanonicalElement::Jacobian for more details).
- * */
-    inline
-    Matrix<3, 3>
-    jacobian (const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::Jacobian(coordinates, nodes());
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 4>, 6> indices = {{
+            {0, 3, 2, 1}, // Face 0
+            {0, 4, 7, 3}, // Face 1
+            {1, 2, 6, 5}, // Face 2
+            {0, 1, 5, 4}, // Face 3
+            {2, 3, 7, 6}, // Face 4
+            {4, 5, 6, 7}  // Face 5
+        }};
+        return indices;
     }
-
-    /**
-     * Compute the transformation of a local position {u,v,w} to its world position {x,y,z}
-     */
-    inline
-    WorldCoordinates
-    T(const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::interpolate(coordinates, nodes());
-    }
-
-    /**
-     * Compute an integral approximation by gauss quadrature on the hexahedron of the given evaluation function.
-     *
-     * @example
-     * \code{.cpp}
-     * // Integrate the polynomial 1 + 2x + 2xy + 3*z on an hexahedron.
-     * float result = Hexahedron(x1, x2, x3, x4, x5, x6, x7, x8).gauss_integrate(
-     *   [] (const Hexahedron & hexa, const Hexahedron::LocalCoordinates & coordinates) -> float {
-     *     const auto & xi   = coordinates[0];
-     *     const auto & eta  = coordinates[1];
-     *     const auto & zeta = coordinates[2];
-     *     return 1 + 2*xi + 2*xi*eta + 3*zeta;
-     *   }
-     * );
-     * \endcode
-     *
-     * @tparam EvaluateFunctionType Callback function reference type. See f parameter.
-     *
-     * @param f
-     * Callback function of the signature
-     *
-     *     ValueType f (const Hexahedron & hexa, const LocalCoordinates & coordinates);
-     *
-     * Where hexa is a reference to the current hexahadron on which we integrate, and the coordinates u, v and w
-     * forms the local position of a sample point on which we want to get the evaluation value.
-     *
-     * @return The value of the integral computed on this hexahedron.
-     *
-     */
-    template <typename ValueType, typename EvaluateFunctor>
-    inline
-    ValueType
-    gauss_quadrature(EvaluateFunctor f) const
-    {
-        const auto p0 = MapVector<3>(CanonicalElementType::gauss_nodes[0]);
-        const auto w0 = CanonicalElementType::gauss_weights[0];
-        const auto detJ0 = jacobian(p0).determinant();
-        const auto eval0 = f(*this, p0);
-        ValueType result = eval0 * w0 * detJ0;
-
-        for (std::size_t i = 1; i < CanonicalElementType::number_of_gauss_nodes; ++i) {
-            const auto p = MapVector<3>(CanonicalElementType::gauss_nodes[i]);
-            const auto w = CanonicalElementType::gauss_weights[i];
-            const auto detJ = jacobian(p).determinant();
-            const auto eval = f(*this, p);
-            result += eval * w * detJ;
-        }
-
-        return result;
-    }
-
-private:
-    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
-    inline
-    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
-        p_nodes.row(index) = first_node;
-        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
-    }
-
-    template <size_t index>
-    inline
-    void construct_from_nodes(const WorldCoordinates & last_node) {
-        p_nodes.row(index) = last_node;
-    }
-
-private:
-    Matrix<NumberOfNodes, 3> p_nodes;
 };
 
-template <
-        typename ...Nodes,
-        REQUIRES(8 == sizeof...(Nodes))
->
-Hexahedron(Nodes&&...remaining_nodes) -> Hexahedron<interpolation::Hexahedron8>;
 
-Hexahedron() -> Hexahedron<interpolation::Hexahedron8>;
+template<>
+struct traits<Hexahedron <Quadratic>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 20;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
 
-} // namespace caribou::geometry
-#endif //CARIBOU_GEOMETRY_HEXAHEDRON_H
+    using BoundaryElementType = Quad<3, Quadratic>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
+};
+
+/**
+ * Quadratic Hexahedron (20 nodes)
+ *
+ *         v
+ *         ^
+ *         |
+ *  3-----10---2
+ *  |\     |   |\
+ *  | 19   |   | 18
+ * 11  \   |   9  \
+ *  |   7----14+---6
+ *  |   |  +-- |-- | ---> u
+ *  0---+-8-\--1   |
+ *   \  15   \  \  13
+ *   16 |     \  17|
+ *     \|      w  \|
+ *      4----12----5   u
+ *
+ */
+template<>
+struct Hexahedron <Quadratic> : public BaseHexahedron<Hexahedron <Quadratic>> {
+    // Types
+    using Base = BaseHexahedron<Hexahedron <Quadratic>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
+
+    // Constructors
+    using Base::Base;
+    Hexahedron() : Base() {
+        this->p_nodes.row(0) = WorldCoordinates(-1, -1, -1); // Node 0
+        this->p_nodes.row(1) = WorldCoordinates(+1, -1, -1); // Node 1
+        this->p_nodes.row(2) = WorldCoordinates(+1, +1, -1); // Node 2
+        this->p_nodes.row(3) = WorldCoordinates(-1, +1, -1); // Node 3
+        this->p_nodes.row(4) = WorldCoordinates(-1, -1, +1); // Node 4
+        this->p_nodes.row(5) = WorldCoordinates(+1, -1, +1); // Node 5
+        this->p_nodes.row(6) = WorldCoordinates(+1, +1, +1); // Node 6
+        this->p_nodes.row(7) = WorldCoordinates(-1, +1, +1); // Node 7
+        this->p_nodes.row(8)  = WorldCoordinates( 0, -1, -1); // Node 8
+        this->p_nodes.row(9)  = WorldCoordinates(+1,  0, -1); // Node 11
+        this->p_nodes.row(10) = WorldCoordinates( 0, +1, -1); // Node 13
+        this->p_nodes.row(11) = WorldCoordinates(-1,  0, -1); // Node 9
+        this->p_nodes.row(12) = WorldCoordinates( 0, -1, +1); // Node 16
+        this->p_nodes.row(13) = WorldCoordinates(+1,  0, +1); // Node 18
+        this->p_nodes.row(14) = WorldCoordinates( 0, +1, +1); // Node 19
+        this->p_nodes.row(15) = WorldCoordinates(-1,  0, +1); // Node 17
+        this->p_nodes.row(16) = WorldCoordinates(-1, -1,  0); // Node 10
+        this->p_nodes.row(17) = WorldCoordinates(+1, -1,  0); // Node 12
+        this->p_nodes.row(18) = WorldCoordinates(+1, +1,  0); // Node 14
+        this->p_nodes.row(19) = WorldCoordinates(-1, +1,  0); // Node 15
+
+    };
+
+    // Construct a quadratic Hexahedron from a linear one
+    Hexahedron(const Hexahedron<Linear> & linear_Hexahedron) : Base() {
+        this->p_nodes.row(0) = linear_Hexahedron.node(0); // Node 0
+        this->p_nodes.row(1) = linear_Hexahedron.node(1); // Node 1
+        this->p_nodes.row(2) = linear_Hexahedron.node(2); // Node 2
+        this->p_nodes.row(3) = linear_Hexahedron.node(3); // Node 3
+        this->p_nodes.row(4) = linear_Hexahedron.node(4); // Node 4
+        this->p_nodes.row(5) = linear_Hexahedron.node(5); // Node 5
+        this->p_nodes.row(6) = linear_Hexahedron.node(6); // Node 6
+        this->p_nodes.row(7) = linear_Hexahedron.node(7); // Node 7
+        this->p_nodes.row(8)  = linear_Hexahedron.T(LocalCoordinates( 0, -1, -1)); // Node 8
+        this->p_nodes.row(9)  = linear_Hexahedron.T(LocalCoordinates(+1,  0, -1)); // Node 9
+        this->p_nodes.row(10) = linear_Hexahedron.T(LocalCoordinates( 0, +1, -1)); // Node 10
+        this->p_nodes.row(11) = linear_Hexahedron.T(LocalCoordinates(-1,  0, -1)); // Node 11
+        this->p_nodes.row(12) = linear_Hexahedron.T(LocalCoordinates( 0, -1, +1)); // Node 12
+        this->p_nodes.row(13) = linear_Hexahedron.T(LocalCoordinates(+1,  0, +1)); // Node 13
+        this->p_nodes.row(14) = linear_Hexahedron.T(LocalCoordinates( 0, +1, +1)); // Node 14
+        this->p_nodes.row(15) = linear_Hexahedron.T(LocalCoordinates(-1,  0, +1)); // Node 15
+        this->p_nodes.row(16) = linear_Hexahedron.T(LocalCoordinates(-1, -1,  0)); // Node 16
+        this->p_nodes.row(17) = linear_Hexahedron.T(LocalCoordinates(+1, -1,  0)); // Node 17
+        this->p_nodes.row(18) = linear_Hexahedron.T(LocalCoordinates(+1, +1,  0)); // Node 18
+        this->p_nodes.row(19) = linear_Hexahedron.T(LocalCoordinates(-1, +1,  0)); // Node 19
+    }
+
+
+private:
+    // Implementations
+    friend struct Element<Hexahedron <Quadratic>>;
+    friend struct BaseHexahedron<Hexahedron <Quadratic>>;
+    inline auto get_L(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto  & w = xi[2];
+
+        Vector<NumberOfNodesAtCompileTime> m;
+        m[ 8] = 1/4.*(1 - u*u)*(1 - v)*(1 - w);
+        m[ 9] = 1/4.*(1 - v*v)*(1 + u)*(1 - w);
+        m[10] = 1/4.*(1 - u*u)*(1 + v)*(1 - w);
+        m[11] = 1/4.*(1 - v*v)*(1 - u)*(1 - w);
+        m[12] = 1/4.*(1 - u*u)*(1 - v)*(1 + w);
+        m[13] = 1/4.*(1 - v*v)*(1 + u)*(1 + w);
+        m[14] = 1/4.*(1 - u*u)*(1 + v)*(1 + w);
+        m[15] = 1/4.*(1 - v*v)*(1 - u)*(1 + w);
+        m[16] = 1/4.*(1 - w*w)*(1 - u)*(1 - v);
+        m[17] = 1/4.*(1 - w*w)*(1 + u)*(1 - v);
+        m[18] = 1/4.*(1 - w*w)*(1 + u)*(1 + v);
+        m[19] = 1/4.*(1 - w*w)*(1 - u)*(1 + v);
+
+        m[0] = 1/8.*(1 - u)*(1 - v)*(1 - w) - 1/2.*(m[ 8] + m[11] + m[16]);
+        m[1] = 1/8.*(1 + u)*(1 - v)*(1 - w) - 1/2.*(m[ 8] + m[ 9] + m[17]);
+        m[2] = 1/8.*(1 + u)*(1 + v)*(1 - w) - 1/2.*(m[ 9] + m[10] + m[18]);
+        m[3] = 1/8.*(1 - u)*(1 + v)*(1 - w) - 1/2.*(m[10] + m[11] + m[19]);
+        m[4] = 1/8.*(1 - u)*(1 - v)*(1 + w) - 1/2.*(m[12] + m[15] + m[16]);
+        m[5] = 1/8.*(1 + u)*(1 - v)*(1 + w) - 1/2.*(m[12] + m[13] + m[17]);
+        m[6] = 1/8.*(1 + u)*(1 + v)*(1 + w) - 1/2.*(m[13] + m[14] + m[18]);
+        m[7] = 1/8.*(1 - u)*(1 + v)*(1 + w) - 1/2.*(m[14] + m[15] + m[19]);
+        return m;
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const {
+        using ShapeDerivative = Vector<3>;
+        const auto & u = xi[0];
+        const auto & v = xi[1];
+        const auto  & w = xi[2];
+
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+
+        //                                          dL/du                       dL/dv                      dL/dw
+        m.row( 8) = ShapeDerivative({-1/2.*u*(1 - v)*(1 - w), -1/4.*(1 - u*u)*(1 - w), -1/4.*(1 - u*u)*(1 - v)});
+        m.row( 9) = ShapeDerivative({ 1/4.*(1 - v*v)*(1 - w), -1/2.*v*(1 + u)*(1 - w), -1/4.*(1 - v*v)*(1 + u)});
+        m.row(10) = ShapeDerivative({-1/2.*u*(1 + v)*(1 - w),  1/4.*(1 - u*u)*(1 - w), -1/4.*(1 - u*u)*(1 + v)});
+        m.row(11) = ShapeDerivative({-1/4.*(1 - v*v)*(1 - w), -1/2.*v*(1 - u)*(1 - w), -1/4.*(1 - v*v)*(1 - u)});
+        m.row(12) = ShapeDerivative({-1/2.*u*(1 - v)*(1 + w), -1/4.*(1 - u*u)*(1 + w),  1/4.*(1 - u*u)*(1 - v)});
+        m.row(13) = ShapeDerivative({ 1/4.*(1 - v*v)*(1 + w), -1/2.*v*(1 + u)*(1 + w),  1/4.*(1 - v*v)*(1 + u)});
+        m.row(14) = ShapeDerivative({-1/2.*u*(1 + v)*(1 + w),  1/4.*(1 - u*u)*(1 + w),  1/4.*(1 - u*u)*(1 + v)});
+        m.row(15) = ShapeDerivative({-1/4.*(1 - v*v)*(1 + w), -1/2.*v*(1 - u)*(1 + w),  1/4.*(1 - v*v)*(1 - u)});
+        m.row(16) = ShapeDerivative({-1/4.*(1 - w*w)*(1 - v), -1/4.*(1 - w*w)*(1 - u), -1/2.*w*(1 - u)*(1 - v)});
+        m.row(17) = ShapeDerivative({ 1/4.*(1 - w*w)*(1 - v), -1/4.*(1 - w*w)*(1 + u), -1/2.*w*(1 + u)*(1 - v)});
+        m.row(18) = ShapeDerivative({ 1/4.*(1 - w*w)*(1 + v),  1/4.*(1 - w*w)*(1 + u), -1/2.*w*(1 + u)*(1 + v)});
+        m.row(19) = ShapeDerivative({-1/4.*(1 - w*w)*(1 + v),  1/4.*(1 - w*w)*(1 - u), -1/2.*w*(1 - u)*(1 + v)});
+
+        const auto du = m.col(0); // dL/du
+        const auto dv = m.col(1); // dL/dv
+        const auto dw = m.col(2); // dL/dw
+        //                                                        dL/du                                                    dL/dv                                                           dL/dw
+        m.row(0) = ShapeDerivative({-1/8.*(1 - v)*(1 - w) - 1/2.*(du[8 ] + du[11] + du[16]), -1/8.*(1 - u)*(1 - w) - 1/2.*(dv[ 8] + dv[11] + dv[16]), -1/8.*(1 - u)*(1 - v) - 1/2.*(dw[ 8] + dw[11] + dw[16])});
+        m.row(1) = ShapeDerivative({ 1/8.*(1 - v)*(1 - w) - 1/2.*(du[8 ] + du[ 9] + du[17]), -1/8.*(1 + u)*(1 - w) - 1/2.*(dv[ 8] + dv[ 9] + dv[17]), -1/8.*(1 + u)*(1 - v) - 1/2.*(dw[ 8] + dw[ 9] + dw[17])});
+        m.row(2) = ShapeDerivative({ 1/8.*(1 + v)*(1 - w) - 1/2.*(du[9 ] + du[10] + du[18]),  1/8.*(1 + u)*(1 - w) - 1/2.*(dv[ 9] + dv[10] + dv[18]), -1/8.*(1 + u)*(1 + v) - 1/2.*(dw[ 9] + dw[10] + dw[18])});
+        m.row(3) = ShapeDerivative({-1/8.*(1 + v)*(1 - w) - 1/2.*(du[10] + du[11] + du[19]),  1/8.*(1 - u)*(1 - w) - 1/2.*(dv[10] + dv[11] + dv[19]), -1/8.*(1 - u)*(1 + v) - 1/2.*(dw[10] + dw[11] + dw[19])});
+        m.row(4) = ShapeDerivative({-1/8.*(1 - v)*(1 + w) - 1/2.*(du[12] + du[15] + du[16]), -1/8.*(1 - u)*(1 + w) - 1/2.*(dv[12] + dv[15] + dv[16]),  1/8.*(1 - u)*(1 - v) - 1/2.*(dw[12] + dw[15] + dw[16])});
+        m.row(5) = ShapeDerivative({ 1/8.*(1 - v)*(1 + w) - 1/2.*(du[12] + du[13] + du[17]), -1/8.*(1 + u)*(1 + w) - 1/2.*(dv[12] + dv[13] + dv[17]),  1/8.*(1 + u)*(1 - v) - 1/2.*(dw[12] + dw[13] + dw[17])});
+        m.row(6) = ShapeDerivative({ 1/8.*(1 + v)*(1 + w) - 1/2.*(du[13] + du[14] + du[18]),  1/8.*(1 + u)*(1 + w) - 1/2.*(dv[13] + dv[14] + dv[18]),  1/8.*(1 + u)*(1 + v) - 1/2.*(dw[13] + dw[14] + dw[18])});
+        m.row(7) = ShapeDerivative({-1/8.*(1 + v)*(1 + w) - 1/2.*(du[14] + du[15] + du[19]),  1/8.*(1 - u)*(1 + w) - 1/2.*(dv[14] + dv[15] + dv[19]),  1/8.*(1 - u)*(1 + v) - 1/2.*(dw[14] + dw[15] + dw[19])});
+
+
+        return m;
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 0
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 1
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 2
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 3
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 4
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 5
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 6
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3), +1/sqrt(3)), Weight(1)}  // Node 7
+        };
+        return gauss_nodes;
+    }
+
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 8>, 6> indices = {{
+            {0, 3, 2, 1,  9, 13, 11,  8}, // Face 0
+            {0, 4, 7, 3, 10, 17, 15,  9}, // Face 1
+            {1, 2, 6, 5, 11, 14, 18, 12}, // Face 2
+            {0, 1, 5, 4,  8, 12, 16, 10}, // Face 3
+            {2, 3, 7, 6, 13, 15, 19, 14}, // Face 4
+            {4, 5, 6, 7, 16, 18, 19, 17}  // Face 5
+        }};
+        return indices;
+    }
+};
+
+}

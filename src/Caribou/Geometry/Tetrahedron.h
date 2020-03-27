@@ -1,115 +1,275 @@
-#ifndef CARIBOU_GEOMETRY_TETRAHEDRON_H
-#define CARIBOU_GEOMETRY_TETRAHEDRON_H
+#pragma once
 
-#include <Eigen/Dense>
-#include <Caribou/macros.h>
 #include <Caribou/config.h>
+#include <Caribou/Geometry/BaseTetrahedron.h>
 #include <Caribou/Geometry/Triangle.h>
-#include <Caribou/Geometry/Interpolation/Tetrahedron.h>
-#include <Caribou/Geometry/Internal/BaseTetrahedron.h>
+#include <Eigen/Core>
 
 namespace caribou::geometry {
 
-template <typename CanonicalElementType>
-struct Tetrahedron : public internal::BaseTetrahedron<CanonicalElementType::NumberOfNodes, CanonicalElementType, Tetrahedron<CanonicalElementType>>
-{
+
+template<>
+struct traits<Tetrahedron <Linear>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 4;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 1;
+
+    using BoundaryElementType = Triangle<3, Linear>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
 };
 
-template <>
-struct Tetrahedron<interpolation::Tetrahedron4> : public internal::BaseTetrahedron<4, interpolation::Tetrahedron4, Tetrahedron<interpolation::Tetrahedron4>>
-{
-    static constexpr INTEGER_TYPE NumberOfNodes = 4;
-    using CanonicalElementType = interpolation::Tetrahedron4;
-    using Base = internal::BaseTetrahedron<NumberOfNodes, CanonicalElementType, Tetrahedron<CanonicalElementType>>;
-    using WorldCoordinates = typename Base::WorldCoordinates;
-    using BoundaryType = Triangle<3, typename CanonicalElementType::BoundaryType>;
-
-    using Base::Base;
-
-    /**
-     * Compute the inverse transformation of a world position {x,y,z} to its local position {u,v,w}
-     */
-    inline
-    LocalCoordinates
-    Tinv(const WorldCoordinates & coordinates) const
-    {
-        const auto n0 = node(0);
-        const auto n1 = node(1);
-        const auto n2 = node(2);
-        const auto n3 = node(3);
-
-        Matrix<3,3> At;
-        At.row(0) = n1-n0;
-        At.row(1) = n2-n0;
-        At.row(2) = n3-n0;
-
-        Matrix<3,3> A = At.transpose();
-        Vector<3>   B = coordinates - n0;
-
-        return A.inverse()*B;
-    }
-
-    /**
-     * Returns true if the given world coordinates are within the tetrahedron's boundaries, false otherwise.
-     */
-    inline bool
-    contains(const WorldCoordinates & p) const
-    {
-        const LocalCoordinates c = Tinv(p);
-        if ((IN_CLOSED_INTERVAL(-1e-15, c[0], 1+1e-15)) and
-            (IN_CLOSED_INTERVAL(-1e-15, c[1], 1+1e-15)) and
-            (IN_CLOSED_INTERVAL(-1e-15, c[2], 1+1e-15))) {
-
-            const LocalCoordinates normal = (node(2) - node(1)).cross((node(3) - node(1)));
-            return (normal.dot(node(0) - node(1)) * normal.dot(p - node(1)) > -1e-15);
-        }
-
-        return false;
-    }
-};
-
-template <>
-struct Tetrahedron<interpolation::Tetrahedron10> : public internal::BaseTetrahedron<10, interpolation::Tetrahedron10, Tetrahedron<interpolation::Tetrahedron10>>
-{
-    static constexpr INTEGER_TYPE NumberOfNodes = 10;
-    using CanonicalElementType = interpolation::Tetrahedron10;
-    using Base = internal::BaseTetrahedron<NumberOfNodes, interpolation::Tetrahedron10, Tetrahedron<CanonicalElementType>>;
+/**
+ * Linear Tetrahedron
+ *
+ *                    v
+ *                  .
+ *                ,/
+ *               /
+ *            2
+ *          ,/|`\
+ *        ,/  |  `\
+ *      ,/    '.   `\
+ *    ,/       |     `\
+ *  ,/         |       `\
+ * 0-----------'.--------1 --> u
+ *  `\.         |      ,/
+ *     `\.      |    ,/
+ *        `\.   '. ,/
+ *           `\. |/
+ *              `3
+ *                 `\.
+ *                    ` w
+ *
+ */
+template<>
+struct Tetrahedron <Linear> : public BaseTetrahedron<Tetrahedron <Linear>> {
+    // Types
+    using Base = BaseTetrahedron<Tetrahedron <Linear>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
-    using BoundaryType = Triangle<3, typename CanonicalElementType::BoundaryType>;
 
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
+
+    // Constructors
     using Base::Base;
+    Tetrahedron() : Base() {
+        this->p_nodes.row(0) = WorldCoordinates(0, 0, 0);
+        this->p_nodes.row(1) = WorldCoordinates(1, 0, 0);
+        this->p_nodes.row(2) = WorldCoordinates(0, 1, 0);
+        this->p_nodes.row(3) = WorldCoordinates(0, 0, 1);
+    };
 
-    Tetrahedron(const Matrix<10, 3> & m) : Base(m) {}
 
-    template <typename Derived, REQUIRES(Derived::RowsAtCompileTime == 4), REQUIRES(Derived::ColsAtCompileTime == 3)>
-    Tetrahedron(const Eigen::MatrixBase<Derived> & m) {
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < 4; ++i) {
-            p_nodes.row(i) = m.row(i);
-        }
+private:
+    // Implementations
+    friend struct Element<Tetrahedron <Linear>>;
+    friend struct BaseTetrahedron<Tetrahedron <Linear>>;
+    inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto  & w = xi[2];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(1 - u - v - w),
+            static_cast<FLOATING_POINT_TYPE>(u),
+            static_cast<FLOATING_POINT_TYPE>(v),
+            static_cast<FLOATING_POINT_TYPE>(w)
+        };
+    };
 
-        Tetrahedron<interpolation::Tetrahedron4> linear_tetra(m);
+    inline auto get_dL(const LocalCoordinates & /*xi*/) const {
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+        //  dL/du  dL/dv  dL/dw
+        m << -1,    -1,    -1,   // Node 0
+              1,     0,     0,   // Node 1
+              0,     1,     0,   // Node 1
+              0,     0,     1;   // Node 3
+        return m;
+    };
 
-        for (UNSIGNED_INTEGER_TYPE i = 4; i < 10; ++i) {
-            p_nodes.row(i) = linear_tetra.T(LocalCoordinates(&(interpolation::Tetrahedron10::nodes[i][0])));
-        }
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(1/4., 1/4., 1/4.), Weight(1/6.)} // Node 0
+        };
+        return gauss_nodes;
     }
 
-    inline bool can_be_converted_to_linear() const {
-        for (const auto & edge : CanonicalElementType::edges) {
-            const WorldCoordinates edge0 = (Base::node(edge[2]) - Base::node(edge[0])).normalized();
-            const WorldCoordinates edge1 = (Base::node(edge[1]) - Base::node(edge[0])).normalized();
-
-            const FLOATING_POINT_TYPE d = (edge0[0]*edge1[0] + edge0[1]*edge1[1] + edge0[2]*edge1[2]) - 1.;
-            if (not IN_CLOSED_INTERVAL(-1e-10, d, 1e-10)) {
-                return false;
-            }
-        }
-
-        return true;
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 4> indices = {{
+            {0, 2, 1}, // Face 0
+            {0, 1, 3}, // Face 1
+            {0, 3, 2}, // Face 2
+            {3, 1, 2}  // Face 3
+        }};
+        return indices;
     }
 };
 
-} // namespace caribou::geometry
 
-#endif //CARIBOU_GEOMETRY_TETRAHEDRON_H
+template<>
+struct traits<Tetrahedron <Quadratic>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 10;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
+
+    using BoundaryElementType = Triangle<3, Quadratic>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
+};
+
+/**
+ * Quadratic Tetrahedron
+ *
+ *                    v
+ *                  .
+ *                ,/
+ *               /
+ *            2
+ *          ,/|`\
+ *        ,/  |  `\
+ *      ,6    '.   `5
+ *    ,/       9     `\
+ *  ,/         |       `\
+ * 0--------4--'.--------1 --> u
+ *  `\.         |      ,/
+ *     `\.      |    ,8
+ *        `7.   '. ,/
+ *           `\. |/
+ *              `3
+ *                 `\.
+ *                    ` w
+ *
+ */
+template<>
+struct Tetrahedron <Quadratic> : public BaseTetrahedron<Tetrahedron <Quadratic>> {
+    // Types
+    using Base = BaseTetrahedron<Tetrahedron <Quadratic>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
+
+    // Constructors
+    using Base::Base;
+    Tetrahedron() : Base() {
+        this->p_nodes.row(0) = WorldCoordinates(0.0, 0.0, 0.0); // Node 0
+        this->p_nodes.row(1) = WorldCoordinates(1.0, 0.0, 0.0); // Node 1
+        this->p_nodes.row(2) = WorldCoordinates(0.0, 1.0, 0.0); // Node 2
+        this->p_nodes.row(3) = WorldCoordinates(0.0, 0.0, 1.0); // Node 3
+        this->p_nodes.row(4) = WorldCoordinates(0.5, 0.0, 0.0); // Node 4
+        this->p_nodes.row(5) = WorldCoordinates(0.5, 0.5, 0.0); // Node 5
+        this->p_nodes.row(6) = WorldCoordinates(0.0, 0.5, 0.0); // Node 6
+        this->p_nodes.row(7) = WorldCoordinates(0.0, 0.0, 0.5); // Node 7
+        this->p_nodes.row(8) = WorldCoordinates(0.5, 0.0, 0.5); // Node 8
+        this->p_nodes.row(9) = WorldCoordinates(0.0, 0.5, 0.5); // Node 9
+    };
+
+    // Construct a quadratic Tetrahedron from a linear one
+    Tetrahedron(const Tetrahedron<Linear> & linear_Tetrahedron) : Base() {
+        this->p_nodes.row(0) = linear_Tetrahedron.node(0); // Node 0
+        this->p_nodes.row(1) = linear_Tetrahedron.node(1); // Node 1
+        this->p_nodes.row(2) = linear_Tetrahedron.node(2); // Node 2
+        this->p_nodes.row(3) = linear_Tetrahedron.node(3); // Node 3
+        this->p_nodes.row(4) = linear_Tetrahedron.T(LocalCoordinates(0.5, 0.0, 0.0)); // Node 4
+        this->p_nodes.row(5) = linear_Tetrahedron.T(LocalCoordinates(0.5, 0.5, 0.0)); // Node 5
+        this->p_nodes.row(6) = linear_Tetrahedron.T(LocalCoordinates(0.0, 0.5, 0.0)); // Node 6
+        this->p_nodes.row(7) = linear_Tetrahedron.T(LocalCoordinates(0.0, 0.0, 0.5)); // Node 7
+        this->p_nodes.row(8) = linear_Tetrahedron.T(LocalCoordinates(0.5, 0.0, 0.5)); // Node 8
+        this->p_nodes.row(9) = linear_Tetrahedron.T(LocalCoordinates(0.0, 0.5, 0.5)); // Node 9
+    }
+
+
+private:
+    // Implementations
+    friend struct Element<Tetrahedron <Quadratic>>;
+    friend struct BaseTetrahedron<Tetrahedron <Quadratic>>;
+    inline auto get_L(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto  & w = xi[2];
+        const auto l = 1 - u - v - w;
+
+        Vector<NumberOfNodesAtCompileTime> m;
+        m << l * (2*l - 1),   // Node 0
+             u * (2*u - 1),   // Node 1
+             v * (2*v - 1),   // Node 2
+             w * (2*w - 1),   // Node 3
+             4 * l * u,       // Node 4
+             4 * u * v,       // Node 5
+             4 * v * l,       // Node 6
+             4 * l * w,       // Node 7
+             4 * u * w,       // Node 8
+             4 * v * w;       // Node 9
+
+        return m;
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const {
+        const auto & u = xi[0];
+        const auto & v = xi[1];
+        const auto  & w = xi[2];
+        const auto l = 1 - u - v - w;
+
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+        //       dL/du              dL/dv              dL/dw
+        m <<   1 - (4 * l),       1 - (4 * l),       1 - (4 * l),   // Node 0
+              (4 * u) - 1 ,          0       ,          0       ,   // Node 1
+                    0     ,      (4 * v) - 1 ,          0       ,   // Node 2
+                    0     ,          0       ,      (4 * w) - 1 ,   // Node 3
+               4 * (l - u),      -4 * u      ,      -4 * u      ,   // Node 4
+                4 * v     ,       4 * u      ,          0       ,   // Node 5
+               -4 * v     ,       4 * (l - v),      -4 * v      ,   // Node 6
+               -4 * w     ,      -4 * w      ,       4 * (l - w),   // Node 7
+                4 * w     ,          0       ,       4 * u      ,   // Node 8
+                    0     ,       4 * w      ,       4 * v      ;   // Node 9
+        return m;
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(0.1381966011250105, 0.1381966011250105, 0.1381966011250105), Weight(1/24.)}, // Node 0
+            GaussNode {LocalCoordinates(0.1381966011250105, 0.1381966011250105, 0.5854101966249685), Weight(1/24.)}, // Node 1
+            GaussNode {LocalCoordinates(0.1381966011250105, 0.5854101966249685, 0.1381966011250105), Weight(1/24.)}, // Node 2
+            GaussNode {LocalCoordinates(0.5854101966249685, 0.1381966011250105, 0.1381966011250105), Weight(1/24.)}  // Node 3
+        };
+        return gauss_nodes;
+    }
+
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 6>, 4> indices = {{
+            {0, 2, 1, 6, 5, 4}, // Face 0
+            {0, 1, 3, 4, 9, 7}, // Face 1
+            {0, 3, 2, 7, 8, 6}, // Face 2
+            {3, 1, 2, 9, 5, 8}  // Face 3
+        }};
+        return indices;
+    }
+};
+
+}
