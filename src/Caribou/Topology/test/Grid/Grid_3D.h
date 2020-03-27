@@ -200,7 +200,7 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_EQ(grid.face(15), Grid::FaceNodes({{5, 8, 17, 14}}));
 
     // Second slice (2D grid)
-    unsigned int s = 9; // slice_corner_node_index
+    int s = 9; // slice_corner_node_index
     EXPECT_EQ(grid.face(16), Grid::FaceNodes({{s + 0, s + 1, s + 4, s + 3}}));
     EXPECT_EQ(grid.face(17), Grid::FaceNodes({{s + 1, s + 2, s + 5, s + 4}}));
     EXPECT_EQ(grid.face(18), Grid::FaceNodes({{s + 3, s + 4, s + 7, s + 6}}));
