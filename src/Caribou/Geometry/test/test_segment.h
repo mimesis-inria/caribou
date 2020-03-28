@@ -23,7 +23,7 @@ TEST(Segment, Linear) {
         using Segment = caribou::geometry::Segment<_1D, Linear>;
         using WorldCoordinates  = Segment::WorldCoordinates;
 
-        Segment segment({-5.5, 1.1});
+        Segment segment(WorldCoordinates(-5.5), WorldCoordinates(1.1));
         EXPECT_EQ(segment.node(0), WorldCoordinates(-5.5));
         EXPECT_EQ(segment.node(1), WorldCoordinates(1.1));
 
@@ -157,8 +157,8 @@ TEST(Segment, Quadratic) {
 // 1D
     {
         using Segment = caribou::geometry::Segment<_1D, Quadratic>;
-
-        Segment segment({-5.5, 1.1, -2.2});
+        using WorldCoordinates = Segment::WorldCoordinates;
+        Segment segment(WorldCoordinates(-5.5), WorldCoordinates(1.1), WorldCoordinates(-2.2));
 
         // Center
         EXPECT_FLOAT_EQ(segment.center()[0], -2.2);

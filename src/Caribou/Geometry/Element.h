@@ -2,6 +2,7 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Traits.h>
+#include <Caribou/macros.h>
 #include <Eigen/Core>
 
 namespace caribou::geometry {
@@ -16,14 +17,6 @@ struct traits;
  */
 template<class T, class Enable = void>
 struct element_has_boundaries : std::false_type {};
-
-template <class T>
-using element_boundary_type_t = typename traits<T>::BoundaryElementType;
-
-template<class T>
-struct element_has_boundaries<T, CLASS_REQUIRES(
-    caribou::internal::is_detected_v<element_boundary_type_t, T>
-)> : std::true_type {};
 
 template< class T>
 constexpr bool element_has_boundaries_v = element_has_boundaries<T>::value;
@@ -60,10 +53,10 @@ struct Element {
     inline auto number_of_gauss_nodes() const -> UNSIGNED_INTEGER_TYPE {return self().get_number_of_gauss_nodes();}
 
     /** Get the Node at given index */
-    inline auto node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {return self().get_node(index);};
+    inline auto node(const UNSIGNED_INTEGER_TYPE & index) const {return self().get_node(index);};
 
     /** Get the set of nodes */
-    inline auto nodes() const -> const Matrix<NumberOfNodesAtCompileTime, Dimension> & {return self().get_nodes();};
+    inline auto nodes() const {return self().get_nodes();};
 
     /** Get the gauss node at given index */
     inline auto gauss_node(const UNSIGNED_INTEGER_TYPE & index) const -> const GaussNode & {return self().gauss_nodes()[index];};
@@ -83,7 +76,7 @@ struct Element {
     /**
      * Get the list of node indices of the boundary elements.
      *
-     * The return type is up to the implementation but should be:
+     * The return type is up to the implementation but should normally be:
      *   1. Dynamic number of boundary element where each boundary element has a dynamic number of nodes
      *      std::vector<std::vector<unsigned int>>
      *   2. Dynamic number of boundary element where each boundary element has a static number of nodes
@@ -131,10 +124,10 @@ struct Element {
     /** Get the position at the center of the element */
     inline auto center() const -> WorldCoordinates {return self().get_center();}
 
-    /**
-     * Compute the transformation of a local position {u,v,w} to its world position {x,y,z}
-     */
-    inline auto T(const LocalCoordinates & coordinates) const -> WorldCoordinates {return WorldCoordinates(self().interpolate(coordinates, self().nodes()));}
+    /** Compute the transformation of a local position {u,v,w} to its world position {x,y,z} */
+    inline auto T(const LocalCoordinates & coordinates) const {
+        return WorldCoordinates(self().interpolate(coordinates, self().nodes()));
+    }
 
     /**
      * Interpolate a value at local coordinates from the given interpolation node values.
@@ -237,5 +230,15 @@ private:
     auto self() -> Derived& { return *static_cast<Derived*>(this); }
     auto self() const -> const Derived& { return *static_cast<const Derived*>(this); }
 };
+
+
+template <class T>
+using element_boundary_type_t = typename traits<T>::BoundaryElementType;
+
+template<class T>
+struct element_has_boundaries<T, CLASS_REQUIRES(
+    caribou::internal::is_detected_v<element_boundary_type_t, T>
+)> : std::true_type {};
+
 
 }  /// namespace caribou::geometry

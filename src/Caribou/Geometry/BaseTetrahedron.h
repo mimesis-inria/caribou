@@ -36,7 +36,7 @@ struct BaseTetrahedron : public Element<Derived> {
     BaseTetrahedron() = default;
 
     /** Constructor from an array of floating point type */
-    BaseTetrahedron(const FLOATING_POINT_TYPE(&nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
+    BaseTetrahedron(const FLOATING_POINT_TYPE(nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
 
     /** Constructor from a serie of nodes. */
     template <

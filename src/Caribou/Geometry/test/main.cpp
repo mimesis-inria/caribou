@@ -28,6 +28,13 @@ FLOATING_POINT_TYPE p2(const LocalCoordinates & p) {
     return 0;
 }
 
+#define EXPECT_MATRIX_EQ(A, B, eps) \
+{ \
+    Eigen::IOFormat clean(static_cast<int>(std::abs(std::log10(eps))), 0, " ", "\n", "|", "|"); \
+    auto max_error = ((A) - (B)).cwiseAbs().maxCoeff(); \
+    EXPECT_TRUE(max_error < eps) << "Matrices are not equal \n" << A.format(clean) << "\n!=\n" << B.format(clean) << "\n Max coefficient error is " << max_error; \
+}
+
 #include "test_segment.h"
 #include "test_triangle.h"
 #include "test_quad.h"

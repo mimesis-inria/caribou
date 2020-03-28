@@ -35,7 +35,7 @@ struct BaseTriangle : public Element<Derived> {
     BaseTriangle() = default;
 
     /** Constructor from an array of floating point type */
-    BaseTriangle(const FLOATING_POINT_TYPE(&nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
+    BaseTriangle(const FLOATING_POINT_TYPE(nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
 
     /** Constructor from a serie of nodes. */
     template <

@@ -1,17 +1,19 @@
 #pragma once
 
 #include <Caribou/config.h>
-#include <Caribou/Geometry/BaseQuad.h>
+#include <Caribou/Geometry/BaseRectangularQuad.h>
+#include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Eigen/Core>
 
 namespace caribou::geometry {
 
 template<UNSIGNED_INTEGER_TYPE Dimension, UNSIGNED_INTEGER_TYPE Order = Linear>
-struct Quad;
+struct RectangularQuad;
+
 
 template<UNSIGNED_INTEGER_TYPE _Dimension>
-struct traits<Quad <_Dimension, Linear>> {
+struct traits<RectangularQuad <_Dimension, Linear>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 4;
@@ -22,7 +24,7 @@ struct traits<Quad <_Dimension, Linear>> {
 };
 
 /**
- * Linear Quad
+ * Linear Rectangular Quad
  *
  *        v
  *        ^
@@ -38,9 +40,9 @@ struct traits<Quad <_Dimension, Linear>> {
  * @tparam _Dimension The world coordinates dimension
  */
 template<UNSIGNED_INTEGER_TYPE _Dimension>
-struct Quad <_Dimension, Linear> : public BaseQuad<Quad <_Dimension, Linear>> {
+struct RectangularQuad <_Dimension, Linear> : public BaseRectangularQuad<RectangularQuad <_Dimension, Linear>> {
     // Types
-    using Base = BaseQuad<Quad <_Dimension, Linear>>;
+    using Base = BaseRectangularQuad<RectangularQuad <_Dimension, Linear>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
@@ -58,35 +60,35 @@ struct Quad <_Dimension, Linear> : public BaseQuad<Quad <_Dimension, Linear>> {
     static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
     static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    static constexpr FLOATING_POINT_TYPE canonical_nodes [NumberOfNodesAtCompileTime][CanonicalDimension] = {
-    //    u,  v
-        {-1, -1}, // Node 0
-        {+1, -1}, // Node 1
-        {+1, +1}, // Node 2
-        {-1, +1}  // Node 3
-    };
+    static constexpr auto canonical_nodes = Quad<Dimension, Linear>::canonical_nodes;
+
+    using Size = typename Base::Size;
+    using Rotation = typename Base::Rotation;
 
     // Constructors
     using Base::Base;
-    Quad() : Base() {
-        if constexpr (Dimension == 2) {
-            this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1]); // Node 0
-            this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1]); // Node 1
-            this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1]); // Node 2
-            this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1]); // Node 3
-        } else {
-            this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1], 0); // Node 0
-            this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1], 0); // Node 1
-            this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1], 0); // Node 2
-            this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1], 0); // Node 3
-        }
+
+    // Constructor from a regular quad
+    explicit RectangularQuad(const Quad<Dimension, Linear> & quad) {
+        this->p_center = quad.center();
+        this->p_H = Size((quad.node(1)-quad.node(0)).norm(), (quad.node(3)-quad.node(0)).norm());
+        this->p_R = quad.frame({0, 0});
     };
 
+    /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularQuad(Eigen::EigenBase<EigenType> & nodes)
+    : RectangularQuad(Quad<Dimension, Linear>(nodes)) {}
+
+    /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularQuad(const Eigen::EigenBase<EigenType> & nodes)
+    : RectangularQuad(Quad<Dimension, Linear>(nodes)) {}
 
 private:
     // Implementations
-    friend struct Element<Quad <_Dimension, Linear>>;
-    friend struct BaseQuad<Quad <_Dimension, Linear>>;
+    friend struct Element<RectangularQuad <_Dimension, Linear>>;
+    friend struct BaseQuad<RectangularQuad <_Dimension, Linear>>;
     inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
         const auto  & u = xi[0];
         const auto  & v = xi[1];
@@ -110,6 +112,19 @@ private:
              -1 / 4. * (1 + v),   +1 / 4. * (1 - u);   // Node 3
         return m;
     };
+
+    inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {
+        caribou_assert(index >= 0 and index < NumberOfNodesAtCompileTime and "Trying to get a node from an invalid node index.");
+        return this->T(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1]));
+    }
+
+    inline auto get_nodes() const {
+        Matrix<NumberOfNodesAtCompileTime, Dimension> nodes;
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < NumberOfNodesAtCompileTime; ++node_id) {
+            nodes.row(node_id) = get_node(node_id);
+        }
+        return nodes;
+    }
 
     inline auto get_gauss_nodes() const -> const auto & {
         using Weight = FLOATING_POINT_TYPE;
@@ -135,7 +150,7 @@ private:
 
 
 template<UNSIGNED_INTEGER_TYPE _Dimension>
-struct traits<Quad <_Dimension, Quadratic>> {
+struct traits<RectangularQuad <_Dimension, Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
@@ -146,7 +161,7 @@ struct traits<Quad <_Dimension, Quadratic>> {
 };
 
 /**
- * Quadratic Quad
+ * Quadratic Rectangular Quad
  *
  *       v
  *       ^
@@ -162,9 +177,9 @@ struct traits<Quad <_Dimension, Quadratic>> {
  * @tparam _Dimension The world coordinates dimension
  */
 template<UNSIGNED_INTEGER_TYPE _Dimension>
-struct Quad <_Dimension, Quadratic> : public BaseQuad<Quad <_Dimension, Quadratic>> {
+struct RectangularQuad <_Dimension, Quadratic> : public BaseRectangularQuad<RectangularQuad <_Dimension, Quadratic>> {
     // Types
-    using Base = BaseQuad<Quad <_Dimension, Quadratic>>;
+    using Base = BaseRectangularQuad<RectangularQuad <_Dimension, Quadratic>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
@@ -182,67 +197,36 @@ struct Quad <_Dimension, Quadratic> : public BaseQuad<Quad <_Dimension, Quadrati
     static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
     static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    static constexpr FLOATING_POINT_TYPE canonical_nodes [NumberOfNodesAtCompileTime][CanonicalDimension] = {
-    //    u,  v
-        {-1, -1}, // Node 0
-        {+1, -1}, // Node 1
-        {+1, +1}, // Node 2
-        {-1, +1}, // Node 3
-        { 0, -1}, // Node 4
-        {+1,  0}, // Node 5
-        { 0, +1}, // Node 6
-        {-1,  0}  // Node 7
-    };
+    static constexpr auto canonical_nodes = Quad<Dimension, Quadratic>::canonical_nodes;
+
+    using Size = typename Base::Size;
+    using Rotation = typename Base::Rotation;
 
     // Constructors
     using Base::Base;
-    Quad() : Base() {
-        if constexpr (Dimension == 2) {
-            this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1]); // Node 0
-            this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1]); // Node 1
-            this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1]); // Node 2
-            this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1]); // Node 3
-            this->p_nodes.row(4) = WorldCoordinates(canonical_nodes[4][0], canonical_nodes[4][1]); // Node 4
-            this->p_nodes.row(5) = WorldCoordinates(canonical_nodes[5][0], canonical_nodes[5][1]); // Node 5
-            this->p_nodes.row(6) = WorldCoordinates(canonical_nodes[6][0], canonical_nodes[6][1]); // Node 6
-            this->p_nodes.row(7) = WorldCoordinates(canonical_nodes[7][0], canonical_nodes[7][1]); // Node 7
-        } else {
-            this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1], 0); // Node 0
-            this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1], 0); // Node 1
-            this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1], 0); // Node 2
-            this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1], 0); // Node 3
-            this->p_nodes.row(4) = WorldCoordinates(canonical_nodes[4][0], canonical_nodes[4][1], 0); // Node 4
-            this->p_nodes.row(5) = WorldCoordinates(canonical_nodes[5][0], canonical_nodes[5][1], 0); // Node 5
-            this->p_nodes.row(6) = WorldCoordinates(canonical_nodes[6][0], canonical_nodes[6][1], 0); // Node 6
-            this->p_nodes.row(7) = WorldCoordinates(canonical_nodes[7][0], canonical_nodes[7][1], 0); // Node 7
-        }
-    };
 
-    /** Construct a quadratic Quad from a linear one */
-    explicit Quad(const Quad<Dimension, Linear> & linear_Quad) : Base() {
-        this->p_nodes.row(0) = linear_Quad.node(0); // Node 0
-        this->p_nodes.row(1) = linear_Quad.node(1); // Node 1
-        this->p_nodes.row(2) = linear_Quad.node(2); // Node 2
-        this->p_nodes.row(3) = linear_Quad.node(3); // Node 3
-        this->p_nodes.row(4) = linear_Quad.T(LocalCoordinates(canonical_nodes[4][0], canonical_nodes[4][1])); // Node 4
-        this->p_nodes.row(5) = linear_Quad.T(LocalCoordinates(canonical_nodes[5][0], canonical_nodes[5][1])); // Node 5
-        this->p_nodes.row(6) = linear_Quad.T(LocalCoordinates(canonical_nodes[6][0], canonical_nodes[6][1])); // Node 6
-        this->p_nodes.row(7) = linear_Quad.T(LocalCoordinates(canonical_nodes[7][0], canonical_nodes[7][1])); // Node 7
+    // Constructor from a regular quad
+    template<UNSIGNED_INTEGER_TYPE Order>
+    explicit RectangularQuad(const Quad<Dimension, Order> & quad) {
+        this->p_center = quad.center();
+        this->p_H = Size((quad.node(1)-quad.node(0)).norm(), (quad.node(3)-quad.node(0)).norm());
+        this->p_R = quad.frame({0, 0});
     }
 
-    /** Construct a quadratic Quad from four nodes */
-    Quad(WorldCoordinates & p0, WorldCoordinates & p1, WorldCoordinates & p2, WorldCoordinates & p3)
-    : Quad(Quad<Dimension, Linear>(p0, p1, p2, p3)) {}
+    /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularQuad(Eigen::EigenBase<EigenType> & nodes)
+        : RectangularQuad(Quad<Dimension, Quadratic>(nodes)) {}
 
-    /** Construct a quadratic Quad from four nodes */
-    Quad(const WorldCoordinates & p0, const WorldCoordinates & p1, const WorldCoordinates & p2, const WorldCoordinates & p3)
-    : Quad(Quad<Dimension, Linear>(p0, p1, p2, p3)) {}
-
+    /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularQuad(const Eigen::EigenBase<EigenType> & nodes)
+        : RectangularQuad(Quad<Dimension, Quadratic>(nodes)) {}
 
 private:
     // Implementations
-    friend struct Element<Quad <_Dimension, Quadratic>>;
-    friend struct BaseQuad<Quad <_Dimension, Quadratic>>;
+    friend struct Element<RectangularQuad <_Dimension, Quadratic>>;
+    friend struct BaseQuad<RectangularQuad <_Dimension, Quadratic>>;
     inline auto get_L(const LocalCoordinates & xi) const {
         const auto  & u = xi[0];
         const auto  & v = xi[1];
@@ -278,6 +262,19 @@ private:
 
         return m;
     };
+
+    inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {
+        caribou_assert(index >= 0 and index < NumberOfNodesAtCompileTime and "Trying to get a node from an invalid node index.");
+        return this->T(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1]));
+    }
+
+    inline auto get_nodes() const {
+        Matrix<NumberOfNodesAtCompileTime, Dimension> nodes;
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < NumberOfNodesAtCompileTime; ++node_id) {
+            nodes.row(node_id) = get_node(node_id);
+        }
+        return nodes;
+    }
 
     inline auto get_gauss_nodes() const -> const auto & {
         using Weight = FLOATING_POINT_TYPE;

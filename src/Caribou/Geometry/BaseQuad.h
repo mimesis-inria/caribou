@@ -34,17 +34,78 @@ struct BaseQuad : public Element<Derived> {
     /** Default empty constructor */
     BaseQuad() = default;
 
-    /** Constructor from an array of floating point type */
-    BaseQuad(const FLOATING_POINT_TYPE(&nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
+    /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit BaseQuad(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+
+    /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit BaseQuad(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
 
     /** Constructor from a serie of nodes. */
     template <
         typename ...Nodes,
         REQUIRES(NumberOfNodesAtCompileTime == sizeof...(Nodes)+1)
     >
-    BaseQuad(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
+    explicit BaseQuad(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
     {
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
+    }
+
+    // Public methods common to all quad types
+
+    /**
+     * Extract the frame positioned at the given position (in local coordinates) on the quad by computing the cross
+     * product of the unit vectors from the given position its projection  on opposite edges.
+     *
+     * This function will return a matrix of the form:
+     *
+     *    2D              3D
+     *
+     * | ux vx |     | ux vx wx |
+     * | uy vy |     | uy vy wy |
+     *               | uz vz wz |
+     *
+     * Where (ux, uy[, uz]), (vx, vy[, vz]) and (wx, wy[, wz]) are orthogonal unitary vectors representing
+     * the u, v [and w] frames in the current quad. If the quad is rectangular and not rotated, this matrix is the
+     * Identity matrix. If it is rectangular but rotated, rotating the quad by the transposed of this frame should
+     * align the u,v [,w] axis to the x,y[,z] world frame (identity matrix).
+     */
+    inline
+    auto
+    frame(const LocalCoordinates & local_point) const
+    {
+        // Position of the point inside the hexahedron where the frame should be computed
+        const auto p = this->T( local_point );
+
+        // Project of the point on the edge facing the u axis
+        const auto projected_on_u = this->T({1,local_point[1]});
+
+        // Project of the point on the quad facing the v axis
+        const auto projected_on_v = this->T({local_point[0], 1});
+
+        // Vector from the point to its projection on the quad facing the u axis
+        const auto point_to_u = projected_on_u - p;
+
+        // Vector from the point to its projection on the quad facing the v axis
+        const auto point_to_v = projected_on_v - p;
+
+        // The u-axis of the computed frame
+        const auto u = point_to_u.normalized();
+
+        // The v-axis of the computed frame
+        auto v = point_to_v.normalized();
+
+        Matrix<Dimension, Dimension> m {};
+        if constexpr (Dimension == 3) {
+            // The w-axis of the computed frame
+            const WorldCoordinates w = u.cross(v).normalized();
+            m << u, v, w;
+        } else {
+            m << u, v;
+        }
+
+        return m;
     }
 
 private:
@@ -73,8 +134,5 @@ private:
 protected:
     Matrix<NumberOfNodesAtCompileTime, Dimension> p_nodes;
 };
-
-template<UNSIGNED_INTEGER_TYPE _Dimension, UNSIGNED_INTEGER_TYPE _Order = Linear>
-struct Quad;
 
 }

@@ -33,7 +33,7 @@ struct BaseSegment : public Element<Derived> {
     BaseSegment() = default;
 
     /** Constructor from an array of floating point type */
-    BaseSegment(const FLOATING_POINT_TYPE(&nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
+    BaseSegment(const FLOATING_POINT_TYPE(nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
 
     /** Constructor from a serie of nodes. */
     template <
