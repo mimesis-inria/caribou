@@ -9,7 +9,7 @@
 namespace caribou::geometry {
 
 template<typename Derived>
-struct BaseRectangularQuad : public Element<Derived> {
+struct BaseRectangularHexahedron : public Element<Derived> {
     // Types
     using Base = Element<Derived>;
 
@@ -30,25 +30,25 @@ struct BaseRectangularQuad : public Element<Derived> {
     static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
     static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    static_assert(Dimension == 2 or Dimension == 3, "Quads can only be of dimension 2 or 3.");
+    static_assert(Dimension == 3, "Hexahedrons can only be of dimension 3.");
 
-    using Size = Vector<CanonicalDimension>;
-    using Rotation = Matrix<Dimension,Dimension>;
+    using Size = Vector<3>;
+    using Rotation = Matrix<3,3>;
 
     /** Default empty constructor */
-    BaseRectangularQuad() : p_center(WorldCoordinates::Constant(0)), p_H(Size::Constant(2)), p_R(Rotation::Identity()) {}
+    BaseRectangularHexahedron() : p_center(0, 0, 0), p_H(2,2,2), p_R(Rotation::Identity()) {}
 
     /** Constructor by specifying the center point */
-    explicit BaseRectangularQuad(WorldCoordinates center) : p_center(center), p_H(Size::Constant(2)), p_R(Rotation::Identity()) {}
+    explicit BaseRectangularHexahedron(WorldCoordinates center) : p_center(center), p_H(Size::Constant(2)), p_R(Rotation::Identity()) {}
 
     /** Constructor by specifying the center point and the size (hx, hy, hz) */
-    BaseRectangularQuad(WorldCoordinates center, Size H) : p_center(center), p_H(H), p_R(Rotation::Identity()) {}
+    BaseRectangularHexahedron(WorldCoordinates center, Size H) : p_center(center), p_H(H), p_R(Rotation::Identity()) {}
 
     /** Constructor by specifying the center point and the rotation */
-    BaseRectangularQuad(WorldCoordinates center, Rotation R) : p_center(center), p_H(Size::Constant(2)), p_R(R) {}
+    BaseRectangularHexahedron(WorldCoordinates center, Rotation R) : p_center(center), p_H(Size::Constant(2)), p_R(R) {}
 
     /** Constructor by specifying the center point, the size (hx, hy, hz) and the rotation */
-    BaseRectangularQuad(WorldCoordinates center, Size H, Rotation R) : p_center(center), p_H(H), p_R(R) {}
+    BaseRectangularHexahedron(WorldCoordinates center, Size H, Rotation R) : p_center(center), p_H(H), p_R(R) {}
 
     // Public methods
 
@@ -62,16 +62,9 @@ struct BaseRectangularQuad : public Element<Derived> {
         return p_H;
     };
 
-    /** Compute the transformation of a local position {u,v} to its world position {x,y[ ,z]} */
+    /** Compute the transformation of a local position {u,v,w} to its world position {x,y,z} */
     inline auto T(const LocalCoordinates & coordinates) const -> WorldCoordinates {
-        if constexpr (Dimension == 2) {
-            return p_center + p_R * (coordinates.cwiseProduct(p_H / 2.));
-        } else {
-            WorldCoordinates p;
-            p.template block<CanonicalDimension, 1>(0,0) = coordinates.cwiseProduct(p_H / 2.);
-            p[2] = 0.;
-            return p_center + p_R * p;
-        }
+        return p_center + p_R * (coordinates.cwiseProduct(p_H / 2.));
     }
 
 private:
@@ -83,10 +76,11 @@ private:
     inline auto get_number_of_gauss_nodes() const {return NumberOfGaussNodesAtCompileTime;}
     inline auto get_center() const {return p_center;};
     [[nodiscard]]
-    inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 4;};
+    inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 6;};
 protected:
-    WorldCoordinates p_center; ///< Position of the center point of the quad
-    Size p_H; ///< Size of the quad {hx, hy}
-    Rotation p_R; ///< Rotation matrix (a.k.a. the local coordinates frame) at the center of the quad
+    WorldCoordinates p_center; ///< Position of the center point of the hexahedron
+    Size p_H; ///< Size of the hexahedron {hx, hy, hz}
+    Rotation p_R; ///< Rotation matrix (a.k.a. the local coordinates frame) at the center of the hexahedron
 };
+
 }

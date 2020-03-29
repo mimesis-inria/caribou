@@ -56,7 +56,7 @@ struct BaseQuad : public Element<Derived> {
 
     /**
      * Extract the frame positioned at the given position (in local coordinates) on the quad by computing the cross
-     * product of the unit vectors from the given position its projection  on opposite edges.
+     * product of the unit vectors from the given position its projection on opposite edges.
      *
      * This function will return a matrix of the form:
      *
@@ -70,24 +70,27 @@ struct BaseQuad : public Element<Derived> {
      * the u, v [and w] frames in the current quad. If the quad is rectangular and not rotated, this matrix is the
      * Identity matrix. If it is rectangular but rotated, rotating the quad by the transposed of this frame should
      * align the u,v [,w] axis to the x,y[,z] world frame (identity matrix).
+     *
+     * \warning If the quad isn't rectangular, this frame extracted from this function will be a rough
+     * approximation that could be far from the real solution, especially for strongly deformed or inverted quads.
      */
     inline
     auto
     frame(const LocalCoordinates & local_point) const
     {
-        // Position of the point inside the hexahedron where the frame should be computed
+        // Position of the point inside the quad where the frame should be computed
         const auto p = this->T( local_point );
 
         // Project of the point on the edge facing the u axis
         const auto projected_on_u = this->T({1,local_point[1]});
 
-        // Project of the point on the quad facing the v axis
+        // Project of the point on the edge facing the v axis
         const auto projected_on_v = this->T({local_point[0], 1});
 
-        // Vector from the point to its projection on the quad facing the u axis
+        // Vector from the point to its projection on the edge facing the u axis
         const auto point_to_u = projected_on_u - p;
 
-        // Vector from the point to its projection on the quad facing the v axis
+        // Vector from the point to its projection on the edge facing the v axis
         const auto point_to_v = projected_on_v - p;
 
         // The u-axis of the computed frame

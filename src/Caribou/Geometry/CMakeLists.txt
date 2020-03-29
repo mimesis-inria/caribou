@@ -4,10 +4,12 @@ set(HEADER_FILES
         BaseHexahedron.h
         BaseSegment.h
         BaseQuad.h
+        BaseRectangularHexahedron.h
         BaseRectangularQuad.h
         BaseTetrahedron.h
         BaseTriangle.h
         Element.h
+        RectangularHexahedron.h
         RectangularQuad.h
         Segment.h
         Quad.h

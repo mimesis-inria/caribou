@@ -4,6 +4,7 @@
 #include <Caribou/macros.h>
 #include <Caribou/Constants.h>
 #include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/RectangularHexahedron.h>
 #include <Caribou/Geometry/Tetrahedron.h>
 
 TEST(Hexahedron, Linear) {
@@ -143,4 +144,103 @@ TEST(Hexahedron, Quadratic) {
 
         EXPECT_FLOAT_EQ(numerical_solution_hexa, numerical_solution_tetras);
     }
+}
+
+TEST(Hexahedron, RectangularLinear) {
+    using namespace caribou;
+    using Hexahedron = caribou::geometry::Hexahedron<Linear>;
+    using RectangularHexahedron = caribou::geometry::RectangularHexahedron<Linear>;
+    using WorldCoordinates = Hexahedron::WorldCoordinates;
+    using Rotation = RectangularHexahedron::Rotation;
+    using Size = RectangularHexahedron::Size;
+
+    Size H(25, 30, 75);
+    WorldCoordinates center(75.4, 12.2, -45);
+    FLOATING_POINT_TYPE a = 3*pi/4;
+    Rotation R, Rx, Ry, Rz;
+    Rx << 1,       0,       0,
+          0,       cos(a), -sin(a),
+          0,       sin(a),  cos(a);
+    Ry << cos(a),  0,       sin(a),
+          0,       1,       0,
+          -sin(a), 0,       cos(a);
+    Rz << cos(a),  -sin(a), 0,
+          sin(a),  cos(a),  0,
+          0      , 0,       1;
+    R = Rz*Ry*Rx;
+
+    // Rectangular hexahedron from a generic hexahedron
+    {
+        Hexahedron generic_hexa;
+        Eigen::Matrix<FLOATING_POINT_TYPE, geometry::traits<Hexahedron>::NumberOfNodesAtCompileTime, 3> transformed_nodes;
+        for (unsigned int node_id = 0; node_id < generic_hexa.number_of_nodes(); ++node_id) {
+            const auto x = generic_hexa.node(node_id);
+            transformed_nodes.row(node_id) = center + R * (x.cwiseProduct(H / 2.));
+        }
+
+        RectangularHexahedron q(transformed_nodes);
+        EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+        EXPECT_MATRIX_NEAR(q.rotation(), R, 1e-10);
+        EXPECT_MATRIX_NEAR(q.size(), H, 1e-10);
+    }
+
+    // Generic hexahedron from rectangular hexahedron
+    {
+        RectangularHexahedron rectangular_hexa(center, H, R);
+        const auto transformed_nodes = rectangular_hexa.nodes();
+        Hexahedron q(transformed_nodes);
+
+        EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+        EXPECT_MATRIX_NEAR(q.frame({0, 0, 0}), R, 1e-10);
+    }
+
+}
+
+TEST(Hexahedron, RectangularQuadratic) {
+    using namespace caribou;
+    using Hexahedron = caribou::geometry::Hexahedron<Quadratic>;
+    using RectangularHexahedron = caribou::geometry::RectangularHexahedron<Quadratic>;
+    using WorldCoordinates = Hexahedron::WorldCoordinates;
+    using Rotation = RectangularHexahedron::Rotation;
+    using Size = RectangularHexahedron::Size;
+
+    Size H(25, 30, 75);
+    WorldCoordinates center(75.4, 12.2, -45);
+    FLOATING_POINT_TYPE a = 3*pi/4;
+    Rotation R, Rx, Ry, Rz;
+    Rx << 1,       0,       0,
+          0,       cos(a), -sin(a),
+          0,       sin(a),  cos(a);
+    Ry << cos(a),  0,       sin(a),
+          0,       1,       0,
+          -sin(a), 0,       cos(a);
+    Rz << cos(a),  -sin(a), 0,
+          sin(a),  cos(a),  0,
+          0      , 0,       1;
+    R = Rz*Ry*Rx;
+
+    // Rectangular hexahedron from a generic hexahedron
+    {
+        Hexahedron generic_hexa;
+        Eigen::Matrix<FLOATING_POINT_TYPE, 8, 3> transformed_nodes;
+        for (unsigned int node_id = 0; node_id < 8; ++node_id) {
+            const auto x = generic_hexa.node(node_id);
+            transformed_nodes.row(node_id) = center + R * (x.cwiseProduct(H / 2.));
+        }
+        RectangularHexahedron q(transformed_nodes);
+        EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+        EXPECT_MATRIX_NEAR(q.rotation(), R, 1e-10);
+        EXPECT_MATRIX_NEAR(q.size(), H, 1e-10);
+    }
+
+    // Generic hexahedron from rectangular hexahedron
+    {
+        RectangularHexahedron rectangular_hexa(center, H, R);
+        const auto transformed_nodes = rectangular_hexa.nodes();
+        Hexahedron q(transformed_nodes);
+
+        EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+        EXPECT_MATRIX_NEAR(q.frame({0, 0, 0}), R, 1e-10);
+    }
+
 }

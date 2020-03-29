@@ -1,28 +1,29 @@
 #pragma once
 
 #include <Caribou/config.h>
-#include <Caribou/Geometry/BaseHexahedron.h>
-#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/BaseRectangularHexahedron.h>
+#include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/RectangularQuad.h>
 #include <Eigen/Core>
 
 namespace caribou::geometry {
 
 template<UNSIGNED_INTEGER_TYPE Order = Linear>
-struct Hexahedron;
+struct RectangularHexahedron;
 
 template<>
-struct traits<Hexahedron <Linear>> {
+struct traits<RectangularHexahedron <Linear>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
 
-    using BoundaryElementType = Quad<3, Linear>;
+    using BoundaryElementType = RectangularQuad<3, Linear>;
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
 };
 
 /**
- * Linear Hexahedron
+ * Linear Rectangular Hexahedron
  *
  *        v
  * 3----------2
@@ -39,9 +40,9 @@ struct traits<Hexahedron <Linear>> {
  *
  */
 template<>
-struct Hexahedron <Linear> : public BaseHexahedron<Hexahedron <Linear>> {
+struct RectangularHexahedron <Linear> : public BaseRectangularHexahedron<RectangularHexahedron <Linear>> {
     // Types
-    using Base = BaseHexahedron<Hexahedron <Linear>>;
+    using Base = BaseRectangularHexahedron<RectangularHexahedron <Linear>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
@@ -59,36 +60,32 @@ struct Hexahedron <Linear> : public BaseHexahedron<Hexahedron <Linear>> {
     static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
     static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    static constexpr FLOATING_POINT_TYPE canonical_nodes [NumberOfNodesAtCompileTime][CanonicalDimension] = {
-    //    u,  v,  w
-        {-1, -1, -1}, // Node 0
-        {+1, -1, -1}, // Node 1
-        {+1, +1, -1}, // Node 2
-        {-1, +1, -1}, // Node 3
-        {-1, -1, +1}, // Node 4
-        {+1, -1, +1}, // Node 5
-        {+1, +1, +1}, // Node 6
-        {-1, +1, +1}, // Node 7
-    };
+    static constexpr auto canonical_nodes = Hexahedron<Linear>::canonical_nodes;
 
     // Constructors
     using Base::Base;
-    Hexahedron() : Base() {
-        this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1], canonical_nodes[0][2]);
-        this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1], canonical_nodes[1][2]);
-        this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1], canonical_nodes[2][2]);
-        this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1], canonical_nodes[3][2]);
-        this->p_nodes.row(4) = WorldCoordinates(canonical_nodes[4][0], canonical_nodes[4][1], canonical_nodes[4][2]);
-        this->p_nodes.row(5) = WorldCoordinates(canonical_nodes[5][0], canonical_nodes[5][1], canonical_nodes[5][2]);
-        this->p_nodes.row(6) = WorldCoordinates(canonical_nodes[6][0], canonical_nodes[6][1], canonical_nodes[6][2]);
-        this->p_nodes.row(7) = WorldCoordinates(canonical_nodes[7][0], canonical_nodes[7][1], canonical_nodes[7][2]);
+
+    // Constructor from a regular Hexahedron
+    explicit RectangularHexahedron(const Hexahedron<Linear> & hexa) {
+        this->p_center = hexa.center();
+        this->p_H = Size((hexa.node(1)-hexa.node(0)).norm(), (hexa.node(3)-hexa.node(0)).norm(), (hexa.node(4)-hexa.node(0)).norm());
+        this->p_R = hexa.frame({0, 0, 0});
     };
 
+    /** Constructor from an Eigen matrix containing the positions of the hexa's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularHexahedron(Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
+
+    /** Constructor from an Eigen matrix containing the positions of the hexa's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularHexahedron(const Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
 
 private:
     // Implementations
-    friend struct Element<Hexahedron <Linear>>;
-    friend struct BaseHexahedron<Hexahedron <Linear>>;
+    friend struct Element<RectangularHexahedron <Linear>>;
+    friend struct BaseRectangularHexahedron<RectangularHexahedron <Linear>>;
     inline auto get_L(const LocalCoordinates & xi) const {
         const auto  & u = xi[0];
         const auto  & v = xi[1];
@@ -124,6 +121,19 @@ private:
         return m;
     };
 
+    inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {
+        caribou_assert(index < NumberOfNodesAtCompileTime and "Trying to get a node from an invalid node index.");
+        return this->T(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1], canonical_nodes[index][2]));
+    }
+
+    inline auto get_nodes() const {
+        Matrix<NumberOfNodesAtCompileTime, Dimension> nodes;
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < NumberOfNodesAtCompileTime; ++node_id) {
+            nodes.row(node_id) = get_node(node_id);
+        }
+        return nodes;
+    }
+
     inline auto get_gauss_nodes() const -> const auto & {
         using Weight = FLOATING_POINT_TYPE;
         static const std::vector<GaussNode> gauss_nodes {
@@ -154,18 +164,18 @@ private:
 
 
 template<>
-struct traits<Hexahedron <Quadratic>> {
+struct traits<RectangularHexahedron <Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 20;
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
 
-    using BoundaryElementType = Quad<3, Quadratic>;
+    using BoundaryElementType = RectangularQuad<3, Quadratic>;
     static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
 };
 
 /**
- * Quadratic Hexahedron (20 nodes)
+ * Quadratic Rectangular Hexahedron (20 nodes)
  *
  *         v
  *         ^
@@ -184,9 +194,9 @@ struct traits<Hexahedron <Quadratic>> {
  *
  */
 template<>
-struct Hexahedron <Quadratic> : public BaseHexahedron<Hexahedron <Quadratic>> {
+struct RectangularHexahedron <Quadratic> : public BaseRectangularHexahedron<RectangularHexahedron <Quadratic>> {
     // Types
-    using Base = BaseHexahedron<Hexahedron <Quadratic>>;
+    using Base = BaseRectangularHexahedron<RectangularHexahedron <Quadratic>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
@@ -204,92 +214,43 @@ struct Hexahedron <Quadratic> : public BaseHexahedron<Hexahedron <Quadratic>> {
     static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
     static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    static constexpr FLOATING_POINT_TYPE canonical_nodes [NumberOfNodesAtCompileTime][CanonicalDimension] = {
-        //    u,  v,  w
-        {-1, -1, -1}, // Node 0
-        {+1, -1, -1}, // Node 1
-        {+1, +1, -1}, // Node 2
-        {-1, +1, -1}, // Node 3
-        {-1, -1, +1}, // Node 4
-        {+1, -1, +1}, // Node 5
-        {+1, +1, +1}, // Node 6
-        {-1, +1, +1}, // Node 7
-        { 0, -1, -1}, // Node 8
-        {+1,  0, -1}, // Node 9
-        { 0, +1, -1}, // Node 10
-        {-1,  0, -1}, // Node 11
-        { 0, -1, +1}, // Node 12
-        {+1,  0, +1}, // Node 13
-        { 0, +1, +1}, // Node 14
-        {-1,  0, +1}, // Node 15
-        {-1, -1,  0}, // Node 16
-        {+1, -1,  0}, // Node 17
-        {+1, +1,  0}, // Node 18
-        {-1, +1,  0}, // Node 19
-    };
+    static constexpr auto canonical_nodes = Hexahedron<Quadratic>::canonical_nodes;
 
     // Constructors
     using Base::Base;
-    Hexahedron() : Base() {
-        this->p_nodes.row(0)  = WorldCoordinates(canonical_nodes[0][0],  canonical_nodes[0][1],  canonical_nodes[0][2]);  // Node 0
-        this->p_nodes.row(1)  = WorldCoordinates(canonical_nodes[1][0],  canonical_nodes[1][1],  canonical_nodes[1][2]);  // Node 1
-        this->p_nodes.row(2)  = WorldCoordinates(canonical_nodes[2][0],  canonical_nodes[2][1],  canonical_nodes[2][2]);  // Node 2
-        this->p_nodes.row(3)  = WorldCoordinates(canonical_nodes[3][0],  canonical_nodes[3][1],  canonical_nodes[3][2]);  // Node 3
-        this->p_nodes.row(4)  = WorldCoordinates(canonical_nodes[4][0],  canonical_nodes[4][1],  canonical_nodes[4][2]);  // Node 4
-        this->p_nodes.row(5)  = WorldCoordinates(canonical_nodes[5][0],  canonical_nodes[5][1],  canonical_nodes[5][2]);  // Node 5
-        this->p_nodes.row(6)  = WorldCoordinates(canonical_nodes[6][0],  canonical_nodes[6][1],  canonical_nodes[6][2]);  // Node 6
-        this->p_nodes.row(7)  = WorldCoordinates(canonical_nodes[7][0],  canonical_nodes[7][1],  canonical_nodes[7][2]);  // Node 7
-        this->p_nodes.row(8)  = WorldCoordinates(canonical_nodes[8][0],  canonical_nodes[8][1],  canonical_nodes[8][2]);  // Node 8
-        this->p_nodes.row(9)  = WorldCoordinates(canonical_nodes[9][0],  canonical_nodes[9][1],  canonical_nodes[9][2]);  // Node 9
-        this->p_nodes.row(10) = WorldCoordinates(canonical_nodes[10][0], canonical_nodes[10][1], canonical_nodes[10][2]); // Node 10
-        this->p_nodes.row(11) = WorldCoordinates(canonical_nodes[11][0], canonical_nodes[11][1], canonical_nodes[11][2]); // Node 11
-        this->p_nodes.row(12) = WorldCoordinates(canonical_nodes[12][0], canonical_nodes[12][1], canonical_nodes[12][2]); // Node 12
-        this->p_nodes.row(13) = WorldCoordinates(canonical_nodes[13][0], canonical_nodes[13][1], canonical_nodes[13][2]); // Node 13
-        this->p_nodes.row(14) = WorldCoordinates(canonical_nodes[14][0], canonical_nodes[14][1], canonical_nodes[14][2]); // Node 14
-        this->p_nodes.row(15) = WorldCoordinates(canonical_nodes[15][0], canonical_nodes[15][1], canonical_nodes[15][2]); // Node 15
-        this->p_nodes.row(16) = WorldCoordinates(canonical_nodes[16][0], canonical_nodes[16][1], canonical_nodes[16][2]); // Node 16
-        this->p_nodes.row(17) = WorldCoordinates(canonical_nodes[17][0], canonical_nodes[17][1], canonical_nodes[17][2]); // Node 17
-        this->p_nodes.row(18) = WorldCoordinates(canonical_nodes[18][0], canonical_nodes[18][1], canonical_nodes[18][2]); // Node 18
-        this->p_nodes.row(19) = WorldCoordinates(canonical_nodes[19][0], canonical_nodes[19][1], canonical_nodes[19][2]); // Node 19
 
-    };
-
-    // Construct a quadratic Hexahedron from a linear one
-    explicit Hexahedron(const Hexahedron<Linear> & linear_Hexahedron) : Base() {
-        this->p_nodes.row(0) = linear_Hexahedron.node(0); // Node 0
-        this->p_nodes.row(1) = linear_Hexahedron.node(1); // Node 1
-        this->p_nodes.row(2) = linear_Hexahedron.node(2); // Node 2
-        this->p_nodes.row(3) = linear_Hexahedron.node(3); // Node 3
-        this->p_nodes.row(4) = linear_Hexahedron.node(4); // Node 4
-        this->p_nodes.row(5) = linear_Hexahedron.node(5); // Node 5
-        this->p_nodes.row(6) = linear_Hexahedron.node(6); // Node 6
-        this->p_nodes.row(7) = linear_Hexahedron.node(7); // Node 7
-        this->p_nodes.row(8)  = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[8][0],  canonical_nodes[8][1],  canonical_nodes[8][2]));  // Node 8
-        this->p_nodes.row(9)  = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[9][0],  canonical_nodes[9][1],  canonical_nodes[9][2]));  // Node 9
-        this->p_nodes.row(10) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[10][0], canonical_nodes[10][1], canonical_nodes[10][2])); // Node 10
-        this->p_nodes.row(11) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[11][0], canonical_nodes[11][1], canonical_nodes[11][2])); // Node 11
-        this->p_nodes.row(12) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[12][0], canonical_nodes[12][1], canonical_nodes[12][2])); // Node 12
-        this->p_nodes.row(13) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[13][0], canonical_nodes[13][1], canonical_nodes[13][2])); // Node 13
-        this->p_nodes.row(14) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[14][0], canonical_nodes[14][1], canonical_nodes[14][2])); // Node 14
-        this->p_nodes.row(15) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[15][0], canonical_nodes[15][1], canonical_nodes[15][2])); // Node 15
-        this->p_nodes.row(16) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[16][0], canonical_nodes[16][1], canonical_nodes[16][2])); // Node 16
-        this->p_nodes.row(17) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[17][0], canonical_nodes[17][1], canonical_nodes[17][2])); // Node 17
-        this->p_nodes.row(18) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[18][0], canonical_nodes[18][1], canonical_nodes[18][2])); // Node 18
-        this->p_nodes.row(19) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[19][0], canonical_nodes[19][1], canonical_nodes[19][2])); // Node 19
+    // Constructor from a regular Hexahedron
+    template<UNSIGNED_INTEGER_TYPE Order>
+    explicit RectangularHexahedron(const Hexahedron<Order> & hexa) {
+        this->p_center = hexa.center();
+        this->p_H = Size((hexa.node(1)-hexa.node(0)).norm(), (hexa.node(3)-hexa.node(0)).norm(), (hexa.node(4)-hexa.node(0)).norm());
+        this->p_R = hexa.frame({0, 0, 0});
     }
 
-    /** Construct a quadratic Hexahedron from eight nodes */
-    Hexahedron(WorldCoordinates & p0, WorldCoordinates & p1, WorldCoordinates & p2, WorldCoordinates & p3, WorldCoordinates & p4, WorldCoordinates & p5, WorldCoordinates & p6, WorldCoordinates & p7)
-        : Hexahedron(Hexahedron<Linear>(p0, p1, p2, p3, p4, p5, p6, p7)) {}
+    /** Constructor from an Eigen matrix containing the positions of an quadratic hexa nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularHexahedron(Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Quadratic>(nodes)) {}
 
-    /** Construct a quadratic Hexahedron from eight nodes */
-    Hexahedron(const WorldCoordinates & p0, const WorldCoordinates & p1, const WorldCoordinates & p2, const WorldCoordinates & p3, const WorldCoordinates & p4, const WorldCoordinates & p5, const WorldCoordinates & p6, const WorldCoordinates & p7)
-        : Hexahedron(Hexahedron<Linear>(p0, p1, p2, p3, p4, p5, p6, p7)) {}
+    /** Constructor from an Eigen matrix containing the positions of an quadratic hexa nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularHexahedron(const Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Quadratic>(nodes)) {}
+
+    /** Constructor from an Eigen matrix containing the positions of a linear hexa nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == 8)>
+    explicit RectangularHexahedron(Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
+
+    /** Constructor from an Eigen matrix containing the positions of a linear hexa nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == 8)>
+    explicit RectangularHexahedron(const Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
 
 private:
     // Implementations
-    friend struct Element<Hexahedron <Quadratic>>;
-    friend struct BaseHexahedron<Hexahedron <Quadratic>>;
+    friend struct Element<RectangularHexahedron <Quadratic>>;
+    friend struct BaseRectangularHexahedron<RectangularHexahedron <Quadratic>>;
     inline auto get_L(const LocalCoordinates & xi) const {
         const auto  & u = xi[0];
         const auto  & v = xi[1];
@@ -358,6 +319,19 @@ private:
 
         return m;
     };
+
+    inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {
+        caribou_assert(index < NumberOfNodesAtCompileTime and "Trying to get a node from an invalid node index.");
+        return this->T(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1], canonical_nodes[index][2]));
+    }
+
+    inline auto get_nodes() const {
+        Matrix<NumberOfNodesAtCompileTime, Dimension> nodes;
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < NumberOfNodesAtCompileTime; ++node_id) {
+            nodes.row(node_id) = get_node(node_id);
+        }
+        return nodes;
+    }
 
     inline auto get_gauss_nodes() const -> const auto & {
         using Weight = FLOATING_POINT_TYPE;

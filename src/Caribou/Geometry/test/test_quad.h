@@ -361,9 +361,9 @@ TEST(Quad, RectangularLinear) {
             }
 
             RectangularQuad q(transformed_nodes);
-            EXPECT_MATRIX_EQ(q.center(), center, 1e-10);
-            EXPECT_MATRIX_EQ(q.rotation(), R, 1e-10);
-            EXPECT_MATRIX_EQ(q.size(), H, 1e-10);
+            EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+            EXPECT_MATRIX_NEAR(q.rotation(), R, 1e-10);
+            EXPECT_MATRIX_NEAR(q.size(), H, 1e-10);
         }
 
         // Generic quad from rectangular quad
@@ -372,8 +372,8 @@ TEST(Quad, RectangularLinear) {
             const auto transformed_nodes = rectangular_quad.nodes();
             Quad q(transformed_nodes);
 
-            EXPECT_MATRIX_EQ(q.center(), center, 1e-10);
-            EXPECT_MATRIX_EQ(q.frame({0, 0}), R, 1e-10);
+            EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+            EXPECT_MATRIX_NEAR(q.frame({0, 0}), R, 1e-10);
         }
     }
 
@@ -409,9 +409,9 @@ TEST(Quad, RectangularLinear) {
             }
 
             RectangularQuad q(transformed_nodes);
-            EXPECT_MATRIX_EQ(q.center(), center, 1e-10);
-            EXPECT_MATRIX_EQ(q.rotation(), R, 1e-10);
-            EXPECT_MATRIX_EQ(q.size(), (H.block<2,1>(0,0)), 1e-10);
+            EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+            EXPECT_MATRIX_NEAR(q.rotation(), R, 1e-10);
+            EXPECT_MATRIX_NEAR(q.size(), RectangularQuad::Size(H.block<2,1>(0,0)), 1e-10);
         }
 
         // Generic quad from rectangular quad
@@ -421,8 +421,8 @@ TEST(Quad, RectangularLinear) {
             const auto transformed_nodes = rectangular_quad.nodes();
             Quad q(transformed_nodes);
 
-            EXPECT_MATRIX_EQ(q.center(), center, 1e-10);
-            EXPECT_MATRIX_EQ(q.frame({0, 0}), R, 1e-10);
+            EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+            EXPECT_MATRIX_NEAR(q.frame({0, 0}), R, 1e-10);
         }
     }
 }
@@ -454,9 +454,9 @@ TEST(Quad, RectangularQuadratic) {
             }
 
             RectangularQuad q(transformed_nodes);
-            EXPECT_MATRIX_EQ(q.center(), center, 1e-10);
-            EXPECT_MATRIX_EQ(q.rotation(), R, 1e-10);
-            EXPECT_MATRIX_EQ(q.size(), H, 1e-10);
+            EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+            EXPECT_MATRIX_NEAR(q.rotation(), R, 1e-10);
+            EXPECT_MATRIX_NEAR(q.size(), H, 1e-10);
         }
 
         // Generic quad from rectangular quad
@@ -465,8 +465,8 @@ TEST(Quad, RectangularQuadratic) {
             const auto transformed_nodes = rectangular_quad.nodes();
             Quad q(transformed_nodes);
 
-            EXPECT_MATRIX_EQ(q.center(), center, 1e-10);
-            EXPECT_MATRIX_EQ(q.frame({0, 0}), R, 1e-10);
+            EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+            EXPECT_MATRIX_NEAR(q.frame({0, 0}), R, 1e-10);
         }
     }
 
@@ -502,9 +502,9 @@ TEST(Quad, RectangularQuadratic) {
             }
 
             RectangularQuad q(transformed_nodes);
-            EXPECT_MATRIX_EQ(q.center(), center, 1e-10);
-            EXPECT_MATRIX_EQ(q.rotation(), R, 1e-10);
-            EXPECT_MATRIX_EQ(q.size(), (H.block<2,1>(0,0)), 1e-10);
+            EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+            EXPECT_MATRIX_NEAR(q.rotation(), R, 1e-10);
+            EXPECT_MATRIX_NEAR(q.size(), RectangularQuad::Size(H.block<2,1>(0,0)), 1e-10);
         }
 
         // Generic quad from rectangular quad
@@ -514,8 +514,8 @@ TEST(Quad, RectangularQuadratic) {
             const auto transformed_nodes = rectangular_quad.nodes();
             Quad q(transformed_nodes);
 
-            EXPECT_MATRIX_EQ(q.center(), center, 1e-10);
-            EXPECT_MATRIX_EQ(q.frame({0, 0}), R, 1e-10);
+            EXPECT_MATRIX_NEAR(q.center(), center, 1e-10);
+            EXPECT_MATRIX_NEAR(q.frame({0, 0}), R, 1e-10);
         }
     }
 }
