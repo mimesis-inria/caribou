@@ -26,12 +26,12 @@ using namespace sofa::component::topology;
  * @tparam DataTypes The datatype of the coordinates/derivatives vectors (3D float vector, 3D double vector, 2D float
  * vector or 2D double vector).
  */
-template<class DataTypes>
-class TractionForce : public sofa::core::behavior::ForceField<DataTypes>
+class TractionForce : public sofa::core::behavior::ForceField<sofa::defaulttype::Vec3Types>
 {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(TractionForce, DataTypes), SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
+    SOFA_CLASS(TractionForce, SOFA_TEMPLATE(sofa::core::behavior::ForceField, sofa::defaulttype::Vec3Types));
 
+    typedef sofa::defaulttype::Vec3Types DataTypes;
     typedef typename DataTypes::VecCoord VecCoord;
     typedef typename DataTypes::VecDeriv VecDeriv;
     typedef typename DataTypes::Coord    Coord   ;

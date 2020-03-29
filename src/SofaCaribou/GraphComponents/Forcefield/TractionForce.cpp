@@ -1,5 +1,8 @@
 #include "TractionForce.h"
 
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
@@ -11,8 +14,7 @@
 
 namespace SofaCaribou::GraphComponents::forcefield {
 
-template<class DataTypes>
-TractionForce<DataTypes>::TractionForce()
+TractionForce::TractionForce()
     // Inputs
     : d_traction(initData(&d_traction,
             "traction",
@@ -55,8 +57,7 @@ TractionForce<DataTypes>::TractionForce()
     this->f_listening.setValue(true);
 }
 
-template<class DataTypes>
-void TractionForce<DataTypes>::init()
+void TractionForce::init()
 {
     sofa::core::behavior::ForceField<DataTypes>::init();
 
@@ -106,8 +107,7 @@ void TractionForce<DataTypes>::init()
         increment_load(d_traction.getValue());
 }
 
-template<class DataTypes>
-void TractionForce<DataTypes>::reset()
+void TractionForce::reset()
 {
     // Do an increment on the first step of the simulation
     m_number_of_steps_since_last_increment = d_number_of_steps_before_increment.getValue();
@@ -119,8 +119,7 @@ void TractionForce<DataTypes>::reset()
     m_current_traction = Deriv();
 }
 
-template<class DataTypes>
-void TractionForce<DataTypes>::handleEvent(sofa::core::objectmodel::Event* event)
+void TractionForce::handleEvent(sofa::core::objectmodel::Event* event)
 {
     if (!sofa::simulation::AnimateBeginEvent::checkEventType(event))
         return;
@@ -164,8 +163,7 @@ void TractionForce<DataTypes>::handleEvent(sofa::core::objectmodel::Event* event
     increment_load(increment);
 }
 
-template<class DataTypes>
-void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_area)
+void TractionForce::increment_load(Deriv traction_increment_per_unit_area)
 {
     using QuadElement = caribou::geometry::Quad<3>;
     sofa::helper::WriteAccessor<Data<VecDeriv>> nodal_forces = d_nodal_forces;
@@ -184,17 +182,27 @@ void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_
         const auto p2 = MapVector<3>(&(rest_positions[triangle_node_indices[1]][0]));
         const auto p3 = MapVector<3>(&(rest_positions[triangle_node_indices[2]][0]));
 
-        const auto triangle = caribou::geometry::Triangle<3>(p1, p2, p3);
+        const auto triangle = caribou::geometry::Triangle<caribou::_3D>(p1, p2, p3);
 
         // Integration of the traction increment over the element.
-        const auto area = triangle.area();
-        const Deriv integrated_force_increment = area * traction_increment_per_unit_area;
+        for (const auto & gauss_node : triangle.gauss_nodes()) {
+            const auto & g = gauss_node.position;
+            const auto & w = gauss_node.weight;
 
-        nodal_forces[triangle_node_indices[0]] += integrated_force_increment / (Real) 3;
-        nodal_forces[triangle_node_indices[1]] += integrated_force_increment / (Real) 3;
-        nodal_forces[triangle_node_indices[2]] += integrated_force_increment / (Real) 3;
+            const auto J = triangle.jacobian(g);
+            const auto detJ = J.col(0).cross(J.col(1)).norm();
 
-        load += integrated_force_increment;
+            // Traction evaluated at the gauss point position
+            const auto F = traction_increment_per_unit_area * w * detJ;
+
+            // Shape values at each nodes evaluated at the gauss point position
+            const auto S = triangle.L(g);
+
+            for (size_t j = 0; j < triangle.number_of_nodes(); ++j) {
+                nodal_forces[triangle_node_indices[j]] += F*S[j];
+                load += F*S[j];;
+            }
+        }
     }
 
     for (size_t i = 0; i < quads.size(); ++i) {
@@ -207,9 +215,9 @@ void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_
         const auto quad = QuadElement(p1, p2, p3, p4);
 
         // Integration of the traction increment over the element.
-        for (size_t gauss_node_id = 0; gauss_node_id < QuadElement::number_of_gauss_nodes; ++gauss_node_id) {
-            const auto & g = Vector<2>(QuadElement::gauss_nodes[gauss_node_id]);
-            const auto & w = QuadElement::gauss_weights[gauss_node_id];
+        for (const auto & gauss_node : quad.gauss_nodes()) {
+            const auto & g = gauss_node.position;
+            const auto & w = gauss_node.weight;
 
             const auto J = quad.jacobian(g);
             const auto detJ = J.col(0).cross(J.col(1)).norm();
@@ -218,24 +226,19 @@ void TractionForce<DataTypes>::increment_load(Deriv traction_increment_per_unit_
             const auto F = traction_increment_per_unit_area * w * detJ;
 
             // Shape values at each nodes evaluated at the gauss point position
-            const auto S = QuadElement::L(g);
+            const auto S = quad.L(g);
 
-            for (size_t j = 0; j < QuadElement::NumberOfNodes; ++j) {
+            for (size_t j = 0; j < quad.number_of_nodes(); ++j) {
                 nodal_forces[quad_node_indices[j]] += F*S[j];
                 load += F*S[j];;
             }
-
-            nodal_forces[quad_node_indices[1]] += F*S[1];
-            nodal_forces[quad_node_indices[2]] += F*S[2];
-            nodal_forces[quad_node_indices[3]] += F*S[3];
         }
     }
 
     current_load += load.norm();
 }
 
-template<class DataTypes>
-void TractionForce<DataTypes>::addForce(const sofa::core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& /*d_v*/)
+void TractionForce::addForce(const sofa::core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& /*d_v*/)
 {
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_x);
@@ -251,8 +254,7 @@ void TractionForce<DataTypes>::addForce(const sofa::core::MechanicalParams* mpar
     sofa::helper::AdvancedTimer::stepEnd("TractionForce::addForce");
 }
 
-template<class DataTypes>
-void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
+void TractionForce::draw(const sofa::core::visual::VisualParams* vparams)
 {
     using Color = sofa::core::visual::DrawTool::RGBAColor;
     using Vector3 = sofa::core::visual::DrawTool::Vector3;
@@ -346,7 +348,7 @@ void TractionForce<DataTypes>::draw(const sofa::core::visual::VisualParams* vpar
 
 SOFA_DECL_CLASS(TractionForce)
 static int TractionForceClass = sofa::core::RegisterObject("Traction forcefield.")
-                                          .add< TractionForce<sofa::defaulttype::Vec3dTypes> >(true)
+                                          .add< TractionForce >(true)
 ;
 
 } // namespace SofaCaribou::GraphComponents::forcefield
