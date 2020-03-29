@@ -110,7 +110,7 @@ struct BaseQuad : public Element<Derived> {
 
 private:
     // Implementations
-    friend class Element<Derived>;
+    friend struct Element<Derived>;
     [[nodiscard]]
     inline auto get_number_of_nodes() const {return NumberOfNodesAtCompileTime;}
     inline auto get_number_of_gauss_nodes() const {return NumberOfGaussNodesAtCompileTime;}

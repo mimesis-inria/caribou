@@ -36,7 +36,7 @@ struct BaseHexahedron : public Element<Derived> {
     BaseHexahedron() = default;
 
     /** Constructor from an array of floating point type */
-    BaseHexahedron(const FLOATING_POINT_TYPE(&nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
+    BaseHexahedron(const FLOATING_POINT_TYPE(nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
 
     /** Constructor from a serie of nodes. */
     template <
@@ -50,7 +50,7 @@ struct BaseHexahedron : public Element<Derived> {
 
 private:
     // Implementations
-    friend class Element<Derived>;
+    friend struct Element<Derived>;
     [[nodiscard]]
     inline auto get_number_of_nodes() const {return NumberOfNodesAtCompileTime;}
     inline auto get_number_of_gauss_nodes() const {return NumberOfGaussNodesAtCompileTime;}
