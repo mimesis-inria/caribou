@@ -36,12 +36,12 @@ TEST(Tetrahedron, Quadratic) {
 
         using WorldCoordinates = Tetrahedron::WorldCoordinates;
 
-        Tetrahedron t ({
+        Tetrahedron t (
             WorldCoordinates({50, 50, 0}),
             WorldCoordinates({60, 50, 0}),
             WorldCoordinates({55, 55, 0}),
             WorldCoordinates({55, 52.5, -5})
-        });
+        );
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 10, 1> values;

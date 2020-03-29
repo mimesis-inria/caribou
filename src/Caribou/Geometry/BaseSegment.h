@@ -32,15 +32,20 @@ struct BaseSegment : public Element<Derived> {
     /** Default empty constructor */
     BaseSegment() = default;
 
-    /** Constructor from an array of floating point type */
-    BaseSegment(const FLOATING_POINT_TYPE(nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
+    /** Constructor from an Eigen matrix containing the positions of the segment's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit BaseSegment(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+
+    /** Constructor from an Eigen matrix containing the positions of the segment's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit BaseSegment(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
 
     /** Constructor from a serie of nodes. */
     template <
         typename ...Nodes,
         REQUIRES(NumberOfNodesAtCompileTime == sizeof...(Nodes)+1)
     >
-    BaseSegment(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
+    explicit BaseSegment(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
     {
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }

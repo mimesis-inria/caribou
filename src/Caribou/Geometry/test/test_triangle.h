@@ -117,11 +117,11 @@ TEST(Triangle, Quadratic) {
         using WordCoordinates = Triangle::WorldCoordinates;
 
         // Jacobian
-        Triangle t ({
-                        WordCoordinates({50, 50}),
-                        WordCoordinates({60, 50}),
-                        WordCoordinates({55, 55})
-                    });
+        Triangle t (
+            WordCoordinates({50, 50}),
+            WordCoordinates({60, 50}),
+            WordCoordinates({55, 55})
+        );
 
         auto J = t.jacobian(LocalCoordinates {1/3., 1/3.} );
         EXPECT_NEAR(J.determinant(), 50., 1e-4);

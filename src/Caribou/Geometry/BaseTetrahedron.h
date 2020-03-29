@@ -35,15 +35,20 @@ struct BaseTetrahedron : public Element<Derived> {
     /** Default empty constructor */
     BaseTetrahedron() = default;
 
-    /** Constructor from an array of floating point type */
-    BaseTetrahedron(const FLOATING_POINT_TYPE(nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
+    /** Constructor from an Eigen matrix containing the positions of the tetra's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit BaseTetrahedron(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+
+    /** Constructor from an Eigen matrix containing the positions of the tetra's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit BaseTetrahedron(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
 
     /** Constructor from a serie of nodes. */
     template <
         typename ...Nodes,
         REQUIRES(NumberOfNodesAtCompileTime == sizeof...(Nodes)+1)
     >
-    BaseTetrahedron(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
+    explicit BaseTetrahedron(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
     {
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }

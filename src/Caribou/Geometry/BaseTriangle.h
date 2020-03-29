@@ -34,15 +34,20 @@ struct BaseTriangle : public Element<Derived> {
     /** Default empty constructor */
     BaseTriangle() = default;
 
-    /** Constructor from an array of floating point type */
-    BaseTriangle(const FLOATING_POINT_TYPE(nodes)[NumberOfNodesAtCompileTime]) :p_nodes(nodes) {}
+    /** Constructor from an Eigen matrix containing the positions of the triangle's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit BaseTriangle(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+
+    /** Constructor from an Eigen matrix containing the positions of the triangle's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit BaseTriangle(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
 
     /** Constructor from a serie of nodes. */
     template <
         typename ...Nodes,
         REQUIRES(NumberOfNodesAtCompileTime == sizeof...(Nodes)+1)
     >
-    BaseTriangle(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
+    explicit BaseTriangle(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
     {
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }

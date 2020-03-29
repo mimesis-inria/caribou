@@ -203,6 +203,14 @@ struct Tetrahedron <Quadratic> : public BaseTetrahedron<Tetrahedron <Quadratic>>
         this->p_nodes.row(9) = linear_Tetrahedron.T(LocalCoordinates(0.0, 0.5, 0.5)); // Node 9
     }
 
+    /** Construct a quadratic Tetrahedron from four nodes */
+    Tetrahedron(WorldCoordinates & p0, WorldCoordinates & p1, WorldCoordinates & p2, WorldCoordinates & p3)
+        : Tetrahedron(Tetrahedron<Linear>(p0, p1, p2, p3)) {}
+
+    /** Construct a quadratic Tetrahedron from four nodes */
+    Tetrahedron(const WorldCoordinates & p0, const WorldCoordinates & p1, const WorldCoordinates & p2, const WorldCoordinates & p3)
+        : Tetrahedron(Tetrahedron<Linear>(p0, p1, p2, p3)) {}
+
 
 private:
     // Implementations

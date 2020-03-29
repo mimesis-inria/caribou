@@ -182,7 +182,7 @@ struct Triangle <_Dimension, Quadratic> : public BaseTriangle<Triangle <_Dimensi
     };
 
     // Construct a quadratic triangle from a linear one
-    Triangle(const Triangle<Dimension, Linear> & linear_triangle) : Base() {
+    explicit Triangle(const Triangle<Dimension, Linear> & linear_triangle) : Base() {
         this->p_nodes.row(0) = linear_triangle.node(0); // Node 0
         this->p_nodes.row(1) = linear_triangle.node(1); // Node 1
         this->p_nodes.row(2) = linear_triangle.node(2); // Node 2
@@ -191,6 +191,13 @@ struct Triangle <_Dimension, Quadratic> : public BaseTriangle<Triangle <_Dimensi
         this->p_nodes.row(5) = linear_triangle.T(LocalCoordinates(0.0, 0.5)); // Node 5
     }
 
+    /** Construct a quadratic triangle from three nodes */
+    Triangle(WorldCoordinates & p0, WorldCoordinates & p1, WorldCoordinates & p2)
+    : Triangle(Triangle<Dimension, Linear>(p0, p1, p2)) {}
+
+    /** Construct a quadratic triangle from three nodes */
+    Triangle(const WorldCoordinates & p0, const WorldCoordinates & p1, const WorldCoordinates & p2)
+        : Triangle(Triangle<Dimension, Linear>(p0, p1, p2)) {}
 
 private:
     // Implementations
