@@ -17,7 +17,7 @@ TEST(Topology_Grid_3D, Grid3D) {
     using Dimensions = Grid::Dimensions;
     using GridCoordinates = Grid::GridCoordinates;
     using CellIndex = Grid::CellIndex;
-    using Hexa = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
+    using Hexa = caribou::geometry::Hexahedron<caribou::Linear>;
 
     Grid grid(WorldCoordinates{0.25, 0.5, 0.75}, Subdivisions{2, 2, 2}, Dimensions{100, 100, 100});
 
@@ -87,15 +87,15 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_TRUE(list_are_equals({0, 2, 1, 3}, grid.cells_around(WorldCoordinates(50.25, 50.50, 25.75))));
 
     // Node position queries
-    EXPECT_NODE_EQ(grid.node(0), WorldCoordinates({0.25, 0.5, 0.75}));
-    EXPECT_NODE_EQ(grid.node(2), WorldCoordinates({100.25, 0.5, 0.75}));
-    EXPECT_NODE_EQ(grid.node(6), WorldCoordinates({0.25, 100.5, 0.75}));
-    EXPECT_NODE_EQ(grid.node(8), WorldCoordinates({100.25, 100.5, 0.75}));
+    EXPECT_MATRIX_NEAR(grid.node(0), WorldCoordinates({0.25, 0.5, 0.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(2), WorldCoordinates({100.25, 0.5, 0.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(6), WorldCoordinates({0.25, 100.5, 0.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(8), WorldCoordinates({100.25, 100.5, 0.75}), 1e-15);
 
-    EXPECT_NODE_EQ(grid.node(18), WorldCoordinates({0.25, 0.5, 100.75}));
-    EXPECT_NODE_EQ(grid.node(20), WorldCoordinates({100.25, 0.5, 100.75}));
-    EXPECT_NODE_EQ(grid.node(24), WorldCoordinates({0.25, 100.5, 100.75}));
-    EXPECT_NODE_EQ(grid.node(26), WorldCoordinates({100.25, 100.5, 100.75}));
+    EXPECT_MATRIX_NEAR(grid.node(18), WorldCoordinates({0.25, 0.5, 100.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(20), WorldCoordinates({100.25, 0.5, 100.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(24), WorldCoordinates({0.25, 100.5, 100.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(26), WorldCoordinates({100.25, 100.5, 100.75}), 1e-15);
 
     // Node indexing
     for (Grid::NodeIndex index = 0; index < (signed) grid.number_of_nodes(); ++index) {
@@ -173,7 +173,7 @@ TEST(Topology_Grid_3D, Grid3D) {
             grid.node(node_indices[3]),
             grid.node(node_indices[4]), grid.node(node_indices[5]), grid.node(node_indices[6]),
             grid.node(node_indices[7]));
-        EXPECT_ELEMENTS_EQ(h, grid.cell_at((Grid::CellIndex) i));
+        EXPECT_MATRIX_NEAR(h.nodes(), grid.cell_at((Grid::CellIndex) i).nodes(), 1e-15);
     }
 
     // Face queries
@@ -239,7 +239,7 @@ TEST(Topology_Grid_3D, BenchMark)
     using Dimensions = Grid::Dimensions;
     BEGIN_CLOCK;
 
-    Grid grid(WorldCoordinates{0, 0, 0}, Subdivisions{100, 100, 1000}, Dimensions{100, 100, 100});
+    Grid grid(WorldCoordinates{0, 0, 0}, Subdivisions{100, 100, 100}, Dimensions{100, 100, 100});
 
     std::vector<WorldCoordinates> positions(grid.number_of_nodes());
     std::vector<Grid::ElementNodes> hexahedrons(grid.number_of_cells());

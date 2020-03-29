@@ -52,6 +52,21 @@ struct BaseTriangle : public Element<Derived> {
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
+    // Public methods common to all triangle types
+
+    /**
+     * Get the vector normal to the triangle's surface
+     *
+     * \warning This method is only available for triangles in a 3D world
+     */
+    inline auto normal() const noexcept ->  WorldCoordinates {
+        static_assert(Dimension == 3, "Can only get the normal of a triangle in a 3D world");
+        const auto v1 = self().node(1) - self().node(0);
+        const auto v2 = self().node(2) - self().node(1);
+
+        return v1.cross(v2).normalized();
+    }
+
 private:
     // Implementations
     friend struct Element<Derived>;
@@ -62,6 +77,9 @@ private:
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::T(LocalCoordinates({1/3., 1/3.}));};
     inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 3;};
+
+    auto self() -> Derived& { return *static_cast<Derived*>(this); }
+    auto self() const -> const Derived& { return *static_cast<const Derived*>(this); }
 
     template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
     inline

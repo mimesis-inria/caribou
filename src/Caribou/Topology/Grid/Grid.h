@@ -7,7 +7,6 @@
 #include <array>
 
 #include <Caribou/config.h>
-#include <Caribou/Geometry/Traits.h>
 
 #include <Caribou/Topology/Grid/Internal/BaseUnidimensionalGrid.h>
 #include <Caribou/Topology/Grid/Internal/BaseMultidimensionalGrid.h>
@@ -32,8 +31,8 @@ struct Grid<1> : public internal::BaseUnidimensionalGrid<Grid<1>>
     using Base = internal::BaseUnidimensionalGrid<Grid<Dimension>>;
     using Base::Base;
 
-    using Element = geometry::Segment<1, geometry::interpolation::Segment2>;
-    using ElementIndices = std::array<NodeIndex, Element::NumberOfNodes>;
+    using Element = geometry::Segment<1, Linear>;
+    using ElementIndices = std::array<NodeIndex, caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime>;
 
     [[nodiscard]] inline
     auto
@@ -76,11 +75,11 @@ struct Grid<2> : public internal::BaseMultidimensionalGrid<2, Grid<2>>
     using Base = internal::BaseMultidimensionalGrid<Dimension, Grid<Dimension>>;
     using Base::Base;
 
-    using Element = geometry::RectangularQuad<2, geometry::interpolation::Quad4>;
-    using Edge = Element::BoundaryType;
+    using Element = geometry::RectangularQuad<2, Linear>;
+    using Edge = geometry::traits<Element>::BoundaryElementType;
 
-    using ElementNodes = std::array<NodeIndex, Element::NumberOfNodes>;
-    using EdgeNodes = std::array<NodeIndex, Edge::NumberOfNodes>;
+    using ElementNodes = std::array<NodeIndex, geometry::traits<Element>::NumberOfNodesAtCompileTime>;
+    using EdgeNodes = std::array<NodeIndex, geometry::traits<Edge>::NumberOfNodesAtCompileTime>;
 
     [[nodiscard]] inline auto
     cell_at(const GridCoordinates & coordinates) const -> Element
@@ -199,13 +198,13 @@ struct Grid<3> : public internal::BaseMultidimensionalGrid<3, Grid<3>>
 
     using FaceIndex = typename Base::UInt;
 
-    using Element = geometry::RectangularHexahedron<geometry::interpolation::Hexahedron8>;
-    using Face = Element::BoundaryType;
-    using Edge = Face::BoundaryType;
+    using Element = geometry::RectangularHexahedron<Linear>;
+    using Face = geometry::traits<Element>::BoundaryElementType;
+    using Edge = geometry::traits<Face>::BoundaryElementType;
 
-    using ElementNodes = std::array<NodeIndex, Element::NumberOfNodes>;
-    using FaceNodes = std::array<NodeIndex, Face::NumberOfNodes>;
-    using EdgeNodes = std::array<NodeIndex, Edge::NumberOfNodes>;
+    using ElementNodes = std::array<NodeIndex, geometry::traits<Element>::NumberOfNodesAtCompileTime>;
+    using FaceNodes = std::array<NodeIndex, geometry::traits<Face>::NumberOfNodesAtCompileTime>;
+    using EdgeNodes = std::array<NodeIndex, geometry::traits<Edge>::NumberOfNodesAtCompileTime>;
 
 
     [[nodiscard]] inline auto

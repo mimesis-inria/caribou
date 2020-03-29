@@ -58,15 +58,15 @@ TEST(Topology_Grid_1D, Grid1D) {
     EXPECT_TRUE(list_are_equals({1}, grid.cells_around(WorldCoordinates(100.25))));
 
 // Node position queries
-    EXPECT_NODE_EQ(grid.node(0), WorldCoordinates(0.25));
-    EXPECT_NODE_EQ(grid.node(1), WorldCoordinates(50.25));
-    EXPECT_NODE_EQ(grid.node(2), WorldCoordinates(100.25));
+    EXPECT_MATRIX_NEAR(grid.node(0), WorldCoordinates(0.25), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(1), WorldCoordinates(50.25), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(2), WorldCoordinates(100.25), 1e-15);
 
 // Cell Node indices
     for (UNSIGNED_INTEGER_TYPE i = 0; i < grid.number_of_cells(); ++i) {
         const auto node_indices = grid.node_indices_of((Grid::CellIndex) i);
         const Edge e(grid.node(node_indices[0]), grid.node(node_indices[1]));
-        EXPECT_ELEMENTS_EQ(e, grid.cell_at((Grid::CellIndex) i));
+        EXPECT_MATRIX_NEAR(e.nodes(), grid.cell_at((Grid::CellIndex) i).nodes(), 1e-15);
     }
 
 }

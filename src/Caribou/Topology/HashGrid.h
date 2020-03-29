@@ -2,24 +2,24 @@
 #define CARIBOU_TOPOLOGY_HASHGRID_H
 
 #include <Caribou/config.h>
-#include <Caribou/Geometry/Traits.h>
+#include <Caribou/Geometry/Element.h>
 #include <unordered_map>
 #include <vector>
 #include <Eigen/Core>
 #include <bitset>
 
 struct CwiseRound {
-    FLOATING_POINT_TYPE operator()(const FLOATING_POINT_TYPE& x) const { return std::round(x); }
+    auto operator()(const FLOATING_POINT_TYPE& x) const -> FLOATING_POINT_TYPE { return std::round(x); }
 };
 struct CwiseFloor {
-    FLOATING_POINT_TYPE operator()(const FLOATING_POINT_TYPE& x) const { return std::floor(x); }
+    auto operator()(const FLOATING_POINT_TYPE& x) const -> FLOATING_POINT_TYPE { return std::floor(x); }
 };
 
 template <typename Element, typename Data>
 class HashGrid {
 public:
 
-    static constexpr UNSIGNED_INTEGER_TYPE Dimension = caribou::traits<Element>::Dimension;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = caribou::geometry::traits<Element>::Dimension;
 
     using GridCoordinates = Eigen::Matrix<INTEGER_TYPE, Dimension, 1>;
     using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
@@ -64,7 +64,7 @@ public:
      * intersection test.
      */
     inline
-    std::vector<Data> get(const WorldCoordinates & p) const {
+    auto get(const WorldCoordinates & p) const -> std::vector<Data> {
         const VecFloat absolute = p / p_cell_size;
         const VecFloat rounded = absolute.unaryExpr(CwiseRound());
         const VecFloat distance = absolute - rounded;
@@ -134,7 +134,7 @@ private:
 
     struct HashFunction
     {
-        std::size_t operator()(const GridCoordinates & coordinates) const
+        auto operator()(const GridCoordinates & coordinates) const -> std::size_t
         {
             // We use the large prime numbers proposed in paper:
             // M.Teschner et al "Optimized Spatial Hashing for Collision Detection of Deformable Objects" (2003)
@@ -150,7 +150,7 @@ private:
 
     struct HashEqual
     {
-        bool operator()(const GridCoordinates &a, const GridCoordinates &b) const
+        auto operator()(const GridCoordinates &a, const GridCoordinates &b) const -> bool
         {
             return ((a - b).norm() == 0);
         }

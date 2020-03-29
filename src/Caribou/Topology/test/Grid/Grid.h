@@ -2,7 +2,32 @@
 #define CARIBOU_TOPOLOGY_TEST_GRID_H
 #include <Eigen/Core>
 #include <list>
-#include <Caribou/Geometry/Traits.h>
+
+template <typename Derived>
+::testing::AssertionResult CmpHelperMatrixEQ(const char* lhs_expression,
+                                             const char* rhs_expression,
+                                             const char* /*abs_error_expr*/,
+                                             const Eigen::MatrixBase<Derived> & lhs_value,
+                                             const Eigen::MatrixBase<Derived> & rhs_value,
+                                             double abs_error) {
+    auto max_error = ((lhs_value) - (rhs_value)).cwiseAbs().maxCoeff();
+
+    if (max_error < abs_error) {
+        return ::testing::AssertionSuccess();
+    }
+
+    Eigen::IOFormat clean(static_cast<int>(std::abs(std::log10(abs_error))), 0, " ", "\n", "    |", "|");
+
+    return ::testing::AssertionFailure()
+        << "The difference between " << lhs_expression << " and " << rhs_expression
+        << " is " << max_error << ", which exceeds " << abs_error << ", where\n"
+        << lhs_expression << " evaluates to \n" << lhs_value.format(clean) << "\n"
+        << rhs_expression << " evaluates to \n" << rhs_value.format(clean) << "\n";
+}
+
+#define EXPECT_MATRIX_NEAR(val1, val2, abs_error)\
+  EXPECT_PRED_FORMAT3(::CmpHelperMatrixEQ, val1, val2, abs_error)
+
 
 template<template<typename, typename...> typename H, typename T, typename... Ts>
 bool list_are_equals (const std::list<T> & l1, const H<T, Ts...> & l2)
@@ -17,32 +42,6 @@ bool list_are_equals (const std::list<T> & l1, const H<T, Ts...> & l2)
         if (*it1 != *it2)
             return false;
     return true;
-}
-
-template <typename Node>
-void EXPECT_NODE_EQ(const Node & n1, const Node & n2) {
-    EXPECT_FLOAT_EQ((n2-n1).norm(), 0.);
-}
-
-template <typename Element>
-void EXPECT_ELEMENTS_EQ(const Element & e1, const Element & e2) {
-    for (std::size_t i = 0; i < Element::NumberOfNodes; ++i) {
-        EXPECT_NODE_EQ(e1.node(i), e2.node(i));
-    }
-}
-
-template <typename Element1, typename Element2>
-void EXPECT_ELEMENTS_EQ(const Element1 & e1, const Element2 & e2) {
-    static_assert((int)caribou::traits<Element1>::NumberOfNodes == (int)caribou::traits<Element2>::NumberOfNodes);
-    for (std::size_t i = 0; i < Element1::NumberOfNodes; ++i) {
-        EXPECT_NODE_EQ(e1.node(i), e2.node(i));
-    }
-}
-
-template <typename Element, typename... Elements>
-void EXPECT_ELEMENTS_EQ(const Element & e1, const Element & e2, Elements... elements) {
-    EXPECT_ELEMENTS_EQ(e1, e2);
-    EXPECT_ELEMENTS_EQ(e2, std::forward<Elements>(elements)...);
 }
 
 #include "Grid_1D.h"
