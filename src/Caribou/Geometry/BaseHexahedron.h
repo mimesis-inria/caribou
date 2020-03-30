@@ -75,13 +75,13 @@ struct BaseHexahedron : public Element<Derived> {
     inline auto frame(const LocalCoordinates & local_point) const -> Matrix<3, 3>
     {
         // Position of the point inside the hexahedron where the frame should be computed
-        const auto p = this->T( local_point );
+        const auto p = this->world_coordinates( local_point );
 
         // Project of the point on the quad facing the u axis
-        const auto projected_on_u = this->T({1, local_point[1],local_point[2]});
+        const auto projected_on_u = this->world_coordinates({1, local_point[1],local_point[2]});
 
         // Project of the point on the quad facing the v axis
-        const auto projected_on_v = this->T({local_point[0], 1,local_point[2]});
+        const auto projected_on_v = this->world_coordinates({local_point[0], 1,local_point[2]});
 
         /* @todo(jnbrunet2000@gmail.com): select between the pairs of axis (center-to-u, center-to-v),
            (center-to-u, center-to-w) and (center-to-v, center-to-w) to find the best match (closer to orthogonal) */
@@ -118,7 +118,7 @@ private:
     inline auto get_number_of_gauss_nodes() const {return NumberOfGaussNodesAtCompileTime;}
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const {return WorldCoordinates(p_nodes.row(index));};
     inline auto get_nodes() const -> const auto & {return p_nodes;};
-    inline auto get_center() const {return Base::T(LocalCoordinates(0, 0, 0));};
+    inline auto get_center() const {return Base::world_coordinates(LocalCoordinates(0, 0, 0));};
     inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 6;};
 
     template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>

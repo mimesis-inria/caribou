@@ -190,17 +190,17 @@ struct Tetrahedron <Quadratic> : public BaseTetrahedron<Tetrahedron <Quadratic>>
     };
 
     // Construct a quadratic Tetrahedron from a linear one
-    Tetrahedron(const Tetrahedron<Linear> & linear_Tetrahedron) : Base() {
+    explicit Tetrahedron(const Tetrahedron<Linear> & linear_Tetrahedron) : Base() {
         this->p_nodes.row(0) = linear_Tetrahedron.node(0); // Node 0
         this->p_nodes.row(1) = linear_Tetrahedron.node(1); // Node 1
         this->p_nodes.row(2) = linear_Tetrahedron.node(2); // Node 2
         this->p_nodes.row(3) = linear_Tetrahedron.node(3); // Node 3
-        this->p_nodes.row(4) = linear_Tetrahedron.T(LocalCoordinates(0.5, 0.0, 0.0)); // Node 4
-        this->p_nodes.row(5) = linear_Tetrahedron.T(LocalCoordinates(0.5, 0.5, 0.0)); // Node 5
-        this->p_nodes.row(6) = linear_Tetrahedron.T(LocalCoordinates(0.0, 0.5, 0.0)); // Node 6
-        this->p_nodes.row(7) = linear_Tetrahedron.T(LocalCoordinates(0.0, 0.0, 0.5)); // Node 7
-        this->p_nodes.row(8) = linear_Tetrahedron.T(LocalCoordinates(0.5, 0.0, 0.5)); // Node 8
-        this->p_nodes.row(9) = linear_Tetrahedron.T(LocalCoordinates(0.0, 0.5, 0.5)); // Node 9
+        this->p_nodes.row(4) = linear_Tetrahedron.world_coordinates(LocalCoordinates(0.5, 0.0, 0.0)); // Node 4
+        this->p_nodes.row(5) = linear_Tetrahedron.world_coordinates(LocalCoordinates(0.5, 0.5, 0.0)); // Node 5
+        this->p_nodes.row(6) = linear_Tetrahedron.world_coordinates(LocalCoordinates(0.0, 0.5, 0.0)); // Node 6
+        this->p_nodes.row(7) = linear_Tetrahedron.world_coordinates(LocalCoordinates(0.0, 0.0, 0.5)); // Node 7
+        this->p_nodes.row(8) = linear_Tetrahedron.world_coordinates(LocalCoordinates(0.5, 0.0, 0.5)); // Node 8
+        this->p_nodes.row(9) = linear_Tetrahedron.world_coordinates(LocalCoordinates(0.0, 0.5, 0.5)); // Node 9
     }
 
     /** Construct a quadratic Tetrahedron from four nodes */

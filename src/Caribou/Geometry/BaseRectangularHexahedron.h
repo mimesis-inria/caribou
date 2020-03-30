@@ -63,7 +63,7 @@ struct BaseRectangularHexahedron : public Element<Derived> {
     };
 
     /** Compute the transformation of a local position {u,v,w} to its world position {x,y,z} */
-    inline auto T(const LocalCoordinates & coordinates) const -> WorldCoordinates {
+    inline auto world_coordinates(const LocalCoordinates & coordinates) const -> WorldCoordinates {
         return p_center + p_R * (coordinates.cwiseProduct(p_H / 2.));
     }
 

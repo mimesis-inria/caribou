@@ -47,7 +47,7 @@ TEST(Hexahedron, Linear) {
                   p1(h.node(4)), p1(h.node(5)), p1(h.node(6)), p1(h.node(7));
         for (const auto & gauss_node : h.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(h.interpolate(x, values), p1(h.T(x)));
+            EXPECT_FLOAT_EQ(h.interpolate(x, values), p1(h.world_coordinates(x)));
         }
 
         // Integration
@@ -57,7 +57,7 @@ TEST(Hexahedron, Linear) {
             const auto x = gauss_node.position;
             const auto w = gauss_node.weight;
             const auto detJ = h.jacobian(x).determinant();
-            numerical_solution_hexa += p1(h.T(x)) * w * detJ;
+            numerical_solution_hexa += p1(h.world_coordinates(x)) * w * detJ;
         }
         // Six tetrahedrons
         FLOATING_POINT_TYPE numerical_solution_tetras = 0;
@@ -72,7 +72,7 @@ TEST(Hexahedron, Linear) {
                 const auto x = gauss_node.position;
                 const auto w = gauss_node.weight;
                 const auto detJ = t.jacobian(x).determinant();
-                numerical_solution_tetras += p1(t.T(x)) * w * detJ;
+                numerical_solution_tetras += p1(t.world_coordinates(x)) * w * detJ;
             }
         }
 
@@ -113,7 +113,7 @@ TEST(Hexahedron, Quadratic) {
                   p2(h.node(10)), p2(h.node(11)), p2(h.node(12)), p2(h.node(13)), p2(h.node(14)), p2(h.node(15)), p2(h.node(16)), p2(h.node(17)), p2(h.node(18)), p2(h.node(19));
         for (const auto & gauss_node : h.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(h.interpolate(x, values), p2(h.T(x)));
+            EXPECT_FLOAT_EQ(h.interpolate(x, values), p2(h.world_coordinates(x)));
         }
 
         // Integration
@@ -123,7 +123,7 @@ TEST(Hexahedron, Quadratic) {
             const auto x = gauss_node.position;
             const auto w = gauss_node.weight;
             const auto detJ = h.jacobian(x).determinant();
-            numerical_solution_hexa += p2(h.T(x)) * w * detJ;
+            numerical_solution_hexa += p2(h.world_coordinates(x)) * w * detJ;
         }
         // Six tetrahedrons
         FLOATING_POINT_TYPE numerical_solution_tetras = 0;
@@ -138,7 +138,7 @@ TEST(Hexahedron, Quadratic) {
                 const auto x = gauss_node.position;
                 const auto w = gauss_node.weight;
                 const auto detJ = t.jacobian(x).determinant();
-                numerical_solution_tetras += p2(t.T(x)) * w * detJ;
+                numerical_solution_tetras += p2(t.world_coordinates(x)) * w * detJ;
             }
         }
 

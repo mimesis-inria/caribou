@@ -224,10 +224,10 @@ struct Quad <_Dimension, Quadratic> : public BaseQuad<Quad <_Dimension, Quadrati
         this->p_nodes.row(1) = linear_Quad.node(1); // Node 1
         this->p_nodes.row(2) = linear_Quad.node(2); // Node 2
         this->p_nodes.row(3) = linear_Quad.node(3); // Node 3
-        this->p_nodes.row(4) = linear_Quad.T(LocalCoordinates(canonical_nodes[4][0], canonical_nodes[4][1])); // Node 4
-        this->p_nodes.row(5) = linear_Quad.T(LocalCoordinates(canonical_nodes[5][0], canonical_nodes[5][1])); // Node 5
-        this->p_nodes.row(6) = linear_Quad.T(LocalCoordinates(canonical_nodes[6][0], canonical_nodes[6][1])); // Node 6
-        this->p_nodes.row(7) = linear_Quad.T(LocalCoordinates(canonical_nodes[7][0], canonical_nodes[7][1])); // Node 7
+        this->p_nodes.row(4) = linear_Quad.world_coordinates(LocalCoordinates(canonical_nodes[4][0], canonical_nodes[4][1])); // Node 4
+        this->p_nodes.row(5) = linear_Quad.world_coordinates(LocalCoordinates(canonical_nodes[5][0], canonical_nodes[5][1])); // Node 5
+        this->p_nodes.row(6) = linear_Quad.world_coordinates(LocalCoordinates(canonical_nodes[6][0], canonical_nodes[6][1])); // Node 6
+        this->p_nodes.row(7) = linear_Quad.world_coordinates(LocalCoordinates(canonical_nodes[7][0], canonical_nodes[7][1])); // Node 7
     }
 
     /** Construct a quadratic Quad from four nodes */

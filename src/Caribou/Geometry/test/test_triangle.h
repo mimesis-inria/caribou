@@ -35,7 +35,7 @@ TEST(Triangle, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p1(t.node(0)), p1(t.node(1)), p1(t.node(2)));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.T(x)));
+            EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
         }
 
         // Integration
@@ -44,7 +44,7 @@ TEST(Triangle, Linear) {
             const auto x = gauss_node.position;
             const auto w = gauss_node.weight;
             const auto detJ = t.jacobian(x).determinant();
-            numerical_solution += p1(t.T(x)) * w * detJ;
+            numerical_solution += p1(t.world_coordinates(x)) * w * detJ;
         }
         FLOATING_POINT_TYPE a = t.node(0)[0];
         FLOATING_POINT_TYPE b = t.node(1)[0];
@@ -81,7 +81,7 @@ TEST(Triangle, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p1(t.node(0)), p1(t.node(1)), p1(t.node(2)));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.T(x)));
+            EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
         }
 
         // Integration
@@ -91,7 +91,7 @@ TEST(Triangle, Linear) {
             const auto w = gauss_node.weight;
             const auto J = t.jacobian(x);
             const auto detJ = J.col(0).cross(J.col(1)).norm();
-            numerical_solution += p1(t.T(x)) * w * detJ;
+            numerical_solution += p1(t.world_coordinates(x)) * w * detJ;
         }
         FLOATING_POINT_TYPE a = t.node(0)[0];
         FLOATING_POINT_TYPE b = t.node(1)[0];
@@ -138,7 +138,7 @@ TEST(Triangle, Quadratic) {
                   p2(t.node(3)), p2(t.node(4)), p2(t.node(5));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(t.interpolate(x, values), p2(t.T(x)));
+            EXPECT_FLOAT_EQ(t.interpolate(x, values), p2(t.world_coordinates(x)));
         }
 
         // Integration
@@ -147,7 +147,7 @@ TEST(Triangle, Quadratic) {
             const auto x = gauss_node.position;
             const auto w = gauss_node.weight;
             const auto detJ = t.jacobian(x).determinant();
-            numerical_solution += p1(t.T(x)) * w * detJ;
+            numerical_solution += p1(t.world_coordinates(x)) * w * detJ;
         }
         FLOATING_POINT_TYPE a = t.node(0)[0];
         FLOATING_POINT_TYPE b = t.node(1)[0];

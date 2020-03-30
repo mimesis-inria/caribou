@@ -23,7 +23,7 @@ TEST(Tetrahedron, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 1> values (p1(t.node(0)), p1(t.node(1)), p1(t.node(2)), p1(t.node(3)));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.T(x)));
+            EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
         }
     }
 }
@@ -49,7 +49,7 @@ TEST(Tetrahedron, Quadratic) {
                   p2(t.node(5)), p2(t.node(6)), p2(t.node(7)), p2(t.node(8)), p2(t.node(9));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(t.interpolate(x, values), p2(t.T(x)));
+            EXPECT_FLOAT_EQ(t.interpolate(x, values), p2(t.world_coordinates(x)));
         }
     }
 }

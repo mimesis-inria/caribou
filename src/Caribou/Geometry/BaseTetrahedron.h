@@ -61,7 +61,7 @@ private:
     inline auto get_number_of_gauss_nodes() const {return NumberOfGaussNodesAtCompileTime;}
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const {return WorldCoordinates(p_nodes.row(index));};
     inline auto get_nodes() const -> const auto & {return p_nodes;};
-    inline auto get_center() const {return Base::T(LocalCoordinates({1/4., 1/4., 1/4.}));};
+    inline auto get_center() const {return Base::world_coordinates(LocalCoordinates({1/4., 1/4., 1/4.}));};
     inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 4;};
 
     template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>

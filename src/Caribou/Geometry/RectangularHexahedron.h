@@ -123,7 +123,7 @@ private:
 
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {
         caribou_assert(index < NumberOfNodesAtCompileTime and "Trying to get a node from an invalid node index.");
-        return this->T(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1], canonical_nodes[index][2]));
+        return this->world_coordinates(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1], canonical_nodes[index][2]));
     }
 
     inline auto get_nodes() const {
@@ -322,7 +322,7 @@ private:
 
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {
         caribou_assert(index < NumberOfNodesAtCompileTime and "Trying to get a node from an invalid node index.");
-        return this->T(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1], canonical_nodes[index][2]));
+        return this->world_coordinates(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1], canonical_nodes[index][2]));
     }
 
     inline auto get_nodes() const {

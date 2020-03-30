@@ -186,9 +186,9 @@ struct Triangle <_Dimension, Quadratic> : public BaseTriangle<Triangle <_Dimensi
         this->p_nodes.row(0) = linear_triangle.node(0); // Node 0
         this->p_nodes.row(1) = linear_triangle.node(1); // Node 1
         this->p_nodes.row(2) = linear_triangle.node(2); // Node 2
-        this->p_nodes.row(3) = linear_triangle.T(LocalCoordinates(0.5, 0.0)); // Node 3
-        this->p_nodes.row(4) = linear_triangle.T(LocalCoordinates(0.5, 0.5)); // Node 4
-        this->p_nodes.row(5) = linear_triangle.T(LocalCoordinates(0.0, 0.5)); // Node 5
+        this->p_nodes.row(3) = linear_triangle.world_coordinates(LocalCoordinates(0.5, 0.0)); // Node 3
+        this->p_nodes.row(4) = linear_triangle.world_coordinates(LocalCoordinates(0.5, 0.5)); // Node 4
+        this->p_nodes.row(5) = linear_triangle.world_coordinates(LocalCoordinates(0.0, 0.5)); // Node 5
     }
 
     /** Construct a quadratic triangle from three nodes */

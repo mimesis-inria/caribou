@@ -124,8 +124,8 @@ struct Element {
     /** Get the position at the center of the element */
     inline auto center() const -> WorldCoordinates {return self().get_center();}
 
-    /** Compute the transformation of a local position {u,v,w} to its world position {x,y,z} */
-    inline auto T(const LocalCoordinates & coordinates) const {
+    /** Get the world coordinates of a point from its local coordinates. */
+    inline auto world_coordinates(const LocalCoordinates & coordinates) const {
         return WorldCoordinates(self().interpolate(coordinates, self().nodes()));
     }
 

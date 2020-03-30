@@ -264,18 +264,18 @@ struct Hexahedron <Quadratic> : public BaseHexahedron<Hexahedron <Quadratic>> {
         this->p_nodes.row(5) = linear_Hexahedron.node(5); // Node 5
         this->p_nodes.row(6) = linear_Hexahedron.node(6); // Node 6
         this->p_nodes.row(7) = linear_Hexahedron.node(7); // Node 7
-        this->p_nodes.row(8)  = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[8][0],  canonical_nodes[8][1],  canonical_nodes[8][2]));  // Node 8
-        this->p_nodes.row(9)  = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[9][0],  canonical_nodes[9][1],  canonical_nodes[9][2]));  // Node 9
-        this->p_nodes.row(10) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[10][0], canonical_nodes[10][1], canonical_nodes[10][2])); // Node 10
-        this->p_nodes.row(11) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[11][0], canonical_nodes[11][1], canonical_nodes[11][2])); // Node 11
-        this->p_nodes.row(12) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[12][0], canonical_nodes[12][1], canonical_nodes[12][2])); // Node 12
-        this->p_nodes.row(13) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[13][0], canonical_nodes[13][1], canonical_nodes[13][2])); // Node 13
-        this->p_nodes.row(14) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[14][0], canonical_nodes[14][1], canonical_nodes[14][2])); // Node 14
-        this->p_nodes.row(15) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[15][0], canonical_nodes[15][1], canonical_nodes[15][2])); // Node 15
-        this->p_nodes.row(16) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[16][0], canonical_nodes[16][1], canonical_nodes[16][2])); // Node 16
-        this->p_nodes.row(17) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[17][0], canonical_nodes[17][1], canonical_nodes[17][2])); // Node 17
-        this->p_nodes.row(18) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[18][0], canonical_nodes[18][1], canonical_nodes[18][2])); // Node 18
-        this->p_nodes.row(19) = linear_Hexahedron.T(LocalCoordinates(canonical_nodes[19][0], canonical_nodes[19][1], canonical_nodes[19][2])); // Node 19
+        this->p_nodes.row(8)  = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[8][0],  canonical_nodes[8][1],  canonical_nodes[8][2]));  // Node 8
+        this->p_nodes.row(9)  = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[9][0],  canonical_nodes[9][1],  canonical_nodes[9][2]));  // Node 9
+        this->p_nodes.row(10) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[10][0], canonical_nodes[10][1], canonical_nodes[10][2])); // Node 10
+        this->p_nodes.row(11) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[11][0], canonical_nodes[11][1], canonical_nodes[11][2])); // Node 11
+        this->p_nodes.row(12) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[12][0], canonical_nodes[12][1], canonical_nodes[12][2])); // Node 12
+        this->p_nodes.row(13) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[13][0], canonical_nodes[13][1], canonical_nodes[13][2])); // Node 13
+        this->p_nodes.row(14) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[14][0], canonical_nodes[14][1], canonical_nodes[14][2])); // Node 14
+        this->p_nodes.row(15) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[15][0], canonical_nodes[15][1], canonical_nodes[15][2])); // Node 15
+        this->p_nodes.row(16) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[16][0], canonical_nodes[16][1], canonical_nodes[16][2])); // Node 16
+        this->p_nodes.row(17) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[17][0], canonical_nodes[17][1], canonical_nodes[17][2])); // Node 17
+        this->p_nodes.row(18) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[18][0], canonical_nodes[18][1], canonical_nodes[18][2])); // Node 18
+        this->p_nodes.row(19) = linear_Hexahedron.world_coordinates(LocalCoordinates(canonical_nodes[19][0], canonical_nodes[19][1], canonical_nodes[19][2])); // Node 19
     }
 
     /** Construct a quadratic Hexahedron from eight nodes */

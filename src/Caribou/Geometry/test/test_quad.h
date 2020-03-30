@@ -38,7 +38,7 @@ TEST(Quad, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 1> values (p1(q.node(0)), p1(q.node(1)), p1(q.node(2)), p1(q.node(3)));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(q.interpolate(x, values), p1(q.T(x)));
+            EXPECT_FLOAT_EQ(q.interpolate(x, values), p1(q.world_coordinates(x)));
         }
 
         // Integration
@@ -48,7 +48,7 @@ TEST(Quad, Linear) {
             const auto x = gauss_node.position;
             const auto w = gauss_node.weight;
             const auto detJ = q.jacobian(x).determinant();
-            numerical_solution_quad += p1(q.T(x)) * w * detJ;
+            numerical_solution_quad += p1(q.world_coordinates(x)) * w * detJ;
         }
 
         // Two triangles
@@ -60,7 +60,7 @@ TEST(Quad, Linear) {
                 const auto x = gauss_node.position;
                 const auto w = gauss_node.weight;
                 const auto detJ = t.jacobian(x).determinant();
-                numerical_solution_triangles += p1(t.T(x)) * w * detJ;
+                numerical_solution_triangles += p1(t.world_coordinates(x)) * w * detJ;
             }
         }
 
@@ -121,7 +121,7 @@ TEST(Quad, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 1> values (p1(q.node(0)), p1(q.node(1)), p1(q.node(2)), p1(q.node(3)));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(q.interpolate(x, values), p1(q.T(x)));
+            EXPECT_FLOAT_EQ(q.interpolate(x, values), p1(q.world_coordinates(x)));
         }
 
         // Integration
@@ -132,7 +132,7 @@ TEST(Quad, Linear) {
             const auto w = gauss_node.weight;
             const auto J = q.jacobian(x);
             const auto detJ = J.col(0).cross(J.col(1)).norm();
-            numerical_solution_quad += p1(q.T(x)) * w * detJ;
+            numerical_solution_quad += p1(q.world_coordinates(x)) * w * detJ;
         }
 
         // Two triangles
@@ -145,7 +145,7 @@ TEST(Quad, Linear) {
                 const auto w = gauss_node.weight;
                 const auto J = t.jacobian(x);
                 const auto detJ = J.col(0).cross(J.col(1)).norm();
-                numerical_solution_triangles += p1(t.T(x)) * w * detJ;
+                numerical_solution_triangles += p1(t.world_coordinates(x)) * w * detJ;
             }
         }
 
@@ -219,7 +219,7 @@ TEST(Quad, Quadratic) {
                   p2(q.node(4)), p2(q.node(5)), p2(q.node(6)), p2(q.node(7));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(q.interpolate(x, values), p2(q.T(x)));
+            EXPECT_FLOAT_EQ(q.interpolate(x, values), p2(q.world_coordinates(x)));
         }
 
         // Integration
@@ -229,7 +229,7 @@ TEST(Quad, Quadratic) {
             const auto x = gauss_node.position;
             const auto w = gauss_node.weight;
             const auto detJ = q.jacobian(x).determinant();
-            numerical_solution_quad += p2(q.T(x)) * w * detJ;
+            numerical_solution_quad += p2(q.world_coordinates(x)) * w * detJ;
         }
 
         // Two triangles
@@ -241,7 +241,7 @@ TEST(Quad, Quadratic) {
                 const auto x = gauss_node.position;
                 const auto w = gauss_node.weight;
                 const auto detJ = t.jacobian(x).determinant();
-                numerical_solution_triangles += p2(t.T(x)) * w * detJ;
+                numerical_solution_triangles += p2(t.world_coordinates(x)) * w * detJ;
             }
         }
 
@@ -302,7 +302,7 @@ TEST(Quad, Quadratic) {
                   p2(q.node(4)), p2(q.node(5)), p2(q.node(6)), p2(q.node(7));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(q.interpolate(x, values), p2(q.T(x)));
+            EXPECT_FLOAT_EQ(q.interpolate(x, values), p2(q.world_coordinates(x)));
         }
 
         // Integration
@@ -313,7 +313,7 @@ TEST(Quad, Quadratic) {
             const auto w = gauss_node.weight;
             const auto J = q.jacobian(x);
             const auto detJ = J.col(0).cross(J.col(1)).norm();
-            numerical_solution_quad += p2(q.T(x)) * w * detJ;
+            numerical_solution_quad += p2(q.world_coordinates(x)) * w * detJ;
         }
 
         // Two triangles
@@ -326,7 +326,7 @@ TEST(Quad, Quadratic) {
                 const auto w = gauss_node.weight;
                 const auto J = t.jacobian(x);
                 const auto detJ = J.col(0).cross(J.col(1)).norm();
-                numerical_solution_triangles += p2(t.T(x)) * w * detJ;
+                numerical_solution_triangles += p2(t.world_coordinates(x)) * w * detJ;
             }
         }
 
