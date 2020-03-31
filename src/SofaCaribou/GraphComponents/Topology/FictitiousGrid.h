@@ -1,5 +1,4 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_FICTITIOUSGRID_H
-#define SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_FICTITIOUSGRID_H
+#pragma once
 
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/defaulttype/Vec.h>
@@ -400,5 +399,3 @@ extern template class FictitiousGrid<Vec2Types>;
 extern template class FictitiousGrid<Vec3Types>;
 
 } // namespace SofaCaribou::GraphComponents::topology
-
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_FICTITIOUSGRID_H

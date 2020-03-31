@@ -79,7 +79,7 @@ FictitiousGrid<Vec3Types>::tag_intersected_cells()
             continue;
         }
 
-        const caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
+        const caribou::geometry::Triangle<caribou::_3D, caribou::Linear> t(nodes[0], nodes[1], nodes[2]);
 
         // Get all the cells enclosing the three nodes of the triangles
         TICK;
@@ -130,6 +130,7 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
     using Level = UNSIGNED_INTEGER_TYPE;
     using Weight = Float;
 
+    const auto number_of_cells = p_grid->number_of_cells();
     const auto & number_of_subdivision = d_number_of_subdivision.getValue();
     const bool use_implicit_surface = (d_use_implicit_surface.getValue() and p_implicit_test_callback);
 
@@ -139,7 +140,8 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
     }
 
     TICK;
-    for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < p_grid->number_of_cells(); ++cell_index) {
+#pragma omp parallel for default(none) shared(number_of_cells, use_implicit_surface, number_of_subdivision)
+    for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
 
         // Initialize the stack with the current full cell
@@ -149,7 +151,7 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
             const CellElement cell = p_grid->cell_at(cell_index);
             const Weight weight = 1;
             stack.emplace(p_grid->cell_at(cell_index), &p_cells[cell_index], weight, 0);
-            H = cell.H();
+            H = cell.size();
         }
 
         while (not stack.empty()) {
@@ -170,7 +172,7 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
                 constexpr UNSIGNED_INTEGER_TYPE OUTSIDE = 1;
                 constexpr UNSIGNED_INTEGER_TYPE BOUNDARY = 2;
                 UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
-                for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::traits<CellElement>::NumberOfNodes; ++i) {
+                for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::geometry::traits<CellElement>::NumberOfNodesAtCompileTime; ++i) {
                     const auto t = p_implicit_test_callback(e.node(i));
                     if (t < 0)
                         types[INSIDE]++;
@@ -180,9 +182,9 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
                         types[BOUNDARY]++;
                 }
 
-                if (types[INSIDE] == caribou::traits<CellElement>::NumberOfNodes) {
+                if (types[INSIDE] == caribou::geometry::traits<CellElement>::NumberOfNodesAtCompileTime) {
                     type = Type::Inside;
-                } else if (types[OUTSIDE] == caribou::traits<CellElement>::NumberOfNodes) {
+                } else if (types[OUTSIDE] == caribou::geometry::traits<CellElement>::NumberOfNodesAtCompileTime) {
                     type = Type::Outside;
                 } else {
                     type = Type::Boundary;
@@ -223,14 +225,15 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
     using Level = UNSIGNED_INTEGER_TYPE;
     using Weight = Float;
 
+    const auto number_of_cells = p_grid->number_of_cells();
     const auto & number_of_subdivision = d_number_of_subdivision.getValue();
     const auto & surface_positions = d_surface_positions.getValue();
     const auto & surface_triangles = d_surface_triangles.getValue();
     bool use_implicit_surface = (d_use_implicit_surface.getValue() and p_implicit_test_callback);
 
     TICK;
-#pragma omp parallel for default(none) shared(use_implicit_surface, surface_triangles, surface_positions, number_of_subdivision)
-    for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < p_grid->number_of_cells(); ++cell_index) {
+#pragma omp parallel for default(none) shared(number_of_cells, use_implicit_surface, surface_triangles, surface_positions, number_of_subdivision)
+    for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         const auto & triangles = p_triangles_of_cell[cell_index];
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
 
@@ -241,7 +244,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
             const CellElement cell = p_grid->cell_at(cell_index);
             const Weight weight = 1;
             stack.emplace(p_grid->cell_at(cell_index), &p_cells[cell_index], weight, 0);
-            H = cell.H();
+            H = cell.size();
         }
 
         while (not stack.empty()) {
@@ -263,7 +266,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
                 constexpr UNSIGNED_INTEGER_TYPE BOUNDARY = 2;
 
                 UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
-                for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::traits<CellElement>::NumberOfNodes; ++i) {
+                for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::geometry::traits<CellElement>::NumberOfNodesAtCompileTime; ++i) {
                     const auto t = p_implicit_test_callback(e.node(i));
                     if (t < 0)
                         types[INSIDE]++;
@@ -273,9 +276,9 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
                         types[BOUNDARY]++;
                 }
 
-                if (types[INSIDE] == caribou::traits<CellElement>::NumberOfNodes) {
+                if (types[INSIDE] == caribou::geometry::traits<CellElement>::NumberOfNodesAtCompileTime) {
                     type = Type::Inside;
-                } else if (types[OUTSIDE] == caribou::traits<CellElement>::NumberOfNodes) {
+                } else if (types[OUTSIDE] == caribou::geometry::traits<CellElement>::NumberOfNodesAtCompileTime) {
                     type = Type::Outside;
                 } else {
                     type = Type::Boundary;

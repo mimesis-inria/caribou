@@ -1,5 +1,4 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_FICTITIOUSGRID_INL
-#define SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_FICTITIOUSGRID_INL
+#pragma once
 
 #include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
 
@@ -242,7 +241,7 @@ void FictitiousGrid<DataTypes>::create_grid()
 
     WorldCoordinates anchor_position;
     Dimensions grid_size;
-    for (UNSIGNED_INTEGER_TYPE axis = 0; axis < caribou::traits<CellElement>::Dimension; ++axis) {
+    for (UNSIGNED_INTEGER_TYPE axis = 0; axis < caribou::geometry::traits<CellElement>::Dimension; ++axis) {
         anchor_position[axis] = std::min(first_corner[axis], second_corner[axis]);
         grid_size[axis] = std::abs(first_corner[axis] - second_corner[axis]);
     }
@@ -262,18 +261,33 @@ void FictitiousGrid<DataTypes>::create_grid()
         cell.childs.reset();
     }
 
+    // 1. Find the cells intersected by the boundary and tag them as "Boundary".
     if (d_use_implicit_surface.getValue() and p_implicit_test_callback) {
         tag_intersected_cells_from_implicit_surface();
     } else {
         tag_intersected_cells();
     }
 
+    // 2. Subdivision of the intersected cells
+    //    Iteratively subdivide intersected cells until the maximum level of subdivision is reached. Each leaves cells
+    //    interesected by the boundary are then tagged as "boundary". Remaining cells are tagged as "Undefined".
     subdivide_intersected_cells();
+
+    // 2. Clustering of cells
+    //    Cells of the same type (either undefined or boundary) are grouped in regions where two cells of the same type
+    //    but separated by cells of another type cannot be in the same region.
     create_regions_from_same_type_cells();
+
+    // 3. Identifying and tagging of outside regions
     tag_outside_cells();
+
+    // 4. Identifying and tagging remaining regions as inside
     tag_inside_cells();
 
+    // 5. Creating a vector of hexahedral elements containing only inside and boundary cells
     create_sparse_grid();
+
+    // 6. Prepopulating vectors used for display
     populate_drawing_vectors();
 }
 
@@ -314,9 +328,9 @@ FictitiousGrid<DataTypes>::tag_intersected_cells_from_implicit_surface()
             types[(UNSIGNED_INTEGER_TYPE) node_types[node_index]]++;
         }
 
-        if (types[(UNSIGNED_INTEGER_TYPE) Type::Inside] == caribou::traits<CellElement>::NumberOfNodes) {
+        if (types[(UNSIGNED_INTEGER_TYPE) Type::Inside] == CellElement::NumberOfNodesAtCompileTime) {
             p_cells_types[cell_index] = Type::Inside;
-        } else if (types[(UNSIGNED_INTEGER_TYPE) Type::Outside] == caribou::traits<CellElement>::NumberOfNodes) {
+        } else if (types[(UNSIGNED_INTEGER_TYPE) Type::Outside] == CellElement::NumberOfNodesAtCompileTime) {
             p_cells_types[cell_index] = Type::Outside;
         } else {
             p_cells_types[cell_index] = Type::Boundary;
@@ -495,7 +509,7 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
 
     std::map<UNSIGNED_INTEGER_TYPE, UNSIGNED_INTEGER_TYPE> volume_ratios;
     FLOATING_POINT_TYPE real_volume = 0.;
-    FLOATING_POINT_TYPE cell_volume = caribou::traits<CellElement>::NumberOfGaussNodes*p_grid->cell_at(0).jacobian().determinant();
+    FLOATING_POINT_TYPE cell_volume = CellElement::NumberOfGaussNodesAtCompileTime*p_grid->cell_at(0).jacobian(CellElement::LocalCoordinates::Zero()).determinant();
 
     // 1. Locate all cells that are within the surface boundaries and their nodes.
     for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
@@ -615,24 +629,24 @@ template <typename DataTypes>
 std::array<typename FictitiousGrid<DataTypes>::CellElement, (unsigned) 1 << FictitiousGrid<DataTypes>::Dimension>
 FictitiousGrid<DataTypes>::get_subcells_elements(const CellElement & e) const
 {
-    const Dimensions h = e.H() /  2;
+    const Dimensions h = e.size() /  2;
     if constexpr (Dimension == 2) {
         return {{
-                    CellElement(e.T(LocalCoordinates {-0.5, -0.5}), h),
-                    CellElement(e.T(LocalCoordinates {+0.5, -0.5}), h),
-                    CellElement(e.T(LocalCoordinates {-0.5, +0.5}), h),
-                    CellElement(e.T(LocalCoordinates {+0.5, +0.5}), h)
+                    CellElement(e.world_coordinates(LocalCoordinates {-0.5, -0.5}), h),
+                    CellElement(e.world_coordinates(LocalCoordinates {+0.5, -0.5}), h),
+                    CellElement(e.world_coordinates(LocalCoordinates {-0.5, +0.5}), h),
+                    CellElement(e.world_coordinates(LocalCoordinates {+0.5, +0.5}), h)
         }};
     } else {
         return {{
-                   CellElement(e.T(LocalCoordinates {-0.5, -0.5, -0.5}), h),
-                   CellElement(e.T(LocalCoordinates {+0.5, -0.5, -0.5}), h),
-                   CellElement(e.T(LocalCoordinates {-0.5, +0.5, -0.5}), h),
-                   CellElement(e.T(LocalCoordinates {+0.5, +0.5, -0.5}), h),
-                   CellElement(e.T(LocalCoordinates {-0.5, -0.5, +0.5}), h),
-                   CellElement(e.T(LocalCoordinates {+0.5, -0.5, +0.5}), h),
-                   CellElement(e.T(LocalCoordinates {-0.5, +0.5, +0.5}), h),
-                   CellElement(e.T(LocalCoordinates {+0.5, +0.5, +0.5}), h)
+                   CellElement(e.world_coordinates(LocalCoordinates {-0.5, -0.5, -0.5}), h),
+                   CellElement(e.world_coordinates(LocalCoordinates {+0.5, -0.5, -0.5}), h),
+                   CellElement(e.world_coordinates(LocalCoordinates {-0.5, +0.5, -0.5}), h),
+                   CellElement(e.world_coordinates(LocalCoordinates {+0.5, +0.5, -0.5}), h),
+                   CellElement(e.world_coordinates(LocalCoordinates {-0.5, -0.5, +0.5}), h),
+                   CellElement(e.world_coordinates(LocalCoordinates {+0.5, -0.5, +0.5}), h),
+                   CellElement(e.world_coordinates(LocalCoordinates {-0.5, +0.5, +0.5}), h),
+                   CellElement(e.world_coordinates(LocalCoordinates {+0.5, +0.5, +0.5}), h)
         }};
     }
 }
@@ -808,18 +822,19 @@ FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & sparse_cell
             gauss_nodes.reserve((unsigned) 1 << (((maximum_level-l)+1)*Dimension));
 
             if (c.is_leaf()) {
-                for (UNSIGNED_INTEGER_TYPE i = 0; i < CellElement::number_of_gauss_nodes; ++i) {
+                for (const auto & gauss_node : e.gauss_nodes() ) {
                     if (c.data->type == Type::Inside or c.data->type == Type::Boundary)
-                        gauss_nodes.emplace_back(LocalCoordinates(CellElement::gauss_nodes[i]), CellElement::gauss_weights[i]*c.data->weight);
+                        gauss_nodes.emplace_back(gauss_node.position, gauss_node.weight*c.data->weight);
                     else
-                        gauss_nodes.emplace_back(LocalCoordinates(CellElement::gauss_nodes[i]), 0);
+                        gauss_nodes.emplace_back(gauss_node.position, 0);
                 }
             } else {
                 if (l >= maximum_level) {
                     const auto & child_cells = *(c.childs);
-                    for (UNSIGNED_INTEGER_TYPE i = 0; i < CellElement::number_of_gauss_nodes; ++i) {
-                        const auto weight = CellElement::number_of_gauss_nodes*get_cell_weight(child_cells[i]);
-                        gauss_nodes.emplace_back(LocalCoordinates(CellElement::gauss_nodes[i]), CellElement::gauss_weights[i]*weight);
+                    for (UNSIGNED_INTEGER_TYPE i = 0; i < CellElement::NumberOfGaussNodesAtCompileTime; ++i) {
+                        const auto gauss_node = e.gauss_node(i);
+                        const auto weight = CellElement::NumberOfGaussNodesAtCompileTime*get_cell_weight(child_cells[i]);
+                        gauss_nodes.emplace_back(LocalCoordinates(gauss_node.position), gauss_node.weight*weight);
                     }
                 } else {
                     const auto child_elements = get_subcells_elements(e);
@@ -827,7 +842,7 @@ FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & sparse_cell
                     for (UNSIGNED_INTEGER_TYPE i = 0; i < child_cells.size(); ++i) {
                         const auto child_gauss_nodes = ref(child_elements[i], child_cells[i], l+1, ref);
                         for (const auto & child_gauss_node : child_gauss_nodes) {
-                            gauss_nodes.emplace_back(child_elements[i].T(child_gauss_node.first), child_gauss_node.second);
+                            gauss_nodes.emplace_back(child_elements[i].world_coordinates(child_gauss_node.first), child_gauss_node.second);
                         }
                     }
                 }
@@ -839,7 +854,7 @@ FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & sparse_cell
     };
 
     const CellElement top_element = p_grid->cell_at(cell_index);
-    const FLOATING_POINT_TYPE detJ = top_element.jacobian().determinant();
+    const FLOATING_POINT_TYPE detJ = top_element.jacobian(CellElement::LocalCoordinates::Zero()).determinant();
     std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> gauss_nodes = get_gauss_cells(CellElement(), p_cells[cell_index], 0);
 
     for (auto & n : gauss_nodes) {
@@ -908,7 +923,7 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
                                                                        e.node(node_id)[2]);
                     }
                 }
-                for (const auto &edge : CellElement::edges) {
+                for (const auto &edge : e.edges()) {
                     if (Dimension == 2) {
                         p_drawing_subdivided_edges_vector[region_id].emplace_back(e.node(edge[0])[0],
                                                                                   e.node(edge[0])[1],
@@ -1006,5 +1021,3 @@ void FictitiousGrid<DataTypes>::draw(const sofa::core::visual::VisualParams* vpa
 }
 
 } // namespace SofaCaribou::GraphComponents::topology
-
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_TOPOLOGY_FICTITIOUSGRID_INL
