@@ -56,6 +56,14 @@ struct BaseHexahedron : public Element<Derived> {
     // Public methods common to all hexahedral types
 
     /**
+     * Get the list of node indices of the faces.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto faces() const {
+        return self().get_boundary_elements_nodes();
+    }
+
+    /**
      * Extract the frame positioned at the given position (in local coordinates) on the hexa by computing the cross
      * product of the unit vectors from the given position its projection on opposite faces.
      *
@@ -120,6 +128,9 @@ private:
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::world_coordinates(LocalCoordinates(0, 0, 0));};
     inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 6;};
+
+    auto self() -> Derived& { return *static_cast<Derived*>(this); }
+    auto self() const -> const Derived& { return *static_cast<const Derived*>(this); }
 
     template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
     inline

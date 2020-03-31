@@ -82,6 +82,29 @@ struct RectangularHexahedron <Linear> : public BaseRectangularHexahedron<Rectang
     explicit RectangularHexahedron(const Eigen::EigenBase<EigenType> & nodes)
         : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
 
+    // Public methods
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 2>, 12> indices = {{
+            {0, 1}, // Edge 0
+            {1, 2}, // Edge 1
+            {2, 3}, // Edge 2
+            {3, 0}, // Edge 3
+            {4, 5}, // Edge 4
+            {5, 6}, // Edge 5
+            {6, 7}, // Edge 6
+            {7, 4}, // Edge 7
+            {0, 4}, // Edge 8
+            {1, 5}, // Edge 9
+            {2, 6}, // Edge 10
+            {3, 7}  // Edge 11
+        }};
+        return indices;
+    }
+
 private:
     // Implementations
     friend struct Element<RectangularHexahedron <Linear>>;
@@ -246,6 +269,29 @@ struct RectangularHexahedron <Quadratic> : public BaseRectangularHexahedron<Rect
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == 8)>
     explicit RectangularHexahedron(const Eigen::EigenBase<EigenType> & nodes)
         : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
+
+    // Public methods
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 12> indices = {{
+            {0, 1, 8},  // Edge 0
+            {1, 2, 9},  // Edge 1
+            {2, 3, 10}, // Edge 2
+            {3, 0, 11}, // Edge 3
+            {4, 5, 12}, // Edge 4
+            {5, 6, 13}, // Edge 5
+            {6, 7, 14}, // Edge 6
+            {7, 4, 15}, // Edge 7
+            {0, 4, 16}, // Edge 8
+            {1, 5, 17}, // Edge 9
+            {2, 6, 18}, // Edge 10
+            {3, 7, 19}  // Edge 11
+        }};
+        return indices;
+    }
 
 private:
     // Implementations

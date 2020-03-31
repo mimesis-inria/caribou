@@ -76,7 +76,4 @@ protected:
     Matrix<NumberOfNodesAtCompileTime, Dimension> p_nodes;
 };
 
-template<UNSIGNED_INTEGER_TYPE _Dimension, UNSIGNED_INTEGER_TYPE _Order = Linear>
-struct Segment;
-
 }

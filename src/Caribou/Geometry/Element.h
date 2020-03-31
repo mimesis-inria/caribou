@@ -3,7 +3,7 @@
 #include <Caribou/config.h>
 #include <Caribou/Traits.h>
 #include <Caribou/macros.h>
-#include <Eigen/Core>
+#include <Eigen/Dense>
 
 namespace caribou::geometry {
 
@@ -153,7 +153,7 @@ struct Element {
     }
 
     /**
-     * Compute the Jacobian matrix evaluated at local coordinates.
+     * Compute the Jacobian matrix of the transformation T(xi)-> x evaluated at local coordinates xi.
      *
      * The Jacobian is defined as:
      *
@@ -185,6 +185,8 @@ struct Element {
      *                          | dx/du   dx/dv |   | sum dNi/du  x_i    sum dNi/dv  x_i |
      * 3D manifold:    J(u,v) = | dy/du   dy/dv | = | sum dNi/du  y_i    sum dNi/dv  y_i |
      *                          | dz/du   dz/dv | = | sum dNi/du  z_i    sum dNi/dv  z_i |
+     *                 det(J) = sqrt((J.transpose() * J).determinant())
+     *                        = J.col(0).cross(J.col(1)).norm();
      *
      *
      * 3D canonical element
@@ -208,7 +210,7 @@ struct Element {
      * // Computes the Jacobian of a 3D segment and its determinant evaluated at local coordinates 0.5 (half-way through the segment)
      * Segment<3, Linear> segment {{5, 5, 5}, {10, 5,0}};
      * Matrix<3,1> J = segment.jacobian (0.5);
-     * double detJ = (J^T * J).determinant() ^ 1/2;
+     * double detJ = sqrt(J.dot(J));
      *
      * // Computes the Jacobian of a 3D triangle and its determinant evaluated at local coordinates {1/3, 1/3} (on its center point)
      * Triangle<3, Linear> triangle {{5,5,5}, {15, 5, 5}, {10, 10, 10}};

@@ -7,6 +7,8 @@
 
 namespace caribou::geometry {
 
+template<UNSIGNED_INTEGER_TYPE _Order = Linear>
+struct Tetrahedron;
 
 template<>
 struct traits<Tetrahedron <Linear>> {
@@ -71,6 +73,23 @@ struct Tetrahedron <Linear> : public BaseTetrahedron<Tetrahedron <Linear>> {
         this->p_nodes.row(2) = WorldCoordinates(0, 1, 0);
         this->p_nodes.row(3) = WorldCoordinates(0, 0, 1);
     };
+
+    // Public methods
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 2>, 6> indices = {{
+             {0, 1}, // Edge 0
+             {1, 2}, // Edge 1
+             {2, 0}, // Edge 2
+             {0, 3}, // Edge 3
+             {3, 1}, // Edge 4
+             {3, 2}  // Edge 5
+         }};
+        return indices;
+    }
 
 
 private:
@@ -211,6 +230,22 @@ struct Tetrahedron <Quadratic> : public BaseTetrahedron<Tetrahedron <Quadratic>>
     Tetrahedron(const WorldCoordinates & p0, const WorldCoordinates & p1, const WorldCoordinates & p2, const WorldCoordinates & p3)
         : Tetrahedron(Tetrahedron<Linear>(p0, p1, p2, p3)) {}
 
+    // Public methods
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 6> indices = {{
+            {0, 1, 4}, // Edge 0
+            {1, 2, 5}, // Edge 1
+            {2, 0, 6}, // Edge 2
+            {0, 3, 7}, // Edge 3
+            {3, 1, 8}, // Edge 4
+            {3, 2, 9}  // Edge 5
+        }};
+        return indices;
+    }
 
 private:
     // Implementations

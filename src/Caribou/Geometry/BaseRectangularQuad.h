@@ -50,7 +50,15 @@ struct BaseRectangularQuad : public Element<Derived> {
     /** Constructor by specifying the center point, the size (hx, hy, hz) and the rotation */
     BaseRectangularQuad(WorldCoordinates center, Size H, Rotation R) : p_center(center), p_H(H), p_R(R) {}
 
-    // Public methods
+    // Public methods common to all rectangular quad types
+
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        return self().boundary_elements_node_indices();
+    }
 
     /** Get the rotation frame of the quad */
     inline auto rotation() const -> const Rotation  & {
@@ -84,6 +92,9 @@ private:
     inline auto get_center() const {return p_center;};
     [[nodiscard]]
     inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 4;};
+
+    auto self() -> Derived& { return *static_cast<Derived*>(this); }
+    auto self() const -> const Derived& { return *static_cast<const Derived*>(this); }
 protected:
     WorldCoordinates p_center; ///< Position of the center point of the quad
     Size p_H; ///< Size of the quad {hx, hy}

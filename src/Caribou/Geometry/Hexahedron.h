@@ -84,6 +84,29 @@ struct Hexahedron <Linear> : public BaseHexahedron<Hexahedron <Linear>> {
         this->p_nodes.row(7) = WorldCoordinates(canonical_nodes[7][0], canonical_nodes[7][1], canonical_nodes[7][2]);
     };
 
+    // Public methods
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 2>, 12> indices = {{
+            {0, 1}, // Edge 0
+            {1, 2}, // Edge 1
+            {2, 3}, // Edge 2
+            {3, 0}, // Edge 3
+            {4, 5}, // Edge 4
+            {5, 6}, // Edge 5
+            {6, 7}, // Edge 6
+            {7, 4}, // Edge 7
+            {0, 4}, // Edge 8
+            {1, 5}, // Edge 9
+            {2, 6}, // Edge 10
+            {3, 7}  // Edge 11
+        }};
+        return indices;
+    }
+
 
 private:
     // Implementations
@@ -285,6 +308,29 @@ struct Hexahedron <Quadratic> : public BaseHexahedron<Hexahedron <Quadratic>> {
     /** Construct a quadratic Hexahedron from eight nodes */
     Hexahedron(const WorldCoordinates & p0, const WorldCoordinates & p1, const WorldCoordinates & p2, const WorldCoordinates & p3, const WorldCoordinates & p4, const WorldCoordinates & p5, const WorldCoordinates & p6, const WorldCoordinates & p7)
         : Hexahedron(Hexahedron<Linear>(p0, p1, p2, p3, p4, p5, p6, p7)) {}
+
+    // Public methods
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 12> indices = {{
+             {0, 1, 8},  // Edge 0
+             {1, 2, 9},  // Edge 1
+             {2, 3, 10}, // Edge 2
+             {3, 0, 11}, // Edge 3
+             {4, 5, 12}, // Edge 4
+             {5, 6, 13}, // Edge 5
+             {6, 7, 14}, // Edge 6
+             {7, 4, 15}, // Edge 7
+             {0, 4, 16}, // Edge 8
+             {1, 5, 17}, // Edge 9
+             {2, 6, 18}, // Edge 10
+             {3, 7, 19}  // Edge 11
+         }};
+        return indices;
+    }
 
 private:
     // Implementations

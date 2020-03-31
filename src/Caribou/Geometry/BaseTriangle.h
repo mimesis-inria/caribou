@@ -67,6 +67,14 @@ struct BaseTriangle : public Element<Derived> {
         return v1.cross(v2).normalized();
     }
 
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        return self().get_boundary_elements_nodes();
+    }
+
 private:
     // Implementations
     friend struct Element<Derived>;
@@ -96,8 +104,5 @@ private:
 protected:
     Matrix<NumberOfNodesAtCompileTime, Dimension> p_nodes;
 };
-
-template<UNSIGNED_INTEGER_TYPE _Dimension, UNSIGNED_INTEGER_TYPE _Order = Linear>
-struct Triangle;
 
 }

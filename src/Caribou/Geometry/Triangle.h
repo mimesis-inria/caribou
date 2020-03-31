@@ -7,6 +7,8 @@
 
 namespace caribou::geometry {
 
+template<UNSIGNED_INTEGER_TYPE _Dimension, UNSIGNED_INTEGER_TYPE _Order = Linear>
+struct Triangle;
 
 template<UNSIGNED_INTEGER_TYPE _Dimension>
 struct traits<Triangle <_Dimension, Linear>> {

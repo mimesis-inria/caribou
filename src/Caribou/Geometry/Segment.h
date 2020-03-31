@@ -6,6 +6,8 @@
 
 namespace caribou::geometry {
 
+template<UNSIGNED_INTEGER_TYPE _Dimension, UNSIGNED_INTEGER_TYPE _Order = Linear>
+struct Segment;
 
 template<UNSIGNED_INTEGER_TYPE _Dimension>
  struct traits<Segment <_Dimension, Linear>> {

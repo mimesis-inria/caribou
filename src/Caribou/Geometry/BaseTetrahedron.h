@@ -53,6 +53,16 @@ struct BaseTetrahedron : public Element<Derived> {
         construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
     }
 
+    // Public methods common to all tetrahedral types
+
+    /**
+     * Get the list of node indices of the faces.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto faces() const {
+        return self().get_boundary_elements_nodes();
+    }
+
 private:
     // Implementations
     friend struct Element<Derived>;
@@ -63,6 +73,9 @@ private:
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::world_coordinates(LocalCoordinates({1/4., 1/4., 1/4.}));};
     inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 4;};
+
+    auto self() -> Derived& { return *static_cast<Derived*>(this); }
+    auto self() const -> const Derived& { return *static_cast<const Derived*>(this); }
 
     template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
     inline
@@ -79,8 +92,5 @@ private:
 protected:
     Matrix<NumberOfNodesAtCompileTime, Dimension> p_nodes;
 };
-
-template<UNSIGNED_INTEGER_TYPE _Order = Linear>
-struct Tetrahedron;
 
 }
