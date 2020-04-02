@@ -3,7 +3,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/eigen.h>
 
-#include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
+#include <SofaCaribou/Topology/FictitiousGrid.h>
 #include "HexahedronElasticForce.h"
 #include "FictitiousGridElasticForce.h"
 

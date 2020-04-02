@@ -12,7 +12,7 @@
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Element.h>
 
-#include <SofaCaribou/GraphComponents/Material/HyperelasticMaterial.h>
+#include <SofaCaribou/Material/HyperelasticMaterial.h>
 
 namespace SofaCaribou::GraphComponents::forcefield {
 

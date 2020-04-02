@@ -1,5 +1,5 @@
 #include "HexahedronElasticForce.h"
-#include <SofaCaribou/GraphComponents/Forcefield/FictitiousGridElasticForce.h>
+#include <SofaCaribou/Forcefield/FictitiousGridElasticForce.h>
 
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>

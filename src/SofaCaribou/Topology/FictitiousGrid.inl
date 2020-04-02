@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
+#include <SofaCaribou/Topology/FictitiousGrid.h>
 
 #include <sofa/core/visual/VisualParams.h>
 #include <SofaBaseTopology/MeshTopology.h>

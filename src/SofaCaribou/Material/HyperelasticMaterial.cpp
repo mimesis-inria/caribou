@@ -1,6 +1,6 @@
-#include <SofaCaribou/GraphComponents/Material/HyperelasticMaterial.h>
-#include <SofaCaribou/GraphComponents/Material/SaintVenantKirchhoffMaterial.h>
-#include <SofaCaribou/GraphComponents/Material/NeoHookeanMaterial.h>
+#include <SofaCaribou/Material/HyperelasticMaterial.h>
+#include <SofaCaribou/Material/SaintVenantKirchhoffMaterial.h>
+#include <SofaCaribou/Material/NeoHookeanMaterial.h>
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/defaulttype/VecTypes.h>

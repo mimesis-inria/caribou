@@ -9,7 +9,7 @@
 
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
-#include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
+#include <SofaCaribou/Topology/FictitiousGrid.h>
 
 namespace SofaCaribou::GraphComponents::forcefield {
 

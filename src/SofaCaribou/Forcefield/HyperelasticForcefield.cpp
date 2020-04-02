@@ -1,4 +1,4 @@
-#include <SofaCaribou/GraphComponents/Forcefield/HyperelasticForcefield.inl>
+#include <SofaCaribou/Forcefield/HyperelasticForcefield.inl>
 
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
