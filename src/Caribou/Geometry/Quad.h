@@ -1,107 +1,304 @@
-#ifndef CARIBOU_GEOMETRY_QUAD_H
-#define CARIBOU_GEOMETRY_QUAD_H
-
-#include <Eigen/Core>
+#pragma once
 
 #include <Caribou/config.h>
-#include <Caribou/Traits.h>
+#include <Caribou/Geometry/BaseQuad.h>
 #include <Caribou/Geometry/Segment.h>
-#include <Caribou/Geometry/Interpolation/Quad.h>
+#include <Eigen/Core>
 
 namespace caribou::geometry {
 
-template <size_t Dim, typename CanonicalElementType = interpolation::Quad4>
-struct Quad : public CanonicalElementType
-{
-    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
+template<UNSIGNED_INTEGER_TYPE Dimension, UNSIGNED_INTEGER_TYPE Order = Linear>
+struct Quad;
 
-    using LocalCoordinates = typename CanonicalElementType::LocalCoordinates;
-    using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct traits<Quad <_Dimension, Linear>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 4;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
 
-    using BoundaryType = Segment<3, typename CanonicalElementType::BoundaryType>;
-
-    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
-    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
-
-    static_assert(Dim == 2 or Dim == 3, "Only 2D and 3D quads are supported.");
-
-    template <
-        typename ...Nodes,
-        REQUIRES(NumberOfNodes == sizeof...(Nodes)+1)
-    >
-    Quad(const WorldCoordinates & first_node, Nodes&&...remaining_nodes)
-    {
-        construct_from_nodes<0>(first_node, std::forward<Nodes>(remaining_nodes)...);
-    }
-
-    Quad(const Matrix<NumberOfNodes, Dim> & nodes)
-    : p_nodes(nodes)
-    {}
-
-    inline
-    WorldCoordinates
-    node(UNSIGNED_INTEGER_TYPE index) const
-    {
-        return p_nodes.row(index).transpose();
-    }
-
-    inline
-    WorldCoordinates
-    node(UNSIGNED_INTEGER_TYPE index)
-    {
-        return p_nodes.row(index).transpose();
-    }
-
-    /** Get a reference to the set of nodes */
-    inline
-    const auto &
-    nodes() const
-    {
-        return p_nodes;
-    }
-
-    /** Compute the center position **/
-    auto
-    center() const noexcept
-    {
-        return T(LocalCoordinates({0., 0.}));
-    }
-
-    /**
-     * Compute the transformation of a local position {u} to its world position {x,y,z}
-     */
-    inline
-    WorldCoordinates
-    T(const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::interpolate(coordinates, nodes());
-    }
-
-    /** Compute the jacobian matrix evaluated at local position {u,v} */
-    Matrix<Dim, 2>
-    jacobian (const LocalCoordinates & coordinates) const
-    {
-        return CanonicalElementType::Jacobian(coordinates, p_nodes);
-    }
-
-private:
-    template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
-    inline
-    void construct_from_nodes(const WorldCoordinates & first_node, Nodes&&...remaining_nodes) {
-        p_nodes.row(index) = first_node;
-        construct_from_nodes<index+1>(std::forward<Nodes>(remaining_nodes)...);
-    }
-
-    template <size_t index>
-    inline
-    void construct_from_nodes(const WorldCoordinates & last_node) {
-        p_nodes.row(index) = last_node;
-    }
-
-
-private:
-    Matrix<NumberOfNodes, Dim> p_nodes;
+    using BoundaryElementType = Segment<_Dimension, Linear>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
 };
 
-} // namespace caribou::geometry
-#endif //CARIBOU_GEOMETRY_QUAD_H
+/**
+ * Linear Quad
+ *
+ *        v
+ *        ^
+ *        |
+ *  3-----------2
+ *  |     |     |
+ *  |     |     |
+ *  |     +---- | --> u
+ *  |           |
+ *  |           |
+ *  0-----------1
+ *
+ * @tparam _Dimension The world coordinates dimension
+ */
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct Quad <_Dimension, Linear> : public BaseQuad<Quad <_Dimension, Linear>> {
+    // Types
+    using Base = BaseQuad<Quad <_Dimension, Linear>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
+
+    static constexpr FLOATING_POINT_TYPE canonical_nodes [NumberOfNodesAtCompileTime][CanonicalDimension] = {
+    //    u,  v
+        {-1, -1}, // Node 0
+        {+1, -1}, // Node 1
+        {+1, +1}, // Node 2
+        {-1, +1}  // Node 3
+    };
+
+    // Constructors
+    using Base::Base;
+    Quad() : Base() {
+        if constexpr (Dimension == 2) {
+            this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1]); // Node 0
+            this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1]); // Node 1
+            this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1]); // Node 2
+            this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1]); // Node 3
+        } else {
+            this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1], 0); // Node 0
+            this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1], 0); // Node 1
+            this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1], 0); // Node 2
+            this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1], 0); // Node 3
+        }
+    };
+
+
+private:
+    // Implementations
+    friend struct Element<Quad <_Dimension, Linear>>;
+    friend struct BaseQuad<Quad <_Dimension, Linear>>;
+    inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(1 / 4. * (1 - u) * (1 - v)),
+            static_cast<FLOATING_POINT_TYPE>(1 / 4. * (1 + u) * (1 - v)),
+            static_cast<FLOATING_POINT_TYPE>(1 / 4. * (1 + u) * (1 + v)),
+            static_cast<FLOATING_POINT_TYPE>(1 / 4. * (1 - u) * (1 + v))
+        };
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const {
+        const auto & u = xi[0];
+        const auto & v = xi[1];
+
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+        //         dL/du                dL/dv
+        m << -1 / 4. * (1 - v),   -1 / 4. * (1 - u),   // Node 0
+             +1 / 4. * (1 - v),   -1 / 4. * (1 + u),   // Node 1
+             +1 / 4. * (1 + v),   +1 / 4. * (1 + u),   // Node 2
+             -1 / 4. * (1 + v),   +1 / 4. * (1 - u);   // Node 3
+        return m;
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 0
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 1
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 2
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3)), Weight(1)}  // Node 3
+        };
+        return gauss_nodes;
+    }
+
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 2>, 4> indices = {{
+            {0, 1}, // Edge 0
+            {1, 2}, // Edge 1
+            {2, 3}, // Edge 2
+            {3, 0}  // Edge 3
+        }};
+        return indices;
+    }
+};
+
+
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct traits<Quad <_Dimension, Quadratic>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
+
+    using BoundaryElementType = Segment<_Dimension, Quadratic>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
+};
+
+/**
+ * Quadratic Quad
+ *
+ *       v
+ *       ^
+ *       |
+ * 3-----6-----2
+ * |     |     |
+ * |     |     |
+ * 7     +---- 5 --> u
+ * |           |
+ * |           |
+ * 0-----4-----1
+ *
+ * @tparam _Dimension The world coordinates dimension
+ */
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct Quad <_Dimension, Quadratic> : public BaseQuad<Quad <_Dimension, Quadratic>> {
+    // Types
+    using Base = BaseQuad<Quad <_Dimension, Quadratic>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
+
+    static constexpr FLOATING_POINT_TYPE canonical_nodes [NumberOfNodesAtCompileTime][CanonicalDimension] = {
+    //    u,  v
+        {-1, -1}, // Node 0
+        {+1, -1}, // Node 1
+        {+1, +1}, // Node 2
+        {-1, +1}, // Node 3
+        { 0, -1}, // Node 4
+        {+1,  0}, // Node 5
+        { 0, +1}, // Node 6
+        {-1,  0}  // Node 7
+    };
+
+    // Constructors
+    using Base::Base;
+    Quad() : Base() {
+        if constexpr (Dimension == 2) {
+            this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1]); // Node 0
+            this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1]); // Node 1
+            this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1]); // Node 2
+            this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1]); // Node 3
+            this->p_nodes.row(4) = WorldCoordinates(canonical_nodes[4][0], canonical_nodes[4][1]); // Node 4
+            this->p_nodes.row(5) = WorldCoordinates(canonical_nodes[5][0], canonical_nodes[5][1]); // Node 5
+            this->p_nodes.row(6) = WorldCoordinates(canonical_nodes[6][0], canonical_nodes[6][1]); // Node 6
+            this->p_nodes.row(7) = WorldCoordinates(canonical_nodes[7][0], canonical_nodes[7][1]); // Node 7
+        } else {
+            this->p_nodes.row(0) = WorldCoordinates(canonical_nodes[0][0], canonical_nodes[0][1], 0); // Node 0
+            this->p_nodes.row(1) = WorldCoordinates(canonical_nodes[1][0], canonical_nodes[1][1], 0); // Node 1
+            this->p_nodes.row(2) = WorldCoordinates(canonical_nodes[2][0], canonical_nodes[2][1], 0); // Node 2
+            this->p_nodes.row(3) = WorldCoordinates(canonical_nodes[3][0], canonical_nodes[3][1], 0); // Node 3
+            this->p_nodes.row(4) = WorldCoordinates(canonical_nodes[4][0], canonical_nodes[4][1], 0); // Node 4
+            this->p_nodes.row(5) = WorldCoordinates(canonical_nodes[5][0], canonical_nodes[5][1], 0); // Node 5
+            this->p_nodes.row(6) = WorldCoordinates(canonical_nodes[6][0], canonical_nodes[6][1], 0); // Node 6
+            this->p_nodes.row(7) = WorldCoordinates(canonical_nodes[7][0], canonical_nodes[7][1], 0); // Node 7
+        }
+    };
+
+    /** Construct a quadratic Quad from a linear one */
+    explicit Quad(const Quad<Dimension, Linear> & linear_Quad) : Base() {
+        this->p_nodes.row(0) = linear_Quad.node(0); // Node 0
+        this->p_nodes.row(1) = linear_Quad.node(1); // Node 1
+        this->p_nodes.row(2) = linear_Quad.node(2); // Node 2
+        this->p_nodes.row(3) = linear_Quad.node(3); // Node 3
+        this->p_nodes.row(4) = linear_Quad.world_coordinates(LocalCoordinates(canonical_nodes[4][0], canonical_nodes[4][1])); // Node 4
+        this->p_nodes.row(5) = linear_Quad.world_coordinates(LocalCoordinates(canonical_nodes[5][0], canonical_nodes[5][1])); // Node 5
+        this->p_nodes.row(6) = linear_Quad.world_coordinates(LocalCoordinates(canonical_nodes[6][0], canonical_nodes[6][1])); // Node 6
+        this->p_nodes.row(7) = linear_Quad.world_coordinates(LocalCoordinates(canonical_nodes[7][0], canonical_nodes[7][1])); // Node 7
+    }
+
+    /** Construct a quadratic Quad from four nodes */
+    Quad(WorldCoordinates & p0, WorldCoordinates & p1, WorldCoordinates & p2, WorldCoordinates & p3)
+    : Quad(Quad<Dimension, Linear>(p0, p1, p2, p3)) {}
+
+    /** Construct a quadratic Quad from four nodes */
+    Quad(const WorldCoordinates & p0, const WorldCoordinates & p1, const WorldCoordinates & p2, const WorldCoordinates & p3)
+    : Quad(Quad<Dimension, Linear>(p0, p1, p2, p3)) {}
+
+
+private:
+    // Implementations
+    friend struct Element<Quad <_Dimension, Quadratic>>;
+    friend struct BaseQuad<Quad <_Dimension, Quadratic>>;
+    inline auto get_L(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+
+        Vector<NumberOfNodesAtCompileTime> m;
+        m[4] = 1/2.*(1 - u*u)*(1 - v); // Node 4
+        m[5] = 1/2.*(1 - v*v)*(1 + u); // Node 5
+        m[6] = 1/2.*(1 - u*u)*(1 + v); // Node 6
+        m[7] = 1/2.*(1 - v*v)*(1 - u); // Node 7
+
+        m[0] = 1/4.*(1 - u)*(1 - v) - 1/2.*(m[4] + m[7]); // Node 0
+        m[1] = 1/4.*(1 + u)*(1 - v) - 1/2.*(m[4] + m[5]); // Node 1
+        m[2] = 1/4.*(1 + u)*(1 + v) - 1/2.*(m[5] + m[6]); // Node 2
+        m[3] = 1/4.*(1 - u)*(1 + v) - 1/2.*(m[6] + m[7]); // Node 3
+
+        return m;
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const {
+        const auto & u = xi[0];
+        const auto & v = xi[1];
+
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+        //                          dL/du                                                        dL/dv
+        m <<   -1/4.*(1 - v) - 1/2.*(-u*(1 - v) + -1/2.*(1 - v*v))  ,      -1/4.*(1 - u) - 1/2.*(-1/2.*(1 - u*u) + -v*(1 - u)),   // Node 0
+                1/4.*(1 - v) - 1/2.*(-u*(1 - v) +  1/2.*(1 - v*v))  ,      -1/4.*(1 + u) - 1/2.*(-1/2.*(1 - u*u) + -v*(1 + u)),   // Node 1
+                1/4.*(1 + v) - 1/2.*(-u*(1 + v) +  1/2.*(1 - v*v))  ,       1/4.*(1 + u) - 1/2.*( 1/2.*(1 - u*u) + -v*(1 + u)),   // Node 2
+               -1/4.*(1 + v) - 1/2.*(-u*(1 + v) + -1/2.*(1 - v*v))  ,       1/4.*(1 - u) - 1/2.*( 1/2.*(1 - u*u) + -v*(1 - u)),   // Node 3
+                                  -u*(1 - v)                        ,                       -1/2.*(1 - u*u)                   ,   // Node 4
+                               1/2.*(1 - v*v)                       ,                         -v*(1 + u)                      ,   // Node 5
+                                  -u*(1 + v)                        ,                        1/2.*(1 - u*u)                   ,   // Node 6
+                               -1/2.*(1 - v*v)                      ,                         -v*(1 - u);                         // Node 7
+
+        return m;
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 0
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 1
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 2
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3)), Weight(1)}  // Node 3
+        };
+        return gauss_nodes;
+    }
+
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 4> indices = {{
+            {0, 1, 4}, // Edge 0
+            {1, 2, 5}, // Edge 1
+            {2, 3, 6}, // Edge 2
+            {3, 0, 7}  // Edge 3
+        }};
+        return indices;
+    }
+};
+
+}

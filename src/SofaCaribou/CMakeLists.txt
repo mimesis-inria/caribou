@@ -2,34 +2,34 @@ project(SofaCaribou)
 
 set(HEADER_FILES
     Algebra/EigenMatrixWrapper.h
-    GraphComponents/Forcefield/FictitiousGridElasticForce.h
-    GraphComponents/Forcefield/HexahedronElasticForce.h
-    GraphComponents/Forcefield/HyperelasticForcefield.h
-    GraphComponents/Forcefield/TetrahedronElasticForce.h
-    GraphComponents/Forcefield/TractionForce.h
-    GraphComponents/Material/HyperelasticMaterial.h
-    GraphComponents/Material/NeoHookeanMaterial.h
-    GraphComponents/Material/SaintVenantKirchhoffMaterial.h
-    GraphComponents/Ode/StaticODESolver.h
-    GraphComponents/Solver/ConjugateGradientSolver.h
-    GraphComponents/Topology/FictitiousGrid.h
+    Forcefield/FictitiousGridElasticForce.h
+    Forcefield/HexahedronElasticForce.h
+    Forcefield/HyperelasticForcefield.h
+    Forcefield/TetrahedronElasticForce.h
+    Forcefield/TractionForce.h
+    Material/HyperelasticMaterial.h
+    Material/NeoHookeanMaterial.h
+    Material/SaintVenantKirchhoffMaterial.h
+    Ode/StaticODESolver.h
+    Solver/ConjugateGradientSolver.h
+    Topology/FictitiousGrid.h
     )
 
 set(TEMPLATE_FILES
-    GraphComponents/Forcefield/HyperelasticForcefield.inl
-    GraphComponents/Topology/FictitiousGrid.inl
+    Forcefield/HyperelasticForcefield.inl
+    Topology/FictitiousGrid.inl
     )
 
 set(SOURCE_FILES
-    GraphComponents/Forcefield/FictitiousGridElasticForce.cpp
-    GraphComponents/Forcefield/HexahedronElasticForce.cpp
-    GraphComponents/Forcefield/HyperelasticForcefield.cpp
-    GraphComponents/Forcefield/TetrahedronElasticForce.cpp
-    GraphComponents/Forcefield/TractionForce.cpp
-    GraphComponents/Material/HyperelasticMaterial.cpp
-    GraphComponents/Ode/StaticODESolver.cpp
-    GraphComponents/Solver/ConjugateGradientSolver.cpp
-    GraphComponents/Topology/FictitiousGrid.cpp
+    Forcefield/FictitiousGridElasticForce.cpp
+    Forcefield/HexahedronElasticForce.cpp
+    Forcefield/HyperelasticForcefield.cpp
+    Forcefield/TetrahedronElasticForce.cpp
+    Forcefield/TractionForce.cpp
+    Material/HyperelasticMaterial.cpp
+    Ode/StaticODESolver.cpp
+    Solver/ConjugateGradientSolver.cpp
+    Topology/FictitiousGrid.cpp
     init.cpp)
 
 # Try to find Sofa's cmake prefix

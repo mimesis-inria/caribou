@@ -1,412 +1,410 @@
-#ifndef CARIBOU_GEOMETRY_RECTANGULARHEXAHEDRON_H
-#define CARIBOU_GEOMETRY_RECTANGULARHEXAHEDRON_H
+#pragma once
 
 #include <Caribou/config.h>
-#include <Caribou/macros.h>
+#include <Caribou/Geometry/BaseRectangularHexahedron.h>
+#include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/RectangularQuad.h>
-#include <Caribou/Geometry/Segment.h>
-#include <Caribou/Geometry/Triangle.h>
-#include <Caribou/Geometry/Interpolation/Hexahedron.h>
-#include <Caribou/Geometry/Internal/BaseHexahedron.h>
+#include <Eigen/Core>
 
 namespace caribou::geometry {
 
-#define seg_contains_point(a,b,x) (((b)>(x)) - ((a)>(x)))
+template<UNSIGNED_INTEGER_TYPE Order = Linear>
+struct RectangularHexahedron;
 
-template <typename CanonicalElementType = interpolation::Hexahedron8>
-struct RectangularHexahedron : public internal::BaseHexahedron<CanonicalElementType, RectangularHexahedron<CanonicalElementType>>
-{
-    static constexpr INTEGER_TYPE NumberOfNodes = CanonicalElementType::NumberOfNodes;
+template<>
+struct traits<RectangularHexahedron <Linear>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
 
-    using Base = internal::BaseHexahedron<CanonicalElementType, RectangularHexahedron<CanonicalElementType>>;
+    using BoundaryElementType = RectangularQuad<3, Linear>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
+};
 
+/**
+ * Linear Rectangular Hexahedron
+ *
+ *        v
+ * 3----------2
+ * |\     ^   |\
+ * | \    |   | \
+ * |  \   |   |  \
+ * |   7------+---6
+ * |   |  +-- |-- | -> u
+ * 0---+---\--1   |
+ *  \  |    \  \  |
+ *   \ |     \  \ |
+ *    \|      w  \|
+ *     4----------5
+ *
+ */
+template<>
+struct RectangularHexahedron <Linear> : public BaseRectangularHexahedron<RectangularHexahedron <Linear>> {
+    // Types
+    using Base = BaseRectangularHexahedron<RectangularHexahedron <Linear>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
-    using BoundaryType = RectangularQuad<3, typename CanonicalElementType::BoundaryType>;
+    using GaussNode = typename Base::GaussNode;
 
-    template<int nRows, int nColumns, int Options=Eigen::RowMajor>
-    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
 
-    template<int nRows, int nColumns>
-    using Map = Eigen::Map<const Matrix<nRows, nColumns>>;
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
 
-    template<int nRows, int Options=0>
-    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, 1, Options>;
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    template<int nRows>
-    using MapVector = Eigen::Map<const Vector<nRows>>;
+    static constexpr auto canonical_nodes = Hexahedron<Linear>::canonical_nodes;
 
-    using Mat33 = Matrix<3, 3>;
-    using Size = Vector<3>;
+    // Constructors
+    using Base::Base;
 
-    constexpr
-    RectangularHexahedron()
-            : p_center {0, 0, 0}, p_H {2, 2, 2}, p_R (Mat33::Identity())
-    {}
+    // Constructor from a regular Hexahedron
+    explicit RectangularHexahedron(const Hexahedron<Linear> & hexa) {
+        this->p_center = hexa.center();
+        this->p_H = Size((hexa.node(1)-hexa.node(0)).norm(), (hexa.node(3)-hexa.node(0)).norm(), (hexa.node(4)-hexa.node(0)).norm());
+        this->p_R = hexa.frame({0, 0, 0});
+    };
 
-    constexpr
-    RectangularHexahedron(const WorldCoordinates & center, const Size & dimensions, const Mat33 & rotation)
-            : p_center (center), p_H (dimensions), p_R (rotation)
-    {}
+    /** Constructor from an Eigen matrix containing the positions of the hexa's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularHexahedron(Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
 
-    constexpr
-    RectangularHexahedron(const WorldCoordinates & center, const Size & dimensions)
-            : p_center (center), p_H (dimensions), p_R (Mat33::Identity())
-    {}
+    /** Constructor from an Eigen matrix containing the positions of the hexa's nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularHexahedron(const Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
 
-    constexpr
-    RectangularHexahedron(const WorldCoordinates & center)
-        : p_center (center), p_H  {2,2,2}, p_R (Mat33::Identity())
-    {}
-
-    /** Get the Node at given index */
-    inline
-    WorldCoordinates
-    node(UNSIGNED_INTEGER_TYPE index) const
-    {
-        const auto local_coordinates_of_node = MapVector<3>(CanonicalElementType::nodes[index]);
-        return T(local_coordinates_of_node);
-    }
-
-    /** Get a reference to the set of nodes */
-    inline
-    Matrix<NumberOfNodes, 3>
-    nodes() const
-    {
-        Matrix<NumberOfNodes, 3> m;
-        for (size_t i = 0; i < CanonicalElementType::NumberOfNodes; ++i)
-            m.row(i) = node(i).transpose();
-        return m;
-    }
-
-    /** Compute the volume of the hexa */
-    inline
-    FLOATING_POINT_TYPE
-    volume() const
-    {
-        const auto hx = (node(0) - node(1)).length();
-        const auto hy = (node(0) - node(3)).length();
-        const auto hz = (node(0) - node(4)).length();
-        return hx*hy*hz;
-    }
-
-    /** Get the center point position */
-    inline
-    WorldCoordinates
-    center() const
-    {
-        return p_center;
-    }
-
+    // Public methods
     /**
-     * Get the local coordinates frame (a.k.a. the rotation matrix) positioned at the center of the hexahedron
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
      */
-    inline
-    Mat33
-    frame() const
-    {
-        return p_R;
-    }
-
-    /**
-     * Get the size (hx, hy, hz) of the hexahedron
-     */
-    inline
-    Size
-    H() const
-    {
-        return p_H;
-    }
-
-    /**
-     * Compute the jacobian matrix evaluated at local position {u,v,w}
-     *
-     * For a rectangular hexahedron, the jacobian matrix is constant and is defined as
-     *
-     *     1 | hx 0  0  |
-     * J = - | 0  hy 0  |
-     *     2 | 0  0  hz |
-     *
-     * where hx, hy, and hz are the dimension of the edges 0-1, 0-3 and 0-4 respectively.
-     */
-    inline
-    Mat33
-    jacobian (const LocalCoordinates & /*coordinates*/) const
-    {
-        return jacobian();
-    }
-
-    /**
-     * Compute the jacobian matrix.
-     *
-     * For a rectangular hexahedron, the jacobian matrix is constant and is defined as
-     *
-     *     1 | hx 0  0  |
-     * J = - | 0  hy 0  |
-     *     2 | 0  0  hz |
-     *
-     * where hx, hy, and hz are the dimension of the edges 0-1, 0-3 and 0-4 respectively.
-     */
-    inline
-    Mat33
-    jacobian () const
-    {
-        return (1/2.*p_H).asDiagonal();
-    }
-
-    /**
-     * Compute the transformation of a local position {u,v,w} to its world position {x,y,z}
-     */
-    inline
-    WorldCoordinates
-    T(const LocalCoordinates & coordinates) const
-    {
-        return p_center + ((p_R * coordinates).array()*(p_H/2.).array()).matrix();
-    }
-
-    /**
-     * Compute the inverse transformation of a world position {x,y,z} to its local position {u,v,w}
-     */
-    inline
-    LocalCoordinates
-    Tinv(const WorldCoordinates & coordinates) const
-    {
-        return p_R.transpose() * ((coordinates - p_center).array() / (p_H/2.).array()).matrix();
-    }
-
-    /**
-     * Returns true if the given world coordinates are within the hexahedron's boundaries, false otherwise.
-     */
-    inline bool
-    contains(const WorldCoordinates & coordinates) const
-    {
-        const LocalCoordinates c = Tinv(coordinates);
-        return IN_CLOSED_INTERVAL(-1, c[0], 1) and
-               IN_CLOSED_INTERVAL(-1, c[1], 1) and
-               IN_CLOSED_INTERVAL(-1, c[2], 1);
-    }
-
-    /**
-     * Test if the cube intersects the given 3D segment (in world coordinates)
-     *
-     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
-     */
-    inline
-    bool
-    intersects(const Segment<3> & segment) const
-    {
-        return intersects_local(
-            Segment<3>(
-                Tinv(segment.node(0)),
-                Tinv(segment.node(1))
-            )
-        );
-    }
-
-    template <typename Derived>
-    inline bool
-    intersects(const Triangle<3, Derived> & t) const
-    {
-        WorldCoordinates nodes[3];
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
-            nodes[i] = t.node(i);
-        }
-
-        return intersects_polygon<3>(nodes, t.normal());
-    }
-
-    /**
-     * Test if the cube intersects the given 3D polygon (in world coordinates).
-     *
-     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
-     * @tparam NNodes Number of nodes in the polygon
-     * @param nodes The nodes of the polygon
-     * @param polynormal Vector perpendicular to the polygon.  It need not be of unit length.
-     * @return True if the polygon intersects the cube, false otherwise.
-     */
-    template <int NNodes>
-    inline
-    bool
-    intersects_polygon(const WorldCoordinates nodes[NNodes], const Vector<3> & polynormal) const
-    {
-        // Project the polygon's nodes into the unit cube
-        WorldCoordinates local_nodes[NNodes];
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
-            local_nodes[i] = Tinv(nodes[i]) / 2.;
-        }
-
-
-        // Check if any edges of the polygon intersect the hexa
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
-            const Vector<3> & p1 = local_nodes[i]*2;
-            const Vector<3> & p2 = local_nodes[(i+1)%NNodes]*2;
-            const Segment<3> edge(p1, p2);
-            if (intersects_local(edge))
-                return true;
-        }
-
-        // Check that if the polygon's plane intersect the cube diagonal that is the closest of being perpendicular to the
-        // plane of the polygon.
-        Vector<3> best_diagonal;
-        best_diagonal << (((polynormal[0]) < 0) ? -1 : 1),
-                         (((polynormal[1]) < 0) ? -1 : 1),
-                         (((polynormal[2]) < 0) ? -1 : 1);
-
-        // Check if the intersection point between the two planes lies inside the cube
-        const FLOATING_POINT_TYPE t = polynormal.dot(local_nodes[0]) / polynormal.dot(best_diagonal);
-        if (!IN_CLOSED_INTERVAL(-.5, t, .5))
-            return false;
-
-        // Check if the intersection point between the two planes lies inside the polygon
-        const Vector<3> p = best_diagonal * t;
-        const Vector<3> abspolynormal = polynormal.array().abs();
-        int zaxis, xaxis, yaxis;
-        if (abspolynormal[0] > abspolynormal[1])
-            zaxis = (abspolynormal[0] > abspolynormal[2]) ? 0 : 2;
-        else
-            zaxis = (abspolynormal[1] > abspolynormal[2]) ? 1 : 2;
-
-        if (polynormal[zaxis] < 0) {
-            xaxis = (zaxis+2)%3;
-            yaxis = (zaxis+1)%3;
-        }
-        else {
-            xaxis = (zaxis+1)%3;
-            yaxis = (zaxis+2)%3;
-        }
-
-        int count = 0;
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {
-            const auto & p1 = local_nodes[i];
-            const auto & p2 = local_nodes[(i+1)%NNodes];
-
-            if (const int xdirection = seg_contains_point(p1[xaxis], p2[xaxis], p[xaxis]))
-            {
-                if (seg_contains_point(p1[yaxis], p2[yaxis], p[yaxis]))
-                {
-                    if (xdirection * (p[xaxis]-p1[xaxis])*(p2[yaxis]-p1[yaxis]) <=
-                        xdirection * (p[yaxis]-p1[yaxis])*(p2[xaxis]-p1[xaxis]))
-                        count += xdirection;
-                }
-                else
-                {
-                    if (p2[yaxis] <= p[yaxis])
-                        count += xdirection;
-                }
-            }
-
-        }
-
-        return (count != 0);
-    }
-
-    /**
-     * Compute an integral approximation by gauss quadrature on the hexahedron of the given evaluation function.
-     *
-     * @example
-     * \code{.cpp}
-     * // Integrate the polynomial 1 + 2x + 2xy + 3*z on an hexahedron.
-     * float result = RectangularHexahedron(x1, x2, x3, x4, x5, x6, x7, x8).gauss_integrate(
-     *   [] (const RectangularHexahedron & hexa, const RectangularHexahedron::LocalCoordinates & coordinates) -> float {
-     *     const auto & xi   = coordinates[0];
-     *     const auto & eta  = coordinates[1];
-     *     const auto & zeta = coordinates[2];
-     *     return 1 + 2*xi + 2*xi*eta + 3*zeta;
-     *   }
-     * );
-     * \endcode
-     *
-     * @tparam EvaluateFunctionType Callback function reference type. See f parameter.
-     *
-     * @param f
-     * Callback function of the signature
-     *
-     *     ValueType f (const Hexahedron & hexa, const LocalCoordinates & coordinates);
-     *
-     * Where hexa is a reference to the current hexahadron on which we integrate, and the coordinates u, v and w
-     * forms the local position of a sample point on which we want to get the evaluation value.
-     *
-     * @return The value of the integral computed on this hexahedron.
-     *
-     */
-    template <typename ValueType, typename EvaluateFunctor>
-    inline
-    ValueType
-    gauss_quadrature(EvaluateFunctor f) const
-    {
-        // Constant for parallelepiped hexahedrons
-        const auto detJ = jacobian().determinant();
-
-        const auto p0 = MapVector<3>(CanonicalElementType::gauss_nodes[0]);
-        const auto w0 = CanonicalElementType::gauss_weights[0];
-        const auto eval0 = f(*this, p0);
-        ValueType result = eval0 * w0 * detJ;
-
-        for (std::size_t i = 1; i < CanonicalElementType::number_of_gauss_nodes; ++i) {
-            const auto p = MapVector<3>(CanonicalElementType::gauss_nodes[i]);
-            const auto w = CanonicalElementType::gauss_weights[i];
-            const auto eval = f(*this, p);
-            result += eval * w * detJ;
-        }
-
-        return result;
+    inline auto edges() const {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 2>, 12> indices = {{
+            {0, 1}, // Edge 0
+            {1, 2}, // Edge 1
+            {2, 3}, // Edge 2
+            {3, 0}, // Edge 3
+            {4, 5}, // Edge 4
+            {5, 6}, // Edge 5
+            {6, 7}, // Edge 6
+            {7, 4}, // Edge 7
+            {0, 4}, // Edge 8
+            {1, 5}, // Edge 9
+            {2, 6}, // Edge 10
+            {3, 7}  // Edge 11
+        }};
+        return indices;
     }
 
 private:
-    /**
-     * Test if the cube intersects the given 3D segment (in the hexahedron's local coordinates).
-     *
-     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
-     */
-    inline
-    bool
-    intersects_local(const Segment<3> & segment) const
-    {
-        const auto & v0 = segment.node(0) / 2.; // Shrink to a cube of size 1x1x1 centered on 0
-        const auto & v1 = segment.node(1) / 2.; // Shrink to a cube of size 1x1x1 centered on 0
+    // Implementations
+    friend struct Element<RectangularHexahedron <Linear>>;
+    friend struct BaseRectangularHexahedron<RectangularHexahedron <Linear>>;
+    inline auto get_L(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto  & w = xi[2];
 
-        const auto edge = (v1 - v0);
-        INTEGER_TYPE edge_signs[3];
+        Vector<NumberOfNodesAtCompileTime> m;
+        m << (1/8.) * (1 - u) * (1 - v) * (1 - w),
+             (1/8.) * (1 + u) * (1 - v) * (1 - w),
+             (1/8.) * (1 + u) * (1 + v) * (1 - w),
+             (1/8.) * (1 - u) * (1 + v) * (1 - w),
+             (1/8.) * (1 - u) * (1 - v) * (1 + w),
+             (1/8.) * (1 + u) * (1 - v) * (1 + w),
+             (1/8.) * (1 + u) * (1 + v) * (1 + w),
+             (1/8.) * (1 - u) * (1 + v) * (1 + w);
+        return m;
+    };
 
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
-            edge_signs[i] = (edge[i] < 0) ? -1 : 1;
-        }
+    inline auto get_dL(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto  & w = xi[2];
 
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+        //            dL/du                         dL/dv                         dL/dw
+        m << -1/8. * (1 - v) * (1 - w),    -1/8. * (1 - u) * (1 - w),    -1/8. * (1 - u) * (1 - v),   // Node 0
+             +1/8. * (1 - v) * (1 - w),    -1/8. * (1 + u) * (1 - w),    -1/8. * (1 + u) * (1 - v),   // Node 1
+             +1/8. * (1 + v) * (1 - w),    +1/8. * (1 + u) * (1 - w),    -1/8. * (1 + u) * (1 + v),   // Node 2
+             -1/8. * (1 + v) * (1 - w),    +1/8. * (1 - u) * (1 - w),    -1/8. * (1 - u) * (1 + v),   // Node 3
+             -1/8. * (1 - v) * (1 + w),    -1/8. * (1 - u) * (1 + w),    +1/8. * (1 - u) * (1 - v),   // Node 4
+             +1/8. * (1 - v) * (1 + w),    -1/8. * (1 + u) * (1 + w),    +1/8. * (1 + u) * (1 - v),   // Node 5
+             +1/8. * (1 + v) * (1 + w),    +1/8. * (1 + u) * (1 + w),    +1/8. * (1 + u) * (1 + v),   // Node 6
+             -1/8. * (1 + v) * (1 + w),    +1/8. * (1 - u) * (1 + w),    +1/8. * (1 - u) * (1 + v);   // Node 7
+        return m;
+    };
 
-            if (v0[i] * edge_signs[i] >  .5+EPSILON) return false;
-            if (v1[i] * edge_signs[i] < -.5-EPSILON) return false;
-        }
-
-
-        for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
-            FLOATING_POINT_TYPE rhomb_normal_dot_v0, rhomb_normal_dot_cubedge;
-
-            const UNSIGNED_INTEGER_TYPE iplus1 = (i + 1) % 3;
-            const UNSIGNED_INTEGER_TYPE iplus2 = (i + 2) % 3;
-
-            rhomb_normal_dot_v0 =   edge[iplus2] * v0[iplus1]
-                                    - edge[iplus1] * v0[iplus2];
-
-            rhomb_normal_dot_cubedge = .5 *
-                                       (edge[iplus2] * edge_signs[iplus1] +
-                                        edge[iplus1] * edge_signs[iplus2]);
-
-            const auto r = (rhomb_normal_dot_v0*rhomb_normal_dot_v0) - (rhomb_normal_dot_cubedge*rhomb_normal_dot_cubedge);
-            if (r > EPSILON)
-                return false;
-        }
-
-        return true;
+    inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {
+        caribou_assert(index < NumberOfNodesAtCompileTime and "Trying to get a node from an invalid node index.");
+        return this->world_coordinates(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1], canonical_nodes[index][2]));
     }
 
-    WorldCoordinates p_center; ///< Position of the center point of the hexahedron
-    Size p_H; ///< Size of the hexahedron {hx, hy, hz}
-    Mat33 p_R; ///< Rotation matrix (a.k.a. the local coordinates frame) at the center of the hexahedron
+    inline auto get_nodes() const {
+        Matrix<NumberOfNodesAtCompileTime, Dimension> nodes;
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < NumberOfNodesAtCompileTime; ++node_id) {
+            nodes.row(node_id) = get_node(node_id);
+        }
+        return nodes;
+    }
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 0
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 1
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 2
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 3
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 4
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 5
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 6
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3), +1/sqrt(3)), Weight(1)}  // Node 7
+        };
+        return gauss_nodes;
+    }
+
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 4>, 6> indices = {{
+            {0, 3, 2, 1}, // Face 0
+            {0, 4, 7, 3}, // Face 1
+            {1, 2, 6, 5}, // Face 2
+            {0, 1, 5, 4}, // Face 3
+            {2, 3, 7, 6}, // Face 4
+            {4, 5, 6, 7}  // Face 5
+        }};
+        return indices;
+    }
 };
 
-RectangularHexahedron() -> RectangularHexahedron<interpolation::Hexahedron8>;
 
-} // namespace caribou::geometry
-#endif //CARIBOU_GEOMETRY_RECTANGULARHEXAHEDRON_H
+template<>
+struct traits<RectangularHexahedron <Quadratic>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 20;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
+
+    using BoundaryElementType = RectangularQuad<3, Quadratic>;
+    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
+};
+
+/**
+ * Quadratic Rectangular Hexahedron (20 nodes)
+ *
+ *         v
+ *         ^
+ *         |
+ *  3-----10---2
+ *  |\     |   |\
+ *  | 19   |   | 18
+ * 11  \   |   9  \
+ *  |   7----14+---6
+ *  |   |  +-- |-- | ---> u
+ *  0---+-8-\--1   |
+ *   \  15   \  \  13
+ *   16 |     \  17|
+ *     \|      w  \|
+ *      4----12----5   u
+ *
+ */
+template<>
+struct RectangularHexahedron <Quadratic> : public BaseRectangularHexahedron<RectangularHexahedron <Quadratic>> {
+    // Types
+    using Base = BaseRectangularHexahedron<RectangularHexahedron <Quadratic>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
+
+    static constexpr auto canonical_nodes = Hexahedron<Quadratic>::canonical_nodes;
+
+    // Constructors
+    using Base::Base;
+
+    // Constructor from a regular Hexahedron
+    template<UNSIGNED_INTEGER_TYPE Order>
+    explicit RectangularHexahedron(const Hexahedron<Order> & hexa) {
+        this->p_center = hexa.center();
+        this->p_H = Size((hexa.node(1)-hexa.node(0)).norm(), (hexa.node(3)-hexa.node(0)).norm(), (hexa.node(4)-hexa.node(0)).norm());
+        this->p_R = hexa.frame({0, 0, 0});
+    }
+
+    /** Constructor from an Eigen matrix containing the positions of an quadratic hexa nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularHexahedron(Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Quadratic>(nodes)) {}
+
+    /** Constructor from an Eigen matrix containing the positions of an quadratic hexa nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
+    explicit RectangularHexahedron(const Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Quadratic>(nodes)) {}
+
+    /** Constructor from an Eigen matrix containing the positions of a linear hexa nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == 8)>
+    explicit RectangularHexahedron(Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
+
+    /** Constructor from an Eigen matrix containing the positions of a linear hexa nodes */
+    template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == 8)>
+    explicit RectangularHexahedron(const Eigen::EigenBase<EigenType> & nodes)
+        : RectangularHexahedron(Hexahedron<Linear>(nodes)) {}
+
+    // Public methods
+    /**
+     * Get the list of node indices of the edges.
+     * \sa Element::boundary_elements_node_indices
+     */
+    inline auto edges() const {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 12> indices = {{
+            {0, 1, 8},  // Edge 0
+            {1, 2, 9},  // Edge 1
+            {2, 3, 10}, // Edge 2
+            {3, 0, 11}, // Edge 3
+            {4, 5, 12}, // Edge 4
+            {5, 6, 13}, // Edge 5
+            {6, 7, 14}, // Edge 6
+            {7, 4, 15}, // Edge 7
+            {0, 4, 16}, // Edge 8
+            {1, 5, 17}, // Edge 9
+            {2, 6, 18}, // Edge 10
+            {3, 7, 19}  // Edge 11
+        }};
+        return indices;
+    }
+
+private:
+    // Implementations
+    friend struct Element<RectangularHexahedron <Quadratic>>;
+    friend struct BaseRectangularHexahedron<RectangularHexahedron <Quadratic>>;
+    inline auto get_L(const LocalCoordinates & xi) const {
+        const auto  & u = xi[0];
+        const auto  & v = xi[1];
+        const auto  & w = xi[2];
+
+        Vector<NumberOfNodesAtCompileTime> m;
+        m[ 8] = 1/4.*(1 - u*u)*(1 - v)*(1 - w);
+        m[ 9] = 1/4.*(1 - v*v)*(1 + u)*(1 - w);
+        m[10] = 1/4.*(1 - u*u)*(1 + v)*(1 - w);
+        m[11] = 1/4.*(1 - v*v)*(1 - u)*(1 - w);
+        m[12] = 1/4.*(1 - u*u)*(1 - v)*(1 + w);
+        m[13] = 1/4.*(1 - v*v)*(1 + u)*(1 + w);
+        m[14] = 1/4.*(1 - u*u)*(1 + v)*(1 + w);
+        m[15] = 1/4.*(1 - v*v)*(1 - u)*(1 + w);
+        m[16] = 1/4.*(1 - w*w)*(1 - u)*(1 - v);
+        m[17] = 1/4.*(1 - w*w)*(1 + u)*(1 - v);
+        m[18] = 1/4.*(1 - w*w)*(1 + u)*(1 + v);
+        m[19] = 1/4.*(1 - w*w)*(1 - u)*(1 + v);
+
+        m[0] = 1/8.*(1 - u)*(1 - v)*(1 - w) - 1/2.*(m[ 8] + m[11] + m[16]);
+        m[1] = 1/8.*(1 + u)*(1 - v)*(1 - w) - 1/2.*(m[ 8] + m[ 9] + m[17]);
+        m[2] = 1/8.*(1 + u)*(1 + v)*(1 - w) - 1/2.*(m[ 9] + m[10] + m[18]);
+        m[3] = 1/8.*(1 - u)*(1 + v)*(1 - w) - 1/2.*(m[10] + m[11] + m[19]);
+        m[4] = 1/8.*(1 - u)*(1 - v)*(1 + w) - 1/2.*(m[12] + m[15] + m[16]);
+        m[5] = 1/8.*(1 + u)*(1 - v)*(1 + w) - 1/2.*(m[12] + m[13] + m[17]);
+        m[6] = 1/8.*(1 + u)*(1 + v)*(1 + w) - 1/2.*(m[13] + m[14] + m[18]);
+        m[7] = 1/8.*(1 - u)*(1 + v)*(1 + w) - 1/2.*(m[14] + m[15] + m[19]);
+        return m;
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const {
+        using ShapeDerivative = Vector<3>;
+        const auto & u = xi[0];
+        const auto & v = xi[1];
+        const auto  & w = xi[2];
+
+        Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
+
+        //                                          dL/du                       dL/dv                      dL/dw
+        m.row( 8) = ShapeDerivative({-1/2.*u*(1 - v)*(1 - w), -1/4.*(1 - u*u)*(1 - w), -1/4.*(1 - u*u)*(1 - v)});
+        m.row( 9) = ShapeDerivative({ 1/4.*(1 - v*v)*(1 - w), -1/2.*v*(1 + u)*(1 - w), -1/4.*(1 - v*v)*(1 + u)});
+        m.row(10) = ShapeDerivative({-1/2.*u*(1 + v)*(1 - w),  1/4.*(1 - u*u)*(1 - w), -1/4.*(1 - u*u)*(1 + v)});
+        m.row(11) = ShapeDerivative({-1/4.*(1 - v*v)*(1 - w), -1/2.*v*(1 - u)*(1 - w), -1/4.*(1 - v*v)*(1 - u)});
+        m.row(12) = ShapeDerivative({-1/2.*u*(1 - v)*(1 + w), -1/4.*(1 - u*u)*(1 + w),  1/4.*(1 - u*u)*(1 - v)});
+        m.row(13) = ShapeDerivative({ 1/4.*(1 - v*v)*(1 + w), -1/2.*v*(1 + u)*(1 + w),  1/4.*(1 - v*v)*(1 + u)});
+        m.row(14) = ShapeDerivative({-1/2.*u*(1 + v)*(1 + w),  1/4.*(1 - u*u)*(1 + w),  1/4.*(1 - u*u)*(1 + v)});
+        m.row(15) = ShapeDerivative({-1/4.*(1 - v*v)*(1 + w), -1/2.*v*(1 - u)*(1 + w),  1/4.*(1 - v*v)*(1 - u)});
+        m.row(16) = ShapeDerivative({-1/4.*(1 - w*w)*(1 - v), -1/4.*(1 - w*w)*(1 - u), -1/2.*w*(1 - u)*(1 - v)});
+        m.row(17) = ShapeDerivative({ 1/4.*(1 - w*w)*(1 - v), -1/4.*(1 - w*w)*(1 + u), -1/2.*w*(1 + u)*(1 - v)});
+        m.row(18) = ShapeDerivative({ 1/4.*(1 - w*w)*(1 + v),  1/4.*(1 - w*w)*(1 + u), -1/2.*w*(1 + u)*(1 + v)});
+        m.row(19) = ShapeDerivative({-1/4.*(1 - w*w)*(1 + v),  1/4.*(1 - w*w)*(1 - u), -1/2.*w*(1 - u)*(1 + v)});
+
+        const auto du = m.col(0); // dL/du
+        const auto dv = m.col(1); // dL/dv
+        const auto dw = m.col(2); // dL/dw
+        //                                                        dL/du                                                    dL/dv                                                           dL/dw
+        m.row(0) = ShapeDerivative({-1/8.*(1 - v)*(1 - w) - 1/2.*(du[8 ] + du[11] + du[16]), -1/8.*(1 - u)*(1 - w) - 1/2.*(dv[ 8] + dv[11] + dv[16]), -1/8.*(1 - u)*(1 - v) - 1/2.*(dw[ 8] + dw[11] + dw[16])});
+        m.row(1) = ShapeDerivative({ 1/8.*(1 - v)*(1 - w) - 1/2.*(du[8 ] + du[ 9] + du[17]), -1/8.*(1 + u)*(1 - w) - 1/2.*(dv[ 8] + dv[ 9] + dv[17]), -1/8.*(1 + u)*(1 - v) - 1/2.*(dw[ 8] + dw[ 9] + dw[17])});
+        m.row(2) = ShapeDerivative({ 1/8.*(1 + v)*(1 - w) - 1/2.*(du[9 ] + du[10] + du[18]),  1/8.*(1 + u)*(1 - w) - 1/2.*(dv[ 9] + dv[10] + dv[18]), -1/8.*(1 + u)*(1 + v) - 1/2.*(dw[ 9] + dw[10] + dw[18])});
+        m.row(3) = ShapeDerivative({-1/8.*(1 + v)*(1 - w) - 1/2.*(du[10] + du[11] + du[19]),  1/8.*(1 - u)*(1 - w) - 1/2.*(dv[10] + dv[11] + dv[19]), -1/8.*(1 - u)*(1 + v) - 1/2.*(dw[10] + dw[11] + dw[19])});
+        m.row(4) = ShapeDerivative({-1/8.*(1 - v)*(1 + w) - 1/2.*(du[12] + du[15] + du[16]), -1/8.*(1 - u)*(1 + w) - 1/2.*(dv[12] + dv[15] + dv[16]),  1/8.*(1 - u)*(1 - v) - 1/2.*(dw[12] + dw[15] + dw[16])});
+        m.row(5) = ShapeDerivative({ 1/8.*(1 - v)*(1 + w) - 1/2.*(du[12] + du[13] + du[17]), -1/8.*(1 + u)*(1 + w) - 1/2.*(dv[12] + dv[13] + dv[17]),  1/8.*(1 + u)*(1 - v) - 1/2.*(dw[12] + dw[13] + dw[17])});
+        m.row(6) = ShapeDerivative({ 1/8.*(1 + v)*(1 + w) - 1/2.*(du[13] + du[14] + du[18]),  1/8.*(1 + u)*(1 + w) - 1/2.*(dv[13] + dv[14] + dv[18]),  1/8.*(1 + u)*(1 + v) - 1/2.*(dw[13] + dw[14] + dw[18])});
+        m.row(7) = ShapeDerivative({-1/8.*(1 + v)*(1 + w) - 1/2.*(du[14] + du[15] + du[19]),  1/8.*(1 - u)*(1 + w) - 1/2.*(dv[14] + dv[15] + dv[19]),  1/8.*(1 - u)*(1 + v) - 1/2.*(dw[14] + dw[15] + dw[19])});
+
+
+        return m;
+    };
+
+    inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const -> WorldCoordinates {
+        caribou_assert(index < NumberOfNodesAtCompileTime and "Trying to get a node from an invalid node index.");
+        return this->world_coordinates(LocalCoordinates(canonical_nodes[index][0], canonical_nodes[index][1], canonical_nodes[index][2]));
+    }
+
+    inline auto get_nodes() const {
+        Matrix<NumberOfNodesAtCompileTime, Dimension> nodes;
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < NumberOfNodesAtCompileTime; ++node_id) {
+            nodes.row(node_id) = get_node(node_id);
+        }
+        return nodes;
+    }
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        using Weight = FLOATING_POINT_TYPE;
+        static const std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 0
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 1
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 2
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3), -1/sqrt(3)), Weight(1)}, // Node 3
+            GaussNode {LocalCoordinates(-1/sqrt(3), -1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 4
+            GaussNode {LocalCoordinates(+1/sqrt(3), -1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 5
+            GaussNode {LocalCoordinates(-1/sqrt(3), +1/sqrt(3), +1/sqrt(3)), Weight(1)}, // Node 6
+            GaussNode {LocalCoordinates(+1/sqrt(3), +1/sqrt(3), +1/sqrt(3)), Weight(1)}  // Node 7
+        };
+        return gauss_nodes;
+    }
+
+    inline auto get_boundary_elements_nodes() const -> const auto & {
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 8>, 6> indices = {{
+            {0, 3, 2, 1,  9, 13, 11,  8}, // Face 0
+            {0, 4, 7, 3, 10, 17, 15,  9}, // Face 1
+            {1, 2, 6, 5, 11, 14, 18, 12}, // Face 2
+            {0, 1, 5, 4,  8, 12, 16, 10}, // Face 3
+            {2, 3, 7, 6, 13, 15, 19, 14}, // Face 4
+            {4, 5, 6, 7, 16, 18, 19, 17}  // Face 5
+        }};
+        return indices;
+    }
+};
+
+}

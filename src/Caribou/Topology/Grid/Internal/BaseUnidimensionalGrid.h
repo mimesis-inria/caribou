@@ -1,5 +1,5 @@
-#ifndef CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_UNIDIMENSIONALGRID_H
-#define CARIBOU_TOPOLOGY_ENGINE_GRID_INTERNAL_UNIDIMENSIONALGRID_H
+#ifndef CARIBOU_TOPOLOGY_GRID_INTERNAL_UNIDIMENSIONALGRID_H
+#define CARIBOU_TOPOLOGY_GRID_INTERNAL_UNIDIMENSIONALGRID_H
 
 #include <Caribou/Topology/Grid/Internal/BaseGrid.h>
 
@@ -8,7 +8,7 @@ namespace caribou::topology::internal {
 /**
  * Simple representation of an unidimensional (1D) Grid in space.
  *
- * ** Do not use this class directly. Use instead caribou::topology::engine::Grid. **
+ * ** Do not use this class directly. Use instead caribou::topology::Grid. **
  *
  * The functions declared in this class can be used with any type of grids (static grid, container grid, etc.).
  *

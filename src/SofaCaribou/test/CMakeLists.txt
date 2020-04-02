@@ -1,19 +1,21 @@
 project(SofaCaribouTest)
 
 set(SOURCE_FILES
-        main.cpp)
+        main.cpp
+        Algebra/test_eigen_matrix_wrapper.cpp
+        Forcefield/test_tractionforce.cpp
+)
 
 enable_testing()
 find_package(GTest REQUIRED)
-
-# Required by old versions of gtest (such as defaults for ubuntu 16.04)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+find_package(SofaFramework REQUIRED)
+find_package(SofaSimulation REQUIRED)
+find_package(SofaBase REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} SofaCaribou)
+target_link_libraries(${PROJECT_NAME} SofaHelper SofaSimulationGraph SofaBaseMechanics)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
-
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${GTEST_INCLUDE_DIR}>")

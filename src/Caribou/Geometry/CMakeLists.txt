@@ -1,25 +1,20 @@
 project(Geometry)
 
 set(HEADER_FILES
-    Hexahedron.h
-    Quad.h
-    RectangularQuad.h
-    RectangularHexahedron.h
-    Segment.h
-    Traits.h
-    Triangle.h
-    Tetrahedron.h
-    Internal/BaseHexahedron.h
-    Internal/BaseQuad.h
-    Internal/BaseSegment.h
-    Internal/BaseTetrahedron.h
-    Internal/BaseTriangle.h
-    Interpolation/CanonicalElement.h
-    Interpolation/Hexahedron.h
-    Interpolation/Quad.h
-    Interpolation/Tetrahedron.h
-    Interpolation/Triangle.h
-    Interpolation/Segment.h)
+        BaseHexahedron.h
+        BaseSegment.h
+        BaseQuad.h
+        BaseRectangularHexahedron.h
+        BaseRectangularQuad.h
+        BaseTetrahedron.h
+        BaseTriangle.h
+        Element.h
+        RectangularHexahedron.h
+        RectangularQuad.h
+        Segment.h
+        Quad.h
+        Tetrahedron.h
+        Triangle.h)
 
 
 find_package(Eigen3 REQUIRED NO_MODULE)
@@ -38,6 +33,6 @@ if (CARIBOU_BUILD_TESTS)
     add_subdirectory(test)
 endif()
 
-if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
-    add_subdirectory(Python)
-endif()
+#if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
+#    add_subdirectory(Python)
+#endif()

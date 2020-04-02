@@ -66,15 +66,15 @@ TEST(Topology_Grid_2D, Grid2D) {
     EXPECT_TRUE(list_are_equals({3}, grid.cells_around(WorldCoordinates(100.25, 100.50))));
 
 // Node position queries
-    EXPECT_NODE_EQ(grid.node(0), WorldCoordinates({0.25, 0.5}));
-    EXPECT_NODE_EQ(grid.node(1), WorldCoordinates({50.25, 0.5}));
-    EXPECT_NODE_EQ(grid.node(2), WorldCoordinates({100.25, 0.5}));
-    EXPECT_NODE_EQ(grid.node(3), WorldCoordinates({0.25, 50.5}));
-    EXPECT_NODE_EQ(grid.node(4), WorldCoordinates({50.25, 50.5}));
-    EXPECT_NODE_EQ(grid.node(5), WorldCoordinates({100.25, 50.5}));
-    EXPECT_NODE_EQ(grid.node(6), WorldCoordinates({0.25, 100.5}));
-    EXPECT_NODE_EQ(grid.node(7), WorldCoordinates({50.25, 100.5}));
-    EXPECT_NODE_EQ(grid.node(8), WorldCoordinates({100.25, 100.5}));
+    EXPECT_MATRIX_NEAR(grid.node(0), WorldCoordinates({0.25, 0.5}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(1), WorldCoordinates({50.25, 0.5}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(2), WorldCoordinates({100.25, 0.5}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(3), WorldCoordinates({0.25, 50.5}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(4), WorldCoordinates({50.25, 50.5}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(5), WorldCoordinates({100.25, 50.5}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(6), WorldCoordinates({0.25, 100.5}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(7), WorldCoordinates({50.25, 100.5}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(8), WorldCoordinates({100.25, 100.5}), 1e-15);
 
 // Node indexing
     for (Grid::NodeIndex index = 0; index < (signed) grid.number_of_nodes(); ++index) {
@@ -101,7 +101,7 @@ TEST(Topology_Grid_2D, Grid2D) {
         const auto node_indices = grid.node_indices_of((Grid::CellIndex) i);
         const Quad q(grid.node(node_indices[0]), grid.node(node_indices[1]), grid.node(node_indices[2]),
                      grid.node(node_indices[3]));
-        EXPECT_ELEMENTS_EQ(q, grid.cell_at((Grid::CellIndex) i));
+        EXPECT_MATRIX_NEAR(q.nodes(), grid.cell_at((Grid::CellIndex) i).nodes(), 1e-15);
     }
 }
 
