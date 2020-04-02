@@ -32,8 +32,8 @@ public:
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
 
-    using Hexahedron = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
-    static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodes;
+    using Hexahedron = caribou::geometry::Hexahedron<caribou::Linear>;
+    static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodesAtCompileTime;
 
 
     template<int nRows, int nColumns, int Options=Eigen::RowMajor>
@@ -48,6 +48,7 @@ public:
     template<int nRows>
     using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
 
+    using Rotation = Hexahedron::Matrix<3,3>;
     using Mat33   = Matrix<3, 3, Eigen::RowMajor>;
     using Vec3   = Vector<3>;
     using Mat2424 = Matrix<24, 24, Eigen::RowMajor>;
@@ -61,7 +62,7 @@ public:
     struct GaussNode {
         Real weight = 0;
         Real jacobian_determinant = 0;
-        Matrix<NumberOfNodes, 3> dN_dx = Matrix<NumberOfNodes, 3, Eigen::RowMajor>::Zero();
+        Matrix<NumberOfNodes, 3> dN_dx = Matrix<NumberOfNodes, 3>::Zero();
         Mat33 F = Mat33::Identity();
     };
 
@@ -167,17 +168,15 @@ private:
 protected:
     Data< Real > d_youngModulus;
     Data< Real > d_poissonRatio;
-    Data< bool > d_linear_strain;
     Data< bool > d_corotated;
     Data< sofa::helper::OptionsGroup > d_integration_method;
     Link<BaseMeshTopology>   d_topology_container;
 
 private:
-    bool recompute_compute_tangent_stiffness = false;
     std::vector<Matrix<24, 24>> p_stiffness_matrices;
     std::vector<std::vector<GaussNode>> p_quadrature_nodes;
-    std::vector<Mat33> p_initial_rotation;
-    std::vector<Mat33> p_current_rotation;
+    std::vector<Rotation> p_initial_rotation;
+    std::vector<Rotation> p_current_rotation;
     Eigen::SparseMatrix<Real> p_K;
     Vector<Eigen::Dynamic> p_eigenvalues;
     bool K_is_up_to_date = false;

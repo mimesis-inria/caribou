@@ -13,13 +13,14 @@
 using sofa::core::RegisterObject;
 using namespace sofa::component::topology;
 using namespace caribou::geometry;
+using namespace caribou;
 namespace SofaCaribou::GraphComponents::forcefield {
 
 // ------------
 // Triangle 2D
 // ------------
 template <>
-auto HyperelasticForcefield<Triangle<2, interpolation::Triangle3>>::number_of_elements() const -> std::size_t {
+auto HyperelasticForcefield<Triangle<_2D, Linear>>::number_of_elements() const -> std::size_t {
     if (not d_topology_container.empty()) {
         return d_topology_container->getNbTriangles();
     }
@@ -27,7 +28,7 @@ auto HyperelasticForcefield<Triangle<2, interpolation::Triangle3>>::number_of_el
 }
 
 template <>
-auto HyperelasticForcefield<Triangle<2, interpolation::Triangle3>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool {
+auto HyperelasticForcefield<Triangle<_2D, Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool {
     return (
         dynamic_cast<const TriangleSetTopologyContainer*>   (topology) != nullptr and
         dynamic_cast<const TetrahedronSetTopologyContainer*>(topology) == nullptr
@@ -35,12 +36,12 @@ auto HyperelasticForcefield<Triangle<2, interpolation::Triangle3>>::mesh_is_comp
 }
 
 template <>
-auto HyperelasticForcefield<Triangle<2, interpolation::Triangle3>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
+auto HyperelasticForcefield<Triangle<_2D, Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
     return &(d_topology_container->getTriangles()[element_id][0]);
 }
 
 template <>
-auto HyperelasticForcefield<Triangle<2, interpolation::Triangle3>>::templateName(const HyperelasticForcefield<Triangle<2, interpolation::Triangle3>> *) -> std::string {
+auto HyperelasticForcefield<Triangle<_2D, Linear>>::templateName(const HyperelasticForcefield<Triangle<_2D, Linear>> *) -> std::string {
     return "Triangle";
 }
 
@@ -48,7 +49,7 @@ auto HyperelasticForcefield<Triangle<2, interpolation::Triangle3>>::templateName
 // Quad 2D
 // ------------
 template <>
-auto HyperelasticForcefield<Quad<2, interpolation::Quad4>>::number_of_elements() const -> std::size_t {
+auto HyperelasticForcefield<Quad<_2D, Linear>>::number_of_elements() const -> std::size_t {
     if (not d_topology_container.empty()) {
         return d_topology_container->getNbQuads();
     }
@@ -56,7 +57,7 @@ auto HyperelasticForcefield<Quad<2, interpolation::Quad4>>::number_of_elements()
 }
 
 template <>
-auto HyperelasticForcefield<Quad<2, interpolation::Quad4>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool {
+auto HyperelasticForcefield<Quad<_2D, Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool {
     return (
         dynamic_cast<const QuadSetTopologyContainer*>      (topology) != nullptr and
         dynamic_cast<const HexahedronSetTopologyContainer*>(topology) == nullptr
@@ -64,12 +65,12 @@ auto HyperelasticForcefield<Quad<2, interpolation::Quad4>>::mesh_is_compatible(c
 }
 
 template <>
-auto HyperelasticForcefield<Quad<2, interpolation::Quad4>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
+auto HyperelasticForcefield<Quad<_2D, Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
     return &(d_topology_container->getQuads()[element_id][0]);
 }
 
 template <>
-auto HyperelasticForcefield<Quad<2, interpolation::Quad4>>::templateName(const HyperelasticForcefield<Quad<2, interpolation::Quad4>> *) -> std::string {
+auto HyperelasticForcefield<Quad<_2D, Linear>>::templateName(const HyperelasticForcefield<Quad<_2D, Linear>> *) -> std::string {
     return "Quad";
 }
 
@@ -77,7 +78,7 @@ auto HyperelasticForcefield<Quad<2, interpolation::Quad4>>::templateName(const H
 // Tetrahedron
 // ------------
 template <>
-auto HyperelasticForcefield<Tetrahedron<interpolation::Tetrahedron4>>::number_of_elements() const -> std::size_t {
+auto HyperelasticForcefield<Tetrahedron<Linear>>::number_of_elements() const -> std::size_t {
     if (not d_topology_container.empty()) {
         return d_topology_container->getNbTetras();
     }
@@ -85,19 +86,19 @@ auto HyperelasticForcefield<Tetrahedron<interpolation::Tetrahedron4>>::number_of
 }
 
 template <>
-auto HyperelasticForcefield<Tetrahedron<interpolation::Tetrahedron4>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool {
+auto HyperelasticForcefield<Tetrahedron<Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool {
     return (
         dynamic_cast<const TetrahedronSetTopologyContainer*>(topology) != nullptr
     );
 }
 
 template <>
-auto HyperelasticForcefield<Tetrahedron<interpolation::Tetrahedron4>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
+auto HyperelasticForcefield<Tetrahedron<Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
     return &(d_topology_container->getTetras()[element_id][0]);
 }
 
 template <>
-auto HyperelasticForcefield<Tetrahedron<interpolation::Tetrahedron4>>::templateName(const HyperelasticForcefield<Tetrahedron<interpolation::Tetrahedron4>> *) -> std::string {
+auto HyperelasticForcefield<Tetrahedron<Linear>>::templateName(const HyperelasticForcefield<Tetrahedron<Linear>> *) -> std::string {
     return "Tetrahedron";
 }
 
@@ -105,7 +106,7 @@ auto HyperelasticForcefield<Tetrahedron<interpolation::Tetrahedron4>>::templateN
 // Hexahedron
 // ------------
 template <>
-auto HyperelasticForcefield<Hexahedron<interpolation::Hexahedron8>>::number_of_elements() const -> std::size_t {
+auto HyperelasticForcefield<Hexahedron<Linear>>::number_of_elements() const -> std::size_t {
     if (not d_topology_container.empty()) {
         return d_topology_container->getNbHexas();
     }
@@ -113,19 +114,19 @@ auto HyperelasticForcefield<Hexahedron<interpolation::Hexahedron8>>::number_of_e
 }
 
 template <>
-auto HyperelasticForcefield<Hexahedron<interpolation::Hexahedron8>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool {
+auto HyperelasticForcefield<Hexahedron<Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool {
     return (
         dynamic_cast<const HexahedronSetTopologyContainer*>(topology) != nullptr
     );
 }
 
 template <>
-auto HyperelasticForcefield<Hexahedron<interpolation::Hexahedron8>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
+auto HyperelasticForcefield<Hexahedron<Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
     return &(d_topology_container->getHexas()[element_id][0]);
 }
 
 template <>
-auto HyperelasticForcefield<Hexahedron<interpolation::Hexahedron8>>::templateName(const HyperelasticForcefield<Hexahedron<interpolation::Hexahedron8>> *) -> std::string {
+auto HyperelasticForcefield<Hexahedron<Linear>>::templateName(const HyperelasticForcefield<Hexahedron<Linear>> *) -> std::string {
     return "Hexahedron";
 }
 }
@@ -134,6 +135,6 @@ namespace sofa::core::objectmodel {
 using namespace SofaCaribou::GraphComponents::forcefield;
 
 static int HyperelasticForcefieldClass = RegisterObject("Caribou hyperelastic FEM Forcefield")
-    .add< HyperelasticForcefield<Tetrahedron<interpolation::Tetrahedron4>> >()
-    .add< HyperelasticForcefield<Hexahedron <interpolation::Hexahedron8>> >();
+    .add< HyperelasticForcefield<Tetrahedron<Linear>> >()
+    .add< HyperelasticForcefield<Hexahedron <Linear>> >();
 }

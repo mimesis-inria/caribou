@@ -97,7 +97,7 @@ void HyperelasticForcefield<Element>::addForce(
     // Update material parameters in case the user changed it
     material->before_update();
 
-    static const auto I = Matrix<3,3, Eigen::RowMajor>::Identity();
+    static const auto I = Mat33::Identity();
 
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
@@ -114,10 +114,10 @@ void HyperelasticForcefield<Element>::addForce(
     if (p_elements_quadrature_nodes.size() != nb_elements)
         return;
 
-    const Map<Eigen::Dynamic, Dimension>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
-    const Map<Eigen::Dynamic, Dimension>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
+    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
+    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
 
-    Eigen::Map<Matrix<Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
+    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addForce");
 
@@ -127,8 +127,8 @@ void HyperelasticForcefield<Element>::addForce(
         const Index * node_indices = get_element_nodes_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> initial_nodes_position;
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> current_nodes_position;
+        Matrix<NumberOfNodes, Dimension> initial_nodes_position;
+        Matrix<NumberOfNodes, Dimension> current_nodes_position;
 
         for (std::size_t i = 0; i < NumberOfNodes; ++i) {
             initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
@@ -136,7 +136,7 @@ void HyperelasticForcefield<Element>::addForce(
         }
 
         // Compute the nodal displacement
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> U;
+        Matrix<NumberOfNodes, Dimension> U;
         for (size_t i = 0; i < NumberOfNodes; ++i) {
             const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
             for (size_t j = 0; j < Dimension; ++j) {
@@ -145,7 +145,7 @@ void HyperelasticForcefield<Element>::addForce(
         }
 
         // Compute the nodal forces
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> nodal_forces;
+        Matrix<NumberOfNodes, Dimension> nodal_forces;
         nodal_forces.fill(0);
 
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
@@ -214,8 +214,8 @@ void HyperelasticForcefield<Element>::addDForce(
     sofa::helper::ReadAccessor<Data<VecDeriv>> sofa_dx = d_dx;
     sofa::helper::WriteAccessor<Data<VecDeriv>> sofa_df = d_df;
 
-    Eigen::Map<const Matrix<Eigen::Dynamic, Dimension, Eigen::RowMajor>> DX   (sofa_dx.ref().data()->data(), sofa_dx.size(), Dimension);
-    Eigen::Map<Matrix<Eigen::Dynamic, Dimension, Eigen::RowMajor>>       DF   (&(sofa_df[0][0]), sofa_df.size(), Dimension);
+    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> DX   (sofa_dx.ref().data()->data(), sofa_dx.size(), Dimension);
+    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>             DF   (&(sofa_df[0][0]), sofa_df.size(), Dimension);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addDForce");
 
@@ -226,7 +226,7 @@ void HyperelasticForcefield<Element>::addDForce(
         const Index * node_indices = get_element_nodes_indices(element_id);
 
         // Fetch the incremental displacement
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> displacements;
+        Matrix<NumberOfNodes, Dimension> displacements;
 
         for (std::size_t i = 0; i < NumberOfNodes; ++i) {
             displacements.row(i) = DX.row(node_indices[i]);
@@ -327,7 +327,7 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
         return 0;
     }
 
-    static const auto I = Matrix<3,3, Eigen::RowMajor>::Identity();
+    static const auto I = Mat33::Identity();
 
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
@@ -344,8 +344,8 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
     if (p_elements_quadrature_nodes.size() != nb_elements)
         return 0;
 
-    const Map<Eigen::Dynamic, Dimension>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
-    const Map<Eigen::Dynamic, Dimension>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
+    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
+    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
 
     SReal Psi = 0.;
 
@@ -356,8 +356,8 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
         const Index * node_indices = get_element_nodes_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> initial_nodes_position;
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> current_nodes_position;
+        Matrix<NumberOfNodes, Dimension> initial_nodes_position;
+        Matrix<NumberOfNodes, Dimension> current_nodes_position;
 
         for (std::size_t i = 0; i < NumberOfNodes; ++i) {
             initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
@@ -365,7 +365,7 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
         }
 
         // Compute the nodal displacement
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> U;
+        Matrix<NumberOfNodes, Dimension> U {};
         for (size_t i = 0; i < NumberOfNodes; ++i) {
             const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
             for (size_t j = 0; j < Dimension; ++j) {
@@ -444,14 +444,14 @@ void HyperelasticForcefield<Element>::initialize_elements()
 
     // Translate the Sofa's mechanical state vector to Eigen vector type
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
-    const Map<Eigen::Dynamic, Dimension>    X0      (sofa_x0.ref().data()->data(), sofa_x0.size(), Dimension);
+    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), sofa_x0.size(), Dimension);
 
     // Loop on each element and compute the shape functions and their derivatives for every of their integration points
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
         // Fetch the node indices of the element
         const Index * node_indices = get_element_nodes_indices(element_id);
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> initial_nodes_position;
+        Matrix<NumberOfNodes, Dimension> initial_nodes_position;
 
         // Fetch the initial positions of the element's nodes
         for (std::size_t i = 0; i < NumberOfNodes; ++i) {
@@ -464,20 +464,19 @@ void HyperelasticForcefield<Element>::initialize_elements()
 
         auto & gauss_nodes = p_elements_quadrature_nodes[element_id];
         for (std::size_t gauss_node_id = 0; gauss_node_id < NumberOfGaussNodes; ++gauss_node_id) {
-            const auto &gauss_position = Eigen::Map<const LocalCoordinates>(Element::gauss_nodes[gauss_node_id]);
-            const auto &gauss_weight   = Element::gauss_weights[gauss_node_id];
+            const auto & g = initial_element.gauss_node(gauss_node_id);
 
-            const auto J = initial_element.jacobian(gauss_position);
+            const auto J = initial_element.jacobian(g.position);
             const Mat33 Jinv = J.inverse();
             const auto detJ = J.determinant();
 
             // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const Matrix<NumberOfNodes, 3, Eigen::RowMajor> dN_dx =
-                (Jinv.transpose() * Element::dL(gauss_position).transpose()).transpose();
+            const Matrix<NumberOfNodes, Dimension> dN_dx =
+                (Jinv.transpose() * initial_element.dL(g.position).transpose()).transpose();
 
 
             GaussNode & gauss_node = gauss_nodes[gauss_node_id];
-            gauss_node.weight               = gauss_weight;
+            gauss_node.weight               = g.weight;
             gauss_node.jacobian_determinant = detJ;
             gauss_node.dN_dx                = dN_dx;
         }
@@ -502,7 +501,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
     // Update material parameters in case the user changed it
     material->before_update();
 
-    static const auto I = Matrix<Dimension, Dimension, Eigen::RowMajor>::Identity();
+    static const auto I = Mat33::Identity();
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::update_stiffness");
     for (std::size_t element_id = 0; element_id < number_of_elements(); ++element_id) {
@@ -601,8 +600,11 @@ static const unsigned long long kelly_colors_hex[] =
 
 template <typename Element>
 void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParams *vparams) {
-    using Face = typename Element::BoundaryType;
     using Color = sofa::defaulttype::Vec4f;
+
+    using Face = typename caribou::geometry::traits<Element>::BoundaryElementType;
+    constexpr static auto NumberOfFaces = caribou::geometry::traits<Element>::NumberOfBoundaryElementsAtCompileTime;
+    constexpr static auto NumberOfNodesPerFaces = caribou::geometry::traits<Face>::NumberOfNodesAtCompileTime;
 
     if (!vparams->displayFlags().getShowForceFields())
         return;
@@ -618,17 +620,17 @@ void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParam
 
     vparams->drawTool()->disableLighting();
     const VecCoord& sofa_x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
-    const Map<Eigen::Dynamic, Dimension>    X       (sofa_x.data()->data(),  sofa_x.size(), Dimension);
+    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.data()->data(),  sofa_x.size(), Dimension);
 
     std::vector< sofa::defaulttype::Vec<Dimension, Real> > faces_points[NumberOfFaces];
     for (std::size_t face_id = 0; face_id < NumberOfFaces; ++face_id) {
-        faces_points[face_id].reserve(nb_elements*Face::NumberOfNodes);
+        faces_points[face_id].reserve(nb_elements*NumberOfNodesPerFaces);
     }
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
         const Index * node_indices = get_element_nodes_indices(element_id);
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> element_nodes_position;
+        Matrix<NumberOfNodes, Dimension> element_nodes_position;
 
         // Fetch the initial positions of the element's nodes
         for (std::size_t node_id = 0; node_id < NumberOfNodes; ++node_id) {
@@ -647,10 +649,15 @@ void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParam
         }
 
         // Push the faces scaled-down nodes
+        const auto face_node_indices = e.boundary_elements_node_indices();
         for (std::size_t face_id = 0; face_id < NumberOfFaces; ++face_id) {
-            for (std::size_t face_node_id = 0; face_node_id < Face::NumberOfNodes; ++face_node_id) {
-                const auto & p = element_nodes_position.row(Element::faces[face_id][face_node_id]);
-                faces_points[face_id].emplace_back(p.data());
+            for (std::size_t face_node_id = 0; face_node_id < NumberOfNodesPerFaces; ++face_node_id) {
+                const auto & p = element_nodes_position.row(face_node_indices[face_id][face_node_id]);
+                if constexpr (Dimension == 2) {
+                    faces_points[face_id].emplace_back(p[0], p[1]);
+                } else if constexpr (Dimension == 3) {
+                    faces_points[face_id].emplace_back(p[0], p[1], p[2]);
+                }
             }
         }
     }
@@ -663,13 +670,12 @@ void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParam
             static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(0) )) / 255.),
             static_cast<float> (1));
 
-        if (Face::NumberOfNodes == 3) {
+        if (NumberOfNodesPerFaces == 3) {
             vparams->drawTool()->drawTriangles(faces_points[face_id], face_color);
-        } else if (Face::NumberOfNodes == 4) {
+        } else if (NumberOfNodesPerFaces == 4) {
             vparams->drawTool()->drawQuads(faces_points[face_id], face_color);
         } else {
-            msg_error() << "Drawing an unsupported face type";
-            exit(1);
+            throw std::runtime_error("Drawing an unsupported face type");
         }
     }
 

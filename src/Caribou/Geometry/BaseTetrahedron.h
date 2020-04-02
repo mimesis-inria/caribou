@@ -63,6 +63,44 @@ struct BaseTetrahedron : public Element<Derived> {
         return self().get_boundary_elements_nodes();
     }
 
+    /**
+     * Extract the orthogonal frame of the element by computing the cross product of the unit vectors
+     * from the position of the first node to its projection on opposite faces.
+     *
+     * This function will return a matrix of the form:
+     * | ux vx wx |
+     * | uy vy wy |
+     * | uz vz wz |
+     *
+     * Where (ux, uy, uz), (vx, vy, vz) and (wx, wy, wz) are orthogonal unitary vectors representing
+     * the u, v and w frames in the current element. If the element is orthogonal and not rotated, this matrix is the
+     * Identity matrix. If it is orthogonal but rotated, rotating the element by the transposed of this frame should
+     * align the u,v ,w axis to the x,y,z world frame (identity matrix).
+     *
+     * \warning If the element isn't orthogonal, the frame extracted by this function will be a rough
+     *          approximation that could be far from the real solution, especially for strongly deformed or
+     *          inverted elements.
+     */
+    inline auto frame() const -> Matrix<3, 3>
+    {
+        // The u-axis of the computed frame
+        const auto u = (this->node(1) - this->node(0)).normalized();
+
+        // The v-axis of the computed frame
+        auto v = (this->node(2) - this->node(0)).normalized();
+
+        // The w-axis of the computed frame
+        const WorldCoordinates w = u.cross(v).normalized();
+
+        // v-axis (recompute the v-axis in case u and v aren't orthogonal
+        v = w.cross(u).normalized();
+
+        Matrix<3, 3> m;
+        m << u, v, w;
+
+        return m;
+    }
+
 private:
     // Implementations
     friend struct Element<Derived>;

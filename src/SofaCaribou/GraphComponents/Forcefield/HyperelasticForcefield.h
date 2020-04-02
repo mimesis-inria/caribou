@@ -10,7 +10,7 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 
 #include <Caribou/config.h>
-#include <Caribou/Geometry/Traits.h>
+#include <Caribou/Geometry/Element.h>
 
 #include <SofaCaribou/GraphComponents/Material/HyperelasticMaterial.h>
 
@@ -27,12 +27,12 @@ template <> struct SofaVecType<2> { using Type = sofa::defaulttype::Vec2Types; }
 template <> struct SofaVecType<3> { using Type = sofa::defaulttype::Vec3Types; };
 
 template <typename Element>
-class HyperelasticForcefield : public ForceField<typename SofaVecType<caribou::traits<Element>::Dimension>::Type> {
+class HyperelasticForcefield : public ForceField<typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type> {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(HyperelasticForcefield, Element), SOFA_TEMPLATE(ForceField, typename SofaVecType<caribou::traits<Element>::Dimension>::Type));
+    SOFA_CLASS(SOFA_TEMPLATE(HyperelasticForcefield, Element), SOFA_TEMPLATE(ForceField, typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type));
 
     // Type definitions
-    using DataTypes = typename SofaVecType<caribou::traits<Element>::Dimension>::Type;
+    using DataTypes = typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type;
     using Inherit  = ForceField<DataTypes>;
     using VecCoord = typename DataTypes::VecCoord;
     using VecDeriv = typename DataTypes::VecDeriv;
@@ -41,30 +41,29 @@ public:
     using Real     = typename Coord::value_type;
     using Index    = sofa::core::topology::BaseMeshTopology::index_type;
 
-    using LocalCoordinates = typename caribou::traits<Element>::LocalCoordinates;
-    using WorldCoordinates = typename caribou::traits<Element>::WorldCoordinates;
+    using LocalCoordinates = typename caribou::geometry::Element<Element>::LocalCoordinates;
+    using WorldCoordinates = typename caribou::geometry::Element<Element>::WorldCoordinates;
 
-    static constexpr INTEGER_TYPE Dimension = caribou::traits<Element>::Dimension;
-    static constexpr INTEGER_TYPE NumberOfNodes = caribou::traits<Element>::NumberOfNodes;
-    static constexpr INTEGER_TYPE NumberOfGaussNodes = caribou::traits<Element>::NumberOfGaussNodes;
-    static constexpr INTEGER_TYPE NumberOfFaces = caribou::traits<Element>::NumberOfFaces;
-
-    template<int nRows, int nColumns, int Options=0>
-    using Matrix = Eigen::Matrix<Real, nRows, nColumns, Options>;
-
-    template<int nRows, int nColumns, int Options=0>
-    using MatrixI = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, nRows, nColumns, Options>;
+    static constexpr INTEGER_TYPE Dimension = caribou::geometry::traits<Element>::Dimension;
+    static constexpr INTEGER_TYPE NumberOfNodes = caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime;
+    static constexpr INTEGER_TYPE NumberOfGaussNodes = caribou::geometry::traits<Element>::NumberOfGaussNodesAtCompileTime;
 
     template<int nRows, int nColumns>
-    using Map = Eigen::Map<const Matrix<nRows, nColumns, Eigen::RowMajor>>;
+    using Matrix = typename caribou::geometry::Element<Element>::template Matrix<nRows, nColumns>;
 
-    template<int nRows, int Options=0>
-    using Vector = Eigen::Matrix<Real, nRows, 1, Options>;
+    template<int nRows, int nColumns, int Options=0>
+    using MatrixI = typename caribou::geometry::Element<Element>::template MatrixI<nRows, nColumns>;
+
+    template<int nRows, int nColumns>
+    using Map = Eigen::Map<const Matrix<nRows, nColumns>>;
 
     template<int nRows>
-    using MapVector = Eigen::Map<const Vector<nRows, Eigen::ColMajor>>;
+    using Vector = typename caribou::geometry::Element<Element>::template Vector<nRows>;
 
-    using Mat33   = Matrix<3, 3, Eigen::RowMajor>;
+    template<int nRows>
+    using MapVector = Eigen::Map<const Vector<nRows>>;
+
+    using Mat33   = Matrix<3, 3>;
     using Vec3   = Vector<3>;
 
     template <typename ObjectType>
@@ -74,7 +73,7 @@ public:
     struct GaussNode {
         Real weight;
         Real jacobian_determinant;
-        Matrix<NumberOfNodes, Dimension, Eigen::RowMajor> dN_dx;
+        Matrix<NumberOfNodes, Dimension> dN_dx;
         Mat33 F = Mat33::Identity(); // Deformation gradient
     };
 

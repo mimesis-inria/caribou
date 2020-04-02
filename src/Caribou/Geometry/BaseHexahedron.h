@@ -64,6 +64,21 @@ struct BaseHexahedron : public Element<Derived> {
     }
 
     /**
+     * Extract the orthogonal frame of the element by computing the cross product of the unit vectors
+     * from the center position to its projection on opposite faces.
+     *
+     * \sa BaseHexahedron::frame(const LocalCoordinates & local_point)
+     *
+     * \warning If the hexahedron isn't rectangular, the frame extracted by this function will be a rough
+     *          approximation that could be far from the real solution, especially for strongly deformed or
+     *          inverted hexahedrons.
+     */
+    inline auto frame() const -> Matrix<3, 3>
+    {
+        return frame(LocalCoordinates::Zeros());
+    }
+
+    /**
      * Extract the frame positioned at the given position (in local coordinates) on the hexa by computing the cross
      * product of the unit vectors from the given position its projection on opposite faces.
      *
@@ -77,8 +92,9 @@ struct BaseHexahedron : public Element<Derived> {
      * Identity matrix. If it is rectangular but rotated, rotating the hexa by the transposed of this frame should
      * align the u,v ,w axis to the x,y,z world frame (identity matrix).
      *
-     * \warning If the hexahedron isn't rectangular, this frame extracted from this function will be a rough
-     * approximation that could be far from the real solution, especially for strongly deformed or inverted hexahedrons.
+     * \warning If the hexahedron isn't rectangular, the frame extracted by this function will be a rough
+     *          approximation that could be far from the real solution, especially for strongly deformed or
+     *          inverted hexahedrons.
      */
     inline auto frame(const LocalCoordinates & local_point) const -> Matrix<3, 3>
     {

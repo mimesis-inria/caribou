@@ -16,13 +16,12 @@ using namespace sofa::core::behavior;
 using namespace sofa::core::topology;
 using sofa::defaulttype::Vec3Types;
 
-template<typename CanonicalTetrahedronType>
 class TetrahedronElasticForce : public ForceField<Vec3Types> {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(TetrahedronElasticForce, CanonicalTetrahedronType), SOFA_TEMPLATE(ForceField, Vec3Types));
+    SOFA_CLASS(TetrahedronElasticForce, SOFA_TEMPLATE(ForceField, Vec3Types));
 
     // Type definitions
-    using Tetrahedron = caribou::geometry::Tetrahedron<CanonicalTetrahedronType>;
+    using Tetrahedron = caribou::geometry::Tetrahedron<caribou::Linear>;
     using Inherit  = ForceField<Vec3Types>;
     using DataTypes = typename Inherit::DataTypes;
     using VecCoord = typename DataTypes::VecCoord;
@@ -47,13 +46,14 @@ public:
     template<int nRows>
     using MapVector = Eigen::Map<const Vector<nRows>>;
 
-    using Mat33   = Matrix<3, 3>;
+    using Rotation = Tetrahedron::Matrix<3,3>;
+    using Mat33   = Matrix<3, 3, Eigen::ColMajor>;
     using Vec3   = Vector<3>;
     static constexpr INTEGER_TYPE Dimension = 3;
-    static constexpr INTEGER_TYPE NumberOfNodes = Tetrahedron::NumberOfNodes;
+    static constexpr INTEGER_TYPE NumberOfNodes = Tetrahedron::NumberOfNodesAtCompileTime;
 
     template <typename ObjectType>
-    using Link = SingleLink<TetrahedronElasticForce<CanonicalTetrahedronType>, ObjectType, BaseLink::FLAG_STRONGLINK>;
+    using Link = SingleLink<TetrahedronElasticForce, ObjectType, BaseLink::FLAG_STRONGLINK>;
 
     // Data structures
 
@@ -61,7 +61,6 @@ public:
         Real weight = 0;
         Real jacobian_determinant = 0;
         Matrix<NumberOfNodes, 3> dN_dx = Matrix<NumberOfNodes, 3, Eigen::RowMajor>::Zero();
-        Mat33 F = Mat33::Identity();
     };
 
     // Public methods
@@ -117,23 +116,14 @@ private:
 private:
     Data< Real > d_youngModulus;
     Data< Real > d_poissonRatio;
-    Data< bool > d_linear_strain;
     Data< bool > d_corotated;
     Link<BaseMeshTopology>   d_topology_container;
 
 private:
-    bool recompute_compute_tangent_stiffness = false;
     std::vector<Matrix<12, 12>> p_stiffness_matrices;
-    std::vector<std::vector<GaussNode>> p_quadrature_nodes;
-    std::vector<Mat33> p_initial_rotation;
-    std::vector<Mat33> p_current_rotation;
-    Eigen::SparseMatrix<Real> p_K;
-    Vector<Eigen::Dynamic> p_eigenvalues;
-    bool K_is_up_to_date;
-    bool eigenvalues_are_up_to_date;
-
-    Real p_mu;
-    Real p_lambda;
+    std::vector<GaussNode> p_quadrature_nodes; // Linear tetrahedrons only have 1 gauss node per element
+    std::vector<Rotation> p_initial_rotation;
+    std::vector<Rotation> p_current_rotation;
 };
 
 } // namespace SofaCaribou::GraphComponents::forcefield

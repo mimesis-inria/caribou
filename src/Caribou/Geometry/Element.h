@@ -30,6 +30,9 @@ struct Element {
     template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols, int Options = 0>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, Rows, Cols, Options>;
 
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols, int Options = 0>
+    using MatrixI = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Rows, Cols, Options>;
+
     static constexpr auto CanonicalDimension = traits<Derived>::CanonicalDimension;
     static constexpr auto Dimension = traits<Derived>::Dimension;
     static constexpr auto NumberOfNodesAtCompileTime = traits<Derived>::NumberOfNodesAtCompileTime;

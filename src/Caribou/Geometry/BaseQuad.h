@@ -63,6 +63,21 @@ struct BaseQuad : public Element<Derived> {
     }
 
     /**
+     * Extract the orthogonal frame of the element by computing the cross product of the unit vectors
+     * from the center position to its projection on opposite faces.
+     *
+     * \sa BaseQuad::frame(const LocalCoordinates & local_point)
+     *
+     * \warning If the quad isn't rectangular, the frame extracted by this function will be a rough
+     *          approximation that could be far from the real solution, especially for strongly deformed or
+     *          inverted quads.
+     */
+    inline auto frame() const -> Matrix<Dimension, Dimension>
+    {
+        return frame(LocalCoordinates::Zero());
+    }
+
+    /**
      * Extract the frame positioned at the given position (in local coordinates) on the quad by computing the cross
      * product of the unit vectors from the given position its projection on opposite edges.
      *
@@ -79,12 +94,13 @@ struct BaseQuad : public Element<Derived> {
      * Identity matrix. If it is rectangular but rotated, rotating the quad by the transposed of this frame should
      * align the u,v [,w] axis to the x,y[,z] world frame (identity matrix).
      *
-     * \warning If the quad isn't rectangular, this frame extracted from this function will be a rough
-     * approximation that could be far from the real solution, especially for strongly deformed or inverted quads.
+     * \warning If the quad isn't rectangular, the frame extracted by this function will be a rough
+     *          approximation that could be far from the real solution, especially for strongly deformed or
+     *          inverted quads.
      */
     inline
     auto
-    frame(const LocalCoordinates & local_point) const
+    frame(const LocalCoordinates & local_point) const -> Matrix<Dimension, Dimension>
     {
         // Position of the point inside the quad where the frame should be computed
         const auto p = this->world_coordinates( local_point );

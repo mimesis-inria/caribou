@@ -11,8 +11,7 @@
 namespace SofaCaribou::GraphComponents::forcefield {
 using namespace caribou::mechanics;
 
-template<typename CanonicalTetrahedron>
-TetrahedronElasticForce<CanonicalTetrahedron>::TetrahedronElasticForce()
+TetrahedronElasticForce::TetrahedronElasticForce()
 : d_youngModulus(initData(&d_youngModulus,
     Real(1000), "youngModulus",
     "Young's modulus of the material",
@@ -20,10 +19,6 @@ TetrahedronElasticForce<CanonicalTetrahedron>::TetrahedronElasticForce()
 , d_poissonRatio(initData(&d_poissonRatio,
     Real(0.3),  "poissonRatio",
     "Poisson's ratio of the material",
-    true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
-, d_linear_strain(initData(&d_linear_strain,
-    bool(true), "linearStrain",
-    "True if the small (linear) strain tensor is used, otherwise the nonlinear Green-Lagrange strain is used.",
     true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
 , d_corotated(initData(&d_corotated,
     bool(true), "corotated",
@@ -34,8 +29,7 @@ TetrahedronElasticForce<CanonicalTetrahedron>::TetrahedronElasticForce()
 {
 }
 
-template<typename CanonicalTetrahedron>
-void TetrahedronElasticForce<CanonicalTetrahedron>::init()
+void TetrahedronElasticForce::init()
 {
     Inherit::init();
     if (not d_topology_container.get()) {
@@ -62,8 +56,7 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::init()
     reinit();
 }
 
-template<typename CanonicalTetrahedron>
-void TetrahedronElasticForce<CanonicalTetrahedron>::reinit()
+void TetrahedronElasticForce::reinit()
 {
     sofa::core::topology::BaseMeshTopology * topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
@@ -95,18 +88,14 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::reinit()
         }
     }
 
-    p_initial_rotation.resize(topology->getNbTetrahedra(), Mat33::Identity());
-    p_current_rotation.resize(topology->getNbTetrahedra(), Mat33::Identity());
+    p_initial_rotation.resize(topology->getNbTetrahedra(), Rotation::Identity());
+    p_current_rotation.resize(topology->getNbTetrahedra(), Rotation::Identity());
 
     // Initialize the initial frame of each tetrahedron
     if (d_corotated.getValue()) {
-        if (not d_linear_strain.getValue()) {
-            msg_warning() << "The corotated method won't be computed since nonlinear strain is used.";
-        } else {
-            for (std::size_t tetrahedron_id = 0; tetrahedron_id < topology->getNbTetrahedra(); ++tetrahedron_id) {
-                Tetrahedron tetra = tetrahedron(tetrahedron_id, X);
-                p_initial_rotation[tetrahedron_id] = tetra.frame();
-            }
+        for (std::size_t tetrahedron_id = 0; tetrahedron_id < topology->getNbTetrahedra(); ++tetrahedron_id) {
+            Tetrahedron tetra = tetrahedron(tetrahedron_id, X);
+            p_initial_rotation[tetrahedron_id] = tetra.frame();
         }
     }
 
@@ -114,26 +103,17 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::reinit()
     p_quadrature_nodes.resize(topology->getNbTetrahedra());
     for (std::size_t tetrahedron_id = 0; tetrahedron_id < topology->getNbTetrahedra(); ++tetrahedron_id) {
         auto   tetra = tetrahedron(tetrahedron_id, X);
-        auto & quadrature_nodes = p_quadrature_nodes[tetrahedron_id];
-        quadrature_nodes.resize(Tetrahedron::number_of_gauss_nodes);
-        for (std::size_t gauss_node_id = 0; gauss_node_id < Tetrahedron::number_of_gauss_nodes; ++gauss_node_id) {
-            const auto gauss_node  = MapVector<3>(Tetrahedron::gauss_nodes[gauss_node_id]);
-            const auto &gauss_weight = Tetrahedron::gauss_weights[gauss_node_id];
+        auto & gauss_node = tetra.gauss_node(0);
+        const auto J = tetra.jacobian(gauss_node.position);
+        const Mat33 Jinv = J.inverse();
+        const auto detJ = J.determinant();
+        const  Matrix<NumberOfNodes, 3> dN_dx = (Jinv.transpose() * tetra.dL(gauss_node.position).transpose()).transpose();
 
-            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-            const auto J = tetra.jacobian(gauss_node);
-            const Mat33 Jinv = J.inverse();
-            const auto detJ = J.determinant();
-
-            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const  Matrix<NumberOfNodes, 3> dN_dx = (Jinv.transpose() * Tetrahedron::dL(gauss_node).transpose()).transpose();
-            quadrature_nodes[gauss_node_id] = {
-                    gauss_weight,
-                    detJ,
-                    dN_dx,
-                    Mat33::Identity()
-            };
-        }
+        p_quadrature_nodes[tetrahedron_id] = {
+            gauss_node.weight,
+            detJ,
+            dN_dx
+        };
     }
 
     // Initialize the stiffness matrix of every tetrahedrons
@@ -143,8 +123,7 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::reinit()
     compute_K();
 }
 
-template<typename CanonicalTetrahedron>
-void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
+void TetrahedronElasticForce::addForce(
         const MechanicalParams* mparams,
         Data<VecDeriv>& d_f,
         const Data<VecCoord>& d_x,
@@ -152,8 +131,6 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
 {
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_v);
-
-    static const auto I = Matrix<3,3>::Identity();
 
     auto topology = d_topology_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
@@ -168,130 +145,62 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addForce(
     sofa::helper::ReadAccessor<Data<VecCoord>> x0 =  state->readRestPositions();
     sofa::helper::WriteAccessor<Data<VecDeriv>> f = d_f;
 
-    const std::vector<Mat33> & initial_rotation = p_initial_rotation;
-    std::vector<Mat33> & current_rotation = p_current_rotation;
+    const std::vector<Rotation> & initial_rotation = p_initial_rotation;
+    std::vector<Rotation> & current_rotation = p_current_rotation;
 
     bool corotated = d_corotated.getValue();
-    bool linear = d_linear_strain.getValue();
-    recompute_compute_tangent_stiffness = (not linear) and mparams->implicit();
-    if (linear) {
-        // Small (linear) strain
-        sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addForce");
-        const auto number_of_elements = topology->getNbTetrahedra();
-        for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
-            Tetrahedron tetra = tetrahedron(element_id, x);
 
-            const Mat33 & R0 = initial_rotation[element_id];
-            const Mat33 R0t = R0.transpose();
+    sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addForce");
+    const auto number_of_elements = topology->getNbTetrahedra();
+    for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
+        Tetrahedron tetra = tetrahedron(element_id, x);
 
-            Mat33 & R = current_rotation[element_id];
+        const Rotation &R0 = initial_rotation[element_id];
+        const Rotation R0t = R0.transpose();
+
+        Rotation &R = current_rotation[element_id];
 
 
-            // Extract the tetrahedron's frame
-            if (corotated)
-                R = tetra.frame();
+        // Extract the tetrahedron's frame
+        if (corotated)
+            R = tetra.frame();
 
-            const Mat33 & Rt = R.transpose();
+        const Rotation Rt = R.transpose();
 
-            // Gather the displacement vector
-            Vector<NumberOfNodes*3> U;
-            size_t i = 0;
-            for (const auto &node_id : topology->getTetrahedron(element_id)) {
-                const Vec3 r0 {x0[node_id][0], x0[node_id][1],  x0[node_id][2]};
-                const Vec3 r  {x [node_id][0],  x [node_id][1], x [node_id][2]};
+        // Gather the displacement vector
+        Vector<12> U;
+        size_t i = 0;
+        for (const auto &node_id : topology->getTetrahedron(element_id)) {
+            const Vec3 r0{x0[node_id][0], x0[node_id][1], x0[node_id][2]};
+            const Vec3 r  {x[node_id][0],  x[node_id][1],  x[node_id][2]};
 
-                const Vec3 u = Rt*r - R0t*r0;
+            const Vec3 u = Rt * r - R0t * r0;
 
-                U[i++] = u[0];
-                U[i++] = u[1];
-                U[i++] = u[2];
-            }
-
-            // Compute the force vector
-            const auto &K = p_stiffness_matrices[element_id];
-            Vector<NumberOfNodes*3> F = K * U;
-
-            // Write the forces into the output vector
-            i = 0;
-            for (const auto &node_id : topology->getTetrahedron(element_id)) {
-                Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
-                force = R*force;
-
-                f[node_id][0] -= force[0];
-                f[node_id][1] -= force[1];
-                f[node_id][2] -= force[2];
-                ++i;
-            }
+            U[i++] = u[0];
+            U[i++] = u[1];
+            U[i++] = u[2];
         }
-        sofa::helper::AdvancedTimer::stepEnd("TetrahedronElasticForce::addForce");
-    } else {
-        // Nonlinear Green-Lagrange strain
-        sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addForce");
-        const Real youngModulus = d_youngModulus.getValue();
-        const Real poissonRatio = d_poissonRatio.getValue();
 
-        const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
-        const Real m = youngModulus / (2 * (1 + poissonRatio));
+        // Compute the force vector
+        const auto &K = p_stiffness_matrices[element_id];
+        Vector<NumberOfNodes * 3> F = K.template selfadjointView<Eigen::Upper>() * U;
 
-        const auto number_of_elements = topology->getNbTetrahedra();
-        for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
-            const auto &tetra = topology->getTetrahedron(element_id);
+        // Write the forces into the output vector
+        i = 0;
+        for (const auto &node_id : topology->getTetrahedron(element_id)) {
+            Vec3 force{F[i * 3 + 0], F[i * 3 + 1], F[i * 3 + 2]};
+            force = (R * force).eval();
 
-            Matrix<NumberOfNodes, 3, Eigen::RowMajor> U;
-
-            for (size_t i = 0; i < NumberOfNodes; ++i) {
-                const auto u = x[tetra[i]] - x0[tetra[i]];
-                U(i, 0) = u[0];
-                U(i, 1) = u[1];
-                U(i, 2) = u[2];
-            }
-
-            Matrix<NumberOfNodes, 3> forces;
-            forces.fill(0);
-            for (GaussNode &gauss_node : p_quadrature_nodes[element_id]) {
-
-                // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-                const auto detJ = gauss_node.jacobian_determinant;
-
-                // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-                const auto dN_dx = gauss_node.dN_dx;
-
-                // Gauss quadrature node weight
-                const auto w = gauss_node.weight;
-
-                // Deformation tensor at gauss node
-                auto & F = gauss_node.F;
-                F = elasticity::strain::F(dN_dx, U);
-
-                // Strain tensor at gauss node
-                const Mat33 C = F * F.transpose();
-                const Mat33 E = 1/2. * (C - I);
-
-                // Stress tensor at gauss node
-                const Mat33 S = 2.*m*E + (l * E.trace() * I);
-
-                // Elastic forces w.r.t the gauss node applied on each nodes
-                for (size_t i = 0; i < NumberOfNodes; ++i) {
-                    const Vec3 dx = dN_dx.row(i).transpose();
-                    const Vec3 f_ = (detJ * w) * F.transpose() * (S * dx);
-                    forces(i, 0) += f_[0];
-                    forces(i, 1) += f_[1];
-                    forces(i, 2) += f_[2];
-                }
-            }
-
-            for (size_t i = 0; i < NumberOfNodes; ++i) {
-                f[tetra[i]][0] -= forces.row(i)[0];
-                f[tetra[i]][1] -= forces.row(i)[1];
-                f[tetra[i]][2] -= forces.row(i)[2];
-            }
+            f[node_id][0] -= force[0];
+            f[node_id][1] -= force[1];
+            f[node_id][2] -= force[2];
+            ++i;
         }
-        sofa::helper::AdvancedTimer::stepEnd("TetrahedronElasticForce::addForce");
     }
+    sofa::helper::AdvancedTimer::stepEnd("TetrahedronElasticForce::addForce");
 }
 
-template<typename CanonicalTetrahedron>
-void TetrahedronElasticForce<CanonicalTetrahedron>::addDForce(
+void TetrahedronElasticForce::addDForce(
         const MechanicalParams* mparams,
         Data<VecDeriv>& d_df,
         const Data<VecDeriv>& d_dx)
@@ -305,9 +214,6 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addDForce(
     if (p_stiffness_matrices.size() != topology->getNbTetrahedra())
         return;
 
-    if (recompute_compute_tangent_stiffness)
-        compute_K();
-
     auto kFactor = (Real)mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue());
     sofa::helper::ReadAccessor<Data<VecDeriv>> dx = d_dx;
     sofa::helper::WriteAccessor<Data<VecDeriv>> df = d_df;
@@ -317,8 +223,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addDForce(
     const auto number_of_elements = topology->getNbTetrahedra();
     for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
 
-        const Mat33 & R  = current_rotation[element_id];
-        const Mat33 & Rt = R.transpose();
+        const Rotation & R  = current_rotation[element_id];
+        const Rotation   Rt = R.transpose();
 
         // Gather the displacement vector
         Vector<NumberOfNodes*3> U;
@@ -334,7 +240,7 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addDForce(
 
         // Compute the force vector
         const auto & K = p_stiffness_matrices[element_id];
-        Vector<NumberOfNodes*3> F = K*U*kFactor;
+        Vector<NumberOfNodes*3> F = K.template selfadjointView<Eigen::Upper>()*U*kFactor;
 
         // Write the forces into the output vector
         i = 0;
@@ -352,60 +258,74 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::addDForce(
     sofa::helper::AdvancedTimer::stepEnd("TetrahedronElasticForce::addDForce");
 }
 
-template<typename CanonicalTetrahedron>
-void TetrahedronElasticForce<CanonicalTetrahedron>::addKToMatrix(
+void TetrahedronElasticForce::addKToMatrix(
         sofa::defaulttype::BaseMatrix * matrix,
         SReal kFact,
-        unsigned int & /*offset*/)
+        unsigned int & offset)
 {
     auto * topology = d_topology_container.get();
 
     if (!topology)
         return;
 
-    if (recompute_compute_tangent_stiffness)
-        compute_K();
-
-    std::vector<Mat33> & current_rotation = p_current_rotation;
+    std::vector<Rotation> & current_rotation = p_current_rotation;
 
     sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::addKToMatrix");
 
     const auto number_of_elements = topology->getNbTetrahedra();
     for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
         const auto & node_indices = topology->getTetrahedron(element_id);
-        const Mat33 & R  = current_rotation[element_id];
-        const Mat33   Rt = R.transpose();
+        sofa::defaulttype::Mat3x3 R;
+        for (size_t m = 0; m < 3; ++m) {
+            for (size_t n = 0; n < 3; ++n) {
+                R(m, n) = current_rotation[element_id](m, n);
+            }
+        }
+        const auto   Rt = R.transposed();
 
+        // Since the matrix K is block symmetric, we only kept the DxD blocks on the upper-triangle the matrix.
+        // Here we need to accumulate the full matrix into Sofa's BaseMatrix.
         const auto & K = p_stiffness_matrices[element_id];
 
+        // Blocks on the diagonal
         for (size_t i = 0; i < NumberOfNodes; ++i) {
-            for (size_t j = 0; j < NumberOfNodes; ++j) {
-                Mat33 k;
+            const auto x = (i*Dimension);
+            sofa::defaulttype::Mat<Dimension, Dimension, Real> k;
+            for (size_t m = 0; m < Dimension; ++m) {
+                for (size_t n = 0; n < Dimension; ++n) {
+                    k(m, n) = K(x+m, x+n);
+                }
+            }
 
-                for (unsigned char m = 0; m < 3; ++m) {
-                    for (unsigned char n = 0; n < 3; ++n) {
-                        k(m,n) = K(i*3+m, j*3+n);
+            k = -1. * R*k*Rt *kFact;
+
+            matrix->add(offset+node_indices[i]*Dimension, offset+node_indices[i]*Dimension, k);
+        }
+
+        // Blocks on the upper triangle
+        for (size_t i = 0; i < NumberOfNodes; ++i) {
+            for (size_t j = i+1; j < NumberOfNodes; ++j) {
+                const auto x = (i*Dimension);
+                const auto y = (j*Dimension);
+
+                sofa::defaulttype::Mat<Dimension, Dimension, Real> k;
+                for (size_t m = 0; m < Dimension; ++m) {
+                    for (size_t n = 0; n < Dimension; ++n) {
+                        k(m, n) = K(x+m, y+n);
                     }
                 }
 
-                k = -1. * R*k*Rt*kFact;
+                k = -1. * R*k*Rt *kFact;
 
-                for (unsigned char m = 0; m < 3; ++m) {
-                    for (unsigned char n = 0; n < 3; ++n) {
-                        const auto x = node_indices[i]*3+m;
-                        const auto y = node_indices[j]*3+n;
-
-                        matrix->add(x, y, k(m,n));
-                    }
-                }
+                matrix->add(offset+node_indices[i]*Dimension, offset+node_indices[j]*Dimension, k);
+                matrix->add(offset+node_indices[j]*Dimension, offset+node_indices[i]*Dimension, k.transposed());
             }
         }
     }
     sofa::helper::AdvancedTimer::stepEnd("TetrahedronElasticForce::addKToMatrix");
 }
 
-template<typename CanonicalTetrahedron>
-void TetrahedronElasticForce<CanonicalTetrahedron>::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
+void TetrahedronElasticForce::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
 {
     if( !onlyVisible ) return;
 
@@ -427,8 +347,7 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::computeBBox(const sofa::core
     this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
 }
 
-template<typename CanonicalTetrahedron>
-void TetrahedronElasticForce<CanonicalTetrahedron>::draw(const sofa::core::visual::VisualParams* vparams)
+void TetrahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparams)
 {
     auto *topology = d_topology_container.get();
     if (!topology)
@@ -497,10 +416,8 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::draw(const sofa::core::visua
     vparams->drawTool()->restoreLastState();
 }
 
-template<typename CanonicalTetrahedron>
-void TetrahedronElasticForce<CanonicalTetrahedron>::compute_K()
+void TetrahedronElasticForce::compute_K()
 {
-    static const auto I = Matrix<3,3>::Identity();
     auto topology = d_topology_container.get();
 
     if (!topology)
@@ -513,7 +430,16 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::compute_K()
     const Real poissonRatio = d_poissonRatio.getValue();
 
     const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
-    const Real m = youngModulus / (2 * (1 + poissonRatio));
+    const Real mu = youngModulus / (2 * (1 + poissonRatio));
+
+    Eigen::Matrix<Real, 6, 6> C;
+    C <<
+      l + 2*mu,    l,          l,       0,  0,  0,
+        l,       l + 2*mu,     l,       0,  0,  0,
+        l,         l,        l + 2*mu,  0,  0,  0,
+        0,         0,          0,      mu,  0,  0,
+        0,         0,          0,       0, mu,  0,
+        0,         0,          0,       0,  0, mu;
 
     sofa::helper::AdvancedTimer::stepBegin("TetrahedronElasticForce::compute_k");
 
@@ -522,76 +448,45 @@ void TetrahedronElasticForce<CanonicalTetrahedron>::compute_K()
         auto & K = p_stiffness_matrices[element_id];
         K.fill(0.);
 
-        for (GaussNode &gauss_node : p_quadrature_nodes[element_id]) {
-            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-            const auto detJ = gauss_node.jacobian_determinant;
+        const auto & gauss_node = p_quadrature_nodes[element_id];
+        const auto detJ = gauss_node.jacobian_determinant;
+        const auto dN_dx = gauss_node.dN_dx;
+        const auto w = gauss_node.weight;
 
-            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const auto dN_dx = gauss_node.dN_dx;
+        // Computation of the element tangent-stiffness matrix
+        for (std::size_t i = 0; i < NumberOfNodes; ++i) {
+            // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
+            const Vec3 dxi = dN_dx.row(i).transpose();
 
-            // Gauss quadrature node weight
-            const auto w = gauss_node.weight;
+            Matrix<6,3> Bi;
+            Bi <<
+                dxi[0],    0  ,    0  ,
+                   0  , dxi[1],    0  ,
+                   0  ,    0  , dxi[2],
+                dxi[1], dxi[0],    0  ,
+                   0  , dxi[2], dxi[1],
+                dxi[2],    0  , dxi[0];
+            for (std::size_t j = i; j < NumberOfNodes; ++j) {
+                // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
+                const Vec3 dxj = dN_dx.row(j).transpose();
+                Matrix<6,3> Bj;
+                Bj <<
+                   dxj[0],    0  ,    0  ,
+                      0  , dxj[1],    0  ,
+                      0  ,    0  , dxj[2],
+                   dxj[1], dxj[0],    0  ,
+                      0  , dxj[2], dxj[1],
+                   dxj[2],    0  , dxj[0];
 
-            // Deformation tensor at gauss node
-            auto & F = gauss_node.F;
-
-            // Strain tensor at gauss node
-            const auto C = F * F.transpose();
-            const auto E = 1/2. * (C - I);
-
-            // Stress tensor at gauss node
-            const auto S = 2.*m*E + (l * E.trace() * I);
-
-            // Computation of the tangent-stiffness matrix
-            for (std::size_t i = 0; i < NumberOfNodes; ++i) {
-                // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
-                const auto dxi = dN_dx.row(i).transpose();
-
-                for (std::size_t j = 0; j < NumberOfNodes; ++j) {
-                    // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
-                    const auto dxj = dN_dx.row(j).transpose();
-
-                    // Derivative of the force applied on node j w.r.t the u component of the ith nodal's displacement
-                    const auto dFu = dxi * I.row(0); // Deformation tensor derivative with respect to u_i
-                    const auto dCu = dFu*F.transpose() + F*dFu.transpose();
-                    const auto dEu = 1/2. * dCu;
-                    const auto dSu = 2. * m * dEu + (l*dEu.trace() * I);
-                    const Vec3  Ku  = (detJ*w) * (dFu.transpose()*S + F.transpose()*dSu) * dxj;
-
-                    // Derivative of the force applied on node j w.r.t the v component of the ith nodal's displacement
-                    const auto dFv = dxi * I.row(1); // Deformation tensor derivative with respect to u_i
-                    const auto dCv = dFv*F.transpose() + F*dFv.transpose();
-                    const auto dEv = 1/2. * dCv;
-                    const auto dSv = 2. * m * dEv + (l*dEv.trace() * I);
-                    const Vec3  Kv  = (detJ*w) * (dFv.transpose()*S + F.transpose()*dSv) * dxj;
-
-                    // Derivative of the force applied on node j w.r.t the w component of the ith nodal's displacement
-                    const auto dFw = dxi * I.row(2); // Deformation tensor derivative with respect to u_i
-                    const auto dCw = dFw*F.transpose() + F*dFw.transpose();
-                    const auto dEw = 1/2. * dCw;
-                    const auto dSw = 2. * m * dEw + (l*dEw.trace() * I);
-                    const Vec3  Kw  = (detJ*w) * (dFw.transpose()*S + F.transpose()*dSw) * dxj;
-
-                    Mat33 Kji;
-                    Kji << Ku, Kv, Kw; // Kji * ui = fj (the force applied on node j on the displacement of the node i)
-
-                    for (size_t ii = 0; ii < 3; ++ii) {
-                        for (size_t jj = 0; jj < 3; ++jj) {
-                            K(j*3 +ii, i*3 + jj) += Kji(ii,jj);
-                        }
-                    }
-                }
+                K.template block<3, 3>(i*3, j*3).noalias() += (Bi.transpose()*C*Bj) * detJ * w;
             }
         }
     }
-    recompute_compute_tangent_stiffness = false;
-    K_is_up_to_date = false;
-    eigenvalues_are_up_to_date = false;
     sofa::helper::AdvancedTimer::stepEnd("TetrahedronElasticForce::compute_k");
 }
 
 static int TetrahedronElasticForceClass = RegisterObject("Caribou tetrahedron FEM Forcefield")
-    .add< TetrahedronElasticForce<caribou::geometry::interpolation::Tetrahedron4>>(true)
+    .add< TetrahedronElasticForce >(true)
 ;
 
 } // namespace SofaCaribou::GraphComponents::forcefield
