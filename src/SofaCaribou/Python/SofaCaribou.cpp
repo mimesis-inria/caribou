@@ -4,7 +4,6 @@
 #include <pybind11/eigen.h>
 
 #include <SofaCaribou/GraphComponents/Topology/FictitiousGrid.h>
-#include <SofaCaribou/GraphComponents/Forcefield/HexahedronElasticForce.h>
 #include "HexahedronElasticForce.h"
 #include "FictitiousGridElasticForce.h"
 

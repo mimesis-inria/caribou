@@ -139,17 +139,16 @@ void FictitiousGridElasticForce::reinit()
         const auto e = grid->get_cell_element(hexa_id);
 
         if (int_method == IntegrationMethod::Regular) {
-            p_quadrature_nodes[hexa_id].resize(Hexahedron::number_of_gauss_nodes);
-            for (std::size_t gauss_node_id = 0; gauss_node_id < Hexahedron::number_of_gauss_nodes; ++gauss_node_id) {
-                const auto &gauss_node   = MapVector<3>(Hexahedron::gauss_nodes[gauss_node_id]);
-                const auto &gauss_weight = Hexahedron::gauss_weights[gauss_node_id];
+            p_quadrature_nodes[hexa_id].resize(caribou::geometry::traits<Hexahedron>::NumberOfGaussNodesAtCompileTime);
+            for (std::size_t gauss_node_id = 0; gauss_node_id < caribou::geometry::traits<Hexahedron>::NumberOfGaussNodesAtCompileTime; ++gauss_node_id) {
+                const auto & g = e.gauss_node(gauss_node_id);
 
-                const auto J = e.jacobian(gauss_node);
+                const auto J = e.jacobian(g.position);
                 const Mat33 Jinv = J.inverse();
                 const auto detJ = J.determinant();
 
-                p_quadrature_nodes[hexa_id][gauss_node_id].weight = detJ * gauss_weight;
-                p_quadrature_nodes[hexa_id][gauss_node_id].dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_node).transpose()).transpose();
+                p_quadrature_nodes[hexa_id][gauss_node_id].weight = detJ * g.weight;
+                p_quadrature_nodes[hexa_id][gauss_node_id].dN_dx = (Jinv.transpose() * e.dL(g.position).transpose()).transpose();
             }
         } else {
             const auto level = (int_method == IntegrationMethod::SubdividedVolume) ? 0 : grid->number_of_subdivisions();
@@ -162,7 +161,7 @@ void FictitiousGridElasticForce::reinit()
                 const Mat33 Jinv = J.inverse();
 
                 p_quadrature_nodes[hexa_id][gauss_node_id].weight = gauss_weight;
-                p_quadrature_nodes[hexa_id][gauss_node_id].dN_dx = (Jinv.transpose() * Hexahedron::dL(gauss_node).transpose()).transpose();
+                p_quadrature_nodes[hexa_id][gauss_node_id].dN_dx = (Jinv.transpose() * e.dL(gauss_node).transpose()).transpose();
             }
         }
     }
@@ -170,10 +169,10 @@ void FictitiousGridElasticForce::reinit()
     Real v = 0.;
     UNSIGNED_INTEGER_TYPE negative_jacobians = 0;
     for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
-        for (std::size_t gauss_node_id = 0; gauss_node_id < p_quadrature_nodes[hexa_id].size(); ++gauss_node_id) {
-            v += p_quadrature_nodes[hexa_id][gauss_node_id].weight;
+        for (auto & gauss_node : p_quadrature_nodes[hexa_id]) {
+            v += gauss_node.weight;
             
-            if (p_quadrature_nodes[hexa_id][gauss_node_id].weight < 0)
+            if (gauss_node.weight < 0)
                 negative_jacobians++;
         }
     }

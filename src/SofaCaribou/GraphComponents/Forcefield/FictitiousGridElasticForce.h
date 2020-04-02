@@ -35,9 +35,9 @@ public:
 
     using FictitiousGrid = SofaCaribou::GraphComponents::topology::FictitiousGrid<DataTypes>;
 
-    using Hexahedron = caribou::geometry::Hexahedron<caribou::geometry::interpolation::Hexahedron8>;
-    using RectangularHexahedron = caribou::geometry::RectangularHexahedron<caribou::geometry::interpolation::Hexahedron8>;
-    static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodes;
+    using Hexahedron = caribou::geometry::Hexahedron<caribou::Linear>;
+    using RectangularHexahedron = caribou::geometry::RectangularHexahedron<caribou::Linear>;
+    static constexpr INTEGER_TYPE NumberOfNodes = caribou::geometry::traits<Hexahedron>::NumberOfNodesAtCompileTime;
 
 
     template<int nRows, int nColumns, int Options=Eigen::RowMajor>
