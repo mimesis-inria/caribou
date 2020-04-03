@@ -10,11 +10,10 @@ set(HEADER_FILES
     Grid/Internal/BaseUnidimensionalGrid.h
     HashGrid.h
     Mesh.h
-    UnstructuredMesh.h
 )
 
 set(SOURCE_FILES
-    UnstructuredMesh.cpp
+    topology.cpp
 )
 
 find_package(VTK COMPONENTS vtkCommonDataModel vtkIOLegacy QUIET)

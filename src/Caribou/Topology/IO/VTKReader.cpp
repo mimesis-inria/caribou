@@ -2,7 +2,11 @@
 #include <bitset>
 
 #include <Caribou/Constants.h>
+#include <Caribou//Geometry/Quad.h>
+#include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Segment.h>
+#include <Caribou/Geometry/Tetrahedron.h>
+#include <Caribou//Geometry/Hexahedron.h>
 #include <Caribou/Topology/IO/VTKReader.h>
 
 #include <vtkUnstructuredGrid.h>
@@ -25,6 +29,26 @@ VTKReader<Dimension>::VTKReader(std::string filepath, vtkSmartPointer<vtkUnstruc
     // Segments
     register_element_type<geometry::Segment<Dimension, Linear>>(VTK_LINE);
     register_element_type<geometry::Segment<Dimension, Quadratic>>(VTK_QUADRATIC_EDGE);
+
+    if constexpr (Dimension > 1) {
+        // Quads
+        register_element_type<geometry::Quad<Dimension, Linear>>(VTK_QUAD);
+        register_element_type<geometry::Quad<Dimension, Quadratic>>(VTK_QUADRATIC_QUAD);
+
+        // Triangles
+        register_element_type<geometry::Triangle<Dimension, Linear>>(VTK_TRIANGLE);
+        register_element_type<geometry::Triangle<Dimension, Quadratic>>(VTK_QUADRATIC_TRIANGLE);
+    }
+
+    if constexpr (Dimension > 2) {
+        // Tetrahedrons
+        register_element_type<geometry::Tetrahedron<Linear>>(VTK_TETRA);
+        register_element_type<geometry::Tetrahedron<Quadratic>>(VTK_QUADRATIC_TETRA);
+
+        // Hexahedrons
+        register_element_type<geometry::Hexahedron<Linear>>(VTK_HEXAHEDRON);
+        register_element_type<geometry::Hexahedron<Quadratic>>(VTK_QUADRATIC_HEXAHEDRON);
+    }
 }
 
 template<UNSIGNED_INTEGER_TYPE Dimension>
@@ -48,10 +72,10 @@ auto VTKReader<Dimension>::Read(const std::string &filepath) -> VTKReader<Dimens
 }
 
 template<UNSIGNED_INTEGER_TYPE Dimension>
-auto VTKReader<Dimension>::mesh () const -> UnstructuredMesh<Dimension> {
-    using WorldCoordinates = typename UnstructuredMesh<Dimension>::WorldCoordinates;
+auto VTKReader<Dimension>::mesh () const -> Mesh<Dimension> {
+    using WorldCoordinates = typename Mesh<Dimension>::WorldCoordinates;
 
-    UnstructuredMesh<Dimension> m;
+    Mesh<Dimension> m;
     const auto number_of_nodes = p_reader->GetOutput()->GetNumberOfPoints();
     if (number_of_nodes == 0) {
         return m;
@@ -68,7 +92,7 @@ auto VTKReader<Dimension>::mesh () const -> UnstructuredMesh<Dimension> {
         }
     }
 
-    m = UnstructuredMesh<Dimension> (nodes);
+    m = Mesh<Dimension> (nodes);
 
     // Import elements
     vtkSmartPointer <vtkCellTypes> types = vtkSmartPointer <vtkCellTypes>::New();
@@ -76,28 +100,36 @@ auto VTKReader<Dimension>::mesh () const -> UnstructuredMesh<Dimension> {
     vtkIdType number_of_element_types = types->GetNumberOfTypes();
     for (unsigned int i = 0; i < number_of_element_types; ++i) {
         const auto type = types->GetCellType(i);
+        auto cells = vtkSmartPointer <vtkIdTypeArray>::New();
+        p_reader->GetOutput()->GetIdsOfCellsOfType(type, cells);
+        const auto number_of_elements = cells->GetDataSize();
+
+        if (number_of_elements == 0) {
+            continue;
+        }
 
         if (p_domain_builders.find(static_cast<VTKCellType>(type)) == p_domain_builders.end()) {
             // This element type isn't supported (no domain builder found)
             continue;
         }
 
-        const auto & domain_builder = p_domain_builders.at(static_cast<VTKCellType>(type));
-        BaseDomain * domain = domain_builder(m);
+        const auto number_of_nodes_per_element = p_reader->GetOutput()->GetCell(cells->GetValue(0))->GetNumberOfPoints();
 
-        auto cells = vtkSmartPointer <vtkIdTypeArray>::New();
-        p_reader->GetOutput()->GetIdsOfCellsOfType(type, cells);
-        for (vtkIdType j = 0; j < cells->GetDataSize(); ++j) {
+        Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> indices;
+        indices.resize(number_of_elements, number_of_nodes_per_element);
+
+        for (vtkIdType j = 0; j < number_of_elements; ++j) {
             vtkIdType cell_id = cells->GetValue(j);
             vtkCell* cell = p_reader->GetOutput()->GetCell(cell_id);
             std::vector<UNSIGNED_INTEGER_TYPE> node_indices (cell->GetNumberOfPoints());
             for (vtkIdType k = 0; k < cell->GetNumberOfPoints(); ++k) {
-                node_indices[k] = static_cast<UNSIGNED_INTEGER_TYPE>(cell->GetPointId(k));
+                indices(j,k) = static_cast<UNSIGNED_INTEGER_TYPE>(cell->GetPointId(k));
             }
-            domain->add_element(node_indices.data(), node_indices.size());
         }
-    }
 
+        const auto & domain_builder = p_domain_builders.at(static_cast<VTKCellType>(type));
+        domain_builder(m, indices);
+    }
 
     return m;
 }

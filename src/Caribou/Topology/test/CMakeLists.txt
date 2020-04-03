@@ -1,22 +1,24 @@
 project(Caribou.Topology.Test)
 
 set(HEADER_FILES
-        Grid/Grid.h
         Grid/Grid_1D.h
         Grid/Grid_2D.h
         Grid/Grid_3D.h
-        test_unstructured_grid.h
-        test_vtkreader.h
+        topology_test.h
 )
 
 set(SOURCE_FILES
+        Grid/Grid.cpp
+        test_mesh.cpp
+        test_domain.cpp
         main.cpp)
 
 set(MESH_FILES
-        meshes/1D_linear.vtk)
+        meshes/1D_linear.vtk
+        meshes/1D_quadratic.vtk)
 
 if (CARIBOU_WITH_VTK)
-    list(APPEND ${HEADER_FILES} test_vtkreader.h)
+    list(APPEND SOURCE_FILES test_vtkreader.cpp)
 endif()
 
 enable_testing()

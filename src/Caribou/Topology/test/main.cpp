@@ -1,42 +1,9 @@
-#include <string>
 #include <filesystem>
 #include <gtest/gtest.h>
-#include <Eigen/Core>
 
-static std::string executable_directory_path;
+#include "topology_test.h"
 
-template <typename Derived>
-::testing::AssertionResult CmpHelperMatrixEQ(const char* lhs_expression,
-                                             const char* rhs_expression,
-                                             const char* /*abs_error_expr*/,
-                                             const Eigen::MatrixBase<Derived> & lhs_value,
-                                             const Eigen::MatrixBase<Derived> & rhs_value,
-                                             double abs_error) {
-    auto max_error = ((lhs_value) - (rhs_value)).cwiseAbs().maxCoeff();
-
-    if (max_error < abs_error) {
-        return ::testing::AssertionSuccess();
-    }
-
-    Eigen::IOFormat clean(static_cast<int>(std::abs(std::log10(abs_error))), 0, " ", "\n", "    |", "|");
-
-    return ::testing::AssertionFailure()
-        << "The difference between " << lhs_expression << " and " << rhs_expression
-        << " is " << max_error << ", which exceeds " << abs_error << ", where\n"
-        << lhs_expression << " evaluates to \n" << lhs_value.format(clean) << "\n"
-        << rhs_expression << " evaluates to \n" << rhs_value.format(clean) << "\n";
-}
-
-#define EXPECT_MATRIX_NEAR(val1, val2, abs_error)\
-  EXPECT_PRED_FORMAT3(::CmpHelperMatrixEQ, val1, val2, abs_error)
-
-#ifdef CARIBOU_WITH_VTK
-#include "test_vtkreader.h"
-#endif
-
-#include "Grid/Grid.h"
-#include "test_unstructured_grid.h"
-
+std::string executable_directory_path;
 
 int main(int argc, char **argv) {
     executable_directory_path = weakly_canonical(std::filesystem::path(argv[0])).parent_path();

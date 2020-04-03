@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 #include <Caribou/config.h>
-#include <Caribou/Topology/UnstructuredMesh.h>
+#include <Caribou/Topology/Mesh.h>
 #include <Caribou/Topology/Domain.h>
 
 #include <vtkSmartPointer.h>
@@ -21,6 +21,8 @@ class VTKReader {
     static_assert(Dimension == 1 or Dimension == 2 or Dimension == 3, "The VTKReader can only read 1D, 2D or 3D fields.");
 public:
 
+    using ElementsIndices = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
     /** Build a new VTKReader instance by reading a vtk file. */
     static auto Read(const std::string & filepath) -> VTKReader;
 
@@ -29,13 +31,13 @@ public:
 
     /** Build the actual unstructured mesh from the vtk file. */
     [[nodiscard]]
-    auto mesh() const -> UnstructuredMesh<Dimension>;
+    auto mesh() const -> Mesh<Dimension>;
 
     /** Register an element type to the given VTK cell type */
     template<typename Element>
     auto register_element_type(const VTKCellType & vtkCellType) -> VTKReader & {
-        p_domain_builders[vtkCellType] = [](UnstructuredMesh<Dimension> & m) {
-            return m.template add_domain<Element>("domain_"+std::to_string(m.number_of_domains()+1));
+        p_domain_builders[vtkCellType] = [](Mesh<Dimension> & m, const ElementsIndices & indices) {
+            return m.template add_domain<Element>("domain_"+std::to_string(m.number_of_domains()+1), indices);
         };
         return *this;
     }
@@ -46,7 +48,7 @@ private:
     const std::string p_filepath;
     vtkSmartPointer<vtkUnstructuredGridReader> p_reader;
     std::array<UNSIGNED_INTEGER_TYPE, Dimension> p_axes;
-    std::unordered_map<VTKCellType, std::function<BaseDomain* (UnstructuredMesh<Dimension> &)>> p_domain_builders;
+    std::unordered_map<VTKCellType, std::function<BaseDomain* (Mesh<Dimension> &, const ElementsIndices &)>> p_domain_builders;
 };
 
 extern template class VTKReader<1>;

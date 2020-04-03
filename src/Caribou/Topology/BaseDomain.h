@@ -25,28 +25,14 @@ namespace caribou::topology {
         [[nodiscard]] virtual auto canonical_dimension() const -> UNSIGNED_INTEGER_TYPE= 0;
 
         /**
-         * Get the number of nodes an element has. Returns caribou::Dynamic in case the number of nodes per element
-         * isn't the same for all elements.
+         * Get the number of nodes an element of this domain has.
          */
-        [[nodiscard]] virtual auto number_of_nodes_per_elements() const -> INTEGER_TYPE= 0;
-
-        /**
-         * Get the number of nodes an given element has.
-         */
-        [[nodiscard]] virtual auto number_of_nodes_of_element(const UNSIGNED_INTEGER_TYPE & element_id) const -> UNSIGNED_INTEGER_TYPE= 0;
+        [[nodiscard]] virtual auto number_of_nodes_per_elements() const -> UNSIGNED_INTEGER_TYPE= 0;
 
         /**
          * Get the number of elements contained in the domain.
          */
         [[nodiscard]] virtual auto number_of_elements() const -> UNSIGNED_INTEGER_TYPE= 0;
-
-        /**
-         * Generic method to add an element to the domain.
-         * @param node_indices Pointer to a vector of node indices
-         * @param number_of_nodes Size of the vector of node indices
-         */
-        virtual void add_element(const UNSIGNED_INTEGER_TYPE * node_indices, UNSIGNED_INTEGER_TYPE number_of_nodes) = 0;
-
     };
 }
 

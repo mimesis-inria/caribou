@@ -4,6 +4,7 @@
 #include <Caribou/Geometry/Hexahedron.h>
 #include <vector>
 #include <chrono>
+
 #define BEGIN_CLOCK ;std::chrono::steady_clock::time_point __time_point_begin;
 #define TICK ;__time_point_begin = std::chrono::steady_clock::now();
 #define TOCK (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - __time_point_begin).count())
