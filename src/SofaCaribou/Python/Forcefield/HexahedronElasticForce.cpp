@@ -5,7 +5,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/functional.h>
 
-PYBIND11_MAKE_OPAQUE(const std::vector<SofaCaribou::GraphComponents::forcefield::HexahedronElasticForce::GaussNode>&)
+PYBIND11_MAKE_OPAQUE(const std::vector<SofaCaribou::forcefield::HexahedronElasticForce::GaussNode>&)
 
 using sofa::defaulttype::Vec3Types;
 using namespace sofa::core::objectmodel;
@@ -14,7 +14,7 @@ using namespace sofa::core::behavior;
 namespace SofaCaribou::forcefield::python {
 
 void addHexahedronElasticForce(py::module &m) {
-    using HexahedronElasticForce = SofaCaribou::GraphComponents::forcefield::HexahedronElasticForce;
+    using HexahedronElasticForce = SofaCaribou::forcefield::HexahedronElasticForce;
 
     py::class_<HexahedronElasticForce::GaussNode> g(m, "HexahedronElasticForceGaussNode");
     g.def_property_readonly("weight", [](const HexahedronElasticForce::GaussNode & self){return self.weight;});

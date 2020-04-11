@@ -14,7 +14,7 @@ using sofa::core::RegisterObject;
 using namespace sofa::component::topology;
 using namespace caribou::geometry;
 using namespace caribou;
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 // ------------
 // Triangle 2D
@@ -132,7 +132,7 @@ auto HyperelasticForcefield<Hexahedron<Linear>>::templateName(const Hyperelastic
 }
 
 namespace sofa::core::objectmodel {
-using namespace SofaCaribou::GraphComponents::forcefield;
+using namespace SofaCaribou::forcefield;
 
 static int HyperelasticForcefieldClass = RegisterObject("Caribou hyperelastic FEM Forcefield")
     .add< HyperelasticForcefield<Tetrahedron<Linear>> >()

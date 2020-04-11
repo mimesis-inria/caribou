@@ -3,7 +3,7 @@
 #include <Caribou/Algebra/Tensor.h>
 #include <SofaCaribou/Material/HyperelasticMaterial.h>
 
-namespace SofaCaribou::GraphComponents::material {
+namespace SofaCaribou::material {
 
 template<class DataTypes>
 class NeoHookeanMaterial : public HyperelasticMaterial<DataTypes> {
@@ -85,4 +85,4 @@ private:
     sofa::core::objectmodel::Data<Real> d_poisson_ratio;
 };
 
-} // namespace SofaCaribou::GraphComponents::material
+} // namespace SofaCaribou::material

@@ -1,5 +1,4 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_SOLVER_CONJUGATEGRADIENT_H
-#define SOFACARIBOU_GRAPHCOMPONENTS_SOLVER_CONJUGATEGRADIENT_H
+#pragma once
 
 #include <Caribou/config.h>
 #include <sofa/core/behavior/LinearSolver.h>
@@ -20,7 +19,7 @@
 
 #include <Eigen/IterativeLinearSolvers>
 
-namespace SofaCaribou::GraphComponents::solver {
+namespace SofaCaribou::solver {
 
 using sofa::core::objectmodel::Data;
 using namespace sofa::component::linearsolver;
@@ -200,6 +199,5 @@ private:
     std::vector<std::pair<std::string, PreconditioningMethod>> p_preconditioners;
 };
 
-} // namespace SofaCaribou::GraphComponents::solver
+} // namespace SofaCaribou::solver
 
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_SOLVER_CONJUGATEGRADIENT_H

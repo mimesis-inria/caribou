@@ -15,7 +15,7 @@ using Index = EIGEN_DEFAULT_DENSE_INDEX_TYPE;
 }
 #endif
 
-namespace SofaCaribou::GraphComponents::solver {
+namespace SofaCaribou::solver {
 
 using Timer = sofa::helper::AdvancedTimer;
 using Algebra::EigenMatrixWrapper;
@@ -470,4 +470,4 @@ void ConjugateGradientSolver::solveSystem() {
 int CGLinearSolverClass = sofa::core::RegisterObject("Linear system solver using the conjugate gradient iterative algorithm")
                               .add< ConjugateGradientSolver>(true);
 
-} // namespace SofaCaribou::GraphComponents::solver
+} // namespace SofaCaribou::solver

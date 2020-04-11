@@ -1,5 +1,4 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_HEXAHEDRONELASTICFORCE_H
-#define SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_HEXAHEDRONELASTICFORCE_H
+#pragma once
 
 #include <Eigen/Sparse>
 
@@ -10,7 +9,7 @@
 
 #include <Caribou/Geometry/Hexahedron.h>
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 using namespace sofa::core;
 using namespace sofa::core::objectmodel;
@@ -184,6 +183,4 @@ private:
 
 };
 
-} // namespace SofaCaribou::GraphComponents::forcefield
-
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_HEXAHEDRONELASTICFORCE_H
+} // namespace SofaCaribou::forcefield

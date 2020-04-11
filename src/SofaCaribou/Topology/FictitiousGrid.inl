@@ -1114,4 +1114,4 @@ void FictitiousGrid<DataTypes>::draw(const sofa::core::visual::VisualParams* vpa
     vparams->drawTool()->restoreLastState();
 }
 
-} // namespace SofaCaribou::GraphComponents::topology
+} // namespace SofaCaribou::topology

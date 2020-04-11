@@ -8,7 +8,7 @@
 
 #include "TetrahedronElasticForce.h"
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 using namespace caribou::mechanics;
 
 TetrahedronElasticForce::TetrahedronElasticForce()
@@ -489,4 +489,4 @@ static int TetrahedronElasticForceClass = RegisterObject("Caribou tetrahedron FE
     .add< TetrahedronElasticForce >(true)
 ;
 
-} // namespace SofaCaribou::GraphComponents::forcefield
+} // namespace SofaCaribou::forcefield

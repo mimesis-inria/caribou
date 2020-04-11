@@ -362,4 +362,4 @@ template<> void FictitiousGrid<Vec3Types>::subdivide_intersected_cells ();
 extern template class FictitiousGrid<Vec2Types>;
 extern template class FictitiousGrid<Vec3Types>;
 
-} // namespace SofaCaribou::GraphComponents::topology
+} // namespace SofaCaribou::topology

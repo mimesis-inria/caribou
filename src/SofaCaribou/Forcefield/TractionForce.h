@@ -1,5 +1,4 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCE_H
-#define SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCE_H
+#pragma once
 
 #include <sofa/defaulttype/MatSym.h>
 #include <sofa/core/behavior/ForceField.h>
@@ -7,7 +6,7 @@
 #include <SofaBaseTopology/QuadSetTopologyContainer.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 using namespace sofa::core::objectmodel;
 using namespace sofa::core::behavior;
@@ -91,7 +90,4 @@ private:
     unsigned int m_number_of_steps_since_last_increment = 0;
 };
 
-} // namespace SofaCaribou::GraphComponents::forcefield
-
-
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TRACTIONFORCE_H
+} // namespace SofaCaribou::forcefield

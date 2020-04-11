@@ -5,7 +5,7 @@
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
-namespace SofaCaribou::GraphComponents::material {
+namespace SofaCaribou::material {
 
 template<class DataTypes>
 class HyperelasticMaterial : public sofa::core::objectmodel::BaseObject {
@@ -90,4 +90,4 @@ public:
 
 };
 
-} // namespace SofaCaribou::GraphComponents::material
+} // namespace SofaCaribou::material

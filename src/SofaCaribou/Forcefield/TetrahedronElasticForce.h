@@ -1,5 +1,4 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TETRAHEDRONELASTICFORCE_H
-#define SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TETRAHEDRONELASTICFORCE_H
+#pragma once
 
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/helper/OptionsGroup.h>
@@ -8,7 +7,7 @@
 
 #include <Caribou/Geometry/Tetrahedron.h>
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 using namespace sofa::core;
 using namespace sofa::core::objectmodel;
@@ -126,6 +125,4 @@ private:
     std::vector<Rotation> p_current_rotation;
 };
 
-} // namespace SofaCaribou::GraphComponents::forcefield
-
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_TETRAHEDRONELASTICFORCE_H
+} // namespace SofaCaribou::forcefield

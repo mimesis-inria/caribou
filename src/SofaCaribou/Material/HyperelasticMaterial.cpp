@@ -7,7 +7,7 @@
 
 using namespace sofa::core;
 
-namespace SofaCaribou::GraphComponents::material {
+namespace SofaCaribou::material {
 
 static int SaintVenantKirchhoffClass = RegisterObject("Caribou Saint-Venant-Kirchhoff hyperelastic material")
 //                                                 .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types> >()
@@ -19,4 +19,4 @@ static int NeoHookeanClass = RegisterObject("Caribou NeoHookeanMaterial hyperela
 //    .add< NeoHookeanMaterial<sofa::defaulttype::Vec2Types> >()
     .add< NeoHookeanMaterial<sofa::defaulttype::Vec3Types> >();
 
-} // namespace SofaCaribou::GraphComponents::material
+} // namespace SofaCaribou::material

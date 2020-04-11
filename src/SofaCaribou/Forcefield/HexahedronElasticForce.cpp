@@ -20,7 +20,7 @@ using Index = EIGEN_DEFAULT_DENSE_INDEX_TYPE;
 #endif
 
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 using namespace sofa::core::topology;
 using namespace caribou::geometry;
@@ -760,4 +760,4 @@ static int HexahedronElasticForceClass = RegisterObject("Caribou Hexahedron FEM 
     .add< HexahedronElasticForce >(true)
 ;
 
-} // namespace SofaCaribou::GraphComponents::forcefield
+} // namespace SofaCaribou::forcefield

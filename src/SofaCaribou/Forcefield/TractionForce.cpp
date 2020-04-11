@@ -12,7 +12,7 @@
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 TractionForce::TractionForce()
     // Inputs
@@ -351,4 +351,4 @@ static int TractionForceClass = sofa::core::RegisterObject("Traction forcefield.
                                           .add< TractionForce >(true)
 ;
 
-} // namespace SofaCaribou::GraphComponents::forcefield
+} // namespace SofaCaribou::forcefield

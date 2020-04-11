@@ -5,7 +5,7 @@
 #include "HyperelasticForcefield.h"
 #include <sofa/core/visual/VisualParams.h>
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 template <typename Element>
 HyperelasticForcefield<Element>::HyperelasticForcefield()
@@ -740,4 +740,4 @@ auto HyperelasticForcefield<Element>::canCreate(HyperelasticForcefield<Element>*
     return Inherit::canCreate(o, context, arg);
 }
 
-} // namespace SofaCaribou::GraphComponents::forcefield
+} // namespace SofaCaribou::forcefield

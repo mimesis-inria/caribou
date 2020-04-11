@@ -14,7 +14,7 @@
 
 #include <SofaCaribou/Material/HyperelasticMaterial.h>
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 using namespace sofa::core;
 using namespace sofa::core::objectmodel;
@@ -155,4 +155,4 @@ private:
     bool eigenvalues_are_up_to_date = false;
 };
 
-} // namespace SofaCaribou::GraphComponents::forcefield
+} // namespace SofaCaribou::forcefield

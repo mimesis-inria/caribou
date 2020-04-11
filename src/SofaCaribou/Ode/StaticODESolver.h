@@ -1,11 +1,10 @@
-#ifndef SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICODESOLVER_H
-#define SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICODESOLVER_H
+#pragma once
 
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
 #include <sofa/core/behavior/MultiVec.h>
 
-namespace SofaCaribou::GraphComponents::ode {
+namespace SofaCaribou::ode {
 
 using sofa::core::objectmodel::Data;
 
@@ -110,6 +109,5 @@ protected:
 };
 
 
-} // namespace SofaCaribou::GraphComponents::ode
+} // namespace SofaCaribou::ode
 
-#endif //SOFACARIBOU_GRAPHCOMPONENTS_ODE_STATICODESOLVER_H

@@ -6,9 +6,7 @@
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/simulation/PropagateEventVisitor.h>
 
-namespace SofaCaribou {
-namespace GraphComponents {
-namespace ode {
+namespace SofaCaribou::ode {
 
 using sofa::core::VecId;
 using namespace sofa::defaulttype;
@@ -212,6 +210,4 @@ int StaticODESolverClass = sofa::core::RegisterObject("Static ODE Solver")
     .add< StaticODESolver >()
 ;
 
-} // namespace ode
-} // namespace GraphComponents
-} // namespace SofaCaribou
+} // namespace SofaCaribou::ode
