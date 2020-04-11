@@ -15,11 +15,11 @@ template<>
 struct traits<RectangularHexahedron <Linear>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
 
     using BoundaryElementType = RectangularQuad<3, Linear>;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
+    static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
 };
 
 /**
@@ -190,11 +190,11 @@ template<>
 struct traits<RectangularHexahedron <Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 20;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 20;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
 
     using BoundaryElementType = RectangularQuad<3, Quadratic>;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
+    static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;
 };
 
 /**

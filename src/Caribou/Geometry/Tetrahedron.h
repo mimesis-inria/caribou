@@ -14,11 +14,11 @@ template<>
 struct traits<Tetrahedron <Linear>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 4;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 1;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 1;
 
     using BoundaryElementType = Triangle<3, Linear>;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
 };
 
 /**
@@ -142,11 +142,11 @@ template<>
 struct traits<Tetrahedron <Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 10;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 10;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
 
     using BoundaryElementType = Triangle<3, Quadratic>;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
 };
 
 /**

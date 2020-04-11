@@ -24,13 +24,13 @@ constexpr bool element_has_boundaries_v = element_has_boundaries<T>::value;
 template<typename Derived>
 struct Element {
     // Types
-    template <UNSIGNED_INTEGER_TYPE Dim>
+    template <INTEGER_TYPE Dim>
     using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
 
-    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols, int Options = 0>
+    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = 0>
     using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, Rows, Cols, Options>;
 
-    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols, int Options = 0>
+    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = 0>
     using MatrixI = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Rows, Cols, Options>;
 
     static constexpr auto CanonicalDimension = traits<Derived>::CanonicalDimension;

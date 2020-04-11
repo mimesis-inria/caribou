@@ -13,8 +13,8 @@ template<UNSIGNED_INTEGER_TYPE _Dimension>
  struct traits<Segment <_Dimension, Linear>> {
      static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 1;
      static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
-     static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 2;
-     static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 1;
+     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 2;
+     static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 1;
  };
 
 /**
@@ -93,8 +93,8 @@ template<UNSIGNED_INTEGER_TYPE _Dimension>
 struct traits<Segment <_Dimension, Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 1;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 3;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 2;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 3;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 2;
 };
 
 /**

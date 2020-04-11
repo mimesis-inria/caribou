@@ -14,11 +14,11 @@ template<UNSIGNED_INTEGER_TYPE _Dimension>
 struct traits<Quad <_Dimension, Linear>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 4;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
 
     using BoundaryElementType = Segment<_Dimension, Linear>;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
 };
 
 /**
@@ -138,11 +138,11 @@ template<UNSIGNED_INTEGER_TYPE _Dimension>
 struct traits<Quad <_Dimension, Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
 
     using BoundaryElementType = Segment<_Dimension, Quadratic>;
-    static constexpr UNSIGNED_INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
 };
 
 /**
