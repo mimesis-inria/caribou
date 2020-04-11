@@ -10,6 +10,7 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 
 #include <Caribou/config.h>
+#include <Caribou/Constants.h>
 #include <Caribou/Geometry/Element.h>
 
 #include <SofaCaribou/Material/HyperelasticMaterial.h>
@@ -25,6 +26,16 @@ template <std::size_t Dim> struct SofaVecType {};
 template <> struct SofaVecType<1> { using Type = sofa::defaulttype::Vec1Types; };
 template <> struct SofaVecType<2> { using Type = sofa::defaulttype::Vec2Types; };
 template <> struct SofaVecType<3> { using Type = sofa::defaulttype::Vec3Types; };
+
+template <typename GaussNode, INTEGER_TYPE NumberOfGaussNodesAtCompileTime>
+struct GaussContainer {
+    using Type = std::array<GaussNode, static_cast<std::size_t>(NumberOfGaussNodesAtCompileTime)>;
+};
+
+template <typename GaussNode>
+struct GaussContainer<GaussNode, caribou::Dynamic> {
+    using Type = std::vector<GaussNode>;
+};
 
 template <typename Element>
 class HyperelasticForcefield : public ForceField<typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type> {
@@ -77,6 +88,9 @@ public:
         Mat33 F = Mat33::Identity(); // Deformation gradient
     };
 
+    // Container of Gauss integration nodes for one Element
+    using GaussContainer = typename GaussContainer<GaussNode, NumberOfGaussNodes>::Type;
+
     // Public methods
 
     HyperelasticForcefield();
@@ -86,7 +100,9 @@ public:
         return templateName(this);
     }
 
-    static auto templateName(const HyperelasticForcefield<Element>* = nullptr) -> std::string;
+    static auto templateName(const HyperelasticForcefield<Element>* = nullptr) -> std::string {
+        return "Unknown";
+    }
     static auto canCreate(HyperelasticForcefield<Element>* o, BaseContext* context, BaseObjectDescription* arg) -> bool;
 
     void init() override;
@@ -114,21 +130,31 @@ public:
 
     /** Get the number of elements contained in this field **/
     [[nodiscard]] inline
-    auto number_of_elements() const -> std::size_t;
+    virtual auto number_of_elements() const -> std::size_t {
+        return 0;
+    }
 
-private:
+    /** Get the set of Gauss integration nodes of an element */
+    auto gauss_nodes_of(std::size_t element_id) const -> const auto & {
+        return p_elements_quadrature_nodes[element_id];
+    }
 
-    // These private methods are implemented but can be overridden
+    /** Get the elemental stiffness matrix of an element */
+    auto stiffness_matrix_of(std::size_t hexahedron_id) const -> const auto & {
+        return p_elements_stiffness_matrices[hexahedron_id];
+    }
 
-    /** Get the element nodes indices relative to the state vector */
-    virtual const Index * get_element_nodes_indices(const std::size_t & element_id) const;
+    /** Get the complete tangent stiffness matrix as a compressed sparse matrix */
+    auto K() -> const Eigen::SparseMatrix<Real> &;
 
-    /** Compute and store the shape functions and their derivatives for every integration points */
-    virtual void initialize_elements();
+    /** Get the eigen values of the tangent stiffness matrix */
+    auto eigenvalues() -> const Vector<Eigen::Dynamic> &;
 
-    /** Update the stiffness matrix for every elements */
-    virtual void update_stiffness();
+    /** Get the condition number of the tangent stiffness matrix */
+    auto cond() -> Real;
 
+protected:
+    // These protected methods are implemented but can be overridden
     /**
      * Return true if the mesh topology is compatible with the type Element.
      *
@@ -138,16 +164,35 @@ private:
      * parameter, than HyperelasticForcefield<Tetrahedron>::mesh_is_compatible(topology) will return true.
      */
     inline
-    static auto mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool;
+    static auto mesh_is_compatible(const sofa::core::topology::BaseMeshTopology *) -> bool {
+        return false;
+    }
 
 private:
+
+    // These private methods are implemented but can be overridden
+
+    /** Get the element nodes indices relative to the state vector */
+    virtual auto get_element_nodes_indices(const std::size_t &) const -> const Index * {
+        return nullptr;
+    }
+
+    /** Compute and store the shape functions and their derivatives for every integration points */
+    virtual void initialize_elements();
+
+    /** Update the stiffness matrix for every elements */
+    virtual void update_stiffness();
+
+    /** Get the set of Gauss integration nodes of the given element */
+    virtual auto get_gauss_nodes(const std::size_t & element_id, const Element & element) const -> GaussContainer;
+
     // Data members
     Link<sofa::core::topology::BaseMeshTopology> d_topology_container;
     Link<material::HyperelasticMaterial<DataTypes>> d_material;
 
     // Private variables
     std::vector<Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension>> p_elements_stiffness_matrices;
-    std::vector<std::array<GaussNode, NumberOfGaussNodes>> p_elements_quadrature_nodes;
+    std::vector<GaussContainer> p_elements_quadrature_nodes;
     Eigen::SparseMatrix<Real> p_sparse_K;
     Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
     bool elements_stiffness_matrices_are_up_to_date = false;

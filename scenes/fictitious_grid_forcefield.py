@@ -48,21 +48,18 @@ def create_mechanical(node, use_fictitious, color):
 
     meca.addObject('StaticODESolver',
                    newton_iterations=20,
-                   correction_tolerance_threshold=1e-5,
-                   residual_tolerance_threshold=1e-5,
+                   correction_tolerance_threshold=1e-3,
+                   residual_tolerance_threshold=1e-3,
                    printLog=True)
-    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=1000, residual_tolerance_threshold=1e-5, preconditioning_method='Diagonal')
+    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=100, residual_tolerance_threshold=1e-3, preconditioning_method='None', printLog=True)
 
     if use_fictitious:
         meca.addObject('MechanicalObject', position='@../integration_grid.positions')
         meca.addObject('HexahedronSetTopologyContainer', name='hexahedrons_contaier', hexahedra='@../integration_grid.hexahedrons')
-        meca.addObject('FictitiousGridElasticForce',
-                       youngModulus=5000,
-                       poissonRatio=0.49,
-                       corotated=False,
-                       linearStrain=False,
+        meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=5000, poisson_ratio=0.49)
+        meca.addObject('FictitiousGridHyperelasticForcefield',
                        fictitious_grid='@../integration_grid',
-                       integration_method='SubdividedGauss',
+                       integration_method='SubdividedVolume',
                        printLog=True)
     else:
         meca.addObject('SparseGridTopology',
@@ -92,7 +89,7 @@ def create_mechanical(node, use_fictitious, color):
                         +radius + 1.5*mx, +radius + 1.5*mx, +length / 2.0 + mz + mz/2],
                    drawBoxes=True)
     meca.addObject('QuadSetTopologyContainer', name='quads_container', quads='@right_roi.quadInROI')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/5., quads='@quads_container.quads')
+    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/10., quads='@quads_container.quads')
 
 
     v = meca.addChild('visual')

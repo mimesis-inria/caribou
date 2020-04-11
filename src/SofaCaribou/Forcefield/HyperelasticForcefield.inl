@@ -23,33 +23,39 @@ void HyperelasticForcefield<Element>::init()
 {
     Inherit::init();
 
-    if (d_topology_container.get() and number_of_elements() == 0) {
-        msg_warning() << "No element found in the mesh topology '" << d_topology_container->getPathName() << "'.";
-    } else if (not d_topology_container.get()) {
-        // No topology specified. Try to find one suitable.
-        auto containers = this->getContext()->template getObjects<sofa::core::topology::BaseMeshTopology>(BaseContext::Local);
-        if (containers.empty()) {
-            msg_warning() << "Could not find a topology container in the current context.";
-        } else {
-            std::vector<sofa::core::topology::BaseMeshTopology *> suitable_containers;
-            for (const auto & container : containers) {
-                d_topology_container.set(container);
-                if (number_of_elements() > 0) {
-                    suitable_containers.push_back(container);
-                }
-                d_topology_container.set(nullptr);
-            }
-
-            if (suitable_containers.empty()) {
-                msg_warning() << "Could not find a suitable topology container in the current context.";
-            } else if (suitable_containers.size() > 1) {
-                msg_warning() <<
-                "Multiple topology were found in the context node." <<
-                " Please specify which one contains the elements on which this force field will be applied " <<
-                "by explicitly setting the container's path in the  '" << d_topology_container.getName() << "'  parameter.";
+    if (number_of_elements() == 0) {
+        if (d_topology_container.get()) {
+            msg_warning() << "No element found in the mesh topology '" << d_topology_container->getPathName() << "'.";
+        } else if (not d_topology_container.get()) {
+            // No topology specified. Try to find one suitable.
+            auto containers = this->getContext()->template getObjects<sofa::core::topology::BaseMeshTopology>(
+                BaseContext::Local);
+            if (containers.empty()) {
+                msg_warning() << "Could not find a topology container in the current context.";
             } else {
-                d_topology_container.set(suitable_containers[0]);
-                msg_info() << "Automatically found the topology '" << d_topology_container.get()->getPathName() << "'.";
+                std::vector<sofa::core::topology::BaseMeshTopology *> suitable_containers;
+                for (const auto &container : containers) {
+                    d_topology_container.set(container);
+                    if (number_of_elements() > 0) {
+                        suitable_containers.push_back(container);
+                    }
+                    d_topology_container.set(nullptr);
+                }
+
+                if (suitable_containers.empty()) {
+                    msg_warning() << "Could not find a suitable topology container in the current context.";
+                } else if (suitable_containers.size() > 1) {
+                    msg_warning() <<
+                                  "Multiple topology were found in the context node." <<
+                                  " Please specify which one contains the elements on which this force field will be applied "
+                                  <<
+                                  "by explicitly setting the container's path in the  '"
+                                  << d_topology_container.getName() << "'  parameter.";
+                } else {
+                    d_topology_container.set(suitable_containers[0]);
+                    msg_info() << "Automatically found the topology '" << d_topology_container.get()->getPathName()
+                               << "'.";
+                }
             }
         }
     }
@@ -256,11 +262,6 @@ void HyperelasticForcefield<Element>::addKToMatrix(
         update_stiffness();
     }
 
-    const auto material = d_material.get();
-    if (!material) {
-        return;
-    }
-
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addKToMatrix");
 
     const auto nb_elements = number_of_elements();
@@ -461,26 +462,24 @@ void HyperelasticForcefield<Element>::initialize_elements()
         // Create an Element instance from the node positions
         const Element initial_element = Element(initial_nodes_position);
 
+        // Fill in the Gauss integration nodes for this element
+        p_elements_quadrature_nodes[element_id] = get_gauss_nodes(element_id, initial_element);
+    }
 
-        auto & gauss_nodes = p_elements_quadrature_nodes[element_id];
-        for (std::size_t gauss_node_id = 0; gauss_node_id < NumberOfGaussNodes; ++gauss_node_id) {
-            const auto & g = initial_element.gauss_node(gauss_node_id);
+    // Compute the volume
+    Real v = 0.;
+    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
+        for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
+            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
+            const auto detJ = gauss_node.jacobian_determinant;
 
-            const auto J = initial_element.jacobian(g.position);
-            const Mat33 Jinv = J.inverse();
-            const auto detJ = J.determinant();
+            // Gauss quadrature node weight
+            const auto w = gauss_node.weight;
 
-            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const Matrix<NumberOfNodes, Dimension> dN_dx =
-                (Jinv.transpose() * initial_element.dL(g.position).transpose()).transpose();
-
-
-            GaussNode & gauss_node = gauss_nodes[gauss_node_id];
-            gauss_node.weight               = g.weight;
-            gauss_node.jacobian_determinant = detJ;
-            gauss_node.dN_dx                = dN_dx;
+            v += detJ*w;
         }
     }
+    msg_info() << "Total volume of the geometry is " << v;
 
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::initialize_elements");
 }
@@ -504,7 +503,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
     static const auto I = Mat33::Identity();
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::update_stiffness");
-    for (std::size_t element_id = 0; element_id < number_of_elements(); ++element_id) {
+    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension> & K = p_elements_stiffness_matrices[element_id];
         K.fill(0);
 
@@ -570,6 +569,128 @@ void HyperelasticForcefield<Element>::update_stiffness()
     elements_stiffness_matrices_are_up_to_date = true;
     sparse_K_is_up_to_date = false;
     eigenvalues_are_up_to_date = false;
+}
+
+template <typename Element>
+auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*element_id*/, const Element & element) const -> GaussContainer {
+    GaussContainer gauss_nodes {};
+    if constexpr (NumberOfGaussNodes == caribou::Dynamic) {
+        gauss_nodes.resize(element.number_of_gauss_nodes());
+    }
+
+    for (std::size_t gauss_node_id = 0; gauss_node_id < element.number_of_gauss_nodes(); ++gauss_node_id) {
+        const auto & g = element.gauss_node(gauss_node_id);
+
+        const auto J = element.jacobian(g.position);
+        const Mat33 Jinv = J.inverse();
+        const auto detJ = J.determinant();
+
+        // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
+        const Matrix<NumberOfNodes, Dimension> dN_dx =
+            (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
+
+
+        GaussNode & gauss_node = gauss_nodes[gauss_node_id];
+        gauss_node.weight               = g.weight;
+        gauss_node.jacobian_determinant = detJ;
+        gauss_node.dN_dx                = dN_dx;
+    }
+
+    return gauss_nodes;
+}
+
+template <typename Element>
+auto HyperelasticForcefield<Element>::K() -> const Eigen::SparseMatrix<Real> & {
+    if (not sparse_K_is_up_to_date) {
+
+        if (not elements_stiffness_matrices_are_up_to_date) {
+            update_stiffness();
+        }
+
+        const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
+        const auto nDofs = X.size() * 3;
+        p_sparse_K.resize(nDofs, nDofs);
+        p_sparse_K.setZero();
+
+        ///< Triplets are used to store matrix entries before the call to 'compress'.
+        /// Duplicates entries are summed up.
+        std::vector<Eigen::Triplet<Real >> triplets;
+        triplets.reserve(nDofs*24*2);
+
+        const auto nb_elements = number_of_elements();
+        for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
+
+            // Fetch the node indices of the element
+            const Index * node_indices = get_element_nodes_indices(element_id);
+
+            // Since the matrix K is block symmetric, we only kept the DxD blocks on the upper-triangle the matrix.
+            // Here we need to accumulate the full matrix.
+            const auto &Ke = p_elements_stiffness_matrices[element_id];
+
+
+            // Blocks on the diagonal
+            for (size_t i = 0; i < NumberOfNodes; ++i) {
+                const auto x = (node_indices[i]*3);
+                const Mat33 Kii = -1 * Ke.template block<Dimension, Dimension>(i,i);
+                for (size_t m = 0; m < 3; ++m) {
+                    for (size_t n = 0; n < 3; ++n) {
+                        triplets.emplace_back(x+m, x+n, Kii(m,n));
+                    }
+                }
+            }
+
+            // Blocks on the upper triangle
+            for (size_t i = 0; i < NumberOfNodes; ++i) {
+                for (size_t j = i+1; j < NumberOfNodes; ++j) {
+                    const auto x = (node_indices[i]*3);
+                    const auto y = (node_indices[j]*3);
+
+                    const Mat33 Kij = -1 * Ke.template block<Dimension, Dimension>(i,j);
+                    const Mat33 Kji = Kij.transpose();
+
+                    for (size_t m = 0; m < 3; ++m) {
+                        for (size_t n = 0; n < 3; ++n) {
+                            triplets.emplace_back(x+m, y+n, Kij(m,n));
+                            triplets.emplace_back(y+m, x+n, Kji(m,n));
+                        }
+                    }
+                }
+            }
+        }
+        p_sparse_K.setFromTriplets(triplets.begin(), triplets.end());
+        sparse_K_is_up_to_date = true;
+    }
+
+    return p_sparse_K;
+}
+
+template <typename Element>
+auto HyperelasticForcefield<Element>::eigenvalues() -> const Vector<Eigen::Dynamic> & {
+    if (not eigenvalues_are_up_to_date) {
+#ifdef EIGEN_USE_LAPACKE
+        Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> k (K());
+        Eigen::SelfAdjointEigenSolver<Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic>> eigensolver(k, Eigen::EigenvaluesOnly);
+#else
+        Eigen::SelfAdjointEigenSolver<Eigen::SparseMatrix<Real>> eigensolver(K(), Eigen::EigenvaluesOnly);
+#endif
+        if (eigensolver.info() != Eigen::Success) {
+            msg_error() << "Unable to find the eigen values of K.";
+        }
+
+        p_eigenvalues = eigensolver.eigenvalues();
+        eigenvalues_are_up_to_date = true;
+    }
+
+    return p_eigenvalues;
+}
+
+template <typename Element>
+auto HyperelasticForcefield<Element>::cond() -> Real {
+    const auto & values = eigenvalues();
+    const auto min = values.minCoeff();
+    const auto max = values.maxCoeff();
+
+    return min/max;
 }
 
 static const unsigned long long kelly_colors_hex[] =

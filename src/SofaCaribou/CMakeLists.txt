@@ -3,6 +3,7 @@ project(SofaCaribou)
 set(HEADER_FILES
     Algebra/EigenMatrixWrapper.h
     Forcefield/FictitiousGridElasticForce.h
+    Forcefield/FictitiousGridHyperelasticForce.h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
     Forcefield/TetrahedronElasticForce.h
@@ -25,6 +26,7 @@ set(TEMPLATE_FILES
 
 set(SOURCE_FILES
     Forcefield/FictitiousGridElasticForce.cpp
+    Forcefield/FictitiousGridHyperelasticForce.cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield.cpp
     Forcefield/TetrahedronElasticForce.cpp
