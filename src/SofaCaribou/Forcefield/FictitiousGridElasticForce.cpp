@@ -16,7 +16,7 @@
 #include "FictitiousGridElasticForce.h"
 
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 using namespace sofa::core::topology;
 using namespace caribou::geometry;
@@ -242,7 +242,7 @@ void FictitiousGridElasticForce::addForce(
 
     bool corotated = d_corotated.getValue();
     bool linear = d_linear_strain.getValue();
-    recompute_compute_tangent_stiffness = (not linear) and mparams->implicit();
+    recompute_compute_tangent_stiffness = (not linear);
     if (linear) {
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addForce");
@@ -251,7 +251,7 @@ void FictitiousGridElasticForce::addForce(
             Hexahedron hexa = hexahedron(hexa_id, x);
 
             const Mat33 & R0 = initial_rotation[hexa_id];
-            const Mat33 R0t = R0.transpose();
+            const Mat33   R0t = R0.transpose();
 
             Mat33 & R = current_rotation[hexa_id];
 
@@ -260,7 +260,7 @@ void FictitiousGridElasticForce::addForce(
             if (corotated)
                 R = hexa.frame({0, 0, 0});
 
-            const Mat33 & Rt = R.transpose();
+            const Mat33 Rt = R.transpose();
 
             // Gather the displacement vector
             Vec24 U;
@@ -278,7 +278,7 @@ void FictitiousGridElasticForce::addForce(
 
             // Compute the force vector
             const auto &K = p_stiffness_matrices[hexa_id];
-            Vec24 F = K * U;
+            Vec24 F = K.template selfadjointView<Eigen::Upper>() * U;
 
             // Write the forces into the output vector
             i = 0;
@@ -334,7 +334,7 @@ void FictitiousGridElasticForce::addForce(
                 F = elasticity::strain::F(dN_dx, U);
 
                 // Strain tensor at gauss node
-                const Mat33 C = F * F.transpose();
+                const Mat33 C = F.transpose()*F;
                 const Mat33 E = 1/2. * (C - I);
 
                 // Stress tensor at gauss node
@@ -343,7 +343,7 @@ void FictitiousGridElasticForce::addForce(
                 // Elastic forces w.r.t the gauss node applied on each nodes
                 for (size_t i = 0; i < 8; ++i) {
                     const Vec3 dx = dN_dx.row(i).transpose();
-                    const Vec3 f_ = w * F.transpose() * (S * dx);
+                    const Vec3 f_ = w * (F*S) * dx;
                     forces(i, 0) += f_[0];
                     forces(i, 1) += f_[1];
                     forces(i, 2) += f_[2];
@@ -391,7 +391,7 @@ void FictitiousGridElasticForce::addDForce(
 #pragma omp parallel for
     for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
         const Mat33 & R  = current_rotation[hexa_id];
-        const Mat33 & Rt = R.transpose();
+        const Mat33   Rt = R.transpose();
 
         // Gather the displacement vector
         Vec24 U;
@@ -407,7 +407,7 @@ void FictitiousGridElasticForce::addDForce(
 
         // Compute the force vector
         const auto & K = p_stiffness_matrices[hexa_id];
-        Vec24 F = K*U*kFactor;
+        Vec24 F = K.template selfadjointView<Eigen::Upper>()*U*kFactor;
 
         // Write the forces into the output vector
         i = 0;
@@ -430,7 +430,7 @@ void FictitiousGridElasticForce::addDForce(
     sofa::helper::AdvancedTimer::stepEnd("FictitiousGridElasticForce::addDForce");
 }
 
-void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int & /*offset*/)
+void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal kFact, unsigned int & offset)
 {
     auto * grid = d_grid_container.get();
 
@@ -444,35 +444,55 @@ void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * ma
 
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addKToMatrix");
 
+    const auto number_of_elements = grid->number_of_cells();
 #pragma omp parallel for
-    for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+    for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = grid->get_node_indices_of(hexa_id);
-        const Mat33 & R  = current_rotation[hexa_id];
-        const Mat33   Rt = R.transpose();
+        sofa::defaulttype::Mat3x3 R;
+        for (size_t m = 0; m < 3; ++m) {
+            for (size_t n = 0; n < 3; ++n) {
+                R(m, n) = current_rotation[hexa_id](m, n);
+            }
+        }
+        const auto   Rt = R.transposed();
 
+        // Since the matrix K is block symmetric, we only kept the DxD blocks on the upper-triangle the matrix.
+        // Here we need to accumulate the full matrix into Sofa's BaseMatrix.
         const auto & K = p_stiffness_matrices[hexa_id];
 
-        for (size_t i = 0; i < 8; ++i) {
-            for (size_t j = 0; j < 8; ++j) {
-                Mat33 k;
-
-                for (unsigned char m = 0; m < 3; ++m) {
-                    for (unsigned char n = 0; n < 3; ++n) {
-                        k(m,n) = K(i*3+m, j*3+n);
-                    }
+        // Blocks on the diagonal
+        for (size_t i = 0; i < NumberOfNodes; ++i) {
+            const auto x = (i*3);
+            sofa::defaulttype::Mat<3, 3, Real> Kii;
+            for (size_t m = 0; m < 3; ++m) {
+                for (size_t n = 0; n < 3; ++n) {
+                    Kii(m, n) = K(x+m, x+n);
                 }
+            }
 
-                k = -1. * R*k*Rt*kFact;
-
-                for (unsigned char m = 0; m < 3; ++m) {
-                    for (unsigned char n = 0; n < 3; ++n) {
-                        const auto x = node_indices[i]*3+m;
-                        const auto y = node_indices[j]*3+n;
-
+            Kii = -1. * R*Kii*Rt *kFact;
 #pragma omp critical
-                        matrix->add(x, y, k(m,n));
+            matrix->add(offset+node_indices[i]*3, offset+node_indices[i]*3, Kii);
+        }
+
+        // Blocks on the upper triangle
+        for (size_t i = 0; i < NumberOfNodes; ++i) {
+            for (size_t j = i+1; j < NumberOfNodes; ++j) {
+                const auto x = (i*3);
+                const auto y = (j*3);
+
+                sofa::defaulttype::Mat<3, 3, Real> Kij;
+                for (size_t m = 0; m < 3; ++m) {
+                    for (size_t n = 0; n < 3; ++n) {
+                        Kij(m, n) = K(x+m, y+n);
                     }
                 }
+
+                Kij = -1. * R*Kij*Rt *kFact;
+#pragma omp critical
+                matrix->add(offset+node_indices[i]*3, offset+node_indices[j]*3, Kij);
+#pragma omp critical
+                matrix->add(offset+node_indices[j]*3, offset+node_indices[i]*3, Kij.transposed());
             }
         }
     }
@@ -496,6 +516,15 @@ void FictitiousGridElasticForce::compute_K()
     const Real l = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
     const Real m = youngModulus / (2 * (1 + poissonRatio));
 
+    Eigen::Matrix<Real, 6, 6> C;
+    C <<
+      l + 2*m,     l,          l,       0,  0,  0,
+        l,       l + 2*m,      l,       0,  0,  0,
+        l,         l,        l + 2*m,   0,  0,  0,
+        0,         0,          0,       m,  0,  0,
+        0,         0,          0,       0, m,  0,
+        0,         0,          0,       0,  0, m;
+
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::compute_k");
 
 #pragma omp parallel for
@@ -514,8 +543,7 @@ void FictitiousGridElasticForce::compute_K()
             Mat33 & F = gauss_node.F;
 
             // Strain tensor at gauss node
-            const Mat33 C = F * F.transpose();
-            const Mat33 E = 1/2. * (C - I);
+            const Mat33 E = 1/2. * (F.transpose()*F - I);
 
             // Stress tensor at gauss node
             const Mat33 S = 2.*m*E + (l * E.trace() * I);
@@ -525,39 +553,29 @@ void FictitiousGridElasticForce::compute_K()
                 // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
                 const Vec3 dxi = dN_dx.row(i).transpose();
 
-                for (std::size_t j = 0; j < 8; ++j) {
+                Matrix<6,3> Bi;
+                Bi <<
+                    F(0,0)*dxi[0],                 F(1,0)*dxi[0],                 F(2,0)*dxi[0],
+                    F(0,1)*dxi[1],                 F(1,1)*dxi[1],                 F(2,1)*dxi[1],
+                    F(0,2)*dxi[2],                 F(1,2)*dxi[2],                 F(2,2)*dxi[2],
+                    F(0,0)*dxi[1] + F(0,1)*dxi[0], F(1,0)*dxi[1] + F(1,1)*dxi[0], F(2,0)*dxi[1] + F(2,1)*dxi[0],
+                    F(0,1)*dxi[2] + F(0,2)*dxi[1], F(1,1)*dxi[2] + F(1,2)*dxi[1], F(2,1)*dxi[2] + F(2,2)*dxi[1],
+                    F(0,0)*dxi[2] + F(0,2)*dxi[0], F(0,1)*dxi[2] + F(1,2)*dxi[0], F(2,0)*dxi[2] + F(2,2)*dxi[0];
+
+                for (std::size_t j = i; j < 8; ++j) {
                     // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
                     const Vec3 dxj = dN_dx.row(j).transpose();
 
-                    // Derivative of the force applied on node j w.r.t the u component of the ith nodal's displacement
-                    const auto dFu = dxi * I.row(0); // Deformation tensor derivative with respect to u_i
-                    const auto dCu = dFu*F.transpose() + F*dFu.transpose();
-                    const auto dEu = 1/2. * dCu;
-                    const auto dSu = 2. * m * dEu + (l*dEu.trace() * I);
-                    const Vec3  Ku  = w * (dFu.transpose()*S + F.transpose()*dSu) * dxj;
+                    Matrix<6,3> Bj;
+                    Bj <<
+                        F(0,0)*dxj[0],                 F(1,0)*dxj[0],                 F(2,0)*dxj[0],
+                        F(0,1)*dxj[1],                 F(1,1)*dxj[1],                 F(2,1)*dxj[1],
+                        F(0,2)*dxj[2],                 F(1,2)*dxj[2],                 F(2,2)*dxj[2],
+                        F(0,0)*dxj[1] + F(0,1)*dxj[0], F(1,0)*dxj[1] + F(1,1)*dxj[0], F(2,0)*dxj[1] + F(2,1)*dxj[0],
+                        F(0,1)*dxj[2] + F(0,2)*dxj[1], F(1,1)*dxj[2] + F(1,2)*dxj[1], F(2,1)*dxj[2] + F(2,2)*dxj[1],
+                        F(0,0)*dxj[2] + F(0,2)*dxj[0], F(0,1)*dxj[2] + F(1,2)*dxj[0], F(2,0)*dxj[2] + F(2,2)*dxj[0];
 
-                    // Derivative of the force applied on node j w.r.t the v component of the ith nodal's displacement
-                    const auto dFv = dxi * I.row(1); // Deformation tensor derivative with respect to u_i
-                    const auto dCv = dFv*F.transpose() + F*dFv.transpose();
-                    const auto dEv = 1/2. * dCv;
-                    const auto dSv = 2. * m * dEv + (l*dEv.trace() * I);
-                    const Vec3  Kv  = w * (dFv.transpose()*S + F.transpose()*dSv) * dxj;
-
-                    // Derivative of the force applied on node j w.r.t the w component of the ith nodal's displacement
-                    const auto dFw = dxi * I.row(2); // Deformation tensor derivative with respect to u_i
-                    const auto dCw = dFw*F.transpose() + F*dFw.transpose();
-                    const auto dEw = 1/2. * dCw;
-                    const auto dSw = 2. * m * dEw + (l*dEw.trace() * I);
-                    const Vec3  Kw  = w * (dFw.transpose()*S + F.transpose()*dSw) * dxj;
-
-                    Mat33 Kji;
-                    Kji << Ku, Kv, Kw; // Kji * ui = fj (the force applied on node j on the displacement of the node i)
-
-                    for (size_t ii = 0; ii < 3; ++ii) {
-                        for (size_t jj = 0; jj < 3; ++jj) {
-                            K(j*3 +ii, i*3 + jj) += Kji(ii,jj);
-                        }
-                    }
+                    K.template block<3, 3>(i*3, j*3).noalias() += (dxi.dot(S*dxj)*I + Bi.transpose()*C*Bj)  * w;
                 }
             }
         }
@@ -574,7 +592,11 @@ const Eigen::SparseMatrix<FictitiousGridElasticForce::Real> & FictitiousGridElas
         const auto nDofs = X.size() * 3;
         p_K.resize(nDofs, nDofs);
         p_K.setZero();
-        p_K.reserve(Eigen::VectorXi::Constant(nDofs, 24));
+
+        ///< Triplets are used to store matrix entries before the call to 'compress'.
+        /// Duplicates entries are summed up.
+        std::vector<Eigen::Triplet<Real >> triplets;
+        triplets.reserve(nDofs*24*2);
 
         auto *grid = d_grid_container.get();
 
@@ -582,33 +604,48 @@ const Eigen::SparseMatrix<FictitiousGridElasticForce::Real> & FictitiousGridElas
 
             const std::vector<Mat33> &current_rotation = p_current_rotation;
 
-            for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+            const auto number_of_elements = grid->number_of_cells();
+            for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
                 const auto & node_indices = grid->get_node_indices_of(hexa_id);
                 const Mat33 &R = current_rotation[hexa_id];
                 const Mat33 Rt = R.transpose();
 
+                // Since the matrix K is block symmetric, we only kept the DxD blocks on the upper-triangle the matrix.
+                // Here we need to accumulate the full matrix.
                 const auto &Ke = p_stiffness_matrices[hexa_id];
 
-                for (size_t i = 0; i < 8; ++i) {
-                    for (size_t j = 0; j < 8; ++j) {
-                        Mat33 k = Ke.block(i, j, 3, 3);
 
-                        k = -1. * R * k * Rt;
+                // Blocks on the diagonal
+                for (size_t i = 0; i < NumberOfNodes; ++i) {
+                    const auto x = (node_indices[i]*3);
+                    const Mat33 Kii = -1 * R * Ke.block<3,3>(i,i) * Rt;
+                    for (size_t m = 0; m < 3; ++m) {
+                        for (size_t n = 0; n < 3; ++n) {
+                            triplets.emplace_back(x+m, x+n, Kii(m,n));
+                        }
+                    }
+                }
 
-                        for (unsigned char m = 0; m < 3; ++m) {
-                            for (unsigned char n = 0; n < 3; ++n) {
-                                const auto x = node_indices[i] * 3 + m;
-                                const auto y = node_indices[j] * 3 + n;
+                // Blocks on the upper triangle
+                for (size_t i = 0; i < NumberOfNodes; ++i) {
+                    for (size_t j = i+1; j < NumberOfNodes; ++j) {
+                        const auto x = (node_indices[i]*3);
+                        const auto y = (node_indices[j]*3);
 
-                                const auto v = p_K.coeff(x, y);
-                                p_K.coeffRef(x, y) = v + k(m, n);
+                        const Mat33 Kij = -1 * R * Ke.block<3,3>(i,j) * Rt;
+                        const Mat33 Kji = Kij.transpose();
+
+                        for (size_t m = 0; m < 3; ++m) {
+                            for (size_t n = 0; n < 3; ++n) {
+                                triplets.emplace_back(x+m, y+n, Kij(m,n));
+                                triplets.emplace_back(y+m, x+n, Kji(m,n));
                             }
                         }
                     }
                 }
             }
         }
-        p_K.makeCompressed();
+        p_K.setFromTriplets(triplets.begin(), triplets.end());
         K_is_up_to_date = true;
     }
 
@@ -644,7 +681,7 @@ FictitiousGridElasticForce::Real FictitiousGridElasticForce::cond()
     return min/max;
 }
 
-void FictitiousGridElasticForce::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
+void FictitiousGridElasticForce::computeBBox(const sofa::core::ExecParams*, bool onlyVisible)
 {
     if( !onlyVisible ) return;
 
@@ -663,7 +700,7 @@ void FictitiousGridElasticForce::computeBBox(const sofa::core::ExecParams* param
         }
     }
 
-    this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
+    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
 }
 
 void FictitiousGridElasticForce::draw(const sofa::core::visual::VisualParams* vparams)
@@ -772,4 +809,4 @@ static int FictitiousGridElasticForceClass = RegisterObject("Caribou Fictitious 
     .add< FictitiousGridElasticForce >(true)
 ;
 
-} // namespace SofaCaribou::GraphComponents::forcefield
+} // namespace SofaCaribou::forcefield

@@ -20,7 +20,7 @@
 #define TOCK (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - __time_point_begin).count())
 
 
-namespace SofaCaribou::GraphComponents::topology {
+namespace SofaCaribou::topology {
 
 template <typename DataTypes>
 FictitiousGrid<DataTypes>::FictitiousGrid()
@@ -32,10 +32,9 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
                 "maximum_number_of_subdivision_levels",
                 "Number of subdivision levels of the boundary cells (one level split the cell in 4 subcells in 2D, and 8 subcells in 3D)."))
         , d_volume_threshold(initData(&d_volume_threshold, (Float) 0.0, "volume_threshold", "Ignore every cells having a volume ratio smaller than this threshold."))
-        , d_use_implicit_surface(initData(&d_use_implicit_surface,
-                bool(false),
-                "use_implicit_surface",
-                "Use an implicit surface instead of a tessellated surface. If true, the callback function is_inside must be defined."))
+        , d_iso_surface(initLink(
+                "iso_surface",
+                "Use an implicit surface instead of a tessellated surface. This will be used as a level-set where an iso-value less than zero means the point is inside the boundaries."))
         , d_draw_boundary_cells(initData(&d_draw_boundary_cells,
                 bool(false),
                 "draw_boundary_cells",
@@ -77,7 +76,29 @@ void FictitiousGrid<DataTypes>::init() {
     const auto & triangles = d_surface_triangles.getValue();
     const auto & edges = d_surface_edges.getValue();
 
-    if (not d_use_implicit_surface.getValue()) {
+    // Let's first check if an iso-surface is specified
+    if (d_iso_surface.get()) {
+        if (not triangles.empty() or not edges.empty()) {
+            msg_warning() << "Both an iso-surface and a surface tesselation (triangles or edges) were specified."
+                             "The iso-surface will be used.";
+        }
+    } else {
+        // Let's check if an iso-surface can be found in the current context
+        auto iso_surfaces = this->getContext()->template getObjects<IsoSurface<DataTypes>>(BaseContext::Local);
+        if (iso_surfaces.size() > 0) {
+            if (iso_surfaces.size() > 1) {
+                msg_warning() << "Multiple iso-surfaces were found in the context node. The first one, '"
+                              << iso_surfaces[0]->getName()
+                              << "' will be used. If this is not the one that was needed, please set the parameter '"
+                              << d_iso_surface->getPathName()
+                              << "' with the path to the correct iso-surface to use.";
+            }
+            d_iso_surface.set(iso_surfaces[0]);
+            msg_info() << "Automatically found the iso-surface '" << d_iso_surface.getPath() << "'.";
+        }
+    }
+
+    if (not d_iso_surface.get()) {
         BaseMeshTopology * topology = nullptr;
         // Fetch the surface elements (edges in 2D, triangles in 3D)
         if ((Dimension == 2 and edges.empty()) or (Dimension == 3 and triangles.empty())) {
@@ -262,7 +283,7 @@ void FictitiousGrid<DataTypes>::create_grid()
     }
 
     // 1. Find the cells intersected by the boundary and tag them as "Boundary".
-    if (d_use_implicit_surface.getValue() and p_implicit_test_callback) {
+    if (d_iso_surface.get()) {
         tag_intersected_cells_from_implicit_surface();
     } else {
         tag_intersected_cells();
@@ -298,19 +319,20 @@ FictitiousGrid<DataTypes>::tag_intersected_cells_from_implicit_surface()
     if (!p_grid or p_grid->number_of_nodes() == 0)
         return;
 
-    if (!p_implicit_test_callback) {
+    if (!d_iso_surface.get()) {
         return;
     }
 
     BEGIN_CLOCK;
     TICK;
+    const auto iso_surface = d_iso_surface.get();
     const auto number_of_nodes = p_grid->number_of_nodes();
     const auto number_of_cells = p_grid->number_of_cells();
     std::vector<Type> node_types (number_of_nodes, Type::Undefined);
 
     // We first compute the type of every nodes
     for (UNSIGNED_INTEGER_TYPE i = 0; i < number_of_nodes; ++i) {
-        const auto t = p_implicit_test_callback(p_grid->node(i));
+        const auto t = iso_surface->iso_value(p_grid->node(i));
         if (t < 0)
             node_types[i] = Type::Inside;
         else if (t > 0)
@@ -865,6 +887,78 @@ FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & sparse_cell
 }
 
 template <typename DataTypes>
+auto FictitiousGrid<DataTypes>::get_type_at(const WorldCoordinates & p) const -> Type {
+    if (p_grid->contains(p)) {
+        const auto cells = p_grid->cells_around(p);
+
+        if (cells.size() == 1) {
+            return p_cells_types[cells[0]];
+        }
+
+        // The position p is on the boundary of multiple cells, gather the different cells types
+        INTEGER_TYPE types = 0;
+        for (const auto & cell_index : cells) {
+            types |= static_cast<INTEGER_TYPE>(p_cells_types[cell_index]);
+        }
+
+        if (types & static_cast<INTEGER_TYPE>(Type::Boundary)) {
+            // If one of the cells around p is of type boundary, return the type boundary
+            return Type::Boundary;
+        } else if((types & static_cast<INTEGER_TYPE>(Type::Inside)) and (types & static_cast<INTEGER_TYPE>(Type::Outside))) {
+            // If one of the cells around p is of type inside, and another one is of type outside, return the type boundary
+            return Type::Boundary;
+        } else {
+            // We cannot decide which type it is...this should never happen. Report it.
+            std::ostringstream error;
+            if (cells.empty()) {
+                // Normally should have been caught by the grid->contains test
+                error << "The position " << p << " was found within the boundaries of the grid, but is not part of any grid cells.";
+            } else {
+                error << "The position " << p << " is contained inside multiple cells of different types, and"
+                                                 " the type of the position cannot be determined.";
+            }
+
+            throw std::runtime_error(error.str());
+        }
+    } else {
+        return Type::Outside;
+    }
+}
+
+template <typename DataTypes>
+auto FictitiousGrid<DataTypes>::cell_volume_ratio_distribution(UNSIGNED_INTEGER_TYPE number_of_decimals) const -> std::map<FLOATING_POINT_TYPE, std::vector<CellIndex>> {
+    std::map<FLOATING_POINT_TYPE, std::vector<CellIndex>> volume_ratios;
+    const auto number_of_cells = p_grid->number_of_cells();
+
+    const FLOATING_POINT_TYPE step = std::pow(10, number_of_decimals);
+
+    for (CellIndex cell_id = 0; cell_id < static_cast<CellIndex>(number_of_cells); ++cell_id) {
+        const auto & cell = p_cells[cell_id];
+        FLOATING_POINT_TYPE ratio;
+
+        switch (p_cells_types[cell_id]) {
+            case Type::Outside:
+                ratio = 0.;
+                break;
+            case Type::Inside:
+                ratio = 1.;
+                break;
+            case Type::Boundary:
+                ratio = (number_of_decimals == 0)
+                        ? get_cell_weight(cell)
+                        : std::round(get_cell_weight(cell)*step) / step;
+                break;
+            case Type::Undefined:
+            default:
+                continue;
+        }
+
+        volume_ratios[ratio].emplace_back(cell_id);
+    }
+    return volume_ratios;
+}
+
+template <typename DataTypes>
 void
 FictitiousGrid<DataTypes>::populate_drawing_vectors()
 {
@@ -872,8 +966,8 @@ FictitiousGrid<DataTypes>::populate_drawing_vectors()
     p_drawing_nodes_vector.resize(p_grid->number_of_nodes());
     p_drawing_edges_vector.resize(p_grid->number_of_edges()*2);
     // Reset the vector in case we got multiple initializations
-    p_drawing_subdivided_edges_vector.resize(0);
-    p_drawing_cells_vector.resize(0);
+    p_drawing_subdivided_edges_vector.clear();
+    p_drawing_cells_vector.clear();
     p_drawing_subdivided_edges_vector.resize(p_regions.size());
     p_drawing_cells_vector.resize(p_regions.size());
 

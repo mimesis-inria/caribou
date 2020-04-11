@@ -552,7 +552,7 @@ HexahedronElasticForce::Real HexahedronElasticForce::cond()
     return min/max;
 }
 
-void HexahedronElasticForce::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
+void HexahedronElasticForce::computeBBox(const sofa::core::ExecParams*, bool onlyVisible)
 {
     if( !onlyVisible ) return;
 
@@ -571,7 +571,7 @@ void HexahedronElasticForce::computeBBox(const sofa::core::ExecParams* params, b
         }
     }
 
-    this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
+    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
 }
 
 void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparams)

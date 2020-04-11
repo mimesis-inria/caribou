@@ -12,7 +12,10 @@ set(HEADER_FILES
     Material/SaintVenantKirchhoffMaterial.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
+    Topology/CircleIsoSurface.h
     Topology/FictitiousGrid.h
+    Topology/IsoSurface.h
+    Topology/SphereIsoSurface.h
     )
 
 set(TEMPLATE_FILES
@@ -30,6 +33,7 @@ set(SOURCE_FILES
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
     Topology/FictitiousGrid.cpp
+    Topology/IsoSurface.cpp
     init.cpp)
 
 # Try to find Sofa's cmake prefix

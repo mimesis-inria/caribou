@@ -15,18 +15,7 @@ mx = (radius / ((n[0])*pow(2, subdivisions)))/2
 my = (radius / ((n[1])*pow(2, subdivisions)))/2
 mz = (length / ((n[2])*pow(2, subdivisions)))/2
 
-use_implicit = False
-
 m = meshio.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cylinder_surface.vtu'))
-
-def is_inside(p):
-    x, y, z = p
-    if z < -length/2.:
-        return 1
-    elif z > length/2.:
-        return 1
-    else:
-        return x*x + y*y - radius*radius
 
 
 def create_mechanical(node, use_fictitious, color):
@@ -44,11 +33,8 @@ def create_mechanical(node, use_fictitious, color):
                               n=n,
                               min=[-radius-mx, -radius-my, -length/2-mz],
                               max=[+radius+mx, +radius+my, +length/2+mz],
-                              use_implicit_surface=use_implicit,
                               maximum_number_of_subdivision_levels=subdivisions,
                               printLog=True)
-        if use_implicit:
-            grid.set_implicit_test_function(is_inside)
     else:
         node.addObject('SparseGridTopology',
                               name='integration_grid',

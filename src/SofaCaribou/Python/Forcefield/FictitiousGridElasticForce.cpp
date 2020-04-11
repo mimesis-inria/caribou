@@ -3,17 +3,17 @@
 
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
-#include <memory>
 
-PYBIND11_MAKE_OPAQUE(const std::vector<SofaCaribou::GraphComponents::forcefield::FictitiousGridElasticForce::GaussNode>&)
+PYBIND11_MAKE_OPAQUE(const std::vector<SofaCaribou::forcefield::FictitiousGridElasticForce::GaussNode>&)
 
 using sofa::defaulttype::Vec3Types;
 using namespace sofa::core::objectmodel;
 using namespace sofa::core::behavior;
 
-namespace SofaCaribou::Python {
+namespace SofaCaribou::forcefield::python {
+
 void addFictitiousGridElasticForce(py::module &m) {
-    using FictitiousGridElasticForce = SofaCaribou::GraphComponents::forcefield::FictitiousGridElasticForce;
+    using FictitiousGridElasticForce = SofaCaribou::forcefield::FictitiousGridElasticForce;
 
     py::class_<FictitiousGridElasticForce::GaussNode> g(m, "FictitiousGridElasticForceGaussNode");
     g.def_property_readonly("weight", [](const FictitiousGridElasticForce::GaussNode & self){return self.weight;});

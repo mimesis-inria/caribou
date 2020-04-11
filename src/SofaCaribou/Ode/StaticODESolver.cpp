@@ -41,7 +41,6 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
     sofa::simulation::common::MechanicalOperations mop( params, this->getContext() );
     sofa::simulation::common::VisitorExecuteFunc executeVisitor(*this->getContext());
 
-    MultiVecCoord x_start(&vop, sofa::core::VecCoordId::position() );
     MultiVecCoord x(&vop, xResult /*core::VecCoordId::position()*/ );
     MultiVecDeriv force( &vop, sofa::core::VecDerivId::force() );
     dx.realloc( &vop, true );
@@ -123,7 +122,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             sofa::helper::AdvancedTimer::stepEnd("MBKSolve");
 
             // Updating the geometry
-            x.eq(x_start, dx, 1);
+            x.peq(dx);
 
             // Solving constraints
             // Calls "solveConstraint" method of every ConstraintSolver objects found in the current context tree.

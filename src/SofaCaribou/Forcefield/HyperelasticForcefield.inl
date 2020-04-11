@@ -160,7 +160,7 @@ void HyperelasticForcefield<Element>::addForce(
             const auto & w = gauss_node.weight;
 
             // Deformation tensor at gauss node
-            gauss_node.F = caribou::mechanics::elasticity::strain::F(dN_dx, U).transpose();
+            gauss_node.F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
             const auto & F = gauss_node.F;
             const auto J = F.determinant();
 
@@ -387,7 +387,7 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
             const auto & w = gauss_node.weight;
 
             // Deformation tensor at gauss node
-            const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U).transpose();
+            const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
             const auto J = F.determinant();
 
             // Strain tensor at gauss node
@@ -405,7 +405,7 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
 }
 
 template <typename Element>
-void HyperelasticForcefield<Element>::computeBBox(const sofa::core::ExecParams* params, bool onlyVisible)
+void HyperelasticForcefield<Element>::computeBBox(const sofa::core::ExecParams*, bool onlyVisible)
 {
     if (!onlyVisible)  return;
     if (!this->mstate) return;
@@ -425,7 +425,7 @@ void HyperelasticForcefield<Element>::computeBBox(const sofa::core::ExecParams* 
         }
     }
 
-    this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
+    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
 }
 
 template <typename Element>

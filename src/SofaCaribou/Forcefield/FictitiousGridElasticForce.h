@@ -11,7 +11,7 @@
 #include <Caribou/Geometry/RectangularHexahedron.h>
 #include <SofaCaribou/Topology/FictitiousGrid.h>
 
-namespace SofaCaribou::GraphComponents::forcefield {
+namespace SofaCaribou::forcefield {
 
 using namespace sofa::core;
 using namespace sofa::core::objectmodel;
@@ -33,7 +33,7 @@ public:
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
 
-    using FictitiousGrid = SofaCaribou::GraphComponents::topology::FictitiousGrid<DataTypes>;
+    using FictitiousGrid = SofaCaribou::topology::FictitiousGrid<DataTypes>;
 
     using Hexahedron = caribou::geometry::Hexahedron<caribou::Linear>;
     using RectangularHexahedron = caribou::geometry::RectangularHexahedron<caribou::Linear>;
@@ -200,6 +200,6 @@ private:
 
 };
 
-} // namespace SofaCaribou::GraphComponents::forcefield
+} // namespace SofaCaribou::forcefield
 
 #endif //SOFACARIBOU_GRAPHCOMPONENTS_FORCEFIELD_FICTITIOUSGRIDELASTICFORCE_H

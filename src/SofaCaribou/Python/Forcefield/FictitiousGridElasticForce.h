@@ -4,6 +4,6 @@
 
 namespace py = pybind11;
 
-namespace SofaCaribou::Python {
+namespace SofaCaribou::forcefield::python {
 void addFictitiousGridElasticForce(py::module &m);
 }

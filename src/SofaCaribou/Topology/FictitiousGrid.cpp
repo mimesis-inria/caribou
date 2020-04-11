@@ -10,7 +10,7 @@
 
 #include <Caribou/Geometry/Triangle.h>
 
-namespace SofaCaribou::GraphComponents::topology {
+namespace SofaCaribou::topology {
 
 //using sofa::defaulttype::Vec2Types;
 using sofa::defaulttype::Vec3Types;
@@ -132,15 +132,15 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
 
     const auto number_of_cells = p_grid->number_of_cells();
     const auto & number_of_subdivision = d_number_of_subdivision.getValue();
-    const bool use_implicit_surface = (d_use_implicit_surface.getValue() and p_implicit_test_callback);
+    const auto iso_surface = d_iso_surface.get();
 
-    if (not use_implicit_surface) {
-        msg_error() << "Not yet implemented for 2D types.";
+    if (not iso_surface) {
+        msg_error() << "Tesselated surfaces are not yet implemented for 2D types.";
         return;
     }
 
     TICK;
-#pragma omp parallel for default(none) shared(number_of_cells, use_implicit_surface, number_of_subdivision)
+#pragma omp parallel for default(none) shared(number_of_cells, iso_surface, number_of_subdivision)
     for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
 
@@ -167,13 +167,13 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
 
             // Checks if the current subcell intersects the boundary
 
-            if (use_implicit_surface) {
+            if (iso_surface) {
                 constexpr UNSIGNED_INTEGER_TYPE INSIDE = 0;
                 constexpr UNSIGNED_INTEGER_TYPE OUTSIDE = 1;
                 constexpr UNSIGNED_INTEGER_TYPE BOUNDARY = 2;
                 UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
                 for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::geometry::traits<CellElement>::NumberOfNodesAtCompileTime; ++i) {
-                    const auto t = p_implicit_test_callback(e.node(i));
+                    const auto t = iso_surface->iso_value(e.node(i));
                     if (t < 0)
                         types[INSIDE]++;
                     else if (t > 0)
@@ -229,10 +229,10 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
     const auto & number_of_subdivision = d_number_of_subdivision.getValue();
     const auto & surface_positions = d_surface_positions.getValue();
     const auto & surface_triangles = d_surface_triangles.getValue();
-    bool use_implicit_surface = (d_use_implicit_surface.getValue() and p_implicit_test_callback);
+    const auto iso_surface = d_iso_surface.get();
 
     TICK;
-#pragma omp parallel for default(none) shared(number_of_cells, use_implicit_surface, surface_triangles, surface_positions, number_of_subdivision)
+#pragma omp parallel for default(none) shared(number_of_cells, iso_surface, surface_triangles, surface_positions, number_of_subdivision)
     for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         const auto & triangles = p_triangles_of_cell[cell_index];
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
@@ -260,14 +260,14 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
 
             // Checks if the current subcell intersects the boundary
 
-            if (use_implicit_surface) {
+            if (iso_surface) {
                 constexpr UNSIGNED_INTEGER_TYPE INSIDE = 0;
                 constexpr UNSIGNED_INTEGER_TYPE OUTSIDE = 1;
                 constexpr UNSIGNED_INTEGER_TYPE BOUNDARY = 2;
 
                 UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
                 for (UNSIGNED_INTEGER_TYPE i = 0; i < caribou::geometry::traits<CellElement>::NumberOfNodesAtCompileTime; ++i) {
-                    const auto t = p_implicit_test_callback(e.node(i));
+                    const auto t = iso_surface->iso_value(e.node(i));
                     if (t < 0)
                         types[INSIDE]++;
                     else if (t > 0)
@@ -338,4 +338,4 @@ int FictitiousGridClass = sofa::core::RegisterObject("Caribou FictitiousGrid")
         .add< FictitiousGrid<Vec3Types> >(true)
 ;
 
-} // namespace SofaCaribou::GraphComponents::topology
+} // namespace SofaCaribou::topology

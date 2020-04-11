@@ -11,7 +11,8 @@ using sofa::defaulttype::Vec3Types;
 using namespace sofa::core::objectmodel;
 using namespace sofa::core::behavior;
 
-namespace SofaCaribou::Python {
+namespace SofaCaribou::forcefield::python {
+
 void addHexahedronElasticForce(py::module &m) {
     using HexahedronElasticForce = SofaCaribou::GraphComponents::forcefield::HexahedronElasticForce;
 
@@ -28,4 +29,5 @@ void addHexahedronElasticForce(py::module &m) {
     c.def("cond", &HexahedronElasticForce::cond);
     c.def("eigenvalues", &HexahedronElasticForce::eigenvalues);
 }
+
 }

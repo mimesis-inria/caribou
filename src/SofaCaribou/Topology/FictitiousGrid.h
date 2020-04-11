@@ -10,23 +10,15 @@
 #include <Caribou/Topology/Grid/Grid.h>
 #include <Caribou/config.h>
 
+#include <SofaCaribou/Topology/IsoSurface.h>
+
 #include <memory>
 #include <exception>
 #include <bitset>
 #include <functional>
 #include <sstream>
 
-// Forward declarations
-namespace caribou::topology::engine {
-template <size_t Dim>
-struct Grid;
-}
-
-namespace sofa::helper::io {
-struct Mesh;
-}
-
-namespace SofaCaribou::GraphComponents::topology {
+namespace SofaCaribou::topology {
 
 using namespace sofa::core::objectmodel;
 
@@ -116,7 +108,6 @@ public:
     // -------
     // Aliases
     // -------
-    using f_implicit_test_callback_t = std::function<float(const WorldCoordinates &)>;
 
     template <typename ObjectType>
     using Link = SingleLink<FictitiousGrid<DataTypes>, ObjectType, BaseLink::FLAG_STRONGLINK>;
@@ -125,27 +116,26 @@ public:
     // Public functions
     // ----------------
     FictitiousGrid();
-    void init() override;
-    void draw(const sofa::core::visual::VisualParams* vparams) override;
 
     /** Initialization of the grid. This must be called before anything else. */
-    virtual void create_grid();
+    virtual void
+    create_grid();
 
     /** Get the number of sparse cells in the grid */
-    inline
-    UNSIGNED_INTEGER_TYPE number_of_cells() const {
+    inline UNSIGNED_INTEGER_TYPE
+    number_of_cells() const {
         return p_cell_index_in_grid.size();
     }
 
     /** Get the number of sparse nodes in the grid */
-    inline
-    UNSIGNED_INTEGER_TYPE number_of_nodes() const {
+    inline UNSIGNED_INTEGER_TYPE
+    number_of_nodes() const {
         return p_node_index_in_grid.size();
     }
 
     /** Get the number of subdivisions in the grid */
-    inline
-    UNSIGNED_INTEGER_TYPE number_of_subdivisions() const {
+    inline UNSIGNED_INTEGER_TYPE
+    number_of_subdivisions() const {
         return d_number_of_subdivision.getValue();
     }
 
@@ -153,7 +143,8 @@ public:
      * Get neighbors cells around a given cell. A cell is neighbor to another one if they both have a face in common,
      * or if a face contains one of the face of the other. Neighbors outside of the surface boundary are excluded.
      */
-    std::vector<Cell *> get_neighbors(Cell * cell);
+    std::vector<Cell *>
+    get_neighbors(Cell * cell);
 
     /**
      * Get the list of gauss nodes coordinates and their respective weight inside a cell. Here, all the gauss nodes of
@@ -162,7 +153,8 @@ public:
      *
      * * @param sparse_cell_index The index of the cell in the sparse grid
      */
-    std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> get_gauss_nodes_of_cell(const CellIndex & sparse_cell_index) const;
+    std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>>
+    get_gauss_nodes_of_cell(const CellIndex & sparse_cell_index) const;
 
     /**
      * Similar to `get_gauss_nodes_of_cell(const CellIndex & index)`, but here only the gauss nodes of inner cells up to
@@ -181,8 +173,8 @@ public:
     /**
      * Get the element of a cell from its index in the sparse grid.
      */
-    inline
-    CellElement get_cell_element(const CellIndex & sparse_cell_index) const {
+    inline CellElement
+    get_cell_element(const CellIndex & sparse_cell_index) const {
         const auto cell_index = p_cell_index_in_grid[sparse_cell_index];
         return std::move(p_grid->cell_at(cell_index));
     }
@@ -190,68 +182,46 @@ public:
     /**
      * Get the node indices of a cell from its index in the sparse grid.
      */
-    inline
-    const SofaHexahedron & get_node_indices_of(const CellIndex & sparse_cell_index) const {
+    inline const SofaHexahedron &
+    get_node_indices_of(const CellIndex & sparse_cell_index) const {
         return d_hexahedrons.getValue().at(sparse_cell_index);
     }
 
     /**
      * Get the type (inside, outside, boundary or undefined) of a given point in space.
      */
-    inline
-    Type get_type_at(const WorldCoordinates & p) const {
-        if (p_grid->contains(p)) {
-            const auto cells = p_grid->cells_around(p);
-
-            if (cells.size() == 1) {
-                return p_cells_types[cells[0]];
-            }
-
-            // The position p is on the boundary of multiple cells, gather the different cells types
-            INTEGER_TYPE types = 0;
-            for (const auto & cell_index : cells) {
-                types |= static_cast<INTEGER_TYPE>(p_cells_types[cell_index]);
-            }
-
-            if (types & static_cast<INTEGER_TYPE>(Type::Boundary)) {
-                // If one of the cells around p is of type boundary, return the type boundary
-                return Type::Boundary;
-            } else if((types & static_cast<INTEGER_TYPE>(Type::Inside)) and (types & static_cast<INTEGER_TYPE>(Type::Outside))) {
-                // If one of the cells around p is of type inside, and another one is of type outside, return the type boundary
-                return Type::Boundary;
-            } else {
-                // We cannot decide which type it is...this should never happen. Report it.
-                std::ostringstream error;
-                if (cells.empty()) {
-                    // Normally should have been caught by the grid->contains test
-                    error << "The position " << p << " was found within the boundaries of the grid, but is not part of any grid cells.";
-                } else {
-                    error << "The position " << p << " is contained inside multiple cells of different types, and"
-                                                     " the type of the position cannot be determined.";
-                }
-
-                throw std::runtime_error(error.str());
-            }
-        } else {
-            return Type::Outside;
-        }
-    }
+    inline Type
+    get_type_at(const WorldCoordinates & p) const;
 
     /**
-     * Set the implicit test callback function.
-     * @param callback This should point to a function that takes one world position as argument and return 0 if the
-     * given position is directly on the surface, < 0 if it is inside the surface, > 1 otherwise.
+     * Compute the distribution of volume ratios of the top level cells of the grid.
      *
-     * float implicit_test(const WorldCoordinates & query_position);
+     * The volume ratio is the ratio of actual volume of a cell over the total volume of the cell.
+     * Hence, the ratio of a cell outside the boundaries is 0, the ratio of a cell inside is 1,
+     * and the ratio of boundary cells are between 0 and 1.
+     *
+     * @param number_of_decimals Round the volume ratio to the given
+     *        number of decimals. For example, setting this value to 2  will
+     *        generate a distribution of maximum 100 entries (0.00, 0.01, 0.02, ..., 0.99, 1.00).
+     *
+     *        Setting a value at zero deactivate the rounding of volume ratio.
+     *        Default is 0 which means no rounding.
+     *
+     * @return A sorted map where the keys are the percentage of volume inside
+     *         the cell, and the value is a vector containing the ids of all
+     *         cells having this volume percentage.
      */
-    inline void
-    set_implicit_test_function(const f_implicit_test_callback_t & callback)
-    {
-        p_implicit_test_callback = callback;
-    }
+    inline std::map<FLOATING_POINT_TYPE, std::vector<CellIndex>>
+    cell_volume_ratio_distribution(UNSIGNED_INTEGER_TYPE number_of_decimals=0) const;
 
-    void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override
-    {
+    // ---------------------
+    // SOFA METHOD OVERRIDES
+    // ---------------------
+
+    void init() override;
+    void draw(const sofa::core::visual::VisualParams* vparams) override;
+
+    void computeBBox(const sofa::core::ExecParams*, bool onlyVisible) override {
         if( !onlyVisible )
             return;
 
@@ -262,20 +232,18 @@ public:
             const Float max[3] = {
                 d_max.getValue()[0], d_max.getValue()[1], +1
             };
-            this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Float>(min, max));
+            this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Float>(min, max));
         } else {
-            this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Float>(
+            this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Float>(
                 d_min.getValue().array(),d_max.getValue().array()));
         }
     }
 
-    virtual std::string getTemplateName() const override
-    {
+    std::string getTemplateName() const override {
         return templateName(this);
     }
 
-    static std::string templateName(const FictitiousGrid<DataTypes>* = nullptr)
-    {
+    static std::string templateName(const FictitiousGrid<DataTypes>* = nullptr) {
         return DataTypes::Name();
     }
 
@@ -303,7 +271,7 @@ private:
     Data<SofaVecFloat> d_max;
     Data<UNSIGNED_INTEGER_TYPE> d_number_of_subdivision;
     Data<Float> d_volume_threshold;
-    Data<bool> d_use_implicit_surface;
+    Link<IsoSurface<DataTypes>> d_iso_surface;
     Data<bool> d_draw_boundary_cells;
     Data<bool> d_draw_outside_cells;
     Data<bool> d_draw_inside_cells;
@@ -335,10 +303,6 @@ private:
     ///< The underground grid object. This object do not store any values beside the dimensions and size of the grid.
     ///< Most of the grid algorithms are defined there.
     std::unique_ptr<GridType> p_grid;
-
-    ///< This is a pointer to a callback function that determines if a position is inside, outside or on the boundary.
-    ///< It is used when an implicit surface definition is avaible.
-    f_implicit_test_callback_t p_implicit_test_callback;
 
     ///< Types of the complete regular grid's cells
     std::vector<Type> p_cells_types;

@@ -8,14 +8,16 @@ set(PYTHON_TEST_FILES
     )
 
 set(HEADER_FILES
-    FictitiousGridElasticForce.h
-    HexahedronElasticForce.h
+    Forcefield/FictitiousGridElasticForce.h
+    Forcefield/HexahedronElasticForce.h
+    Topology/FictitiousGrid.h
     )
 
 set(SOURCE_FILES
     SofaCaribou.cpp
-    FictitiousGridElasticForce.cpp
-    HexahedronElasticForce.cpp
+    Forcefield/FictitiousGridElasticForce.cpp
+    Forcefield/HexahedronElasticForce.cpp
+    Topology/FictitiousGrid.cpp
     )
 
 unset(PYTHON_MODULE_PREFIX)

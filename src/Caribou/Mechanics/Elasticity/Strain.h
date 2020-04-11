@@ -48,9 +48,9 @@ Matrix<Dimension, Dimension>
 F (const Matrix<NumberOfNodes, Dimension, Options> & dN_dx, const Matrix<NumberOfNodes, Dimension, Options> & U)
 {
     const auto I = Matrix<Dimension, Dimension>::Identity();
-    Matrix<Dimension, Dimension> GradU = dN_dx.row(0).transpose() * U.row(0);
+    Matrix<Dimension, Dimension> GradU = U.row(0).transpose() * dN_dx.row(0);
     for (size_t i = 1; i < NumberOfNodes; ++i) {
-        GradU += dN_dx.row(i).transpose() * U.row(i);
+        GradU.noalias() += U.row(i).transpose() * dN_dx.row(i);
     }
     return GradU + I;
 }
