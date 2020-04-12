@@ -287,7 +287,7 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     r_norm = sqrt(rho0);
     if (r_norm < residual_tolerance_threshold*b_norm) {
         msg_info() << "The linear system has already reached an equilibrium state";
-        msg_info() << "|R| = " << r_norm << ", |b| = " << b_norm << ", threshold = " << residual_tolerance_threshold;
+        msg_info() << "|r|/|b| = " << sqrt(r_norm/b_norm) << ", threshold = " << residual_tolerance_threshold;
         goto end;
     }
 
@@ -311,7 +311,7 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
 
         // 4. Print information on the current iteration
         msg_info() << "CG iteration #" << iteration_number+1
-                   << ": |r0|/|b| = "  << r_norm/b_norm
+                   << ": |r|/|b| = "   << r_norm/b_norm
                    << ", threshold = " << residual_tolerance_threshold;
 
         // 5. Check for convergence: |r|/|b| < threshold
@@ -350,7 +350,7 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     UNSIGNED_INTEGER_TYPE iteration_number = 0; // Current iteration number
     UNSIGNED_INTEGER_TYPE n = A.cols();
     Vector p(n), z(n); // Search directions
-    Vector r; // Residual
+    Vector r, q; // Residual
 
     // Make sure that the right hand side isn't zero
     b_norm_2 = b.squaredNorm();
@@ -375,7 +375,7 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     rho0 = r.dot(r);
     if (rho0 < threshold) {
         msg_info() << "The linear system has already reached an equilibrium state";
-        msg_info() << "|r0|/|b| = " << sqrt(rho0/b_norm_2) << ", threshold = " << residual_tolerance_threshold;
+        msg_info() << "|r|/|b| = " << sqrt(rho0/b_norm_2) << ", threshold = " << residual_tolerance_threshold;
         goto end;
     }
 
@@ -387,7 +387,7 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     while (iteration_number < maximum_number_of_iterations) {
         Timer::stepBegin("cg_iteration");
         // 1. Computes q(k+1) = A*p(k)
-        Vector q = A * p;
+        q.noalias() = A * p;
 
         // 2. Computes x(k+1) and r(k+1)
         alpha = rho0 / p.dot(q); // the amount we travel on the search direction
@@ -399,11 +399,11 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
 
         // 4. Print information on the current iteration
         msg_info()  << "CG iteration #" << iteration_number+1
-                    << ": |r0|/|b| = "  << sqrt(rho1/b_norm_2)
+                    << ": |r|/|b| = "   << sqrt(rho1/b_norm_2)
                     << ", threshold = " << residual_tolerance_threshold;
 
         // 5. Check for convergence: |r|/|b| < threshold
-        if (rho0 < threshold) {
+        if (rho1 < threshold) {
             Timer::stepEnd("cg_iteration");
             msg_info() << "CG converged!";
             ++iteration_number; // For the Timer value 'nb_iterations'
