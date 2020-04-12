@@ -57,7 +57,7 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
                 "surface_triangles",
                 "List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...])."))
         , d_positions(initData(&d_positions, SofaVecCoord(),
-                "positions",
+                "position",
                 "Position vector of nodes contained in the sparse grid."))
         , d_quads(initData(&d_quads,
                 "quads",
@@ -66,6 +66,8 @@ FictitiousGrid<DataTypes>::FictitiousGrid()
                 "hexahedrons",
                 "List of hexahedrons contained in the sparse grid (ex: [h1p1 h1p2 h1p3 h1p4 h1p5 ... hnp6 hnp7])."))
 {
+            addAlias(&d_positions,   "positions");
+            addAlias(&d_hexahedrons, "hexahedra");
 }
 
 template <typename DataTypes>
