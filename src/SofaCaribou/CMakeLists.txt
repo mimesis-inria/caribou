@@ -14,6 +14,7 @@ set(HEADER_FILES
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
     Topology/CircleIsoSurface.h
+    Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
     Topology/IsoSurface.h
     Topology/SphereIsoSurface.h
