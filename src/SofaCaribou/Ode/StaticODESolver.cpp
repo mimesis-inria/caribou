@@ -35,17 +35,23 @@ StaticODESolver::StaticODESolver()
 {}
 
 void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId /*vResult*/) {
-    sofa::simulation::common::VectorOperations vop( params, this->getContext() );
-    sofa::simulation::common::MechanicalOperations mop( params, this->getContext() );
-    sofa::simulation::common::VisitorExecuteFunc executeVisitor(*this->getContext());
 
-    MultiVecCoord x(&vop, xResult /*core::VecCoordId::position()*/ );
+    sofa::core::MechanicalParams mparams (*params);
+    mparams.setDx(dx);
+
+    sofa::simulation::common::VectorOperations vop( &mparams, this->getContext() );
+    sofa::simulation::common::MechanicalOperations mop( &mparams, this->getContext() );
+
+    MultiVecCoord x(&vop, xResult);
     MultiVecDeriv force( &vop, sofa::core::VecDerivId::force() );
-    dx.realloc( &vop, true );
-    U.realloc( &vop, true );
 
-    // MO vector dx is not allocated by default, it will seg fault if the CG is used (dx is taken by default) with an IdentityMapping
-    MultiVecDeriv tempdx(&vop, sofa::core::VecDerivId::dx() ); tempdx.realloc( &vop, true, true );
+    // Incremental displacement of one iteration
+    dx.realloc( &vop );
+    dx.clear();
+
+    // Total displacement increment since the beginning
+    U.realloc( &vop );
+    U.clear();
 
     // Set implicit param to true to trigger nonlinear stiffness matrix recomputation
     mop->setImplicit(true);
@@ -127,8 +133,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             mop.solveConstraint(x, sofa::core::ConstraintParams::POS);
 
             //propagate positions to mapped nodes (calls apply, applyJ)
-            sofa::core::MechanicalParams mp;
-            sofa::simulation::MechanicalPropagateOnlyPositionAndVelocityVisitor(&mp).execute(this->getContext());
+            sofa::simulation::MechanicalPropagateOnlyPositionAndVelocityVisitor(&mparams).execute(this->getContext());
 
             // compute addForce, in mapped: addForce + applyJT (vec)
             sofa::helper::AdvancedTimer::stepBegin("ComputeForce");
