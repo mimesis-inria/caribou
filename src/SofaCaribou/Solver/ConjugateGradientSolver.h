@@ -145,6 +145,7 @@ protected:
     void solve(const Preconditioner & precond, const Matrix & A, const Vector & b, Vector & x);
 
     /// INPUTS
+    Data<bool> d_verbose;
     Data<unsigned int> d_maximum_number_of_iterations;
     Data<FLOATING_POINT_TYPE> d_residual_tolerance_threshold;
     Data< sofa::helper::OptionsGroup > d_preconditioning_method;
@@ -158,7 +159,7 @@ private:
 
     /// Private members
     ///< The mechanical parameters containing the m, b and k coefficients.
-    const sofa::core::MechanicalParams * p_mechanical_params;
+    const sofa::core::MechanicalParams * p_mechanical_params{};
 
     ///< Accessor used to determine the index of each mechanical object matrix and vector in the global system.
     DefaultMultiMatrixAccessor p_accessor;
