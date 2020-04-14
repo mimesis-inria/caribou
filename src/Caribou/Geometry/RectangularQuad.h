@@ -5,6 +5,7 @@
 #include <Caribou/Geometry/Quad.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Eigen/Core>
+#include <array>
 
 namespace caribou::geometry {
 

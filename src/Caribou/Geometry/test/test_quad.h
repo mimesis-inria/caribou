@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <Eigen/Dense>
+#include <array>
 #include <Caribou/macros.h>
 #include <Caribou/Constants.h>
 #include <Caribou/Geometry/Triangle.h>
@@ -28,7 +29,7 @@ TEST(Quad, Linear) {
             WorldCoordinates(+10, +5), WorldCoordinates(-10, +5)
         );
 
-        EXPECT_EQ(q.number_of_boundary_elements(), 4);
+        EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
         // Center
         EXPECT_FLOAT_EQ(q.center()[0], 0);
@@ -110,7 +111,7 @@ TEST(Quad, Linear) {
             WorldCoordinates(+10,+53./15, +53./15), WorldCoordinates(-10,+53./15, +53./15)
         );
 
-        EXPECT_EQ(q.number_of_boundary_elements(), 4);
+        EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
         // Center
         EXPECT_FLOAT_EQ(q.center()[0], 0);
@@ -207,7 +208,7 @@ TEST(Quad, Quadratic) {
             WorldCoordinates(+10, +5), WorldCoordinates(-10, +5)
         );
 
-        EXPECT_EQ(q.number_of_boundary_elements(), 4);
+        EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
         // Center
         EXPECT_FLOAT_EQ(q.center()[0], 0);
@@ -289,7 +290,7 @@ TEST(Quad, Quadratic) {
             WorldCoordinates(+10,+53./15, +53./15), WorldCoordinates(-10,+53./15, +53./15)
         });
 
-        EXPECT_EQ(q.number_of_boundary_elements(), 4);
+        EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
         // Center
         EXPECT_FLOAT_EQ(q.center()[0], 0);

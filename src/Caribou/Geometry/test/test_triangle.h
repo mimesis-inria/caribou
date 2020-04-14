@@ -20,7 +20,7 @@ TEST(Triangle, Linear) {
             WordCoordinates({55, 55})
         );
 
-        EXPECT_EQ(t.number_of_boundary_elements(), 3);
+        EXPECT_EQ(t.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(3));
 
         auto J = t.jacobian(LocalCoordinates {1/3., 1/3.} );
         EXPECT_FLOAT_EQ(J.determinant()*0.5, 25);

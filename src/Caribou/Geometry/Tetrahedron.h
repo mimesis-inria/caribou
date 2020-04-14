@@ -4,6 +4,7 @@
 #include <Caribou/Geometry/BaseTetrahedron.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Eigen/Core>
+#include <array>
 
 namespace caribou::geometry {
 

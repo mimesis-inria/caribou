@@ -4,6 +4,7 @@
 #include <Caribou/Traits.h>
 #include <Caribou/macros.h>
 #include <Eigen/Dense>
+#include <vector>
 
 namespace caribou::geometry {
 
