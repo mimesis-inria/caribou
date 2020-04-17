@@ -1,10 +1,4 @@
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.inl>
-
-#include <Caribou/Geometry/Triangle.h>
-#include <Caribou/Geometry/Quad.h>
-#include <Caribou/Geometry/Tetrahedron.h>
-#include <Caribou/Geometry/Hexahedron.h>
-
 #include <sofa/core/ObjectFactory.h>
 #include <SofaBaseTopology/TetrahedronSetTopologyContainer.h>
 #include <SofaBaseTopology/HexahedronSetTopologyContainer.h>
@@ -129,6 +123,12 @@ template <>
 auto HyperelasticForcefield<Hexahedron<Linear>>::templateName(const HyperelasticForcefield<Hexahedron<Linear>> *) -> std::string {
     return "Hexahedron";
 }
+
+
+// This will force the compiler to compile the class with some template type
+template class HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>;
+template class HyperelasticForcefield<caribou::geometry::Hexahedron  < caribou::Linear>>;
+
 }
 
 namespace sofa::core::objectmodel {

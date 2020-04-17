@@ -35,6 +35,7 @@ auto FictitiousGridHyperelasticForcefield<SubdividedGaussHexahedron>::get_gauss_
         gauss_nodes[gauss_node_id].weight = gauss_weight;
         gauss_nodes[gauss_node_id].jacobian_determinant = 1;
         gauss_nodes[gauss_node_id].dN_dx  = (Jinv.transpose() * e.dL(gauss_node).transpose()).transpose();
+        gauss_nodes[gauss_node_id].F      = Mat33::Identity();
     }
     return gauss_nodes;
 }
@@ -71,6 +72,9 @@ auto FictitiousGridHyperelasticForcefield<SubdividedVolumeHexahedron>::get_gauss
     }
     return gauss_nodes;
 }
+
+template class FictitiousGridHyperelasticForcefield<caribou::geometry::SubdividedVolumeHexahedron>;
+template class FictitiousGridHyperelasticForcefield<caribou::geometry::SubdividedGaussHexahedron>;
 
 static int FictitiousGridHyperelasticForceClass = RegisterObject("Caribou Fictitious grid hyperelastic FEM Forcefield")
     .add< FictitiousGridHyperelasticForcefield<SubdividedVolumeHexahedron> >(true)

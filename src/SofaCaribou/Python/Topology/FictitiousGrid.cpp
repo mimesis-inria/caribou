@@ -11,7 +11,7 @@ using sofa::defaulttype::Vec3Types;
 template <typename DataTypes>
 auto create_fictitious_grid(py::module & m) {
     std::string name = "FictitiousGrid" + std::string(DataTypes::Name());
-    py::class_<FictitiousGrid<DataTypes>, BaseObject, std::shared_ptr<FictitiousGrid<DataTypes>>> c (m, name.c_str());
+    py::class_<FictitiousGrid<DataTypes>, std::shared_ptr<FictitiousGrid<DataTypes>>> c (m, name.c_str());
     c.def("number_of_cells", &FictitiousGrid<DataTypes>::number_of_cells);
     c.def("number_of_nodes", &FictitiousGrid<DataTypes>::number_of_nodes);
     c.def("number_of_subdivisions", &FictitiousGrid<DataTypes>::number_of_subdivisions);

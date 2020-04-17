@@ -12,6 +12,10 @@
 #include <Caribou/config.h>
 #include <Caribou/Constants.h>
 #include <Caribou/Geometry/Element.h>
+#include <Caribou/Geometry/Triangle.h>
+#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Tetrahedron.h>
+#include <Caribou/Geometry/Hexahedron.h>
 
 #include <SofaCaribou/Material/HyperelasticMaterial.h>
 
@@ -199,5 +203,19 @@ private:
     bool sparse_K_is_up_to_date = false;
     bool eigenvalues_are_up_to_date = false;
 };
+
+// Tetrahedron specialization
+template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::number_of_elements() const -> std::size_t;
+template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool;
+template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index *;
+template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::templateName(const HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>> *) -> std::string;
+extern template class HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>;
+
+// Hexahedron specialization
+template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::number_of_elements() const -> std::size_t;
+template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool;
+template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index *;
+template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::templateName(const HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>> *) -> std::string;
+extern template class HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>;
 
 } // namespace SofaCaribou::forcefield

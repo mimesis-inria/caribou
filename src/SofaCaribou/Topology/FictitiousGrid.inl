@@ -346,7 +346,7 @@ FictitiousGrid<DataTypes>::tag_intersected_cells_from_implicit_surface()
     // Once we got the type of the nodes, we compute the type of their cells
     for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         const auto node_indices = p_grid->node_indices_of(cell_index);
-        UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0};
+        UNSIGNED_INTEGER_TYPE types[3] = {0, 0, 0}; // Number of nodes that are Inside, Outside and Boundary, respectively
 
         for (const auto & node_index : node_indices) {
             types[(UNSIGNED_INTEGER_TYPE) node_types[node_index]]++;
