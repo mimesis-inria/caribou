@@ -107,13 +107,10 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             // compute addForce, in mapped: addForce + applyJT (vec)
             sofa::helper::AdvancedTimer::stepBegin("ComputeForce");
 
-            // Reset the force vectors on every mechanical objects found in the current context tree
-            // todo(jnbrunet): force.clear is probably not needed since mop.computeForce clears the forces by default
-            force.clear();
-
             // Accumulate the force vectors
-            // 1. Go down in the current context tree calling addForce on every forcefields
-            // 2. Go up from the current context tree leaves calling applyJT on every mechanical mappings
+            // 1. Clear the force vector (F := 0)
+            // 2. Go down in the current context tree calling addForce on every forcefields
+            // 3. Go up from the current context tree leaves calling applyJT on every mechanical mappings
             mop.computeForce(force);
 
             // Calls the "projectResponse" method of every BaseProjectiveConstraintSet objects found in the
@@ -125,7 +122,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             R_squared_norm = force.dot(force);
             R0_squared_norm = R_squared_norm;
 
-            if (residual_tolerance_threshold > 0 && R_squared_norm <= EPSILON) {
+            if (residual_tolerance_threshold > 0 && R_squared_norm <= residual_tolerance_threshold) {
                 msg_info() << "The ODE has already reached an equilibrium state";
                 converged = true;
             }
@@ -156,7 +153,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             sofa::helper::AdvancedTimer::stepEnd("MBKSolve");
 
             // Updating the geometry
-            x.peq(dx);
+            x.peq(dx); // x := x + dx
 
             // Solving constraints
             // Calls "solveConstraint" method of every ConstraintSolver objects found in the current context tree.
@@ -167,7 +164,6 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
 
             // compute addForce, in mapped: addForce + applyJT (vec)
             sofa::helper::AdvancedTimer::stepBegin("ComputeForce");
-            force.clear();
             mop.computeForce(force);
             mop.projectResponse(force);
             sofa::helper::AdvancedTimer::stepEnd("ComputeForce");
