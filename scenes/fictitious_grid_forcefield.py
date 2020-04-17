@@ -28,6 +28,7 @@ def create_mechanical(node, use_fictitious, color):
                 break
 
     if use_fictitious:
+        node.addObject('CylinderIsoSurface', radius=radius, length=length)
         grid = node.addObject('FictitiousGrid',
                               name='grid',
                               n=n,
@@ -51,10 +52,10 @@ def create_mechanical(node, use_fictitious, color):
                    correction_tolerance_threshold=1e-3,
                    residual_tolerance_threshold=1e-3,
                    printLog=True)
-    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=100, residual_tolerance_threshold=1e-3, preconditioning_method='IncompleteCholesky', printLog=False)
+    meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=1000, residual_tolerance_threshold=1e-5, preconditioning_method='IncompleteCholesky', printLog=False, verbose=False)
 
     meca.addObject('MechanicalObject', position='@../grid.position')
-    meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=5000, poisson_ratio=0.49)
+    meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=5000, poisson_ratio=0)
     meca.addObject('HexahedronSetTopologyContainer', name='hexahedrons_container', hexahedra='@../grid.hexahedra')
 
     if use_fictitious:

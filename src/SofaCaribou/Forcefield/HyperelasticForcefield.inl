@@ -103,13 +103,10 @@ void HyperelasticForcefield<Element>::addForce(
     // Update material parameters in case the user changed it
     material->before_update();
 
-    static const auto I = Mat33::Identity();
-
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x = d_x;
-    sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
     sofa::helper::WriteAccessor<Data<VecDeriv>> sofa_f = d_f;
 
-    if (sofa_x.size() != sofa_x0.size() or sofa_x.size() != sofa_f.size())
+    if (sofa_x.size() != sofa_f.size())
         return;
     const auto nb_nodes = sofa_x.size();
     const auto nb_elements = number_of_elements();
@@ -120,9 +117,7 @@ void HyperelasticForcefield<Element>::addForce(
     if (p_elements_quadrature_nodes.size() != nb_elements)
         return;
 
-    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
-    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
-
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addForce");
@@ -133,21 +128,10 @@ void HyperelasticForcefield<Element>::addForce(
         const Index * node_indices = get_element_nodes_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
-        Matrix<NumberOfNodes, Dimension> initial_nodes_position;
         Matrix<NumberOfNodes, Dimension> current_nodes_position;
 
         for (std::size_t i = 0; i < NumberOfNodes; ++i) {
-            initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
-        }
-
-        // Compute the nodal displacement
-        Matrix<NumberOfNodes, Dimension> U;
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
-            for (size_t j = 0; j < Dimension; ++j) {
-                U(i, j) = u[j];
-            }
         }
 
         // Compute the nodal forces
@@ -166,16 +150,15 @@ void HyperelasticForcefield<Element>::addForce(
             const auto & w = gauss_node.weight;
 
             // Deformation tensor at gauss node
-            gauss_node.F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
+            gauss_node.F.noalias() = current_nodes_position.transpose()*dN_dx;
             const auto & F = gauss_node.F;
             const auto J = F.determinant();
 
-            // Strain tensor at gauss node
+            // Right Cauchy-Green strain tensor at gauss node
             const Mat33 C = F.transpose() * F;
-            const Mat33 E = 1/2. * (C - I);
 
             // Second Piola-Kirchhoff stress tensor at gauss node
-            const Mat33 S = material->PK2_stress(J, E);
+            const Mat33 S = material->PK2_stress(J, C);
 
             // Elastic forces w.r.t the gauss node applied on each nodes
             for (size_t i = 0; i < NumberOfNodes; ++i) {
@@ -189,7 +172,7 @@ void HyperelasticForcefield<Element>::addForce(
 
         for (size_t i = 0; i < NumberOfNodes; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
-                sofa_f[node_indices[i]][j] -= nodal_forces.row(i)[j];
+                sofa_f[node_indices[i]][j] -= nodal_forces(i,j);
             }
         }
     }
@@ -220,8 +203,8 @@ void HyperelasticForcefield<Element>::addDForce(
     sofa::helper::ReadAccessor<Data<VecDeriv>> sofa_dx = d_dx;
     sofa::helper::WriteAccessor<Data<VecDeriv>> sofa_df = d_df;
 
-    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> DX   (sofa_dx.ref().data()->data(), sofa_dx.size(), Dimension);
-    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>             DF   (&(sofa_df[0][0]), sofa_df.size(), Dimension);
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> DX   (sofa_dx.ref().data()->data(), sofa_dx.size(), Dimension);
+    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>       DF   (&(sofa_df[0][0]), sofa_df.size(), Dimension);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addDForce");
 
@@ -232,21 +215,22 @@ void HyperelasticForcefield<Element>::addDForce(
         const Index * node_indices = get_element_nodes_indices(element_id);
 
         // Fetch the incremental displacement
-        Matrix<NumberOfNodes, Dimension> displacements;
+        Vector<NumberOfNodes * Dimension> U;
 
         for (std::size_t i = 0; i < NumberOfNodes; ++i) {
-            displacements.row(i) = DX.row(node_indices[i]);
+            for (std::size_t k = 0; k < Dimension; ++k)
+                U[i*Dimension+k] = DX(node_indices[i], k);
         }
-        MapVector<NumberOfNodes*Dimension> U(displacements.data());
 
         // Compute the elemental force increment vector
-        const auto & K = p_elements_stiffness_matrices[element_id];
-        const auto forces = (K.template selfadjointView<Eigen::Upper>()*U*kFactor).eval();
-        Map<NumberOfNodes, Dimension> F (forces.data());
+        const auto & Ke = p_elements_stiffness_matrices[element_id];
+        const auto F = (Ke.template selfadjointView<Eigen::Upper>()*U).eval();
 
         // Write the elemental incremental force vector into the global force vector
         for (size_t i = 0; i < NumberOfNodes; ++i) {
-            DF.row(node_indices[i]) -= F.row(i);
+            for (std::size_t k = 0; k < Dimension; ++k) {
+                DF(node_indices[i], k) -= F[i*Dimension+k] * kFactor;
+            }
         }
     }
 
@@ -270,42 +254,49 @@ void HyperelasticForcefield<Element>::addKToMatrix(
         // Fetch the node indices of the element
         const Index * node_indices = get_element_nodes_indices(element_id);
 
-        // Since the matrix K is block symmetric, we only kept the DxD blocks on the upper-triangle the matrix.
-        // Here we need to accumulate the full matrix into Sofa's BaseMatrix.
-        const auto & K = p_elements_stiffness_matrices[element_id];
+        // The element stiffness matrix Ke is symmetric, hence only
+        // its upper triangular part is filled with values
+        const auto & Ke = p_elements_stiffness_matrices[element_id];
 
-        // Blocks on the diagonal
+        // 3x3 blocks on the diagonal
+        sofa::defaulttype::Mat<Dimension, Dimension, Real> Kii;
         for (size_t i = 0; i < NumberOfNodes; ++i) {
             const auto x = (i*Dimension);
-            sofa::defaulttype::Mat<Dimension, Dimension, Real> k;
+
+            // Kii is symmetric
             for (size_t m = 0; m < Dimension; ++m) {
-                for (size_t n = 0; n < Dimension; ++n) {
-                    k(m, n) = K(x+m, x+n);
+                // Diagonal of the 3x3
+                Kii(m, m) = Ke(x+m, x+m);
+                // Upper triangle of the 3x3
+                for (size_t n = m+1; n < Dimension; ++n) {
+                    Kii(m, n) = Ke(x+m, x+n);
+                    Kii(n, m) = Ke(x+m, x+n);
                 }
             }
 
-            k = -1. * k*kFact;
+            Kii *= -1. * kFact;
 
-            matrix->add(offset+node_indices[i]*Dimension, offset+node_indices[i]*Dimension, k);
+            matrix->add(offset+node_indices[i]*Dimension, offset+node_indices[i]*Dimension, Kii);
         }
 
-        // Blocks on the upper triangle
+        // 3x3 blocks on the upper triangle
+        sofa::defaulttype::Mat<Dimension, Dimension, Real> Kij;
         for (size_t i = 0; i < NumberOfNodes; ++i) {
             for (size_t j = i+1; j < NumberOfNodes; ++j) {
                 const auto x = (i*Dimension);
                 const auto y = (j*Dimension);
 
-                sofa::defaulttype::Mat<Dimension, Dimension, Real> k;
+                // Kij is NOT symmetric
                 for (size_t m = 0; m < Dimension; ++m) {
                     for (size_t n = 0; n < Dimension; ++n) {
-                        k(m, n) = K(x+m, y+n);
+                        Kij(m, n) = Ke(x+m, y+n);
                     }
                 }
 
-                k = -1. * k*kFact;
+                Kij *= -1. * kFact;
 
-                matrix->add(offset+node_indices[i]*Dimension, offset+node_indices[j]*Dimension, k);
-                matrix->add(offset+node_indices[j]*Dimension, offset+node_indices[i]*Dimension, k.transposed());
+                matrix->add(offset+node_indices[i]*Dimension, offset+node_indices[j]*Dimension, Kij);
+                matrix->add(offset+node_indices[j]*Dimension, offset+node_indices[i]*Dimension, Kij.transposed());
             }
         }
 
@@ -443,6 +434,10 @@ void HyperelasticForcefield<Element>::initialize_elements()
         p_elements_quadrature_nodes.resize(nb_elements);
     }
 
+    if (p_elements_stiffness_matrices.size() != nb_elements) {
+        p_elements_stiffness_matrices.resize(nb_elements, Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension>::Zero());
+    }
+
     // Translate the Sofa's mechanical state vector to Eigen vector type
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), sofa_x0.size(), Dimension);
@@ -489,7 +484,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
 {
     const auto nb_elements = number_of_elements();
     if (p_elements_stiffness_matrices.size() != nb_elements) {
-        p_elements_stiffness_matrices.resize(nb_elements);
+        p_elements_stiffness_matrices.resize(nb_elements, Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension>::Zero());
     }
 
     const auto material = d_material.get();
@@ -504,8 +499,8 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::update_stiffness");
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-        Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension> & K = p_elements_stiffness_matrices[element_id];
-        K.fill(0);
+        Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension> & Ke = p_elements_stiffness_matrices[element_id];
+        Ke.fill(0);
 
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
@@ -521,15 +516,14 @@ void HyperelasticForcefield<Element>::update_stiffness()
             const auto F = gauss_node.F;
             const auto J = F.determinant();
 
-            // Strain tensor at gauss node
-            const Mat33 C = F * F.transpose();
-            const Mat33 E = 1/2. * (C - I);
+            // Right Cauchy-Green strain tensor at gauss node
+            const Mat33 C = F.transpose() * F;
 
             // Second Piola-Kirchhoff stress tensor at gauss node
-            const auto S = material->PK2_stress(J, E);
+            const auto S = material->PK2_stress(J, C);
 
             // Jacobian of the Second Piola-Kirchhoff stress tensor at gauss node
-            const auto D = material->PK2_stress_jacobian(J, E);
+            const auto D = material->PK2_stress_jacobian(J, C);
 
             // Computation of the tangent-stiffness matrix
             for (std::size_t i = 0; i < NumberOfNodes; ++i) {
@@ -538,28 +532,38 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
                 Matrix<6,3> Bi;
                 Bi <<
-                        F(0,0)*dxi[0],                 F(1,0)*dxi[0],                 F(2,0)*dxi[0],
-                        F(0,1)*dxi[1],                 F(1,1)*dxi[1],                 F(2,1)*dxi[1],
-                        F(0,2)*dxi[2],                 F(1,2)*dxi[2],                 F(2,2)*dxi[2],
-                F(0,0)*dxi[1] + F(0,1)*dxi[0], F(1,0)*dxi[1] + F(1,1)*dxi[0], F(2,0)*dxi[1] + F(2,1)*dxi[0],
-                F(0,1)*dxi[2] + F(0,2)*dxi[1], F(1,1)*dxi[2] + F(1,2)*dxi[1], F(2,1)*dxi[2] + F(2,2)*dxi[1],
-                F(0,0)*dxi[2] + F(0,2)*dxi[0], F(0,1)*dxi[2] + F(1,2)*dxi[0], F(2,0)*dxi[2] + F(2,2)*dxi[0];
+                    F(0,0)*dxi[0],                 F(1,0)*dxi[0],                 F(2,0)*dxi[0],
+                    F(0,1)*dxi[1],                 F(1,1)*dxi[1],                 F(2,1)*dxi[1],
+                    F(0,2)*dxi[2],                 F(1,2)*dxi[2],                 F(2,2)*dxi[2],
+                    F(0,0)*dxi[1] + F(0,1)*dxi[0], F(1,0)*dxi[1] + F(1,1)*dxi[0], F(2,0)*dxi[1] + F(2,1)*dxi[0],
+                    F(0,1)*dxi[2] + F(0,2)*dxi[1], F(1,1)*dxi[2] + F(1,2)*dxi[1], F(2,1)*dxi[2] + F(2,2)*dxi[1],
+                    F(0,0)*dxi[2] + F(0,2)*dxi[0], F(1,0)*dxi[2] + F(1,2)*dxi[0], F(2,0)*dxi[2] + F(2,2)*dxi[0];
 
-                for (std::size_t j = i; j < NumberOfNodes; ++j) {
+                // The 3x3 sub-matrix Kii is symmetric, we only store its upper triangular part
+                auto Kii = (dxi.dot(S*dxi)*I + Bi.transpose()*D*Bi) * detJ * w;
+                Ke.template block<Dimension, Dimension>(i*Dimension, i*Dimension)
+                  .template triangularView<Eigen::Upper>()
+                  += Kii;
+
+                // We now loop only on the upper triangular part of the element stiffness
+                // matrix Ke since it is symmetric
+                for (std::size_t j = i+1; j < NumberOfNodes; ++j) {
                     // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
                     const Vec3 dxj = dN_dx.row(j).transpose();
 
                     Matrix<6,3> Bj;
                     Bj <<
-                                F(0,0)*dxj[0],                 F(1,0)*dxj[0],                 F(2,0)*dxj[0],
-                                F(0,1)*dxj[1],                 F(1,1)*dxj[1],                 F(2,1)*dxj[1],
-                                F(0,2)*dxj[2],                 F(1,2)*dxj[2],                 F(2,2)*dxj[2],
+                        F(0,0)*dxj[0],                 F(1,0)*dxj[0],                 F(2,0)*dxj[0],
+                        F(0,1)*dxj[1],                 F(1,1)*dxj[1],                 F(2,1)*dxj[1],
+                        F(0,2)*dxj[2],                 F(1,2)*dxj[2],                 F(2,2)*dxj[2],
                         F(0,0)*dxj[1] + F(0,1)*dxj[0], F(1,0)*dxj[1] + F(1,1)*dxj[0], F(2,0)*dxj[1] + F(2,1)*dxj[0],
                         F(0,1)*dxj[2] + F(0,2)*dxj[1], F(1,1)*dxj[2] + F(1,2)*dxj[1], F(2,1)*dxj[2] + F(2,2)*dxj[1],
-                        F(0,0)*dxj[2] + F(0,2)*dxj[0], F(0,1)*dxj[2] + F(1,2)*dxj[0], F(2,0)*dxj[2] + F(2,2)*dxj[0];
-                    
+                        F(0,0)*dxj[2] + F(0,2)*dxj[0], F(1,0)*dxj[2] + F(1,2)*dxj[0], F(2,0)*dxj[2] + F(2,2)*dxj[0];
 
-                    K.template block<Dimension, Dimension>(i*Dimension, j*Dimension).noalias() += (dxi.dot(S*dxj)*I + Bi.transpose()*D*Bj) * detJ * w;
+                    // The 3x3 sub-matrix Kij is NOT symmetric, we store its full part
+                    auto Kij = (dxi.dot(S*dxj)*I + Bi.transpose()*D*Bj) * detJ * w;
+                    Ke.template block<Dimension, Dimension>(i*Dimension, j*Dimension)
+                      .noalias() += Kij;
                 }
             }
         }
@@ -594,6 +598,7 @@ auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*elem
         gauss_node.weight               = g.weight;
         gauss_node.jacobian_determinant = detJ;
         gauss_node.dN_dx                = dN_dx;
+        gauss_node.F = Mat33::Identity();
     }
 
     return gauss_nodes;
@@ -623,35 +628,38 @@ auto HyperelasticForcefield<Element>::K() -> const Eigen::SparseMatrix<Real> & {
             // Fetch the node indices of the element
             const Index * node_indices = get_element_nodes_indices(element_id);
 
-            // Since the matrix K is block symmetric, we only kept the DxD blocks on the upper-triangle the matrix.
-            // Here we need to accumulate the full matrix.
+            // The element stiffness matrix Ke is symmetric, hence only
+            // its upper triangular part is filled with values
             const auto &Ke = p_elements_stiffness_matrices[element_id];
 
-
-            // Blocks on the diagonal
+            // 3x3 blocks on the diagonal
             for (size_t i = 0; i < NumberOfNodes; ++i) {
                 const auto x = (node_indices[i]*3);
-                const Mat33 Kii = -1 * Ke.template block<Dimension, Dimension>(i,i);
+
+                // Kii is symmetric
+                const auto Kii = Ke.template block<Dimension, Dimension>(i,i);
                 for (size_t m = 0; m < 3; ++m) {
-                    for (size_t n = 0; n < 3; ++n) {
+                    triplets.emplace_back(x+m, x+m, Kii(m,m));
+                    for (size_t n = m+1; n < 3; ++n) {
                         triplets.emplace_back(x+m, x+n, Kii(m,n));
+                        triplets.emplace_back(x+n, x+m, Kii(m,n));
                     }
                 }
             }
 
-            // Blocks on the upper triangle
+            // 3x3 blocks on the upper triangle
             for (size_t i = 0; i < NumberOfNodes; ++i) {
                 for (size_t j = i+1; j < NumberOfNodes; ++j) {
                     const auto x = (node_indices[i]*3);
                     const auto y = (node_indices[j]*3);
 
-                    const Mat33 Kij = -1 * Ke.template block<Dimension, Dimension>(i,j);
-                    const Mat33 Kji = Kij.transpose();
+                    // Kij is NOT symmetric
+                    const auto Kij = Ke.template block<Dimension, Dimension>(i,j);
 
                     for (size_t m = 0; m < 3; ++m) {
                         for (size_t n = 0; n < 3; ++n) {
                             triplets.emplace_back(x+m, y+n, Kij(m,n));
-                            triplets.emplace_back(y+m, x+n, Kji(m,n));
+                            triplets.emplace_back(y+m, x+n, Kij(n,m));
                         }
                     }
                 }

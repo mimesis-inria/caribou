@@ -38,38 +38,34 @@ public:
     }
 
     /**
-     * Get the strain energy density Psi from the Green-Lagrange strain tensor E.
+     * Get the strain energy density Psi from the right Cauchy-Green strain tensor C.
      *
-     * Psi(E) = mu tr(E) - mu ln(J) + lambda/2 (ln(J))^2
+     * Psi(C) = mu/2 (tr(C)-3) - mu ln(J) + lambda/2 (ln(J))^2
      *
      */
     Real
-    strain_energy_density(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & E) const override {
+    strain_energy_density(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const override {
         const auto lnJ = log(J);
-        return mu*E.trace() - mu*lnJ + l/2 *lnJ*lnJ;
+        return mu/2.*(C.trace()-3) - mu*lnJ + l/2 *lnJ*lnJ;
     }
 
-    /** Get the second Piola-Kirchhoff stress tensor from the Green-Lagrange strain tensor E. */
+    /** Get the second Piola-Kirchhoff stress tensor from the right Cauchy-Green strain tensor C. */
     virtual Eigen::Matrix<Real, Dimension, Dimension>
-    PK2_stress(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & E) const override {
+    PK2_stress(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const override {
 
         static const auto I = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
-        const auto C  = (I + 2*E).eval(); // Right Cauchy-Green tensor
         const auto Ci = C.inverse();
 
         return (I - Ci)*mu + Ci*(l*log(J));
     }
 
-    /** Get the jacobian of the second Piola-Kirchhoff stress tensor w.r.t the Green-Lagrange strain tensor E. */
+    /** Get the jacobian of the second Piola-Kirchhoff stress tensor w.r.t the right Cauchy-Green strain tensor C. */
     virtual Eigen::Matrix<Real, 6, 6>
-    PK2_stress_jacobian(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension> & E) const override {
+    PK2_stress_jacobian(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension> & C) const override {
         using caribou::algebra::symmetric_dyad_1;
         using caribou::algebra::symmetric_dyad_2;
 
-        static const auto I = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
-        const auto C  = (I + 2*E).eval(); // Right Cauchy-Green tensor
         const auto Ci = C.inverse().eval();
-
 
         Eigen::Matrix<Real, 6, 6> D = l*symmetric_dyad_1(Ci) + 2*(mu - l*log(J))*symmetric_dyad_2(Ci);
         return D;

@@ -3,13 +3,13 @@
 import Sofa
 import SofaCaribou
 
-newton_iterations = 2
-cg_iterations = 100
+newton_iterations = 20
+cg_iterations = 1000
 increments=100
 
 # cg_precond = 'None'
-cg_precond = 'Identity'
-# cg_precond = 'Diagonal'
+# cg_precond = 'Identity'
+cg_precond = 'Diagonal'
 # cg_precond = 'LeastSquareDiagonal'
 # cg_precond = 'IncompleteCholesky'
 # cg_precond = 'IncompleteLU'
@@ -37,8 +37,8 @@ def createScene(root):
     meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
     meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
-    # meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
-    meca.addObject('NeoHookeanMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+    meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+    # meca.addObject('NeoHookeanMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
     meca.addObject('HyperelasticForcefield', template="Hexahedron", printLog=True)
 
     meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
@@ -57,8 +57,8 @@ def createScene(root):
     meca.addObject('TetrahedronSetTopologyContainer', name='topo')
     meca.addObject('TetrahedronSetTopologyModifier')
     meca.addObject('Hexa2TetraTopologicalMapping', input='@../mesh', output='@topo', swapping=True)
-    # meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
-    meca.addObject('NeoHookeanMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+    meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+    # meca.addObject('NeoHookeanMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
     meca.addObject('HyperelasticForcefield', template="Tetrahedron", printLog=True)
 
     meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
@@ -78,7 +78,8 @@ def createScene(root):
     meca.addObject('TetrahedronSetTopologyContainer', name='topo')
     meca.addObject('TetrahedronSetTopologyModifier')
     meca.addObject('Hexa2TetraTopologicalMapping', input='@../mesh', output='@topo', swapping=True)
-    meca.addObject('TetrahedronHyperelasticityFEMForceField', topology="@topo", materialName="NeoHookean", ParameterSet=F"{mu} {l}")
+    meca.addObject('TetrahedronHyperelasticityFEMForceField', topology="@topo", materialName="StVenantKirchhoff", ParameterSet=F"{mu} {l}")
+    # meca.addObject('TetrahedronHyperelasticityFEMForceField', topology="@topo", materialName="NeoHookean", ParameterSet=F"{mu} {l}")
 
     meca.addObject('BoxROI', name='fixed_roi', box=[-7.5+tx, -7.5, -0.9, 7.5+tx, 7.5, 0.1])
     meca.addObject('FixedConstraint', indices='@fixed_roi.indices')

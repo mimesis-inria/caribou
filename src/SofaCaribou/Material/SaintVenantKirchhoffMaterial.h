@@ -47,28 +47,31 @@ public:
     }
 
     /**
-     * Get the strain energy density Psi from the Green-Lagrange strain tensor E.
+     * Get the strain energy density Psi from the right Cauchy-Green strain tensor C.
      *
      * Psi(E) = lambda/2 (tr(E))^2 + mu tr(E*E)
      *
      */
     Real
-    strain_energy_density(const Real & /*J*/, const Eigen::Matrix<Real, Dimension, Dimension>  & E) const override {
+    strain_energy_density(const Real & /*J*/, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const override {
+        static const auto I = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
+        const auto E = (1/2. * (C - I)).eval();
         const auto trE  = E.trace();
         const auto trEE = (E*E).trace();
         return l/2.*(trE*trE) + mu*trEE;
     }
 
-    /** Get the second Piola-Kirchhoff stress tensor from the Green-Lagrange strain tensor E. */
+    /** Get the second Piola-Kirchhoff stress tensor from the right Cauchy-Green strain tensor C. */
     Eigen::Matrix<Real, Dimension, Dimension>
-    PK2_stress(const Real & /*J*/, const Eigen::Matrix<Real, Dimension, Dimension>  & E) const override {
+    PK2_stress(const Real & /*J*/, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const override {
         static const auto I = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
+        const auto E = (1/2. * (C - I)).eval();
         return l*E.trace()*I + 2*mu*E;
     }
 
-    /** Get the jacobian of the second Piola-Kirchhoff stress tensor w.r.t the Green-Lagrange strain tensor E. */
+    /** Get the jacobian of the second Piola-Kirchhoff stress tensor w.r.t the right Cauchy-Green strain tensor C. */
     Eigen::Matrix<Real, 6, 6>
-    PK2_stress_jacobian(const Real & /*J*/, const Eigen::Matrix<Real, Dimension, Dimension> & /*E*/) const override {
+    PK2_stress_jacobian(const Real & /*J*/, const Eigen::Matrix<Real, Dimension, Dimension> & /*C*/) const override {
         return C;
     }
 

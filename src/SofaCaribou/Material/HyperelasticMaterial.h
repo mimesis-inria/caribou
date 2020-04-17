@@ -25,32 +25,32 @@ public:
     before_update() {}
 
     /**
-     * Get the strain energy density Psi from the Green-Lagrange strain tensor E.
+     * Get the strain energy density Psi from the right Cauchy-Green strain tensor C.
      */
     virtual Real
-    strain_energy_density(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & E) const = 0;
+    strain_energy_density(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const = 0;
 
     /**
-     * Get the second Piola-Kirchhoff stress tensor from the Green-Lagrange strain tensor E.
+     * Get the second Piola-Kirchhoff stress tensor from the right Cauchy-Green strain tensor C.
      *
-     * With the energy density function Psi(E) -> scalar
+     * With the energy density function Psi(C) -> scalar
      * the second Piola-Kirchhoff stress tensor S is defined as
-     *   S = d(Psi)/dE
+     *   S = 2*d(Psi)/dC
      * and is a symmetric second order matrix (eg. 3x3 matrix).
      */
     virtual Eigen::Matrix<Real, Dimension, Dimension>
-    PK2_stress(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & E) const = 0;
+    PK2_stress(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const = 0;
 
     /**
-     * Get the jacobian of the second Piola-Kirchhoff stress tensor w.r.t the Green-Lagrange strain tensor E.
+     * Get the jacobian of the second Piola-Kirchhoff stress tensor w.r.t the right Cauchy-Green strain tensor C.
      *
-     * With the energy density function Psi(E) -> scalar
+     * With the energy density function Psi(C) -> scalar
      * the jacobian of the second Piola-Kirchhoff stress tensor S is defined as
-     *   J = d^2(Psi)/dE^2 = d(S)/dE
+     *   J = 2*d^2(Psi)/dC^2 = d(S)/dC
      * and is a symmetric fourth order matrix represented in its compressed format (eg. 6x6 matrix).
      */
     virtual Eigen::Matrix<Real, 6, 6>
-    PK2_stress_jacobian(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & E) const = 0;
+    PK2_stress_jacobian(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const = 0;
 
 
     // Sofa's scene methods

@@ -22,17 +22,19 @@ struct element_has_boundaries : std::false_type {};
 template< class T>
 constexpr bool element_has_boundaries_v = element_has_boundaries<T>::value;
 
-template<typename Derived>
+template<typename Derived, typename _Scalar = FLOATING_POINT_TYPE>
 struct Element {
     // Types
+    using Scalar = _Scalar;
+
     template <INTEGER_TYPE Dim>
-    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Dim, 1>;
+    using Vector = Eigen::Matrix<Scalar, Dim, 1>;
 
-    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = 0>
-    using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, Rows, Cols, Options>;
+    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = Eigen::ColMajor>
+    using Matrix = Eigen::Matrix<Scalar, Rows, Cols, Options>;
 
-    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = 0>
-    using MatrixI = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Rows, Cols, Options>;
+    template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = Eigen::ColMajor>
+    using MatrixI = Eigen::Matrix<Scalar, Rows, Cols, Options>;
 
     static constexpr auto CanonicalDimension = traits<Derived>::CanonicalDimension;
     static constexpr auto Dimension = traits<Derived>::Dimension;
@@ -43,7 +45,7 @@ struct Element {
 
     struct GaussNode {
         LocalCoordinates position;
-        FLOATING_POINT_TYPE weight;
+        Scalar weight;
     };
 
 

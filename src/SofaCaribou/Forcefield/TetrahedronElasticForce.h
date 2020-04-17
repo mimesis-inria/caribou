@@ -46,8 +46,8 @@ public:
     using MapVector = Eigen::Map<const Vector<nRows>>;
 
     using Rotation = Tetrahedron::Matrix<3,3>;
-    using Mat33   = Matrix<3, 3, Eigen::ColMajor>;
-    using Vec3   = Vector<3>;
+    using Mat33   =  Tetrahedron::Matrix<3,3>;
+    using Vec3   =   Vector<3>;
     static constexpr INTEGER_TYPE Dimension = 3;
     static constexpr INTEGER_TYPE NumberOfNodes = Tetrahedron::NumberOfNodesAtCompileTime;
 
