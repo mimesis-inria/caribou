@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Caribou/config.h>
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
 #include <sofa/core/behavior/MultiVec.h>
@@ -16,6 +17,36 @@ public:
 
 public:
     void solve (const sofa::core::ExecParams* params /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
+
+    /*!
+     * The list of squared residual norms (||r||^2) of every newton iterations of the last solve call.
+     */
+    auto squared_residuals() const -> const std::vector<FLOATING_POINT_TYPE> & {
+        return p_squared_residuals;
+    }
+
+    /*!
+     * The initial squared residual (||r0||^2) of the last solve call.
+     */
+    auto squared_initial_residual() const -> const FLOATING_POINT_TYPE & {
+        return p_squared_initial_residual;
+    }
+
+    /*!
+     * The list of squared residual norms (||r||^2) of every iterative linear solver iterations,
+     * for each newton iterations of the last solve call.
+     */
+    auto iterative_linear_solver_squared_residuals() const -> const std::vector<std::vector<FLOATING_POINT_TYPE>> & {
+        return p_iterative_linear_solver_squared_residuals;
+    }
+
+    /*!
+     * List of squared right-hand side norms (||b||^2) of every newton iterations before the call
+     * to the solve method of the iterative linear solver.
+     */
+    auto iterative_linear_solver_squared_rhs_norms() const -> const std::vector<FLOATING_POINT_TYPE> & {
+        return p_iterative_linear_solver_squared_rhs_norms;
+    }
 
     /// Given a displacement as computed by the linear system inversion, how much will it affect the velocity
     ///
@@ -92,20 +123,37 @@ public:
 
 protected:
 
+    /// INPUTS
+    Data<unsigned> d_newton_iterations;
+    Data<double> d_correction_tolerance_threshold;
+    Data<double> d_residual_tolerance_threshold;
+    Data<bool> d_shoud_diverge_when_residual_is_growing;
+    Data<bool> d_warm_start;
+
+    /// OUTPUTS
+    ///< Whether or not the last call to solve converged
+    Data<bool> d_converged;
+
+private:
     /// Increment at current newton iteration
     sofa::core::behavior::MultiVecDeriv dx;
 
     /// Total displacement since the beginning of the step
     sofa::core::behavior::MultiVecDeriv U;
 
-    /// INPUTS
-    Data<unsigned> d_newton_iterations;
-    Data<double> d_correction_tolerance_threshold;
-    Data<double> d_residual_tolerance_threshold;
-    Data<bool> d_shoud_diverge_when_residual_is_growing;
+    ///< List of squared residual norms (||r||^2) of every newton iterations of the last solve call.
+    std::vector<FLOATING_POINT_TYPE> p_squared_residuals;
 
-    /// OUTPUTS
-    Data<bool> d_converged; ///< Whether or not the last call to solve converged
+    ///< Initial squared residual (||r0||^2) of the last solve call.
+    FLOATING_POINT_TYPE p_squared_initial_residual;
+
+    ///< List of squared residual norms (||r||^2) of every iterative linear solver iterations,
+    ///< for each newton iterations of the last solve call.
+    std::vector<std::vector<FLOATING_POINT_TYPE>> p_iterative_linear_solver_squared_residuals;
+
+    ///< List of squared right-hand side norms (||b||^2) of every newton iterations before the call
+    ///< to the solve method of the iterative linear solver.
+    std::vector<FLOATING_POINT_TYPE> p_iterative_linear_solver_squared_rhs_norms;
 };
 
 

@@ -258,24 +258,33 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     const auto & residual_tolerance_threshold = d_residual_tolerance_threshold.getValue();
     const auto & verbose = d_verbose.getValue();
 
+    p_squared_residuals.resize(maximum_number_of_iterations+1);
+
     // Get the matrices coefficient m, b and k : A = (mM + bB + kK)
     const auto  m_coef = p_mechanical_params->mFactor();
     const auto  b_coef = p_mechanical_params->bFactor();
     const auto  k_coef = p_mechanical_params->kFactor();
 
     // Declare the method variables
-    FLOATING_POINT_TYPE b_norm, r_norm; // Residual norm
+    FLOATING_POINT_TYPE b_norm_2 = 0., r_norm_2 = 0.; // RHS and residual squared norms
     FLOATING_POINT_TYPE rho0, rho1 = 0.; // Stores r*r as it is used two times per iterations
     FLOATING_POINT_TYPE alpha, beta; // Alpha and Beta coefficients
+    FLOATING_POINT_TYPE threshold; // Residual threshold
     UNSIGNED_INTEGER_TYPE iteration_number = 0; // Current iteration number
+    const auto zero = (std::numeric_limits<FLOATING_POINT_TYPE>::min)(); // A numerical floating point zero
 
     // Make sure that the right hand side isn't zero
-    b_norm = b.norm();
-    if (b_norm < EPSILON) {
+    b_norm_2 = b.dot(b);
+    p_squared_initial_residual = b_norm_2;
+    if (b_norm_2 < EPSILON) {
         msg_info() << "Right-hand side of the system is zero, hence x = 0.";
         x.clear();
         goto end; // The goto is important to catch the last timer call before ending the function
     }
+
+    // Compute the tolerance w.r.t |b| since |r|/|b| < threshold is equivalent to  r^2 < b^2 * threshold^2
+    // threshold = b^2 * residual_tolerance_threshold^2
+    threshold = std::max(residual_tolerance_threshold*residual_tolerance_threshold*b_norm_2, zero);
 
     // INITIAL RESIDUAL
     // Do the A*x(0) with visitors since we did not construct the matrix A
@@ -289,22 +298,28 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     r.eq( b, q, -1.0 );   // r = b - q
 
     // Check for initial convergence: |r0|/|b| < threshold
-    rho0 = r.dot(r);
-    r_norm = sqrt(rho0);
-    if (r_norm < residual_tolerance_threshold*b_norm) {
+    r_norm_2 = r.dot(r);
+    if (r_norm_2 < threshold) {
         msg_info() << "The linear system has already reached an equilibrium state";
-        msg_info() << "|r|/|b| = " << r_norm/b_norm << ", threshold = " << residual_tolerance_threshold;
+        msg_info() << "|r|/|b| = " << sqrt(r_norm_2/b_norm_2) << ", threshold = " << residual_tolerance_threshold;
         goto end; // The goto is important to catch the last timer call before ending the function
     }
 
+    // Add the first residual to the list of residuals
+    p_squared_residuals[0] = r_norm_2;
+
     // ITERATIONS
+    rho0 = r_norm_2;
     p = r; // p(0) = r(0)
     while (iteration_number < maximum_number_of_iterations) {
         Timer::stepBegin("cg_iteration");
         // 1. Computes q(k+1) = A*p(k)
         mop.propagateDxAndResetDf(p, q); // Set q = 0 and calls applyJ(p) on every mechanical mappings
         mop.addMBKdx(q, m_coef, b_coef, k_coef, false); // q = (m M + b B + k K) x
-//        mop.projectResponse(q); // BaseProjectiveConstraintSet::projectResponse(q)
+
+        // We need to project the residual in the constrained space since the constraints haven't been added to the
+        // matrix (the matrix is never constructed) and addMBKdx of the forcefields do not take constraints into account.
+        mop.projectResponse(q); // BaseProjectiveConstraintSet::projectResponse(q)
 
         // 2. Computes x(k+1) and r(k+1)
         alpha = rho0 / p.dot(q);
@@ -312,21 +327,22 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
         r.peq(q,-alpha); // r = r - alpha*q
 
         // 3. Computes the new residual norm
-        rho1 = r.dot(r);
-        r_norm = sqrt(rho1);
+        r_norm_2 = r.dot(r);
+        p_squared_residuals[iteration_number+1] = r_norm_2;
 
         // 4. Print information on the current iteration
         msg_info_when(verbose) << "CG iteration #" << iteration_number+1
-                               << ": |r|/|b| = "   << r_norm/b_norm
-                               << ", threshold = " << residual_tolerance_threshold;
+                               << ": |r|/|b| = "   << sqrt(r_norm_2/b_norm_2)
+                               << "(threshold is " << residual_tolerance_threshold << ")";
 
         // 5. Check for convergence: |r|/|b| < threshold
-        if (r_norm < residual_tolerance_threshold*b_norm) {
+        if (r_norm_2 < threshold) {
             Timer::stepEnd("cg_iteration");
             break;
         }
 
         // 6. Compute p(k+1)
+        rho1 = r_norm_2;
         beta = rho1 / rho0;
         p.eq(r,p,beta); // p = r + beta*p
 
@@ -337,14 +353,17 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
 
     if (iteration_number < maximum_number_of_iterations) {
         msg_info() << "CG converged in " << (iteration_number+1)
-                   << " iterations with a residual of |r|/|b| = " << (r_norm/b_norm)
+                   << " iterations with a residual of |r|/|b| = " << sqrt(r_norm_2/b_norm_2)
                    << " (threshold was " << residual_tolerance_threshold << ")";
     } else {
-        msg_info() << "CG diverged with a residual of |r|/|b| = " << (r_norm/b_norm)
+        msg_info() << "CG diverged with a residual of |r|/|b| = " << sqrt(r_norm_2/b_norm_2)
                    << " (threshold was " << residual_tolerance_threshold << ")";
     }
 
     end:
+    // Shrink the residual vector to its real size (number of iterations completed + one for the first residual
+    // computed just before starting the iterations)
+    p_squared_residuals.resize(iteration_number+2);
     sofa::helper::AdvancedTimer::valSet("nb_iterations", static_cast<float>(iteration_number+1));
 }
 
@@ -354,20 +373,23 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     const auto & maximum_number_of_iterations = d_maximum_number_of_iterations.getValue();
     const auto & residual_tolerance_threshold = d_residual_tolerance_threshold.getValue();
     const auto & verbose = d_verbose.getValue();
-    const auto zero = (std::numeric_limits<FLOATING_POINT_TYPE>::min)();
+
+    p_squared_residuals.resize(maximum_number_of_iterations);
 
     // Declare the method variables
-    FLOATING_POINT_TYPE b_norm_2; // RHS norm
-    FLOATING_POINT_TYPE rho0 = 0., rho1 = 0., r_norm_2 = 0.; // Stores r*r as it is used two times per iterations
+    FLOATING_POINT_TYPE b_norm_2 = 0., r_norm_2 = 0.; // RHS and residual squared norms
+    FLOATING_POINT_TYPE rho0 = 0., rho1 = 0.; // Temporary vectors
     FLOATING_POINT_TYPE alpha, beta; // Alpha and Beta coefficients
     FLOATING_POINT_TYPE threshold; // Residual threshold
     UNSIGNED_INTEGER_TYPE iteration_number = 0; // Current iteration number
     UNSIGNED_INTEGER_TYPE n = A.cols();
     Vector p(n), z(n); // Search directions
     Vector r(n), q(n); // Residual
+    const auto zero = (std::numeric_limits<FLOATING_POINT_TYPE>::min)(); // A numerical floating point zero
 
     // Make sure that the right hand side isn't zero
     b_norm_2 = b.squaredNorm();
+    p_squared_initial_residual = b_norm_2;
     if (b_norm_2 < EPSILON) {
         msg_info() << "Right-hand side of the system is zero, hence x = 0.";
         x.setZero();
@@ -389,8 +411,6 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
         goto end; // The goto is important to catch the last timer call before ending the function
     }
 
-    msg_info() << "Starting with an initial residual ratio of |r|/|b| = " << sqrt(r_norm_2)/sqrt(b_norm_2);
-
     // Compute the initial search direction
     p = precond.solve(r);
     rho0 = r.dot(p); // |M-1 * r|^2
@@ -408,11 +428,12 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
 
         // 3. Computes the new residual norm
         r_norm_2 = r.squaredNorm();
+        p_squared_residuals[iteration_number] = r_norm_2;
 
         // 4. Print information on the current iteration
         msg_info_when(verbose)  << "CG iteration #" << iteration_number+1
                                 << ": |r|/|b| = "   << sqrt(r_norm_2/b_norm_2)
-                                << ", threshold = " << residual_tolerance_threshold;
+                                << "(threshold is " << residual_tolerance_threshold << ")";
 
         // 5. Check for convergence: |r|/|b| < threshold
         if (r_norm_2 < threshold) {
@@ -441,6 +462,8 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     }
 
     end:
+    // Shrink the residual vector to its real size (number of iterations completed)
+    p_squared_residuals.resize(iteration_number+1);
     sofa::helper::AdvancedTimer::valSet("nb_iterations", static_cast<float>(iteration_number+1));
 }
 

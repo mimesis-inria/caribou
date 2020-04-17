@@ -18,6 +18,7 @@ set(HEADER_FILES
     Topology/FictitiousGrid.h
     Topology/IsoSurface.h
     Topology/SphereIsoSurface.h
+    Visitor/MultiVecEqualVisitor.h
     )
 
 set(TEMPLATE_FILES
@@ -37,6 +38,7 @@ set(SOURCE_FILES
     Solver/ConjugateGradientSolver.cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
+    Visitor/MultiVecEqualVisitor.cpp
     init.cpp)
 
 # Try to find Sofa's cmake prefix

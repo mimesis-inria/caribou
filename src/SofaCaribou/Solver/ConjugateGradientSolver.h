@@ -112,6 +112,20 @@ public:
      */
     void solveSystem() final;
 
+    /**
+     * List of squared residual norms (||r||^2) of every CG iterations of the last solve call.
+     */
+    auto squared_residuals() const -> const std::vector<FLOATING_POINT_TYPE> & {
+        return p_squared_residuals;
+    }
+
+    /**
+     * Squared residual norm (||r||^2) of the last right-hand side term (b in Ax=b) of the last solve call.
+     */
+    auto squared_initial_residual() const -> const FLOATING_POINT_TYPE & {
+        return p_squared_initial_residual;
+    }
+
 protected:
     /// Constructor
     ConjugateGradientSolver();
@@ -198,6 +212,12 @@ private:
 
     ///< Contains the list of available preconditioners with their respective identifier
     std::vector<std::pair<std::string, PreconditioningMethod>> p_preconditioners;
+
+    ///< List of squared residual norms (||r||^2) of every CG iterations of the last solve call.
+    std::vector<FLOATING_POINT_TYPE> p_squared_residuals;
+
+    ///< Squared residual norm (||r||^2) of the last right-hand side term (b in Ax=b) of the last solve call.
+    FLOATING_POINT_TYPE p_squared_initial_residual;
 };
 
 } // namespace SofaCaribou::solver
