@@ -18,6 +18,13 @@ public:
 public:
     void solve (const sofa::core::ExecParams* params /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
 
+    /**
+     * List of times (in nanoseconds) that each Newton-Raphson iteration took to compute in the last call to Solve().
+     */
+    auto iteration_times() const -> const std::vector<UNSIGNED_INTEGER_TYPE> & {
+        return p_times;
+    }
+
     /*!
      * The list of squared residual norms (||r||^2) of every newton iterations of the last solve call.
      */
@@ -140,6 +147,9 @@ private:
 
     /// Total displacement since the beginning of the step
     sofa::core::behavior::MultiVecDeriv U;
+
+    ///< List of times (in nanoseconds) took to compute each Newton-Raphson iteration
+    std::vector<UNSIGNED_INTEGER_TYPE> p_times;
 
     ///< List of squared residual norms (||r||^2) of every newton iterations of the last solve call.
     std::vector<FLOATING_POINT_TYPE> p_squared_residuals;

@@ -96,19 +96,26 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
     }
 
     unsigned n_it=0;
-    double dx_squared_norm = 0, du_squared_norm = 0, R0_squared_norm = 0, R_squared_norm = 0, Rn_squared_norm = 0;
+    double dx_squared_norm = 0, du_squared_norm = 0, R_squared_norm = 0, Rn_squared_norm = 0;
     const auto squared_residual_threshold = residual_tolerance_threshold*residual_tolerance_threshold;
     const auto squared_correction_threshold = correction_tolerance_threshold*correction_tolerance_threshold;
     bool converged = false, diverged = false;
     steady_clock::time_point t;
 
     // Resize vectors containing the newton residual norms
-    p_squared_residuals.resize(newton_iterations);
+    p_squared_residuals.clear();
+    p_squared_residuals.reserve(newton_iterations);
+
+    // Resize vectors containing the times took to compute the newton iterations
+    p_times.clear();
+    p_times.reserve(newton_iterations);
 
     // If the linear solver is a CG, resize the vector containing CG residual norms
     if (cg_linear_solver) {
-        p_iterative_linear_solver_squared_residuals.resize(newton_iterations);
-        p_iterative_linear_solver_squared_rhs_norms.resize(newton_iterations);
+        p_iterative_linear_solver_squared_residuals.clear();
+        p_iterative_linear_solver_squared_rhs_norms.clear();
+        p_iterative_linear_solver_squared_residuals.reserve(newton_iterations);
+        p_iterative_linear_solver_squared_rhs_norms.reserve(newton_iterations);
     }
 
 
@@ -136,7 +143,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
 
     // Compute the initial residual
     R_squared_norm = force.dot(force);
-    R0_squared_norm = R_squared_norm;
+    p_squared_initial_residual = R_squared_norm;
 
     if (residual_tolerance_threshold > 0 && R_squared_norm <= residual_tolerance_threshold) {
         converged = true;
@@ -210,9 +217,10 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
         dx_squared_norm = dx.dot(dx);
         du_squared_norm= U.dot(U);
 
-        p_squared_residuals[n_it] = R_squared_norm;
+        p_squared_residuals.emplace_back(R_squared_norm);
 
         auto iteration_time = duration_cast<nanoseconds>(steady_clock::now() - t).count();
+        p_times.emplace_back(static_cast<UNSIGNED_INTEGER_TYPE>(iteration_time));
 
         if (not converged) {
             if( print_log ) {
@@ -254,8 +262,8 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
 
         // If the linear solver is the caribou's CG, copy the residual norms of the CG iterations
         if (cg_linear_solver) {
-            p_iterative_linear_solver_squared_residuals[n_it] = cg_linear_solver->squared_residuals();
-            p_iterative_linear_solver_squared_rhs_norms[n_it] = cg_linear_solver->squared_initial_residual();
+            p_iterative_linear_solver_squared_residuals.emplace_back(cg_linear_solver->squared_residuals());
+            p_iterative_linear_solver_squared_rhs_norms.emplace_back(cg_linear_solver->squared_initial_residual());
         }
 
         // Save the last residual to check the growing residual criterion at the next step
@@ -282,14 +290,6 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
     sofa::helper::AdvancedTimer::valSet("has_converged", converged ? 1 : 0);
     sofa::helper::AdvancedTimer::valSet("nb_iterations", n_it+1);
     sofa::helper::AdvancedTimer::stepEnd("StaticODESolver::Solve");
-
-    // Shrink the residual vector to its real size
-    p_squared_initial_residual = R0_squared_norm;
-    p_squared_residuals.resize(n_it+1);
-    if (cg_linear_solver) {
-        p_iterative_linear_solver_squared_residuals.resize(n_it + 1);
-        p_iterative_linear_solver_squared_rhs_norms.resize(n_it + 1);
-    }
 }
 
 

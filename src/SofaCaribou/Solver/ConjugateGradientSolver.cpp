@@ -74,7 +74,7 @@ ConjugateGradientSolver::ConjugateGradientSolver()
     }
     d_preconditioning_method.setValue(sofa::helper::OptionsGroup(preconditioner_names));
     sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> preconditioning_method = d_preconditioning_method;
-    preconditioning_method->setSelectedItem((unsigned int) 0);
+    preconditioning_method->setSelectedItem((unsigned int) 1);
 }
 
 auto ConjugateGradientSolver::get_preconditioning_method_from_string(const std::string & preconditioner_name) const -> PreconditioningMethod{

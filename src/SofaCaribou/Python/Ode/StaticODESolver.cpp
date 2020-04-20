@@ -13,6 +13,7 @@ namespace SofaCaribou::ode::python {
 void addStaticODESolver(py::module &m) {
     using namespace sofa::core::objectmodel;
     py::class_<StaticODESolver, std::shared_ptr<StaticODESolver>> c (m, "StaticODESolver");
+    c.def_property_readonly("iteration_times", &StaticODESolver::iteration_times);
     c.def_property_readonly("squared_residuals", &StaticODESolver::squared_residuals);
     c.def_property_readonly("squared_initial_residual", &StaticODESolver::squared_initial_residual);
     c.def_property_readonly("iterative_linear_solver_squared_residuals", &StaticODESolver::iterative_linear_solver_squared_residuals);

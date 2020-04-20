@@ -615,7 +615,6 @@ auto HyperelasticForcefield<Element>::K() -> const Eigen::SparseMatrix<Real> & {
         const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
         const auto nDofs = X.size() * 3;
         p_sparse_K.resize(nDofs, nDofs);
-        p_sparse_K.setZero();
 
         ///< Triplets are used to store matrix entries before the call to 'compress'.
         /// Duplicates entries are summed up.
@@ -637,7 +636,7 @@ auto HyperelasticForcefield<Element>::K() -> const Eigen::SparseMatrix<Real> & {
                 const auto x = (node_indices[i]*3);
 
                 // Kii is symmetric
-                const auto Kii = Ke.template block<Dimension, Dimension>(i,i);
+                const auto Kii = Ke.template block<Dimension, Dimension>(i*Dimension,i*Dimension);
                 for (size_t m = 0; m < 3; ++m) {
                     triplets.emplace_back(x+m, x+m, Kii(m,m));
                     for (size_t n = m+1; n < 3; ++n) {
@@ -654,7 +653,7 @@ auto HyperelasticForcefield<Element>::K() -> const Eigen::SparseMatrix<Real> & {
                     const auto y = (node_indices[j]*3);
 
                     // Kij is NOT symmetric
-                    const auto Kij = Ke.template block<Dimension, Dimension>(i,j);
+                    const auto Kij = Ke.template block<Dimension, Dimension>(i*Dimension,j*Dimension);
 
                     for (size_t m = 0; m < 3; ++m) {
                         for (size_t n = 0; n < 3; ++n) {
