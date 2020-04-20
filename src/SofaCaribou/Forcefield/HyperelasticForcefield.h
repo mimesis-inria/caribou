@@ -143,13 +143,10 @@ public:
         return p_elements_quadrature_nodes[element_id];
     }
 
-    /** Get the elemental stiffness matrix of an element */
-    auto stiffness_matrix_of(std::size_t hexahedron_id) const -> const auto & {
-        return p_elements_stiffness_matrices[hexahedron_id];
-    }
-
     /** Get the complete tangent stiffness matrix as a compressed sparse matrix */
-    auto K() -> const Eigen::SparseMatrix<Real> &;
+    auto K() -> const Eigen::SparseMatrix<Real> & {
+        return p_K;
+    }
 
     /** Get the eigen values of the tangent stiffness matrix */
     auto eigenvalues() -> const Vector<Eigen::Dynamic> &;
@@ -195,12 +192,10 @@ private:
     Link<material::HyperelasticMaterial<DataTypes>> d_material;
 
     // Private variables
-    std::vector<Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension>> p_elements_stiffness_matrices;
     std::vector<GaussContainer> p_elements_quadrature_nodes;
-    Eigen::SparseMatrix<Real> p_sparse_K;
+    Eigen::SparseMatrix<Real> p_K;
     Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
-    bool elements_stiffness_matrices_are_up_to_date = false;
-    bool sparse_K_is_up_to_date = false;
+    bool K_is_up_to_date = false;
     bool eigenvalues_are_up_to_date = false;
 };
 

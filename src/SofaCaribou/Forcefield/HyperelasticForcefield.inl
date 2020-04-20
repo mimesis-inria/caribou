@@ -179,8 +179,7 @@ void HyperelasticForcefield<Element>::addForce(
 
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::addForce");
 
-    elements_stiffness_matrices_are_up_to_date = false;
-    sparse_K_is_up_to_date = false;
+    K_is_up_to_date = false;
     eigenvalues_are_up_to_date = false;
 }
 
@@ -190,49 +189,37 @@ void HyperelasticForcefield<Element>::addDForce(
     Data<VecDeriv>& d_df,
     const Data<VecDeriv>& d_dx)
 {
-    if (not elements_stiffness_matrices_are_up_to_date) {
+    if (not K_is_up_to_date) {
         update_stiffness();
-    }
-
-    const auto material = d_material.get();
-    if (!material) {
-        return;
     }
 
     auto kFactor = static_cast<Real> (mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue()));
     sofa::helper::ReadAccessor<Data<VecDeriv>> sofa_dx = d_dx;
     sofa::helper::WriteAccessor<Data<VecDeriv>> sofa_df = d_df;
 
-    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> DX   (sofa_dx.ref().data()->data(), sofa_dx.size(), Dimension);
-    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>       DF   (&(sofa_df[0][0]), sofa_df.size(), Dimension);
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, 1>> DX   (&(sofa_dx[0][0]), sofa_dx.size()*3);
+    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, 1>>       DF   (&(sofa_df[0][0]), sofa_df.size()*3);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addDForce");
 
-    const auto nb_elements = number_of_elements();
-    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-
-        // Fetch the node indices of the element
-        const Index * node_indices = get_element_nodes_indices(element_id);
-
-        // Fetch the incremental displacement
-        Vector<NumberOfNodes * Dimension> U;
-
-        for (std::size_t i = 0; i < NumberOfNodes; ++i) {
-            for (std::size_t k = 0; k < Dimension; ++k)
-                U[i*Dimension+k] = DX(node_indices[i], k);
-        }
-
-        // Compute the elemental force increment vector
-        const auto & Ke = p_elements_stiffness_matrices[element_id];
-        const auto F = (Ke.template selfadjointView<Eigen::Upper>()*U).eval();
-
-        // Write the elemental incremental force vector into the global force vector
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            for (std::size_t k = 0; k < Dimension; ++k) {
-                DF(node_indices[i], k) -= F[i*Dimension+k] * kFactor;
+    for (int k = 0; k < p_K.outerSize(); ++k) {
+        for (typename Eigen::SparseMatrix<Real>::InnerIterator it(p_K, k); it; ++it) {
+            const auto i = it.row();
+            const auto j = it.col();
+            const auto v = -1 * it.value() * kFactor;
+            if (i > j)
+                throw std::runtime_error("Say waht now?");
+            if (i != j) {
+                DF[i] += v*DX[j];
+                DF[j] += v*DX[i];
+            } else {
+                DF[i] += v*DX[i];
             }
         }
     }
+
+//    Not sure why the following does not work.....
+//    DF -= (p_K.template selfadjointView<Eigen::Upper>()*DX)*kFactor);
 
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::addDForce");
 }
@@ -242,64 +229,24 @@ void HyperelasticForcefield<Element>::addKToMatrix(
     sofa::defaulttype::BaseMatrix * matrix,
     SReal kFact, unsigned int & offset)
 {
-    if (not elements_stiffness_matrices_are_up_to_date) {
+    if (not K_is_up_to_date) {
         update_stiffness();
     }
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addKToMatrix");
 
-    const auto nb_elements = number_of_elements();
-    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-
-        // Fetch the node indices of the element
-        const Index * node_indices = get_element_nodes_indices(element_id);
-
-        // The element stiffness matrix Ke is symmetric, hence only
-        // its upper triangular part is filled with values
-        const auto & Ke = p_elements_stiffness_matrices[element_id];
-
-        // 3x3 blocks on the diagonal
-        sofa::defaulttype::Mat<Dimension, Dimension, Real> Kii;
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            const auto x = (i*Dimension);
-
-            // Kii is symmetric
-            for (size_t m = 0; m < Dimension; ++m) {
-                // Diagonal of the 3x3
-                Kii(m, m) = Ke(x+m, x+m);
-                // Upper triangle of the 3x3
-                for (size_t n = m+1; n < Dimension; ++n) {
-                    Kii(m, n) = Ke(x+m, x+n);
-                    Kii(n, m) = Ke(x+m, x+n);
-                }
-            }
-
-            Kii *= -1. * kFact;
-
-            matrix->add(offset+node_indices[i]*Dimension, offset+node_indices[i]*Dimension, Kii);
-        }
-
-        // 3x3 blocks on the upper triangle
-        sofa::defaulttype::Mat<Dimension, Dimension, Real> Kij;
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            for (size_t j = i+1; j < NumberOfNodes; ++j) {
-                const auto x = (i*Dimension);
-                const auto y = (j*Dimension);
-
-                // Kij is NOT symmetric
-                for (size_t m = 0; m < Dimension; ++m) {
-                    for (size_t n = 0; n < Dimension; ++n) {
-                        Kij(m, n) = Ke(x+m, y+n);
-                    }
-                }
-
-                Kij *= -1. * kFact;
-
-                matrix->add(offset+node_indices[i]*Dimension, offset+node_indices[j]*Dimension, Kij);
-                matrix->add(offset+node_indices[j]*Dimension, offset+node_indices[i]*Dimension, Kij.transposed());
+    for (int k = 0; k < p_K.outerSize(); ++k) {
+        for (typename Eigen::SparseMatrix<Real>::InnerIterator it(p_K, k); it; ++it) {
+            const auto i = it.row();
+            const auto j = it.col();
+            const auto v = -1 * it.value() * kFact;
+            if (i != j) {
+                matrix->add(offset+i, offset+j, v);
+                matrix->add(offset+j, offset+i, v);
+            } else {
+                matrix->add(offset+i, offset+i, v);
             }
         }
-
     }
 
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::addKToMatrix");
@@ -434,10 +381,6 @@ void HyperelasticForcefield<Element>::initialize_elements()
         p_elements_quadrature_nodes.resize(nb_elements);
     }
 
-    if (p_elements_stiffness_matrices.size() != nb_elements) {
-        p_elements_stiffness_matrices.resize(nb_elements, Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension>::Zero());
-    }
-
     // Translate the Sofa's mechanical state vector to Eigen vector type
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), sofa_x0.size(), Dimension);
@@ -482,11 +425,6 @@ void HyperelasticForcefield<Element>::initialize_elements()
 template <typename Element>
 void HyperelasticForcefield<Element>::update_stiffness()
 {
-    const auto nb_elements = number_of_elements();
-    if (p_elements_stiffness_matrices.size() != nb_elements) {
-        p_elements_stiffness_matrices.resize(nb_elements, Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension>::Zero());
-    }
-
     const auto material = d_material.get();
     if (!material) {
         return;
@@ -496,11 +434,21 @@ void HyperelasticForcefield<Element>::update_stiffness()
     material->before_update();
 
     static const auto I = Mat33::Identity();
+    const auto nb_elements = number_of_elements();
+
+    const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
+    const auto nDofs = X.size() * 3;
+    p_K.resize(nDofs, nDofs);
+
+    ///< Triplets are used to store matrix entries before the call to 'compress'.
+    /// Duplicates entries are summed up.
+    std::vector<Eigen::Triplet<Real >> triplets;
+    triplets.reserve(nDofs*24*2);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::update_stiffness");
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-        Matrix<NumberOfNodes*Dimension, NumberOfNodes*Dimension> & Ke = p_elements_stiffness_matrices[element_id];
-        Ke.fill(0);
+        // Fetch the node indices of the element
+        const Index * node_indices = get_element_nodes_indices(element_id);
 
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
@@ -527,6 +475,9 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
             // Computation of the tangent-stiffness matrix
             for (std::size_t i = 0; i < NumberOfNodes; ++i) {
+                // Node index of the ith node in the global stiffness matrix
+                const auto x = (node_indices[i]*Dimension);
+
                 // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
                 const Vec3 dxi = dN_dx.row(i).transpose();
 
@@ -540,14 +491,20 @@ void HyperelasticForcefield<Element>::update_stiffness()
                     F(0,0)*dxi[2] + F(0,2)*dxi[0], F(1,0)*dxi[2] + F(1,2)*dxi[0], F(2,0)*dxi[2] + F(2,2)*dxi[0];
 
                 // The 3x3 sub-matrix Kii is symmetric, we only store its upper triangular part
-                auto Kii = (dxi.dot(S*dxi)*I + Bi.transpose()*D*Bi) * detJ * w;
-                Ke.template block<Dimension, Dimension>(i*Dimension, i*Dimension)
-                  .template triangularView<Eigen::Upper>()
-                  += Kii;
+                Mat33 Kii = (dxi.dot(S*dxi)*I + Bi.transpose()*D*Bi) * detJ * w;
+                for (std::size_t m = 0; m < Dimension; ++m) {
+                    triplets.emplace_back(x+m, x+m, Kii(m,m));
+                    for (size_t n = m+1; n < Dimension; ++n) {
+                        triplets.emplace_back(x+m, x+n, Kii(m,n));
+                    }
+                }
 
-                // We now loop only on the upper triangular part of the element stiffness
-                // matrix Ke since it is symmetric
+                // We now loop only on the upper triangular part of the
+                // element stiffness matrix Ke since it is symmetric
                 for (std::size_t j = i+1; j < NumberOfNodes; ++j) {
+                    // Node index of the ith node in the global stiffness matrix
+                    const auto y = (node_indices[j]*Dimension);
+
                     // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
                     const Vec3 dxj = dN_dx.row(j).transpose();
 
@@ -561,17 +518,21 @@ void HyperelasticForcefield<Element>::update_stiffness()
                         F(0,0)*dxj[2] + F(0,2)*dxj[0], F(1,0)*dxj[2] + F(1,2)*dxj[0], F(2,0)*dxj[2] + F(2,2)*dxj[0];
 
                     // The 3x3 sub-matrix Kij is NOT symmetric, we store its full part
-                    auto Kij = (dxi.dot(S*dxj)*I + Bi.transpose()*D*Bj) * detJ * w;
-                    Ke.template block<Dimension, Dimension>(i*Dimension, j*Dimension)
-                      .noalias() += Kij;
+                    Mat33 Kij = (dxi.dot(S*dxj)*I + Bi.transpose()*D*Bj) * detJ * w;
+
+                    for (std::size_t m = 0; m < Dimension; ++m) {
+                        for (size_t n = 0; n < Dimension; ++n) {
+                            triplets.emplace_back(x+m, y+n, Kij(m,n));
+                        }
+                    }
                 }
             }
         }
     }
+    p_K.setFromTriplets(triplets.begin(), triplets.end());
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::update_stiffness");
 
-    elements_stiffness_matrices_are_up_to_date = true;
-    sparse_K_is_up_to_date = false;
+    K_is_up_to_date = true;
     eigenvalues_are_up_to_date = false;
 }
 
@@ -602,73 +563,6 @@ auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*elem
     }
 
     return gauss_nodes;
-}
-
-template <typename Element>
-auto HyperelasticForcefield<Element>::K() -> const Eigen::SparseMatrix<Real> & {
-    if (not sparse_K_is_up_to_date) {
-
-        if (not elements_stiffness_matrices_are_up_to_date) {
-            update_stiffness();
-        }
-
-        const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
-        const auto nDofs = X.size() * 3;
-        p_sparse_K.resize(nDofs, nDofs);
-
-        ///< Triplets are used to store matrix entries before the call to 'compress'.
-        /// Duplicates entries are summed up.
-        std::vector<Eigen::Triplet<Real >> triplets;
-        triplets.reserve(nDofs*24*2);
-
-        const auto nb_elements = number_of_elements();
-        for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-
-            // Fetch the node indices of the element
-            const Index * node_indices = get_element_nodes_indices(element_id);
-
-            // The element stiffness matrix Ke is symmetric, hence only
-            // its upper triangular part is filled with values
-            const auto &Ke = p_elements_stiffness_matrices[element_id];
-
-            // 3x3 blocks on the diagonal
-            for (size_t i = 0; i < NumberOfNodes; ++i) {
-                const auto x = (node_indices[i]*3);
-
-                // Kii is symmetric
-                const auto Kii = Ke.template block<Dimension, Dimension>(i*Dimension,i*Dimension);
-                for (size_t m = 0; m < 3; ++m) {
-                    triplets.emplace_back(x+m, x+m, Kii(m,m));
-                    for (size_t n = m+1; n < 3; ++n) {
-                        triplets.emplace_back(x+m, x+n, Kii(m,n));
-                        triplets.emplace_back(x+n, x+m, Kii(m,n));
-                    }
-                }
-            }
-
-            // 3x3 blocks on the upper triangle
-            for (size_t i = 0; i < NumberOfNodes; ++i) {
-                for (size_t j = i+1; j < NumberOfNodes; ++j) {
-                    const auto x = (node_indices[i]*3);
-                    const auto y = (node_indices[j]*3);
-
-                    // Kij is NOT symmetric
-                    const auto Kij = Ke.template block<Dimension, Dimension>(i*Dimension,j*Dimension);
-
-                    for (size_t m = 0; m < 3; ++m) {
-                        for (size_t n = 0; n < 3; ++n) {
-                            triplets.emplace_back(x+m, y+n, Kij(m,n));
-                            triplets.emplace_back(y+m, x+n, Kij(n,m));
-                        }
-                    }
-                }
-            }
-        }
-        p_sparse_K.setFromTriplets(triplets.begin(), triplets.end());
-        sparse_K_is_up_to_date = true;
-    }
-
-    return p_sparse_K;
 }
 
 template <typename Element>
