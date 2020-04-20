@@ -126,6 +126,19 @@ public:
         return p_squared_initial_residual;
     }
 
+    /**
+     * Get the system matrix.
+     */
+    auto system_matrix () const -> const SparseMatrix & {
+        return p_A;
+    }
+
+    /**
+     * Assemble the system matrix A = (mM + bB + kK).
+     * @param mparams Mechanical parameters containing the m, b and k factors.
+     */
+    void assemble (const sofa::core::MechanicalParams* mparams);
+
 protected:
     /// Constructor
     ConjugateGradientSolver();

@@ -6,6 +6,7 @@
 #include <SofaCaribou/Python/Forcefield/HexahedronElasticForce.h>
 #include <SofaCaribou/Python/Forcefield/HyperelasticForcefield.h>
 #include <SofaCaribou/Python/Forcefield/FictitiousGridHyperelasticForcefield.h>
+#include <SofaCaribou/Python/Solver/ConjugateGradientSolver.h>
 
 namespace py = pybind11;
 
@@ -24,4 +25,7 @@ PYBIND11_MODULE(SofaCaribouPython, m) {
     SofaCaribou::forcefield::python::addFictitiousGridHyperelasticForcefield(m);
     SofaCaribou::forcefield::python::addHexahedronElasticForce(m);
     SofaCaribou::forcefield::python::addHyperElasticForcefield(m);
+
+    // Solver bindings
+    SofaCaribou::solver::python::addConjugateGradientSolver(m);
 }

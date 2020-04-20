@@ -1,5 +1,7 @@
 #include "ConjugateGradientSolver.h"
 #include<SofaCaribou/Algebra/EigenMatrixWrapper.h>
+#include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
+#include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 #include <Caribou/macros.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/helper/AdvancedTimer.h>
@@ -97,6 +99,69 @@ auto ConjugateGradientSolver::get_preconditioning_method_from_string(const std::
     return PreconditioningMethod::None;
 }
 
+void ConjugateGradientSolver::assemble (const sofa::core::MechanicalParams* mparams) {
+    // Step 1. Preparation stage
+    //         This stage go down on the sub-graph and gather the top-level mechanical objects (mechanical objects that
+    //         aren't slaved of another mechanical object through a mechanical mapping). The matrix isn't built yet,
+    //         we only keep a list of mechanical objects and mappings, and get the size of global system matrix that
+    //         will be built in the next stage.
+    Timer::stepBegin("PrepareMatrix");
+
+    sofa::simulation::common::MechanicalOperations mops(mparams, this->getContext());
+    p_accessor.clear();
+
+    Timer::stepBegin("Dimension");
+    mops.getMatrixDimension(nullptr, nullptr, &p_accessor);
+    const auto n = static_cast<Eigen::Index>(p_accessor.getGlobalDimension());
+    Timer::stepEnd("Dimension");
+
+    Timer::stepBegin("SetupMatrixIndices");
+    p_accessor.setupMatrices();
+    Timer::stepEnd("SetupMatrixIndices");
+
+    Timer::stepBegin("Clear");
+    p_A.resize(n, n);
+    EigenMatrixWrapper<SparseMatrix &> wrapper (p_A);
+    p_accessor.setGlobalMatrix(&wrapper);
+    Timer::stepEnd("Clear");
+
+    Timer::stepEnd("PrepareMatrix");
+
+    Timer::stepBegin("BuildMatrix");
+
+    // Step 2. Building stage
+    //         Here we go down on the current context sub-graph and call :
+    //           1. ff->addMBKToMatrix(&K) for every force field "ff" found.
+    //           2. pc->applyConstraint(&K) for every BaseProjectiveConstraintSet "pc" found.
+    //         If a mechanical mapping "m" is found during the traversal, and m->areMatricesMapped() is false, the
+    //         traversal stops in the subgraph of the mapping.
+
+    sofa::simulation::common::VisitorExecuteFunc execute(*mops.ctx);
+    Timer::stepBegin("AssembleGlobalMatrix");
+    execute(visitor::AssembleGlobalMatrix(mparams, &p_accessor));
+    Timer::stepEnd("AssembleGlobalMatrix");
+
+    Timer::stepBegin("ConstrainGlobalMatrix");
+    execute(visitor::ConstrainGlobalMatrix(mparams, &p_accessor));
+    Timer::stepEnd("ConstrainGlobalMatrix");
+
+    // Step 3. Mechanical mappings
+    //         In case we have mapped matrices, which is, system matrix of a slave mechanical object, accumulate its
+    //         contribution to the global system matrix with:
+    //           [A]ij += Jt * [A']ij * J
+    //         where A is the master mechanical object's matrix, A' is the slave mechanical object matrix and J=m.getJ()
+    //         is the mapping relation between the slave and its master.
+    Timer::stepBegin("MappedMatrices");
+    p_accessor.computeGlobalMatrix();
+    Timer::stepEnd("MappedMatrices");
+
+    // Step 4. Convert the system matrix to a compressed sparse matrix
+    Timer::stepBegin("ConvertToSparse");
+    wrapper.compress();
+    Timer::stepEnd("ConvertToSparse");
+    Timer::stepEnd("BuildMatrix");
+}
+
 void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) {
     Timer::stepBegin("ConjugateGradient::ComputeGlobalMatrix");
     // Save the current mechanical parameters (m, b and k factors of the mass (M), damping (B) and
@@ -108,62 +173,15 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
 
     // If we have a preconditioning method, the global system matrix has to be constructed from the current context subgraph.
     if (preconditioning_method != PreconditioningMethod::None) {
-        bool matrix_shape_has_changed = false;
-        // Step 1. Preparation stage
-        //         This stage go down on the sub-graph and gather the top-level mechanical objects (mechanical objects that
-        //         aren't slaved of another mechanical object through a mechanical mapping). The matrix isn't built yet,
-        //         we only keep a list of mechanical objects and mappings, and get the size of global system matrix that
-        //         will be built in the next stage.
-        Timer::stepBegin("PrepareMatrix");
 
-        sofa::simulation::common::MechanicalOperations mops(p_mechanical_params, this->getContext());
-        p_accessor.clear();
+        auto previous_dimension = p_A.rows();
 
-        Timer::stepBegin("Dimension");
-        mops.getMatrixDimension(nullptr, nullptr, &p_accessor);
-        const auto n = static_cast<Eigen::Index>(p_accessor.getGlobalDimension());
-        matrix_shape_has_changed = (n != p_A.rows());
-        Timer::stepEnd("Dimension");
+        // Step 1. Assemble the system matrix
+        assemble(mparams);
+        auto current_dimension = p_A.rows();
 
-        Timer::stepBegin("SetupMatrixIndices");
-        p_accessor.setupMatrices();
-        Timer::stepEnd("SetupMatrixIndices");
-
-        Timer::stepBegin("Clear");
-        p_A.resize(n, n);
-        EigenMatrixWrapper<SparseMatrix &> wrapper (p_A);
-        p_accessor.setGlobalMatrix(&wrapper);
-        Timer::stepEnd("Clear");
-
-        Timer::stepEnd("PrepareMatrix");
-
-        Timer::stepBegin("BuildMatrix");
-        // Step 2. Building stage
-        //         Here we go down on the current context sub-graph and call :
-        //           1. ff->addMBKToMatrix(&K) for every force field "ff" found.
-        //           2. pc->applyConstraint(&K) for every BaseProjectiveConstraintSet "pc" found.
-        //         If a mechanical mapping "m" is found during the traversal, and m->areMatricesMapped() is false, the
-        //         traversal stops in the subgraph of the mapping.
-        Timer::stepBegin("TopLevelMatrices");
-        mops.addMBK_ToMatrix(&p_accessor, p_mechanical_params->mFactor(), p_mechanical_params->bFactor(), p_mechanical_params->kFactor());
-        Timer::stepEnd("TopLevelMatrices");
-        // Step 3. Mechanical mappings
-        //         In case we have mapped matrices, which is, system matrix of a slave mechanical object, accumulate its
-        //         contribution to the global system matrix with:
-        //           [A]ij += Jt * [A']ij * J
-        //         where A is the master mechanical object's matrix, A' is the slave mechanical object matrix and J=m.getJ()
-        //         is the mapping relation between the slave and its master.
-        Timer::stepBegin("MappedMatrices");
-        p_accessor.computeGlobalMatrix();
-        Timer::stepEnd("MappedMatrices");
-
-        // Step 4. Convert the system matrix to a compressed sparse matrix
-        Timer::stepBegin("ConvertToSparse");
-        wrapper.compress();
-        Timer::stepEnd("ConvertToSparse");
-        Timer::stepEnd("BuildMatrix");
-
-        // Step 5. Let the preconditioner analyse the matrix
+        // Step 2. Let the preconditioner analyse the matrix
+        bool matrix_shape_has_changed = previous_dimension != current_dimension;
         if (matrix_shape_has_changed) {
             Timer::stepBegin("PreconditionerAnalysis");
             if (preconditioning_method == PreconditioningMethod::Identity) {
@@ -258,7 +276,8 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     const auto & residual_tolerance_threshold = d_residual_tolerance_threshold.getValue();
     const auto & verbose = d_verbose.getValue();
 
-    p_squared_residuals.resize(maximum_number_of_iterations+1);
+    p_squared_residuals.clear();
+    p_squared_residuals.reserve(maximum_number_of_iterations);
 
     // Get the matrices coefficient m, b and k : A = (mM + bB + kK)
     const auto  m_coef = p_mechanical_params->mFactor();
@@ -271,6 +290,7 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     FLOATING_POINT_TYPE alpha, beta; // Alpha and Beta coefficients
     FLOATING_POINT_TYPE threshold; // Residual threshold
     UNSIGNED_INTEGER_TYPE iteration_number = 0; // Current iteration number
+    bool converged = false;
     const auto zero = (std::numeric_limits<FLOATING_POINT_TYPE>::min)(); // A numerical floating point zero
 
     // Make sure that the right hand side isn't zero
@@ -305,13 +325,12 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
         goto end; // The goto is important to catch the last timer call before ending the function
     }
 
-    // Add the first residual to the list of residuals
-    p_squared_residuals[0] = r_norm_2;
-
-    // ITERATIONS
+    // Compute the initial search direction
     rho0 = r_norm_2;
     p = r; // p(0) = r(0)
-    while (iteration_number < maximum_number_of_iterations) {
+
+    // ITERATIONS
+    while (not converged and iteration_number < maximum_number_of_iterations) {
         Timer::stepBegin("cg_iteration");
         // 1. Computes q(k+1) = A*p(k)
         mop.propagateDxAndResetDf(p, q); // Set q = 0 and calls applyJ(p) on every mechanical mappings
@@ -328,7 +347,7 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
 
         // 3. Computes the new residual norm
         r_norm_2 = r.dot(r);
-        p_squared_residuals[iteration_number+1] = r_norm_2;
+        p_squared_residuals.emplace_back(r_norm_2);
 
         // 4. Print information on the current iteration
         msg_info_when(verbose) << "CG iteration #" << iteration_number+1
@@ -337,21 +356,23 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
 
         // 5. Check for convergence: |r|/|b| < threshold
         if (r_norm_2 < threshold) {
-            Timer::stepEnd("cg_iteration");
-            break;
+            converged = true;
+        } else {
+            // 6. Compute the next search direction
+            rho1 = r_norm_2;
+            beta = rho1 / rho0;
+            p.eq(r,p,beta); // p = r + beta*p
+
+            rho0 = rho1;
         }
 
-        // 6. Compute p(k+1)
-        rho1 = r_norm_2;
-        beta = rho1 / rho0;
-        p.eq(r,p,beta); // p = r + beta*p
-
-        rho0 = rho1;
         ++iteration_number;
         Timer::stepEnd("cg_iteration");
     }
 
-    if (iteration_number < maximum_number_of_iterations) {
+    iteration_number--; // Reset to the actual index of the last iteration completed
+
+    if (converged) {
         msg_info() << "CG converged in " << (iteration_number+1)
                    << " iterations with a residual of |r|/|b| = " << sqrt(r_norm_2/b_norm_2)
                    << " (threshold was " << residual_tolerance_threshold << ")";
@@ -361,9 +382,6 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     }
 
     end:
-    // Shrink the residual vector to its real size (number of iterations completed + one for the first residual
-    // computed just before starting the iterations)
-    p_squared_residuals.resize(iteration_number+2);
     sofa::helper::AdvancedTimer::valSet("nb_iterations", static_cast<float>(iteration_number+1));
 }
 
@@ -374,7 +392,8 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     const auto & residual_tolerance_threshold = d_residual_tolerance_threshold.getValue();
     const auto & verbose = d_verbose.getValue();
 
-    p_squared_residuals.resize(maximum_number_of_iterations);
+    p_squared_residuals.clear();
+    p_squared_residuals.reserve(maximum_number_of_iterations);
 
     // Declare the method variables
     FLOATING_POINT_TYPE b_norm_2 = 0., r_norm_2 = 0.; // RHS and residual squared norms
@@ -382,6 +401,7 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     FLOATING_POINT_TYPE alpha, beta; // Alpha and Beta coefficients
     FLOATING_POINT_TYPE threshold; // Residual threshold
     UNSIGNED_INTEGER_TYPE iteration_number = 0; // Current iteration number
+    bool converged = false;
     UNSIGNED_INTEGER_TYPE n = A.cols();
     Vector p(n), z(n); // Search directions
     Vector r(n), q(n); // Residual
@@ -416,7 +436,7 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     rho0 = r.dot(p); // |M-1 * r|^2
 
     // ITERATIONS
-    while (iteration_number < maximum_number_of_iterations) {
+    while (not converged and iteration_number < maximum_number_of_iterations) {
         Timer::stepBegin("cg_iteration");
         // 1. Computes q(k+1) = A*p(k)
         q.noalias() = A * p;
@@ -424,11 +444,16 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
         // 2. Computes x(k+1) and r(k+1)
         alpha = rho0 / p.dot(q); // the amount we travel on the search direction
         x += alpha * p; // Updated solution x(k+1)
-        r -= alpha * q; // Updated residual r(k+1)
+        if (iteration_number%50==0) {
+            // The exact residual is calculated once every 50 iterations to remove floating point round-off errors
+            r = b - A*x; // Updated residual r(k+1)
+        } else {
+            r -= alpha * q; // Updated residual r(k+1)
+        }
 
         // 3. Computes the new residual norm
         r_norm_2 = r.squaredNorm();
-        p_squared_residuals[iteration_number] = r_norm_2;
+        p_squared_residuals.emplace_back(r_norm_2);
 
         // 4. Print information on the current iteration
         msg_info_when(verbose)  << "CG iteration #" << iteration_number+1
@@ -437,22 +462,24 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
 
         // 5. Check for convergence: |r|/|b| < threshold
         if (r_norm_2 < threshold) {
-            Timer::stepEnd("cg_iteration");
-            break;
+            converged = true;
+        } else {
+            // 6. Compute the next search direction
+            z = precond.solve(r);  // approximately solve for "A z = r"
+            rho1 = r.dot(z);
+            beta = rho1 / rho0;
+            p = z + beta*p;
+
+            rho0 = rho1;
         }
 
-        // 6. Compute the next search direction
-        z = precond.solve(r);  // approximately solve for "A z = r"
-        rho1 = r.dot(z);
-        beta = rho1 / rho0;
-        p = z + beta*p;
-
-        rho0 = rho1;
         ++iteration_number;
         Timer::stepEnd("cg_iteration");
     }
 
-    if (iteration_number < maximum_number_of_iterations) {
+    iteration_number--; // Reset to the actual index of the last iteration completed
+
+    if (converged) {
         msg_info() << "CG converged in " << (iteration_number+1)
                    << " iterations with a residual of |r|/|b| = " << sqrt(r_norm_2/b_norm_2)
                    << " (threshold was " << residual_tolerance_threshold << ")";
@@ -462,8 +489,6 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
     }
 
     end:
-    // Shrink the residual vector to its real size (number of iterations completed)
-    p_squared_residuals.resize(iteration_number+1);
     sofa::helper::AdvancedTimer::valSet("nb_iterations", static_cast<float>(iteration_number+1));
 }
 

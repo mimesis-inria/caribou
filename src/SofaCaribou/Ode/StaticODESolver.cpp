@@ -1,5 +1,8 @@
 #include "StaticODESolver.h"
 
+#include <iomanip>
+#include <chrono>
+
 #include <SofaCaribou/Solver/ConjugateGradientSolver.h>
 
 #include <sofa/core/ObjectFactory.h>
@@ -41,6 +44,9 @@ StaticODESolver::StaticODESolver()
 {}
 
 void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId /*vResult*/) {
+    using namespace sofa::helper::logging;
+    using namespace std::chrono;
+    using std::chrono::steady_clock;
 
     sofa::core::MechanicalParams mparams (*params);
     mparams.setDx(dx);
@@ -57,6 +63,8 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
     const auto & residual_tolerance_threshold = d_residual_tolerance_threshold.getValue();
     const auto & newton_iterations = d_newton_iterations.getValue();
     const auto & warm_start = d_warm_start.getValue();
+    const auto & print_log = f_printLog.getValue();
+    auto info = MessageDispatcher::info(Message::Runtime, ComponentInfo::SPtr(new ComponentInfo(this->getClassName())), SOFA_FILE_INFO);
 
     // Get the linear solver and convert it to a CG if it is one
     const auto context = mop.ctx;
@@ -78,14 +86,21 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
     // Set implicit param to true to trigger nonlinear stiffness matrix recomputation
     mop->setImplicit(true);
 
-    msg_info() << "======= Starting static ODE solver in time step " << this->getTime();
-    msg_info() << "(doing a maximum of " << d_newton_iterations.getValue() << " newton iterations)";
+    if (print_log) {
+        info << "======= Starting static ODE solver =======\n";
+        info << "Time step             : " << this->getTime() << "\n";
+        info << "Context               : " << dynamic_cast<sofa::simulation::Node *>(this->getContext())->getPathName() << "\n";
+        info << "Max iterations        : " << newton_iterations << "\n";
+        info << "Residual tolerance    : " << residual_tolerance_threshold << "\n";
+        info << "Correction tolerance  : " << correction_tolerance_threshold << "\n\n";
+    }
 
     unsigned n_it=0;
     double dx_squared_norm = 0, du_squared_norm = 0, R0_squared_norm = 0, R_squared_norm = 0, Rn_squared_norm = 0;
     const auto squared_residual_threshold = residual_tolerance_threshold*residual_tolerance_threshold;
     const auto squared_correction_threshold = correction_tolerance_threshold*correction_tolerance_threshold;
-    bool converged = false;
+    bool converged = false, diverged = false;
+    steady_clock::time_point t;
 
     // Resize vectors containing the newton residual norms
     p_squared_residuals.resize(newton_iterations);
@@ -99,34 +114,44 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
 
     sofa::helper::AdvancedTimer::stepBegin("StaticODESolver::Solve");
 
-    while (n_it < newton_iterations) {
+    // #########################
+    //      First residual
+    // #########################
+    // Before starting the newton iterations, we first need to compute
+    // the residual with the updated right-hand side (the new load increment)
+
+    // compute addForce, in mapped: addForce + applyJT (vec)
+    sofa::helper::AdvancedTimer::stepBegin("ComputeForce");
+
+    // Accumulate the force vectors
+    // 1. Clear the force vector (F := 0)
+    // 2. Go down in the current context tree calling addForce on every forcefields
+    // 3. Go up from the current context tree leaves calling applyJT on every mechanical mappings
+    mop.computeForce(force);
+
+    // Calls the "projectResponse" method of every BaseProjectiveConstraintSet objects found in the
+    // current context tree.
+    mop.projectResponse(force);
+    sofa::helper::AdvancedTimer::stepEnd("ComputeForce");
+
+    // Compute the initial residual
+    R_squared_norm = force.dot(force);
+    R0_squared_norm = R_squared_norm;
+
+    if (residual_tolerance_threshold > 0 && R_squared_norm <= residual_tolerance_threshold) {
+        converged = true;
+        if (print_log) {
+            info << "The ODE has already reached an equilibrium state" << "\n";
+        }
+    }
+
+    // #########################
+    // Newton-Raphson iterations
+    // #########################
+    while (not converged and not diverged and n_it < newton_iterations) {
         sofa::helper::AdvancedTimer::stepBegin("NewtonStep");
 
-        // If this is the first newton step, compute the first residual and make sure we didn't already reach the equilibrium.
-        if (n_it == 0) {
-            // compute addForce, in mapped: addForce + applyJT (vec)
-            sofa::helper::AdvancedTimer::stepBegin("ComputeForce");
-
-            // Accumulate the force vectors
-            // 1. Clear the force vector (F := 0)
-            // 2. Go down in the current context tree calling addForce on every forcefields
-            // 3. Go up from the current context tree leaves calling applyJT on every mechanical mappings
-            mop.computeForce(force);
-
-            // Calls the "projectResponse" method of every BaseProjectiveConstraintSet objects found in the
-            // current context tree.
-            mop.projectResponse(force);
-            sofa::helper::AdvancedTimer::stepEnd("ComputeForce");
-
-            // Compute the initial residual
-            R_squared_norm = force.dot(force);
-            R0_squared_norm = R_squared_norm;
-
-            if (residual_tolerance_threshold > 0 && R_squared_norm <= residual_tolerance_threshold) {
-                msg_info() << "The ODE has already reached an equilibrium state";
-                converged = true;
-            }
-        }
+        t = steady_clock::now();
 
         sofa::helper::AdvancedTimer::stepBegin("MBKBuild");
         // 1. The MechanicalMatrix::K is an empty matrix that stores three floats called factors: m, b and k.
@@ -142,71 +167,89 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
         matrix = MechanicalMatrix::K * -1.0;
         sofa::helper::AdvancedTimer::stepEnd("MBKBuild");
 
-        if (not converged) {
-            // Solving the system
-            // for CG: calls iteratively addDForce, mapped:  [applyJ, addDForce, applyJt(vec)]+
-            // for LDL: solves the system, everything's already assembled
-            sofa::helper::AdvancedTimer::stepBegin("MBKSolve");
+        // Solving the system
+        // for CG: calls iteratively addDForce, mapped:  [applyJ, addDForce, applyJt(vec)]+
+        // for LDL: solves the system, everything's already assembled
+        sofa::helper::AdvancedTimer::stepBegin("MBKSolve");
 
-            // Calls methods "setSystemRHVector", "setSystemLHVector" and "solveSystem" of the LinearSolver component
-            matrix.solve(dx, force);
-            sofa::helper::AdvancedTimer::stepEnd("MBKSolve");
+        // Calls methods "setSystemRHVector", "setSystemLHVector" and "solveSystem" of the LinearSolver component
+        matrix.solve(dx, force);
+        sofa::helper::AdvancedTimer::stepEnd("MBKSolve");
 
-            // Updating the geometry
-            x.peq(dx); // x := x + dx
+        // Updating the geometry
+        x.peq(dx); // x := x + dx
 
-            // Solving constraints
-            // Calls "solveConstraint" method of every ConstraintSolver objects found in the current context tree.
-            mop.solveConstraint(x, sofa::core::ConstraintParams::POS);
+        // Solving constraints
+        // Calls "solveConstraint" method of every ConstraintSolver objects found in the current context tree.
+        // todo(jnbrunet): Shouldn't this be done AFTER the position propagation of the mapped nodes?
+        mop.solveConstraint(x, sofa::core::ConstraintParams::POS);
 
-            //propagate positions to mapped nodes (calls apply, applyJ)
-            sofa::simulation::MechanicalPropagateOnlyPositionAndVelocityVisitor(&mparams).execute(this->getContext());
+        // Propagate positions to mapped mechanical objects, for example, identity mappings, barycentric mappings, ...
+        // This will call the methods apply and applyJ on every mechanical mappings.
+        sofa::simulation::MechanicalPropagateOnlyPositionAndVelocityVisitor(&mparams).execute(this->getContext());
 
-            // compute addForce, in mapped: addForce + applyJT (vec)
-            sofa::helper::AdvancedTimer::stepBegin("ComputeForce");
-            mop.computeForce(force);
-            mop.projectResponse(force);
-            sofa::helper::AdvancedTimer::stepEnd("ComputeForce");
+        // Update the force residual
+        sofa::helper::AdvancedTimer::stepBegin("ComputeForce");
 
-            // Residual
-            R_squared_norm = force.dot(force);
+        // Accumulate the force vectors
+        // 1. Clear the force vector (F := 0)
+        // 2. Go down in the current context tree calling addForce on every forcefields
+        // 3. Go up from the current context tree leaves calling applyJT on every mechanical mappings
+        mop.computeForce(force);
 
-            if (n_it == 0) {
-                R0_squared_norm = R_squared_norm;
-            }
+        // Calls the "projectResponse" method of every BaseProjectiveConstraintSet objects found in the
+        // current context tree.
+        mop.projectResponse(force);
+        sofa::helper::AdvancedTimer::stepEnd("ComputeForce");
 
-            // Displacement
-            U.peq(dx);
-            dx_squared_norm = dx.dot(dx);
-            du_squared_norm= U.dot(U);
-        }
+        // Residual
+        R_squared_norm = force.dot(force);
+
+        // Displacement
+        U.peq(dx);
+        dx_squared_norm = dx.dot(dx);
+        du_squared_norm= U.dot(U);
 
         p_squared_residuals[n_it] = R_squared_norm;
 
+        auto iteration_time = duration_cast<nanoseconds>(steady_clock::now() - t).count();
+
         if (not converged) {
-            msg_info() << "Newton iteration #" << n_it + 1
-                       << ": |R|/|R0| = " << sqrt(R_squared_norm/R0_squared_norm)    << " (threshold of " << residual_tolerance_threshold   << ")"
-                       << "  |du| = "     << sqrt(dx_squared_norm) << " (threshold of " << correction_tolerance_threshold << ")";
+            if( print_log ) {
+                info << "Newton iteration #" << std::left << std::setw(5)  << n_it + 1
+                     << std::scientific
+                     << "  |R|/|R0| = " << std::setw(12) << sqrt(R_squared_norm  / p_squared_residuals[0])
+                     << "  |du| = "     << std::setw(12) << sqrt(dx_squared_norm / du_squared_norm)
+                     << std::defaultfloat;
+                if (cg_linear_solver) {
+                    info << "  CG iterations = " << std::setw(5) << cg_linear_solver->squared_residuals().size();
+                }
+                info << "  Time = " << iteration_time/1000/1000 << " ms";
+                info << "\n";
+            }
         }
-        sofa::helper::AdvancedTimer::valSet("squared_residual_norm", R_squared_norm);
-        sofa::helper::AdvancedTimer::valSet("squared_correction_norm", dx_squared_norm);
-        sofa::helper::AdvancedTimer::valSet("squared_displacement_norm", du_squared_norm);
         sofa::helper::AdvancedTimer::stepEnd("NewtonStep");
 
-        if (not converged and shoud_diverge_when_residual_is_growing and R_squared_norm > Rn_squared_norm and n_it > 1) {
-            msg_info() << "[DIVERGED] Residual's norm increased from "<< Rn_squared_norm << " to " << R_squared_norm;
-        }
 
         if (not converged and correction_tolerance_threshold > 0 and dx_squared_norm < squared_correction_threshold*du_squared_norm) {
             converged = true;
-            msg_info() << "[CONVERGED] The correction's ratio |du|/|U| = " << sqrt(dx_squared_norm/du_squared_norm) << " is smaller than the threshold of "
-                       << correction_tolerance_threshold;
+            if (print_log) {
+                info  << "[CONVERGED] The correction's ratio |du|/|U| = " << sqrt(dx_squared_norm/du_squared_norm) << " is smaller than the threshold of " << correction_tolerance_threshold << "\n";
+            }
         }
 
-        if (not converged and residual_tolerance_threshold > 0 and R_squared_norm < squared_residual_threshold*R0_squared_norm) {
+        if (not converged and residual_tolerance_threshold > 0 and R_squared_norm < squared_residual_threshold*p_squared_residuals[0]) {
             converged = true;
-            msg_info() << "[CONVERGED] The residual's ratio |R|/|R0| = " << sqrt(R_squared_norm/R0_squared_norm) << " is smaller than the threshold of "
-                       << residual_tolerance_threshold;
+            if (print_log) {
+                info << "[CONVERGED] The residual's ratio |R|/|R0| = " << sqrt(R_squared_norm/p_squared_residuals[0]) << " is smaller than the threshold of " << residual_tolerance_threshold << "\n";
+            }
+        }
+
+        if (not converged and shoud_diverge_when_residual_is_growing and R_squared_norm > Rn_squared_norm and n_it > 1) {
+            diverged = true;
+            if (print_log) {
+                info << "[DIVERGED] Residual's norm increased from "<< sqrt(Rn_squared_norm) << " to " << sqrt(R_squared_norm) << "\n";
+            }
         }
 
         // If the linear solver is the caribou's CG, copy the residual norms of the CG iterations
@@ -218,21 +261,20 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
         // Save the last residual to check the growing residual criterion at the next step
         Rn_squared_norm = R_squared_norm;
 
-        if (converged) {
-            break;
-        }
-
         if (not warm_start) {
             dx.clear();
         }
 
         n_it++;
 
-    } // End while (n_it < d_newton_iterations.getValue())
+    } // End while (not converged and not diverged and n_it < newton_iterations)
 
-    if (n_it >= newton_iterations) {
-        n_it--;
-        msg_info() << "[DIVERGED] The number of Newton iterations reached the maximum of " << newton_iterations << " iterations";
+    n_it--; // Reset to the actual index of the last iteration completed
+
+    if (not converged and not diverged and n_it == (newton_iterations-1)) {
+        if (print_log) {
+            info << "[DIVERGED] The number of Newton iterations reached the maximum of " << newton_iterations << " iterations" << "\n";
+        }
     }
 
     d_converged.setValue(converged);

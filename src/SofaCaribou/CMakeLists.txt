@@ -18,6 +18,8 @@ set(HEADER_FILES
     Topology/FictitiousGrid.h
     Topology/IsoSurface.h
     Topology/SphereIsoSurface.h
+    Visitor/AssembleGlobalMatrix.h
+    Visitor/ConstrainGlobalMatrix.h
     Visitor/MultiVecEqualVisitor.h
     )
 
@@ -38,6 +40,8 @@ set(SOURCE_FILES
     Solver/ConjugateGradientSolver.cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
+    Visitor/AssembleGlobalMatrix.cpp
+    Visitor/ConstrainGlobalMatrix.cpp
     Visitor/MultiVecEqualVisitor.cpp
     init.cpp)
 
