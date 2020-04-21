@@ -61,8 +61,8 @@ struct BaseTriangle : public Element<Derived> {
      */
     inline auto normal() const noexcept ->  WorldCoordinates {
         static_assert(Dimension == 3, "Can only get the normal of a triangle in a 3D world");
-        const auto v1 = self().node(1) - self().node(0);
-        const auto v2 = self().node(2) - self().node(1);
+        const WorldCoordinates v1 = self().node(1) - self().node(0);
+        const WorldCoordinates v2 = self().node(2) - self().node(0);
 
         return v1.cross(v2).normalized();
     }

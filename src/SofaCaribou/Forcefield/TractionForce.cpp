@@ -264,20 +264,26 @@ void TractionForce::draw(const sofa::core::visual::VisualParams* vparams)
     if (! vparams->displayFlags().getShowForceFields() )
         return;
 
+    vparams->drawTool()->saveLastState();
+    if (vparams->displayFlags().getShowWireFrame())
+        vparams->drawTool()->setPolygonMode(0,true);
+
+    vparams->drawTool()->disableLighting();
+
     const auto & triangles = d_triangles.getValue();
     const auto & quads = d_quads.getValue();
     const auto positions = d_mechanicalState.get()->readPositions();
+    const auto traction = MapVector<3>(&d_traction.getValue()[0]);
 
     sofa::helper::vector<Vector3> triangles_points;
     sofa::helper::vector<Vector3> quads_points;
     sofa::helper::vector<Vector3> line_points;
     if (draw_faces) {
-        triangles_points.resize(triangles.size() * 3);
-        quads_points.resize(quads.size() * 4);
+        triangles_points.reserve(triangles.size() * 3);
+        quads_points.reserve(quads.size() * 4);
     }
 
-    line_points.resize((triangles.size() + quads.size()) * 2);
-    size_t line_index = 0;
+    line_points.reserve((triangles.size() + quads.size()) * 2);
     for (size_t i = 0; i < triangles.size(); ++i) {
         const auto & triangle_node_indices = triangles[i];
         const auto p1 = MapVector<3>(&(positions[triangle_node_indices[0]][0]));
@@ -289,20 +295,23 @@ void TractionForce::draw(const sofa::core::visual::VisualParams* vparams)
         const auto c = triangle.center();
         const Vector3 center(c[0], c[1], c[2]);
 
-        const auto n = triangle.normal();
+        auto n = triangle.normal();
+        if (n.dot(traction) < 0)
+            n *= -1;
+
         const Vector3 normal(n[0], n[1], n[2]);
 
         if (draw_faces) {
             const auto pp1 = c + (p1-c)*0.666667 + n*0.001;
             const auto pp2 = c + (p2-c)*0.666667 + n*0.001;
             const auto pp3 = c + (p3-c)*0.666667 + n*0.001;
-            triangles_points[3 * i + 0] = {pp1[0], pp1[1], pp1[2]};
-            triangles_points[3 * i + 1] = {pp2[0], pp2[1], pp2[2]};
-            triangles_points[3 * i + 2] = {pp3[0], pp3[1], pp3[2]};
+            triangles_points.emplace_back(pp1[0], pp1[1], pp1[2]);
+            triangles_points.emplace_back(pp2[0], pp2[1], pp2[2]);
+            triangles_points.emplace_back(pp3[0], pp3[1], pp3[2]);
         }
 
-        line_points[line_index++] = center;
-        line_points[line_index++] = center + normal;
+        line_points.emplace_back(center);
+        line_points.emplace_back(center + normal);
     }
 
     for (size_t i = 0; i < quads.size(); ++i) {
@@ -318,8 +327,9 @@ void TractionForce::draw(const sofa::core::visual::VisualParams* vparams)
         const Vector3 center(c[0], c[1], c[2]);
 
         const auto t1 = caribou::geometry::Triangle<3>(p1, p2, p3);
-        const auto t2 = caribou::geometry::Triangle<3>(p2, p3, p4);
-        const auto n = ((t1.normal()+t2.normal())/2).normalized().eval();
+        auto n = t1.normal();
+        if (n.dot(traction) < 0)
+            n *= -1;
         const Vector3 normal(n[0], n[1], n[2]);
 
         if (draw_faces) {
@@ -327,22 +337,27 @@ void TractionForce::draw(const sofa::core::visual::VisualParams* vparams)
             const auto pp2 = c + (p2-c)*0.666667 + n*0.001;
             const auto pp3 = c + (p3-c)*0.666667 + n*0.001;
             const auto pp4 = c + (p4-c)*0.666667 + n*0.001;
-            quads_points[4 * i + 0] = {pp1[0], pp1[1], pp1[2]};
-            quads_points[4 * i + 1] = {pp2[0], pp2[1], pp2[2]};
-            quads_points[4 * i + 2] = {pp3[0], pp3[1], pp3[2]};
-            quads_points[4 * i + 3] = {pp4[0], pp4[1], pp4[2]};
+            quads_points.emplace_back(pp1[0], pp1[1], pp1[2]);
+            quads_points.emplace_back(pp2[0], pp2[1], pp2[2]);
+            quads_points.emplace_back(pp3[0], pp3[1], pp3[2]);
+            quads_points.emplace_back(pp4[0], pp4[1], pp4[2]);
         }
 
-        line_points[line_index++] = center;
-        line_points[line_index++] = center + normal;
+        line_points.emplace_back(center);
+        line_points.emplace_back(center + normal);
     }
 
     if (draw_faces) {
-        vparams->drawTool()->drawTriangles(triangles_points, Color(1, 0, 0, 0.5));
-        vparams->drawTool()->drawQuads(quads_points, Color(1, 0, 0, 0.5));
+        vparams->drawTool()->drawTriangles(triangles_points, Color(1, 0, 0, 1));
+        vparams->drawTool()->drawQuads(quads_points, Color(1, 0, 0, 1));
     }
 
     vparams->drawTool()->drawLines(line_points, 1.f, Color(0, 1, 0, 1));
+
+    if (vparams->displayFlags().getShowWireFrame())
+        vparams->drawTool()->setPolygonMode(0,false);
+
+    vparams->drawTool()->restoreLastState();
 }
 
 
