@@ -27,7 +27,7 @@ public:
     static auto Read(const std::string & filepath) -> VTKReader;
 
     /** Print information about the current vtk file. */
-    void print (std::ostream &out);
+    void print (std::ostream &out) const;
 
     /** Build the actual unstructured mesh from the vtk file. */
     [[nodiscard]]
@@ -56,7 +56,7 @@ extern template class VTKReader<2>;
 extern template class VTKReader<3>;
 
 template<UNSIGNED_INTEGER_TYPE Dimension>
-auto operator<<(std::ostream& os, const caribou::topology::io::VTKReader<Dimension> & t)
+auto operator<<(std::ostream& os, const caribou::topology::io::VTKReader<Dimension> & t) -> std::ostream&
 {
     t.print(os);
     return os;

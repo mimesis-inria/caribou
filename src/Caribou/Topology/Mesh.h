@@ -104,9 +104,9 @@ namespace caribou::topology {
          * */
         [[nodiscard]]
         inline auto domain(const UNSIGNED_INTEGER_TYPE & i) const -> const BaseDomain * {
-            caribou_assert((i < p_domains.size()) &&
-                           ("Trying to get the " + std::to_string(i+1) + "th domain while the mesh has only " +
-                std::to_string(p_domains.size()) + " domains.").c_str()
+            caribou_assert(
+                (i < p_domains.size()) &&
+                "Trying to get a domain outside from a domain id larger than the number of domains."
             );
 
             return p_domains[i].second.get();

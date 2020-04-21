@@ -16,8 +16,12 @@ set(SOURCE_FILES
 set(MESH_FILES
         meshes/1D_linear.vtk
         meshes/1D_quadratic.vtk
+        meshes/2D_quad_linear.vtk
+        meshes/2D_quad_quadratic.vtk
         meshes/2D_triangle_linear.vtk
         meshes/2D_triangle_quadratic.vtk
+        meshes/3D_quad_linear.vtk
+        meshes/3D_quad_quadratic.vtk
         meshes/3D_triangle_linear.vtk
         meshes/3D_triangle_quadratic.vtk
 )

@@ -136,7 +136,7 @@ auto VTKReader<Dimension>::mesh () const -> Mesh<Dimension> {
 
 
 template<UNSIGNED_INTEGER_TYPE Dimension>
-void VTKReader<Dimension>::print (std::ostream & out) {
+void VTKReader<Dimension>::print (std::ostream & out) const {
     vtkUnstructuredGrid * output = p_reader->GetOutput();
 
     out << "input has " << output->GetNumberOfPoints() << " points.\n";
