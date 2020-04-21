@@ -166,7 +166,7 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
     Timer::stepBegin("ConjugateGradient::ComputeGlobalMatrix");
     // Save the current mechanical parameters (m, b and k factors of the mass (M), damping (B) and
     // stiffness (K) matrices)
-    p_mechanical_params = mparams;
+    p_mechanical_params = *mparams;
 
     // Get the preconditioning method
     const PreconditioningMethod preconditioning_method = get_preconditioning_method_from_string(d_preconditioning_method.getValue().getSelectedItem());
@@ -227,7 +227,10 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
 void ConjugateGradientSolver::setSystemRHVector(sofa::core::MultiVecDerivId b_id) {
     Timer::stepBegin("ConjugateGradient::InitialResidualVector");
 
-    sofa::simulation::common::MechanicalOperations mop(p_mechanical_params, this->getContext());
+    // Register the RHS to the mechanical parameters
+    p_mechanical_params.setDf(b_id);
+
+    sofa::simulation::common::MechanicalOperations mop(&p_mechanical_params, this->getContext());
     p_b_id = b_id;
 
     // Get the preconditioning method
@@ -246,7 +249,10 @@ void ConjugateGradientSolver::setSystemRHVector(sofa::core::MultiVecDerivId b_id
 void ConjugateGradientSolver::setSystemLHVector(sofa::core::MultiVecDerivId x_id) {
     Timer::stepBegin("ConjugateGradient::InitialSolutionVector");
 
-    sofa::simulation::common::MechanicalOperations mop(p_mechanical_params, this->getContext());
+    // Register the dx vector to the mechanical parameters
+    p_mechanical_params.setDx(x_id);
+
+    sofa::simulation::common::MechanicalOperations mop(&p_mechanical_params, this->getContext());
     p_x_id = x_id;
 
     // Get the preconditioning method
@@ -263,8 +269,8 @@ void ConjugateGradientSolver::setSystemLHVector(sofa::core::MultiVecDerivId x_id
 }
 
 void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
-    sofa::simulation::common::VectorOperations vop( p_mechanical_params, this->getContext() );
-    sofa::simulation::common::MechanicalOperations mop( p_mechanical_params, this->getContext() );
+    sofa::simulation::common::VectorOperations vop( &p_mechanical_params, this->getContext() );
+    sofa::simulation::common::MechanicalOperations mop( &p_mechanical_params, this->getContext() );
 
     // Create temporary vectors needed for the method
     MultiVecDeriv r(&vop);
@@ -280,9 +286,9 @@ void ConjugateGradientSolver::solve(MultiVecDeriv & b, MultiVecDeriv & x) {
     p_squared_residuals.reserve(maximum_number_of_iterations);
 
     // Get the matrices coefficient m, b and k : A = (mM + bB + kK)
-    const auto  m_coef = p_mechanical_params->mFactor();
-    const auto  b_coef = p_mechanical_params->bFactor();
-    const auto  k_coef = p_mechanical_params->kFactor();
+    const auto  m_coef = p_mechanical_params.mFactor();
+    const auto  b_coef = p_mechanical_params.bFactor();
+    const auto  k_coef = p_mechanical_params.kFactor();
 
     // Declare the method variables
     FLOATING_POINT_TYPE b_norm_2 = 0., r_norm_2 = 0.; // RHS and residual squared norms
@@ -493,8 +499,8 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
 }
 
 void ConjugateGradientSolver::solveSystem() {
-    sofa::simulation::common::VectorOperations vop( p_mechanical_params, this->getContext() );
-    sofa::simulation::common::MechanicalOperations mop( p_mechanical_params, this->getContext() );
+    sofa::simulation::common::VectorOperations vop( &p_mechanical_params, this->getContext() );
+    sofa::simulation::common::MechanicalOperations mop( &p_mechanical_params, this->getContext() );
 
     // Gather the x and b vector identifiers
     MultiVecDeriv x(&vop, p_x_id);

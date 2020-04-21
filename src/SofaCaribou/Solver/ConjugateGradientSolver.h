@@ -186,7 +186,7 @@ private:
 
     /// Private members
     ///< The mechanical parameters containing the m, b and k coefficients.
-    const sofa::core::MechanicalParams * p_mechanical_params{};
+    sofa::core::MechanicalParams p_mechanical_params;
 
     ///< Accessor used to determine the index of each mechanical object matrix and vector in the global system.
     DefaultMultiMatrixAccessor p_accessor;
