@@ -101,6 +101,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
+if (CARIBOU_OPTIMIZE_FOR_NATIVE)
+    target_compile_options(${PROJECT_NAME} PRIVATE)
+endif()
 
 if (LAPACK_FOUND AND LAPACKE_FOUND AND MKL_FOUND)
     OPTION(CARIBOU_WITH_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" ON)

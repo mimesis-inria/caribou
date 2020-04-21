@@ -207,8 +207,6 @@ void HyperelasticForcefield<Element>::addDForce(
             const auto i = it.row();
             const auto j = it.col();
             const auto v = -1 * it.value() * kFactor;
-            if (i > j)
-                throw std::runtime_error("Say waht now?");
             if (i != j) {
                 DF[i] += v*DX[j];
                 DF[j] += v*DX[i];
@@ -217,9 +215,6 @@ void HyperelasticForcefield<Element>::addDForce(
             }
         }
     }
-
-//    Not sure why the following does not work.....
-//    DF -= (p_K.template selfadjointView<Eigen::Upper>()*DX)*kFactor);
 
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::addDForce");
 }
@@ -234,6 +229,15 @@ void HyperelasticForcefield<Element>::addKToMatrix(
     }
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addKToMatrix");
+
+    // K is symmetric, so we only stored "one side" of the matrix.
+    // But to accelerate the computation, coefficients were not
+    // stored only in the upper or lower triangular part, but instead
+    // in whatever triangular part (upper or lower) the first node
+    // index of the element was. This means that a coefficient (i,j)
+    // might be in the lower triangular part, while (k,l) is in the
+    // upper triangular part. But no coefficient will be both in the
+    // lower AND the upper part.
 
     for (int k = 0; k < p_K.outerSize(); ++k) {
         for (typename Eigen::SparseMatrix<Real>::InnerIterator it(p_K, k); it; ++it) {
@@ -442,7 +446,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
     ///< Triplets are used to store matrix entries before the call to 'compress'.
     /// Duplicates entries are summed up.
-    std::vector<Eigen::Triplet<Real >> triplets;
+    std::vector<Eigen::Triplet<Real>> triplets;
     triplets.reserve(nDofs*24*2);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::update_stiffness");

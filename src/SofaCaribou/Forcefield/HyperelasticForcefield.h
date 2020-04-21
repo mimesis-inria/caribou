@@ -144,8 +144,38 @@ public:
     }
 
     /** Get the complete tangent stiffness matrix as a compressed sparse matrix */
-    auto K() -> const Eigen::SparseMatrix<Real> & {
-        return p_K;
+    auto K() -> Eigen::SparseMatrix<Real> {
+
+        // K is symmetric, so we only stored "one side" of the matrix.
+        // But to accelerate the computation, coefficients were not
+        // stored only in the upper or lower triangular part, but instead
+        // in whatever triangular part (upper or lower) the first node
+        // index of the element was. This means that a coefficient (i,j)
+        // might be in the lower triangular part, while (k,l) is in the
+        // upper triangular part. But no coefficient will be both in the
+        // lower AND the upper part.
+
+        std::vector<Eigen::Triplet<Real>> triplets;
+        triplets.reserve(p_K.size()*2);
+        for (int k = 0; k < p_K.outerSize(); ++k) {
+            for (typename Eigen::SparseMatrix<Real>::InnerIterator it(p_K, k); it; ++it) {
+                const auto i = it.row();
+                const auto j = it.col();
+                const auto v = it.value();
+                if (i != j) {
+                    triplets.emplace_back(i, j, v);
+                    triplets.emplace_back(j, i, v);
+                } else {
+                    triplets.emplace_back(i, i, v);
+                }
+            }
+        }
+
+        Eigen::SparseMatrix<Real> K;
+        K.resize(p_K.rows(), p_K.cols());
+        K.setFromTriplets(triplets.begin(), triplets.end());
+
+        return K;
     }
 
     /** Get the eigen values of the tangent stiffness matrix */
