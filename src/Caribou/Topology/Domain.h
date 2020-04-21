@@ -238,8 +238,8 @@ namespace caribou::topology {
 template <typename Element, typename NodeIndex>
 inline auto Domain<Element, NodeIndex>::element(const UNSIGNED_INTEGER_TYPE & element_id) const -> Element {
     caribou_assert(element_id < number_of_elements() &&
-                   "Trying to get the element #"+std::to_string(element_id) + ", but the domain only has " +
-                   std::to_string(number_of_elements()) + " elements."
+                   ("Trying to get the element #"+std::to_string(element_id) + ", but the domain only has " +
+                   std::to_string(number_of_elements()) + " elements.").c_str()
     );
 
     return Element(mesh().positions(element_indices(element_id)));

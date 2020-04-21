@@ -104,9 +104,9 @@ namespace caribou::topology {
          * */
         [[nodiscard]]
         inline auto domain(const UNSIGNED_INTEGER_TYPE & i) const -> const BaseDomain * {
-            caribou_assert(i < p_domains.size &&
-                "Trying to get the " + std::to_string(i+1) + "th domain while the mesh has only " +
-                std::to_string(p_domains.size) + " domains."
+            caribou_assert((i < p_domains.size()) &&
+                           ("Trying to get the " + std::to_string(i+1) + "th domain while the mesh has only " +
+                std::to_string(p_domains.size()) + " domains.").c_str()
             );
 
             return p_domains[i].second.get();
@@ -225,7 +225,7 @@ namespace caribou::topology {
         [[nodiscard]]
         inline auto position(UNSIGNED_INTEGER_TYPE index) const -> const WorldCoordinates & {
             caribou_assert(index < p_positions.size() && "Trying to access the position vector at a node index greater "
-                                                         "than the number of nodes in the mesh.")
+                                                         "than the number of nodes in the mesh.");
             return p_positions[index];
         }
 

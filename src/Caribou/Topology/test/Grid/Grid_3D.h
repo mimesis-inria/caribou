@@ -240,7 +240,7 @@ TEST(Topology_Grid_3D, BenchMark)
     using Dimensions = Grid::Dimensions;
     BEGIN_CLOCK;
 
-    Grid grid(WorldCoordinates{0, 0, 0}, Subdivisions{100, 100, 100}, Dimensions{100, 100, 100});
+    Grid grid(WorldCoordinates{0, 0, 0}, Subdivisions{10, 10, 10}, Dimensions{100, 100, 100});
 
     std::vector<WorldCoordinates> positions(grid.number_of_nodes());
     std::vector<Grid::ElementNodes> hexahedrons(grid.number_of_cells());

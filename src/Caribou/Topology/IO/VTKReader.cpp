@@ -225,6 +225,9 @@ auto extract_axes_from_3D_vectors(vtkPoints * input_points, const vtkIdType & nu
                                      " axes from the input mesh that have the same value.");
         }
 
+        // Flip back
+        is_all_the_same.flip();
+
         for (std::size_t axis = 0, c = 0; axis < 3; ++axis) {
             if (not is_all_the_same[axis]) {
                 axes[c++] = axis;

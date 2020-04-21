@@ -167,7 +167,7 @@ struct Element {
      * --------------------
      *
      * 1D manifold:    J(u) = dx/du = sum_i dNi/du * x_i
-     *                 det(J) = J
+     *                 det(J) = |J|
      *
      * 2D manifold:    J(u)  = | dx/du | = | sum dNi/du x_i |
      *                         | dy/du | = | sum dNi/du y_i |
@@ -186,7 +186,7 @@ struct Element {
      *
      * 2D manifold:    J(u,v) = | dx/du   dx/dv |   | sum dNi/du  x_i    sum dNi/dv  x_i |
      *                          | dy/du   dy/dv | = | sum dNi/du  y_i    sum dNi/dv  y_i |
-     *                 det(J) = det(J)
+     *                 det(J) = |det(J)|
      *
      *                          | dx/du   dx/dv |   | sum dNi/du  x_i    sum dNi/dv  x_i |
      * 3D manifold:    J(u,v) = | dy/du   dy/dv | = | sum dNi/du  y_i    sum dNi/dv  y_i |
