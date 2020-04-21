@@ -4,7 +4,7 @@ set(SOURCE_FILES
         main.cpp)
 
 enable_testing()
-find_package(GTest REQUIRED)
+find_package(GTest QUIET REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES})

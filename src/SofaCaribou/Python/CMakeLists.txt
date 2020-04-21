@@ -35,7 +35,6 @@ unset(PYTHON_MODULE_EXTENSION)
 if (CARIBOU_WITH_PYTHON_3)
     find_package(SofaPython3 REQUIRED)
     caribou_add_python_module(SofaCaribouPython
-        PYTHON_VERSION 3
         TARGET_NAME SofaCaribouPython
         DESTINATION SofaCaribou
         SOURCE_FILES ${SOURCE_FILES}

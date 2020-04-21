@@ -3,7 +3,7 @@ project(Algebra)
 set(HEADER_FILES
         Tensor.h)
 
-find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(Eigen3 QUIET REQUIRED NO_MODULE)
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(Caribou::Algebra ALIAS ${PROJECT_NAME})

@@ -17,7 +17,7 @@ set(HEADER_FILES
         Triangle.h)
 
 
-find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(Eigen3 QUIET REQUIRED NO_MODULE)
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(Caribou::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -33,6 +33,6 @@ if (CARIBOU_BUILD_TESTS)
     add_subdirectory(test)
 endif()
 
-#if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
+#if (CARIBOU_WITH_PYTHON_3)
 #    add_subdirectory(Python)
 #endif()

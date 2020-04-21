@@ -77,20 +77,20 @@ endif()
 
 # Caribou
 if (NOT TARGET Caribou::Algebra)
-    find_package(Caribou COMPONENTS Algebra Geometry Topology Mechanics REQUIRED)
+    find_package(Caribou COMPONENTS Algebra Geometry Topology Mechanics REQUIRED QUIET)
 endif()
 
 # Sofa's packages
-find_package(SofaFramework REQUIRED)
-find_package(SofaBase REQUIRED)
-find_package(SofaCommon REQUIRED)
+find_package(SofaFramework QUIET REQUIRED)
+find_package(SofaBase QUIET REQUIRED)
+find_package(SofaCommon QUIET REQUIRED)
 
 # Optional packages
-find_package(OpenMP)
-find_package(LAPACK)
-find_package(LAPACKE)
-find_package(MKL)
-find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(OpenMP QUIET)
+find_package(LAPACK QUIET)
+find_package(LAPACKE QUIET)
+find_package(MKL QUIET)
+find_package(Eigen3 REQUIRED NO_MODULE QUIET)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
 target_include_directories(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../>")
@@ -98,8 +98,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology SofaBaseLinearSolver SofaEigen2Solver)
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry Caribou::Topology Caribou::Mechanics)
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 if (CARIBOU_OPTIMIZE_FOR_NATIVE)
     target_compile_options(${PROJECT_NAME} PRIVATE)
@@ -112,9 +111,9 @@ else()
 endif()
 
 if (CARIBOU_WITH_EIGEN_MKL)
-    find_package(LAPACK REQUIRED)
-    find_package(LAPACKE REQUIRED)
-    find_package(MKL REQUIRED)
+    find_package(LAPACK REQUIRED QUIET)
+    find_package(LAPACKE REQUIRED QUIET)
+    find_package(MKL REQUIRED QUIET)
     target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_USE_LAPACKE)
     target_include_directories(${PROJECT_NAME} PUBLIC ${LAPACKE_INCLUDE_DIRS} ${LAPACKE_INCLUDE_DIRS_DEP} ${MKL_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES} ${LAPACKE_LIBRARIES_DEP} ${MKL_LIBRARIES})
@@ -122,7 +121,7 @@ endif()
 
 
 if (CARIBOU_WITH_OPENMP)
-    find_package(OpenMP REQUIRED)
+    find_package(OpenMP REQUIRED QUIET)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
     target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_OPENMP)
 endif()
@@ -131,7 +130,7 @@ if (CARIBOU_BUILD_TESTS)
     add_subdirectory(test)
 endif()
 
-if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
+if (CARIBOU_WITH_PYTHON_3)
     add_subdirectory(Python)
 endif()
 

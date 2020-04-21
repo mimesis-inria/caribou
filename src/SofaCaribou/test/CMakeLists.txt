@@ -7,10 +7,10 @@ set(SOURCE_FILES
 )
 
 enable_testing()
-find_package(GTest REQUIRED)
-find_package(SofaFramework REQUIRED)
-find_package(SofaSimulation REQUIRED)
-find_package(SofaBase REQUIRED)
+find_package(GTest QUIET REQUIRED)
+find_package(SofaFramework QUIET REQUIRED)
+find_package(SofaSimulation QUIET REQUIRED)
+find_package(SofaBase QUIET REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES})
