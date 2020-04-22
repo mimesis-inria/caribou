@@ -47,7 +47,23 @@ VTKReader<Dimension>::VTKReader(std::string filepath, vtkSmartPointer<vtkUnstruc
 
         // Hexahedrons
         register_element_type<geometry::Hexahedron<Linear>>(VTK_HEXAHEDRON);
-        register_element_type<geometry::Hexahedron<Quadratic>>(VTK_QUADRATIC_HEXAHEDRON);
+        register_element_type(VTK_QUADRATIC_HEXAHEDRON, [](Mesh<Dimension> & m, const ElementsIndices & indices) {
+
+            // The order of quadratic hexahedron node indces in VTK aren't the same as the order used in Caribou
+            ElementsIndices reordered_indices = indices;
+//            reordered_indices.col(9)  = indices.col(9);
+            reordered_indices.col(10) = indices.col(18);
+//            reordered_indices.col(11) = indices.col(11);
+            reordered_indices.col(12) = indices.col(10);
+            reordered_indices.col(13) = indices.col(14);
+            reordered_indices.col(14) = indices.col(15);
+            reordered_indices.col(15) = indices.col(12);
+            reordered_indices.col(16) = indices.col(13);
+            reordered_indices.col(17) = indices.col(16);
+            reordered_indices.col(18) = indices.col(19);
+            reordered_indices.col(19) = indices.col(17);
+            return m.template add_domain<geometry::Hexahedron<Quadratic>>("domain_"+std::to_string(m.number_of_domains()+1), reordered_indices);
+        });
     }
 }
 
@@ -183,13 +199,17 @@ void VTKReader<Dimension>::print (std::ostream & out) const {
  * This method will first check which axis (x, y or z) has all of its coordinates equals.
  *
  * For example, the input
- *    [[24, 0, 12], [64, 0, 22], [51, 0, 9]]
+ *    [[24, 0, 12],
+ *     [64, 0, 22],
+ *     [51, 0, 9]]
  * will produce the following axis for a 2D mesh
  *    [0, 2] // x is the 0-axis, y is the 2-axis
  * and will raise an error for a 1D mesh
  *
  * The input
- *    [[5, 0, 12], [5, 0, 22], [5, 0, 9]]
+ *    [[5, 0, 12],
+ *     [5, 0, 22],
+ *     [5, 0, 9]]
  * will produce the following axis for a 1D mesh
  *    [2] // x is the 2-axis
  * and will raise an error for a 2D mesh

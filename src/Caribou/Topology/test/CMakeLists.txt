@@ -20,6 +20,8 @@ set(MESH_FILES
         meshes/2D_quad_quadratic.vtk
         meshes/2D_triangle_linear.vtk
         meshes/2D_triangle_quadratic.vtk
+        meshes/3D_hexahedron_linear.vtk
+        meshes/3D_hexahedron_quadratic.vtk
         meshes/3D_quad_linear.vtk
         meshes/3D_quad_quadratic.vtk
         meshes/3D_tetrahedron_linear.vtk

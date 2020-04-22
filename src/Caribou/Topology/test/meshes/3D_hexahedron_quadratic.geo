@@ -18,6 +18,13 @@ Reverse Surface {6};
 
 Recombine Surface {6};
 
+ex[] = Extrude {-4.26896, -3.94592, -8.13669} {Surface{6}; Layers{4}; Recombine;};
+
+Physical Surface("base") = {6};
+Physical Surface("top") = {ex[0]};
+Physical Surface ("surface") = {6, ex[0], ex[2], ex[3], ex[4], ex[5]};
+Physical Volume ("volume") = {ex[1]};
+
 Mesh.ElementOrder = 2;
-Mesh.SecondOrderLinear = 1;
+Mesh.SecondOrderLinear = 0;
 Mesh.SecondOrderIncomplete = 1;
