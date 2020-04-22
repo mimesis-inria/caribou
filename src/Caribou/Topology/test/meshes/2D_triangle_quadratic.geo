@@ -17,5 +17,4 @@ Transfinite Line {2, 4} = 5 Using Progression 1;
 Reverse Surface {6};
 
 Mesh.ElementOrder = 2;
-Mesh.SecondOrderLinear = 0;
 Mesh 2;

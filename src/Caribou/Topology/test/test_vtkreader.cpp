@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
-#include <Caribou/Geometry/Segment.h>
-#include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Segment.h>
+#include <Caribou/Geometry/Tetrahedron.h>
+#include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Topology/Mesh.h>
 #include <Caribou/Topology/IO/VTKReader.h>
 #include "topology_test.h"
@@ -423,5 +424,128 @@ TEST(VTKReader, Quad3D) {
             }
         }
         EXPECT_NEAR(area, 100., 1e-3);
+    }
+}
+
+TEST(VTKReader, Tetrahedron) {
+    using namespace caribou;
+    using namespace caribou::topology;
+    using namespace caribou::geometry;
+
+    double pi = 3.14159265358979323846;
+    double r = 5;
+
+    { // Linear
+        auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/3D_tetrahedron_linear.vtk");
+        auto mesh = reader.mesh();
+        EXPECT_EQ(mesh.number_of_nodes(), 206);
+        EXPECT_EQ(mesh.number_of_domains(), 2);
+
+        // Surface triangles
+        EXPECT_EQ(mesh.domains()[0].first, "domain_1");
+        EXPECT_EQ(mesh.domain(0)->number_of_elements(), 316);
+        EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
+
+        auto triangle_domain = dynamic_cast<const Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
+        ASSERT_NE(triangle_domain, nullptr);
+
+        FLOATING_POINT_TYPE area = 0;
+        for (UNSIGNED_INTEGER_TYPE triangle_id = 0; triangle_id < triangle_domain->number_of_elements(); ++triangle_id) {
+            auto triangle = triangle_domain->element(triangle_id);
+            for (const auto & g : triangle.gauss_nodes()) {
+                const auto x = g.position;
+                const auto w = g.weight;
+                const auto J = triangle.jacobian(x);
+                const auto detJ = J.col(0).cross(J.col(1)).norm();
+                area += w*detJ;
+            }
+        }
+        double exact_area = 4*pi*r*r;
+        EXPECT_LE( abs((area-exact_area)/exact_area), 0.1);
+
+        // Trying to cast a triangle to a tetra domain will return nullptr
+        auto bad_domain = dynamic_cast<const Domain<Tetrahedron<Linear>> * >(mesh.domain(0));
+        ASSERT_EQ(bad_domain, nullptr);
+
+        // Tetra domain
+        EXPECT_EQ(mesh.domains()[1].first, "domain_2");
+        EXPECT_EQ(mesh.domain(1)->number_of_elements(), 681);
+        EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
+        auto tetra_domain = dynamic_cast<const Domain<Tetrahedron<Linear>> * >(mesh.domain(1));
+        ASSERT_NE(tetra_domain, nullptr);
+        EXPECT_EQ(mesh.domain(1)->number_of_elements(), tetra_domain->number_of_elements());
+
+        FLOATING_POINT_TYPE volume = 0;
+        for (UNSIGNED_INTEGER_TYPE tetra_id = 0; tetra_id < tetra_domain->number_of_elements(); ++tetra_id) {
+            auto tetra = tetra_domain->element(tetra_id);
+            for (const auto & g : tetra.gauss_nodes()) {
+                const auto x = g.position;
+                const auto w = g.weight;
+                const auto J = tetra.jacobian(x);
+                const auto detJ = J.determinant();
+                volume += w*abs(detJ);
+            }
+        }
+        double exact_volume = 4/3. * pi * r*r*r;
+        EXPECT_LE( abs((volume-exact_volume)/exact_volume), 0.1);
+    }
+
+    { // Quadratic
+        auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/3D_tetrahedron_quadratic.vtk");
+        auto mesh = reader.mesh();
+        EXPECT_EQ(mesh.number_of_nodes(), 1250);
+        EXPECT_EQ(mesh.number_of_domains(), 2);
+
+        // Surface triangles
+        EXPECT_EQ(mesh.domains()[0].first, "domain_1");
+        EXPECT_EQ(mesh.domain(0)->number_of_elements(), 316);
+        EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
+
+        auto triangle_domain = dynamic_cast<const Domain<Triangle<_3D, Quadratic>> * >(mesh.domain(0));
+        ASSERT_NE(triangle_domain, nullptr);
+
+        FLOATING_POINT_TYPE area = 0;
+        for (UNSIGNED_INTEGER_TYPE triangle_id = 0; triangle_id < triangle_domain->number_of_elements(); ++triangle_id) {
+            auto triangle = triangle_domain->element(triangle_id);
+            for (const auto & g : triangle.gauss_nodes()) {
+                const auto x = g.position;
+                const auto w = g.weight;
+                const auto J = triangle.jacobian(x);
+                const auto detJ = J.col(0).cross(J.col(1)).norm();
+                area += w*detJ;
+            }
+        }
+        double exact_area = 4*pi*r*r;
+        EXPECT_LE( abs((area-exact_area)/exact_area), 0.0005);
+
+        // Trying to cast a triangle to a tetra domain will return nullptr
+        auto bad_domain1 = dynamic_cast<const Domain<Tetrahedron<Linear>> * >(mesh.domain(0));
+        ASSERT_EQ(bad_domain1, nullptr);
+
+        // Trying to cast a quadratic triangle to a linear triangle domain will return nullptr
+        auto bad_domain2 = dynamic_cast<const Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
+        ASSERT_EQ(bad_domain2, nullptr);
+
+        // Tetra domain
+        EXPECT_EQ(mesh.domains()[1].first, "domain_2");
+        EXPECT_EQ(mesh.domain(1)->number_of_elements(), 681);
+        EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
+        auto tetra_domain = dynamic_cast<const Domain<Tetrahedron<Quadratic>> * >(mesh.domain(1));
+        ASSERT_NE(tetra_domain, nullptr);
+        EXPECT_EQ(mesh.domain(1)->number_of_elements(), tetra_domain->number_of_elements());
+
+        FLOATING_POINT_TYPE volume = 0;
+        for (UNSIGNED_INTEGER_TYPE tetra_id = 0; tetra_id < tetra_domain->number_of_elements(); ++tetra_id) {
+            auto tetra = tetra_domain->element(tetra_id);
+            for (const auto & g : tetra.gauss_nodes()) {
+                const auto x = g.position;
+                const auto w = g.weight;
+                const auto J = tetra.jacobian(x);
+                const auto detJ = J.determinant();
+                volume += w*abs(detJ);
+            }
+        }
+        double exact_volume = 4/3. * pi * r*r*r;
+        EXPECT_LE( abs((volume-exact_volume)/exact_volume), 0.0005);
     }
 }
