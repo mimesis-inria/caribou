@@ -106,7 +106,7 @@ struct Element {
     /**
      * Get the Lagrange polynomial values evaluated at local coordinates xi w.r.t each element's interpolation nodes.
      *
-     * @example
+     * Example:
      * \code{.cpp}
      * // Computes the value of node #2 Lagrange polynomial evaluated at local coordinates {-0.4} on a segment
      * Segment<3, Linear> segment;
@@ -119,7 +119,7 @@ struct Element {
      * Get the Lagrange polynomial derivatives w.r.t the local frame {dL/du} evaluated at local
      * coordinates {u} w.r.t each segment's interpolation nodes.
      *
-     * @example
+     * Example:
      * \code{.cpp}
      * // Computes the derivatives of node #2 Lagrange polynomial evaluated at local coordinates {-0.4}
      * float dp = Segment2::dL(-0.4)[2];
@@ -162,6 +162,8 @@ struct Element {
      * Compute the Jacobian matrix of the transformation T(xi)-> x evaluated at local coordinates xi.
      *
      * The Jacobian is defined as:
+     *
+     * \verbatim
      *
      * 1D canonical element
      * --------------------
@@ -210,8 +212,9 @@ struct Element {
      * where dNi/du (resp. dv and dw) is the partial derivative of the shape function at node i
      * w.r.t the local frame of the canonical element evaluated at local coordinate  {u, v, w} and
      * where {xi, yi and zi} are the world coordinates of the position of node i on its element manifold.
+     *\endverbatim
      *
-     * @example
+     * Example:
      * \code{.cpp}
      * // Computes the Jacobian of a 3D segment and its determinant evaluated at local coordinates 0.5 (half-way through the segment)
      * Segment<3, Linear> segment {{5, 5, 5}, {10, 5,0}};

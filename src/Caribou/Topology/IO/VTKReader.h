@@ -68,7 +68,7 @@ public:
      *
      *                    Here, for example, e2n4 means the indice of the second node of the fourth element of the mesh.
      *
-     * @example
+     * Example:
      * \code{.cpp}
      * auto reader = io::VTKReader<_3D>::Read("meshes/3D_hexahedron_linear.vtk");
      * reader.register_element_type(VTK_HEXAHEDRON, [](Mesh<_3D> & mesh, const Mesh<_3D>::ElementsIndices &indices)) {

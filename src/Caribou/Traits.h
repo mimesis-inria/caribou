@@ -9,7 +9,7 @@
  *
  * Same thing as std::enable_if, just easier to read for the user.
  *
- * \example
+ * Example:
  * \code{.cpp}
  * #include <Caribou/Traits.h>
  *
@@ -33,7 +33,7 @@
  *
  * Same thing as std::enable_if, just easier to read for the user.
  *
- * \example
+ * Example:
  * \code{.cpp}
  * #include <iostream>
  * #include <Caribou/Traits.h>
