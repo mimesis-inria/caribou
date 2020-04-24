@@ -14,6 +14,7 @@
 #include <vtkCellData.h>
 #include <vtkUnstructuredGridReader.h>
 #include <vtkSmartPointer.h>
+#include <vtkPointData.h>
 
 namespace fs = std::filesystem;
 
