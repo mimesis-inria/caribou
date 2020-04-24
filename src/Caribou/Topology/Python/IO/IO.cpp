@@ -1,10 +1,14 @@
 #include "IO.h"
 #include <pybind11/pybind11.h>
 
-#include <Caribou/Topology/IO/VTKReader.h>
+#include <Caribou/Topology/config.h>
 
+#ifdef CARIBOU_WITH_VTK
+#include <Caribou/Topology/IO/VTKReader.h>
+#endif
 namespace caribou::topology::io::python {
 
+#ifdef CARIBOU_WITH_VTK
 template<UNSIGNED_INTEGER_TYPE Dimension>
 void add_reader(pybind11::module & m) {
     std::string name = "VTKReader" + std::to_string(Dimension) + "D";
@@ -17,10 +21,12 @@ void add_reader(pybind11::module & m) {
         return ss.str();
     });
 }
+#endif
 
 void create_IO(pybind11::module & m) {
     pybind11::module io = m.def_submodule("IO");
 
+#ifdef CARIBOU_WITH_VTK
     add_reader<1>(m);
     add_reader<2>(m);
     add_reader<3>(m);
@@ -36,6 +42,7 @@ void create_IO(pybind11::module & m) {
             throw std::runtime_error("Trying to create a VTKReader with a dimension that is not 1, 2 or 3.");
         }
     }, pybind11::arg("filepath"), pybind11::arg("dimension") = 3);
+#endif
 }
 
 } // namespace caribou::topology::io::python

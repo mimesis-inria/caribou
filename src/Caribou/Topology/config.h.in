@@ -1,0 +1,3 @@
+#pragma once
+
+#cmakedefine CARIBOU_WITH_VTK

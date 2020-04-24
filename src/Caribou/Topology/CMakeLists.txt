@@ -1,6 +1,7 @@
 project(Topology)
 
 set(HEADER_FILES
+    config.h.in
     BaseMesh.h
     BaseDomain.h
     Domain.h
@@ -47,7 +48,6 @@ target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 caribou_install_target(Caribou ${PROJECT_NAME} ${HEADER_FILES})
 
 if (CARIBOU_WITH_VTK)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_VTK)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${VTK_LIBRARIES})
     if (VTK_VERSION VERSION_GREATER_EQUAL "8.90.0")
         # new system
