@@ -22,14 +22,14 @@ cg_solvers = [
     {'name':'None', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'None',     'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
     {'name':'Id',   'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Identity', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
     {'name':'Dia',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Diagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
-# #    {'name':'LSDia', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'LeastSquareDiagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+#    {'name':'LSDia', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'LeastSquareDiagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
     {'name':'iChol',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteCholesky',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
-    {'name':'iLU',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteLU',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
+    # {'name':'iLU',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteLU',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
 
 # Sofa solvers
-    {'name':'sNone', 'solver':'CGLinearSolver', 'arguments':  {'tolerance':threshold, 'iterations':number_of_cg_iterations}},
-    {'name':'bJac',  'solver':'PCGLinearSolver', 'arguments': {'tolerance':threshold, 'iterations':number_of_cg_iterations}, 'precond':'BlockJacobiPreconditioner'},
-    {'name':'SSOR',  'solver':'PCGLinearSolver', 'arguments': {'tolerance':threshold, 'iterations':number_of_cg_iterations}, 'precond':'SSORPreconditioner'},
+    {'name':'sNone', 'solver':'CGLinearSolver', 'arguments':  {'tolerance':threshold, 'threshold':1e-25, 'iterations':number_of_cg_iterations}},
+    {'name':'bJac',  'solver':'PCGLinearSolver', 'arguments': {'tolerance':threshold*threshold, 'iterations':number_of_cg_iterations}, 'precond':'BlockJacobiPreconditioner'},
+    {'name':'SSOR',  'solver':'PCGLinearSolver', 'arguments': {'tolerance':threshold*threshold, 'iterations':number_of_cg_iterations}, 'precond':'SSORPreconditioner'},
 ]
 
 def extract_newton_steps(record):
@@ -42,9 +42,6 @@ def extract_newton_steps(record):
             continue
         MBKBuild = newton_record['MBKBuild']
         MBKSolve = newton_record['MBKSolve']
-
-        if 'PCGLinearSolver::solve' in MBKSolve:
-            MBKSolve = MBKSolve['PCGLinearSolver::solve']
 
         data = {}
         data['Total time'] = newton_record['total_time']
@@ -65,14 +62,21 @@ def extract_newton_steps(record):
         else:
             data['Update global matrix'] = MBKBuild['total_time']
 
+        if 'PCGLinearSolver::solve' in MBKSolve:
+            MBKSolve = MBKSolve['PCGLinearSolver::solve']
+            data['Nb of CG iterations'] = str(int(MBKSolve['PCG iterations'] - 1))
+        elif 'CG-Solve' in MBKSolve:
+            data['Nb of CG iterations'] = str(int(MBKSolve['CG iterations'] - 1))
+            MBKSolve = MBKSolve['CG-Solve']
+
         if 'ConjugateGradient::solve' in MBKSolve:
             update_matrix_time = 0.
             if 'HyperelasticForcefield::update_stiffness' in MBKSolve['ConjugateGradient::solve']:
                 update_matrix_time = MBKSolve['ConjugateGradient::solve']['HyperelasticForcefield::update_stiffness']['total_time']
                 data['Update global matrix'] += update_matrix_time
-            data['Nb of CG iterations'] = MBKSolve['ConjugateGradient::solve']['nb_iterations']
+            data['Nb of CG iterations'] = str(int(MBKSolve['ConjugateGradient::solve']['nb_iterations']))
             mean_time = 0.
-            if 'cg_iteration' in MBKSolve['ConjugateGradient::solve']['cg_iteration']:
+            if 'cg_iteration' in MBKSolve['ConjugateGradient::solve']:
                 for cg_iteration in MBKSolve['ConjugateGradient::solve']['cg_iteration']:
                     mean_time += cg_iteration['total_time']
                 if len(MBKSolve['ConjugateGradient::solve']['cg_iteration']):
@@ -83,7 +87,6 @@ def extract_newton_steps(record):
             if 'HyperelasticForcefield::update_stiffness' in MBKSolve:
                 update_matrix_time = MBKSolve['HyperelasticForcefield::update_stiffness']['total_time']
                 data['Update global matrix'] += update_matrix_time
-            data['Nb of CG iterations'] = MBKSolve['CG iterations'] if 'CG iterations' in MBKSolve else MBKSolve['PCG iterations']
             data['Total CG time'] = MBKSolve['total_time'] - update_matrix_time
             mean_time = 0.
             for cg_iteration in MBKSolve['HyperelasticForcefield::addDForce']:
@@ -123,7 +126,7 @@ def pretty_print_methods(methods, number_format='{:.3f}'):
         field['width'] = max(field['width'], len(' '.join(['{{: ^{}}}'.format(m['width']).format('') for m in field['methods'].values()]))+2)
 
     # Print Header
-    ni_col_width = len("Newton iteration # ") + len(str(maximum_number_of_newton_steps)) + 1
+    ni_col_width = len("Newton it. # ") + len(str(maximum_number_of_newton_steps)) + 1
     cols = ["{{: <{}}}".format(ni_col_width).format('')] + [" {{: ^{}}} ".format(v['width']).format(k) for k,v in zip(fields.keys(), fields.values())]
     print("|".join(cols))
     cols = ["{{: <{}}}".format(ni_col_width).format('')] + [" {{: ^{}}} ".format(v['width']).format(' '.join([
@@ -133,7 +136,7 @@ def pretty_print_methods(methods, number_format='{:.3f}'):
 
     # Print newton iterations
     for it in range(maximum_number_of_newton_steps):
-        cols = ["Newton iteration # " + "{{: >{}}} ".format(len(str(maximum_number_of_newton_steps))).format(it)] + \
+        cols = ["Newton it. # " + "{{: >{}}} ".format(len(str(maximum_number_of_newton_steps))).format(it)] + \
                [" {{: ^{}}} ".format(f['width']).format(' '.join(["{{: ^{}}}".format(m['width']).format('-' if it>=len(m['values']) else (m['values'][it] if isinstance(m['values'][it], str) else number_format.format(m['values'][it]))) for m in f['methods'].values()])) for f in fields.values()]
         print("|".join(cols))
 
@@ -151,6 +154,7 @@ class Controller(Sofa.Core.Controller):
             Timer.begin("cg_timer")
 
     def onAnimateEndEvent(self, e):
+        print("Done")
         if self.use_sofa_profiler_timer:
             records = Timer.getRecords("Animate")
         else:
@@ -177,6 +181,7 @@ class Controller(Sofa.Core.Controller):
                             'name': 'method',
                             'newton_steps': extract_newton_steps(v)
                         })
+            print("Here are the results. Copy and paste them in a text editor without word wrap to visualize them.")
             pretty_print_methods(methods)
         if not self.use_sofa_profiler_timer:
             Timer.end("cg_timer")
@@ -230,4 +235,5 @@ if __name__ == "__main__":
     root = Sofa.Core.Node()
     createScene(root)
     Sofa.Simulation.init(root)
+    print("Computing... (this may take a while)")
     Sofa.Simulation.animate(root, 1)

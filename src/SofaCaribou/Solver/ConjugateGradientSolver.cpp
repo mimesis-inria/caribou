@@ -450,12 +450,7 @@ void ConjugateGradientSolver::solve(const Preconditioner & precond, const Matrix
         // 2. Computes x(k+1) and r(k+1)
         alpha = rho0 / p.dot(q); // the amount we travel on the search direction
         x += alpha * p; // Updated solution x(k+1)
-        if (iteration_number%50==0) {
-            // The exact residual is calculated once every 50 iterations to remove floating point round-off errors
-            r = b - A*x; // Updated residual r(k+1)
-        } else {
-            r -= alpha * q; // Updated residual r(k+1)
-        }
+        r -= alpha * q; // Updated residual r(k+1)
 
         // 3. Computes the new residual norm
         r_norm_2 = r.squaredNorm();
