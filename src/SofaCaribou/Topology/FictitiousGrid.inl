@@ -1,11 +1,11 @@
 #pragma once
 
-#include <SofaCaribou/Topology/FictitiousGrid.h>
-
 #include <sofa/core/visual/VisualParams.h>
 #include <SofaBaseTopology/MeshTopology.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/core/behavior/MechanicalState.h>
+
+#include <SofaCaribou/Topology/FictitiousGrid.h>
 
 #include <stack>
 #include <queue>

@@ -46,11 +46,19 @@ else()
     set(COR_LIB "mkl_core")
 endif()
 
-find_path(MKL_INCLUDE_DIR NAMES mkl.h HINTS $ENV{MKLROOT}/include /usr/include/mkl)
+find_path(MKL_INCLUDE_DIR 
+    NAMES mkl.h 
+    HINTS 
+    $ENV{HOME}/intel/mkl/include
+    /opt/intel/mkl/include
+    $ENV{MKLROOT}/include 
+    /usr/include/mkl)
 
 find_library(MKL_INTERFACE_LIBRARY
     NAMES ${INT_LIB}
     PATHS $ENV{MKLROOT}/lib
+    $ENV{HOME}/intel/mkl/lib/intel64_lin
+    /opt/intel/mkl/lib/intel64_lin
     /usr/lib/x86_64-linux-gnu
     $ENV{MKLROOT}/lib/intel64
     $ENV{INTEL}/mkl/lib/intel64
@@ -59,6 +67,8 @@ find_library(MKL_INTERFACE_LIBRARY
 find_library(MKL_SEQUENTIAL_LAYER_LIBRARY
     NAMES ${SEQ_LIB}
     PATHS $ENV{MKLROOT}/lib
+    $ENV{HOME}/intel/mkl/lib/intel64_lin
+    /opt/intel/mkl/lib/intel64_lin
     /usr/lib/x86_64-linux-gnu
     $ENV{MKLROOT}/lib/intel64
     $ENV{INTEL}/mkl/lib/intel64
@@ -67,6 +77,8 @@ find_library(MKL_SEQUENTIAL_LAYER_LIBRARY
 find_library(MKL_CORE_LIBRARY
     NAMES ${COR_LIB}
     PATHS $ENV{MKLROOT}/lib
+    $ENV{HOME}/intel/mkl/lib/intel64_lin
+    /opt/intel/mkl/lib/intel64_lin
     /usr/lib/x86_64-linux-gnu
     $ENV{MKLROOT}/lib/intel64
     $ENV{INTEL}/mkl/lib/intel64
@@ -75,9 +87,6 @@ find_library(MKL_CORE_LIBRARY
 
 set(MKL_INCLUDE_DIRS ${MKL_INCLUDE_DIR})
 set(MKL_LIBRARIES ${MKL_INTERFACE_LIBRARY} ${MKL_SEQUENTIAL_LAYER_LIBRARY} ${MKL_CORE_LIBRARY})
-
-message(STATUS "MKL_INCLUDE_DIRS = ${MKL_INCLUDE_DIRS}")
-message(STATUS "MKL_LIBRARIES = ${MKL_LIBRARIES}")
 
 if (MKL_INCLUDE_DIR AND
     MKL_INTERFACE_LIBRARY AND

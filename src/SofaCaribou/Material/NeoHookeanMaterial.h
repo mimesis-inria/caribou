@@ -53,10 +53,10 @@ public:
     virtual Eigen::Matrix<Real, Dimension, Dimension>
     PK2_stress(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const override {
 
-        static const auto I = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
+        static const auto Id = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
         const auto Ci = C.inverse();
 
-        return (I - Ci)*mu + Ci*(l*log(J));
+        return (Id - Ci)*mu + Ci*(l*log(J));
     }
 
     /** Get the jacobian of the second Piola-Kirchhoff stress tensor w.r.t the right Cauchy-Green strain tensor C. */

@@ -81,6 +81,7 @@ if (NOT TARGET Caribou::Algebra)
 endif()
 
 # Sofa's packages
+cmake_policy(SET CMP0072 NEW)
 find_package(SofaFramework QUIET REQUIRED)
 find_package(SofaBase QUIET REQUIRED)
 find_package(SofaCommon QUIET REQUIRED)
@@ -101,7 +102,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 if (CARIBOU_OPTIMIZE_FOR_NATIVE)
-    target_compile_options(${PROJECT_NAME} PRIVATE)
+    target_compile_options(${PROJECT_NAME} PRIVATE -march=native)
 endif()
 
 if (LAPACK_FOUND AND LAPACKE_FOUND AND MKL_FOUND)
@@ -126,7 +127,7 @@ if (CARIBOU_WITH_OPENMP)
     target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_OPENMP)
 endif()
 
-if (CARIBOU_BUILD_TESTS)
+if (CARIBOU_BUILD_TESTS AND SOFAHELPER_HAVE_GTEST)
     add_subdirectory(test)
 endif()
 

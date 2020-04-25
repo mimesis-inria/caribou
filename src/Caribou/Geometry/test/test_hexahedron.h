@@ -127,12 +127,12 @@ TEST(Hexahedron, Quadratic) {
         }
         // Six tetrahedrons
         FLOATING_POINT_TYPE numerical_solution_tetras = 0;
-        Tetrahedron t1 ({h.node(0), h.node(5), h.node(1), h.node(6)});
-        Tetrahedron t2 ({h.node(0), h.node(1), h.node(3), h.node(6)});
-        Tetrahedron t3 ({h.node(1), h.node(3), h.node(6), h.node(2)});
-        Tetrahedron t4 ({h.node(6), h.node(3), h.node(0), h.node(7)});
-        Tetrahedron t5 ({h.node(6), h.node(7), h.node(0), h.node(5)});
-        Tetrahedron t6 ({h.node(7), h.node(5), h.node(4), h.node(0)});
+        Tetrahedron t1 (h.node(0), h.node(5), h.node(1), h.node(6));
+        Tetrahedron t2 (h.node(0), h.node(1), h.node(3), h.node(6));
+        Tetrahedron t3 (h.node(1), h.node(3), h.node(6), h.node(2));
+        Tetrahedron t4 (h.node(6), h.node(3), h.node(0), h.node(7));
+        Tetrahedron t5 (h.node(6), h.node(7), h.node(0), h.node(5));
+        Tetrahedron t6 (h.node(7), h.node(5), h.node(4), h.node(0));
         for (const auto & t : {t1, t2, t3, t4, t5, t6}) {
             for (const auto & gauss_node : t.gauss_nodes()) {
                 const auto x = gauss_node.position;

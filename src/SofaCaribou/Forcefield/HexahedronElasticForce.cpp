@@ -1,17 +1,18 @@
 #include <numeric>
 #include <queue>
 #include <array>
-#include <Eigen/Sparse>
 
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
 
+#include "HexahedronElasticForce.h"
+
+#include <Eigen/Sparse>
+
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Mechanics/Elasticity/Strain.h>
-
-#include "HexahedronElasticForce.h"
 
 #if !EIGEN_VERSION_AT_LEAST(3,3,0)
 namespace Eigen {

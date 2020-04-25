@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
+#include <SofaCaribou/Algebra/EigenMatrixWrapper.h>
 
 #include <Caribou/config.h>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <SofaCaribou/Algebra/EigenMatrixWrapper.h>
 
 template<int nRows, int nColumns>
 using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns>;

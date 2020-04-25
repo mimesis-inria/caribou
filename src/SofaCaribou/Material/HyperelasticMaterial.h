@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Caribou/config.h>
-#include <Eigen/Eigen>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MechanicalState.h>
+#include <Eigen/Eigen>
 
 namespace SofaCaribou::material {
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Eigen/Sparse>
-
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/helper/OptionsGroup.h>
+
+#include <Eigen/Sparse>
 
 #include <Caribou/Geometry/Hexahedron.h>
 

@@ -18,6 +18,8 @@ include(CheckCXXCompilerFlag)
 include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
 include(caribouTools)
+set(CMAKE_REQUIRED_QUIET 1)
+# OPTIONS
 
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 
@@ -32,6 +34,13 @@ CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to 
 find_package(pybind11 CONFIG QUIET)
 find_package(Python3 QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python3_FOUND;pybind11_FOUND" OFF)
+
+# MKL option
+find_package(MKL QUIET)
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_MKL "Compile the plugin with MKL support" ON "MKL_FOUND" OFF)
+if (CARIBOU_WITH_MKL AND MKL_FOUND)
+    message(STATUS "MKL Library found\n\tInclude directories: ${MKL_INCLUDE_DIRS}\n\tLibraries: ${MKL_LIBRARIES} ${MKL_INTERFACE_LIBRARY} ${MKL_SEQUENTIAL_LAYER_LIBRARY} ${MKL_CORE_LIBRARY}")
+endif()
 
 # OpenMP option
 find_package(OpenMP QUIET)

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SofaCaribou/Topology/IsoSurface.h>
 #include <sofa/defaulttype/VecTypes.h>
+#include <SofaCaribou/Topology/IsoSurface.h>
 
 namespace SofaCaribou::topology {
 

@@ -1,7 +1,7 @@
+#include <sofa/core/ObjectFactory.h>
+
 #include <SofaCaribou/Forcefield/FictitiousGridHyperelasticForce.h>
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.inl>
-
-#include <sofa/core/ObjectFactory.h>
 
 namespace SofaCaribou::forcefield {
 using namespace caribou::geometry;

@@ -4,16 +4,19 @@
 #ifdef CARIBOU_WITH_OPENMP
 #include <omp.h>
 #endif
-#include <Eigen/Sparse>
+
+#include "FictitiousGridElasticForce.h"
 
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
 
+#include <Eigen/Sparse>
+
+
 #include <Caribou/Mechanics/Elasticity/Strain.h>
 
-#include "FictitiousGridElasticForce.h"
 
 
 namespace SofaCaribou::forcefield {
@@ -222,7 +225,7 @@ void FictitiousGridElasticForce::addForce(
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_v);
 
-    static const auto I = Matrix<3,3, Eigen::RowMajor>::Identity();
+    Mat33 Id = Mat33::Identity();
 
     auto grid = d_grid_container.get();
     MechanicalState<DataTypes> * state = this->mstate.get();
@@ -335,10 +338,10 @@ void FictitiousGridElasticForce::addForce(
 
                 // Strain tensor at gauss node
                 const Mat33 C = F.transpose()*F;
-                const Mat33 E = 1/2. * (C - I);
+                const Mat33 E = 1/2. * (C - Id);
 
                 // Stress tensor at gauss node
-                const Mat33 S = 2.*m*E + (l * E.trace() * I);
+                const Mat33 S = 2.*m*E + (l * E.trace() * Id);
 
                 // Elastic forces w.r.t the gauss node applied on each nodes
                 for (size_t i = 0; i < 8; ++i) {
@@ -509,7 +512,7 @@ void FictitiousGridElasticForce::compute_K()
     if (p_stiffness_matrices.size() != grid->number_of_cells())
         return;
 
-    static const auto I = Matrix<3,3, Eigen::RowMajor>::Identity();
+    Mat33 Id = Mat33::Identity();
     const Real youngModulus = d_youngModulus.getValue();
     const Real poissonRatio = d_poissonRatio.getValue();
 
@@ -543,10 +546,10 @@ void FictitiousGridElasticForce::compute_K()
             Mat33 & F = gauss_node.F;
 
             // Strain tensor at gauss node
-            const Mat33 E = 1/2. * (F.transpose()*F - I);
+            const Mat33 E = 1/2. * (F.transpose()*F - Id);
 
             // Stress tensor at gauss node
-            const Mat33 S = 2.*m*E + (l * E.trace() * I);
+            const Mat33 S = 2.*m*E + (l * E.trace() * Id);
 
             // Computation of the tangent-stiffness matrix
             for (std::size_t i = 0; i < 8; ++i) {
@@ -575,7 +578,7 @@ void FictitiousGridElasticForce::compute_K()
                         F(0,1)*dxj[2] + F(0,2)*dxj[1], F(1,1)*dxj[2] + F(1,2)*dxj[1], F(2,1)*dxj[2] + F(2,2)*dxj[1],
                         F(0,0)*dxj[2] + F(0,2)*dxj[0], F(0,1)*dxj[2] + F(1,2)*dxj[0], F(2,0)*dxj[2] + F(2,2)*dxj[0];
 
-                    K.template block<3, 3>(i*3, j*3).noalias() += (dxi.dot(S*dxj)*I + Bi.transpose()*C*Bj)  * w;
+                    K.template block<3, 3>(i*3, j*3).noalias() += (dxi.dot(S*dxj)*Id + Bi.transpose()*C*Bj)  * w;
                 }
             }
         }
@@ -687,8 +690,8 @@ void FictitiousGridElasticForce::computeBBox(const sofa::core::ExecParams*, bool
 
     sofa::helper::ReadAccessor<Data<VecCoord>> x = this->mstate->read(sofa::core::VecCoordId::position());
 
-    static const Real max_real = std::numeric_limits<Real>::max();
-    static const Real min_real = std::numeric_limits<Real>::lowest();
+    const Real max_real = std::numeric_limits<Real>::max();
+    const Real min_real = std::numeric_limits<Real>::lowest();
     Real maxBBox[3] = {min_real,min_real,min_real};
     Real minBBox[3] = {max_real,max_real,max_real};
     for (size_t i=0; i<x.size(); i++)

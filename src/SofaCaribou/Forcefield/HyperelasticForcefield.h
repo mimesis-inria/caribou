@@ -3,9 +3,6 @@
 #include <functional>
 #include <array>
 
-#include <Eigen/Sparse>
-#include <Eigen/Dense>
-
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 
@@ -18,6 +15,9 @@
 #include <Caribou/Geometry/Hexahedron.h>
 
 #include <SofaCaribou/Material/HyperelasticMaterial.h>
+
+#include <Eigen/Sparse>
+#include <Eigen/Dense>
 
 namespace SofaCaribou::forcefield {
 

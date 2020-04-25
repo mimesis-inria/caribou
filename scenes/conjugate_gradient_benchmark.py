@@ -2,6 +2,7 @@
 
 import numpy as np
 import re
+import SofaRuntime
 import Sofa
 from SofaRuntime import Timer
 import SofaCaribou
@@ -223,6 +224,8 @@ if __name__ == "__main__":
     import Sofa.Simulation
     import Sofa.Core
     import SofaRuntime
+
+    SofaRuntime.importPlugin('SofaComponentAll')
 
     root = Sofa.Core.Node()
     createScene(root)

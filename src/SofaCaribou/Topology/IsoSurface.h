@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Eigen/Dense>
 #include <sofa/core/objectmodel/BaseObject.h>
+#include <Eigen/Dense>
 
 namespace SofaCaribou::topology {
 
@@ -24,7 +24,7 @@ public:
     /*!
      * Get the iso value at the given world coordinates
      */
-    virtual inline Real iso_value(const Eigen::Matrix<Real, Dimension, 1> & x) const = 0;
+    virtual Real iso_value(const Eigen::Matrix<Real, Dimension, 1> & x) const = 0;
 };
 
 }

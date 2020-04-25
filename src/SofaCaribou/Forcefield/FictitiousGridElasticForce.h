@@ -1,14 +1,15 @@
 #pragma once
 
-#include <Eigen/Sparse>
-
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/helper/OptionsGroup.h>
 
+#include <SofaCaribou/Topology/FictitiousGrid.h>
+
+#include <Eigen/Sparse>
+
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
-#include <SofaCaribou/Topology/FictitiousGrid.h>
 
 namespace SofaCaribou::forcefield {
 

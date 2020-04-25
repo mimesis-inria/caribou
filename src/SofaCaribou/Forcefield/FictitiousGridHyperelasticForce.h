@@ -1,13 +1,12 @@
 #pragma once
 
-#include <Caribou/config.h>
-#include <Caribou/Geometry/Hexahedron.h>
+#include <sofa/helper/OptionsGroup.h>
 
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.inl>
 #include <SofaCaribou/Topology/FictitiousGrid.h>
 
-#include <sofa/helper/OptionsGroup.h>
-
+#include <Caribou/config.h>
+#include <Caribou/Geometry/Hexahedron.h>
 
 namespace caribou::geometry {
 // --------------------------------------------------------------------------------

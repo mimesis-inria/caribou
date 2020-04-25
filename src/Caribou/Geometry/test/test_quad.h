@@ -235,8 +235,8 @@ TEST(Quad, Quadratic) {
 
         // Two triangles
         FLOATING_POINT_TYPE numerical_solution_triangles = 0;
-        Triangle t1 ({q.node(0), q.node(1), q.node(3)});
-        Triangle t2 ({q.node(1), q.node(2), q.node(3)});
+        Triangle t1 (q.node(0), q.node(1), q.node(3));
+        Triangle t2 (q.node(1), q.node(2), q.node(3));
         for (const auto & t : {t1, t2}) {
             for (const auto & gauss_node : t.gauss_nodes()) {
                 const auto x = gauss_node.position;
@@ -249,7 +249,7 @@ TEST(Quad, Quadratic) {
         EXPECT_FLOAT_EQ(numerical_solution_quad, numerical_solution_triangles);
 
         // Frame extraction
-        Quad initial_quad ({WorldCoordinates(-25, -25), WorldCoordinates( 25, -25), WorldCoordinates(25, 25), WorldCoordinates(-25, 25)});
+        Quad initial_quad (WorldCoordinates(-25, -25), WorldCoordinates( 25, -25), WorldCoordinates(25, 25), WorldCoordinates(-25, 25));
 
         bool test_failed = false;
         std::array<FLOATING_POINT_TYPE, 8> angles {pi/6, pi/4, pi/3, pi/2, 3*pi/4, pi, 5*pi/4, 7*pi/4};
@@ -285,10 +285,10 @@ TEST(Quad, Quadratic) {
 
         using WorldCoordinates = Quad::WorldCoordinates;
 
-        Quad q ({
+        Quad q (
             WorldCoordinates(-5, -53./15, -53./15), WorldCoordinates(+5, -53./15, -53./15),
             WorldCoordinates(+10,+53./15, +53./15), WorldCoordinates(-10,+53./15, +53./15)
-        });
+        );
 
         EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
@@ -319,8 +319,8 @@ TEST(Quad, Quadratic) {
 
         // Two triangles
         FLOATING_POINT_TYPE numerical_solution_triangles = 0;
-        Triangle t1 ({q.node(0), q.node(1), q.node(3)});
-        Triangle t2 ({q.node(1), q.node(2), q.node(3)});
+        Triangle t1 (q.node(0), q.node(1), q.node(3));
+        Triangle t2 (q.node(1), q.node(2), q.node(3));
         for (const auto & t : {t1, t2}) {
             for (const auto & gauss_node : t.gauss_nodes()) {
                 const auto x = gauss_node.position;

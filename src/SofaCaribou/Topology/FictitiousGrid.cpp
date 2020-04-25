@@ -131,7 +131,7 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
     using Weight = Float;
 
     const auto number_of_cells = p_grid->number_of_cells();
-    const auto & number_of_subdivision = d_number_of_subdivision.getValue();
+    const auto number_of_subdivision = d_number_of_subdivision.getValue();
     const auto iso_surface = d_iso_surface.get();
 
     if (not iso_surface) {
@@ -140,7 +140,7 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
     }
 
     TICK;
-#pragma omp parallel for default(none) shared(number_of_cells, iso_surface, number_of_subdivision)
+#pragma omp parallel for
     for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
 
@@ -226,13 +226,13 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
     using Weight = Float;
 
     const auto number_of_cells = p_grid->number_of_cells();
-    const auto & number_of_subdivision = d_number_of_subdivision.getValue();
+    const auto number_of_subdivision = d_number_of_subdivision.getValue();
     const auto & surface_positions = d_surface_positions.getValue();
     const auto & surface_triangles = d_surface_triangles.getValue();
     const auto iso_surface = d_iso_surface.get();
 
     TICK;
-#pragma omp parallel for default(none) shared(number_of_cells, iso_surface, surface_triangles, surface_positions, number_of_subdivision)
+#pragma omp parallel for
     for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         const auto & triangles = p_triangles_of_cell[cell_index];
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;

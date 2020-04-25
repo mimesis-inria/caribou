@@ -47,12 +47,12 @@ static inline
 Matrix<Dimension, Dimension>
 F (const Matrix<NumberOfNodes, Dimension, Options> & dN_dx, const Matrix<NumberOfNodes, Dimension, Options> & U)
 {
-    const auto I = Matrix<Dimension, Dimension>::Identity();
+    const auto Id = Matrix<Dimension, Dimension>::Identity();
     Matrix<Dimension, Dimension> GradU = U.row(0).transpose() * dN_dx.row(0);
     for (size_t i = 1; i < NumberOfNodes; ++i) {
         GradU.noalias() += U.row(i).transpose() * dN_dx.row(i);
     }
-    return GradU + I;
+    return GradU + Id;
 }
 
 } // namespace caribou::mechanics::elasticity::strain

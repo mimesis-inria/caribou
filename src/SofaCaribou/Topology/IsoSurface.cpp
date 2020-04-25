@@ -1,7 +1,7 @@
+#include <sofa/core/ObjectFactory.h>
 #include <SofaCaribou/Topology/CircleIsoSurface.h>
 #include <SofaCaribou/Topology/SphereIsoSurface.h>
 #include <SofaCaribou/Topology/CylinderIsoSurface.h>
-#include <sofa/core/ObjectFactory.h>
 
 namespace SofaCaribou::topology {
 using namespace sofa::core;

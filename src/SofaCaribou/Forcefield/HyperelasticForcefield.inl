@@ -1,8 +1,8 @@
 #pragma once
 
+#include "HyperelasticForcefield.h"
 #include <sofa/helper/AdvancedTimer.h>
 #include <Caribou/Mechanics/Elasticity/Strain.h>
-#include "HyperelasticForcefield.h"
 #include <sofa/core/visual/VisualParams.h>
 
 namespace SofaCaribou::forcefield {
@@ -270,8 +270,6 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
         return 0;
     }
 
-    static const auto I = Mat33::Identity();
-
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
 
@@ -335,10 +333,9 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
 
             // Strain tensor at gauss node
             const Mat33 C = F.transpose() * F;
-            const Mat33 E = 1/2. * (C - I);
 
             // Add the potential energy at gauss node
-            Psi += (detJ * w) *  material->strain_energy_density(J, E);
+            Psi += (detJ * w) *  material->strain_energy_density(J, C);
         }
     }
 
@@ -437,7 +434,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
     // Update material parameters in case the user changed it
     material->before_update();
 
-    static const auto I = Mat33::Identity();
+    static const auto Id = Mat33::Identity();
     const auto nb_elements = number_of_elements();
 
     const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
@@ -495,7 +492,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
                     F(0,0)*dxi[2] + F(0,2)*dxi[0], F(1,0)*dxi[2] + F(1,2)*dxi[0], F(2,0)*dxi[2] + F(2,2)*dxi[0];
 
                 // The 3x3 sub-matrix Kii is symmetric, we only store its upper triangular part
-                Mat33 Kii = (dxi.dot(S*dxi)*I + Bi.transpose()*D*Bi) * detJ * w;
+                Mat33 Kii = (dxi.dot(S*dxi)*Id + Bi.transpose()*D*Bi) * detJ * w;
                 for (std::size_t m = 0; m < Dimension; ++m) {
                     triplets.emplace_back(x+m, x+m, Kii(m,m));
                     for (size_t n = m+1; n < Dimension; ++n) {
@@ -522,7 +519,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
                         F(0,0)*dxj[2] + F(0,2)*dxj[0], F(1,0)*dxj[2] + F(1,2)*dxj[0], F(2,0)*dxj[2] + F(2,2)*dxj[0];
 
                     // The 3x3 sub-matrix Kij is NOT symmetric, we store its full part
-                    Mat33 Kij = (dxi.dot(S*dxj)*I + Bi.transpose()*D*Bj) * detJ * w;
+                    Mat33 Kij = (dxi.dot(S*dxj)*Id + Bi.transpose()*D*Bj) * detJ * w;
 
                     for (std::size_t m = 0; m < Dimension; ++m) {
                         for (size_t n = 0; n < Dimension; ++n) {

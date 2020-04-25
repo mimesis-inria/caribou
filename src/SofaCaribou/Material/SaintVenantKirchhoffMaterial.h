@@ -54,8 +54,8 @@ public:
      */
     Real
     strain_energy_density(const Real & /*J*/, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const override {
-        static const auto I = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
-        const auto E = (1/2. * (C - I)).eval();
+        static const auto Id = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
+        const auto E = (1/2. * (C - Id)).eval();
         const auto trE  = E.trace();
         const auto trEE = (E*E).trace();
         return l/2.*(trE*trE) + mu*trEE;
@@ -64,9 +64,9 @@ public:
     /** Get the second Piola-Kirchhoff stress tensor from the right Cauchy-Green strain tensor C. */
     Eigen::Matrix<Real, Dimension, Dimension>
     PK2_stress(const Real & /*J*/, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const override {
-        static const auto I = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
-        const auto E = (1/2. * (C - I)).eval();
-        return l*E.trace()*I + 2*mu*E;
+        static const auto Id = Eigen::Matrix<Real, Dimension, Dimension, Eigen::RowMajor>::Identity();
+        const auto E = (1/2. * (C - Id)).eval();
+        return l*E.trace()*Id + 2*mu*E;
     }
 
     /** Get the jacobian of the second Piola-Kirchhoff stress tensor w.r.t the right Cauchy-Green strain tensor C. */
