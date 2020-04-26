@@ -4,6 +4,9 @@
 #include <sofa/helper/AdvancedTimer.h>
 #include <Caribou/Mechanics/Elasticity/Strain.h>
 #include <sofa/core/visual/VisualParams.h>
+#ifdef CARIBOU_WITH_OPENMP
+#include <omp.h>
+#endif
 
 namespace SofaCaribou::forcefield {
 
@@ -15,6 +18,12 @@ HyperelasticForcefield<Element>::HyperelasticForcefield()
 , d_material(initLink(
     "material",
     "Material used to compute the hyperelastic force field."))
+, d_enable_multithreading(initData(&d_enable_multithreading,
+    false,
+    "enable_multithreading",
+    "Enable the multithreading computation of the stiffness matrix. Only use this if you have a "
+    "very large number of elements, otherwise performance might be worse than single threading."
+    "When enabled, use the environment variable OMP_NUM_THREADS=N to use N threads."))
 {
 }
 
@@ -427,6 +436,7 @@ template <typename Element>
 void HyperelasticForcefield<Element>::update_stiffness()
 {
     const auto material = d_material.get();
+    const auto enable_multithreading = d_enable_multithreading.getValue();
     if (!material) {
         return;
     }
@@ -447,9 +457,13 @@ void HyperelasticForcefield<Element>::update_stiffness()
     triplets.reserve(nDofs*24*2);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::update_stiffness");
+    #pragma omp parallel for if (enable_multithreading)
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
         const Index * node_indices = get_element_nodes_indices(element_id);
+
+        using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes*Dimension, NumberOfNodes*Dimension, Eigen::RowMajor>;
+        Stiffness Ke = Stiffness::Zero();
 
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
@@ -476,9 +490,6 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
             // Computation of the tangent-stiffness matrix
             for (std::size_t i = 0; i < NumberOfNodes; ++i) {
-                // Node index of the ith node in the global stiffness matrix
-                const auto x = (node_indices[i]*Dimension);
-
                 // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
                 const Vec3 dxi = dN_dx.row(i).transpose();
 
@@ -493,19 +504,13 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
                 // The 3x3 sub-matrix Kii is symmetric, we only store its upper triangular part
                 Mat33 Kii = (dxi.dot(S*dxi)*Id + Bi.transpose()*D*Bi) * detJ * w;
-                for (std::size_t m = 0; m < Dimension; ++m) {
-                    triplets.emplace_back(x+m, x+m, Kii(m,m));
-                    for (size_t n = m+1; n < Dimension; ++n) {
-                        triplets.emplace_back(x+m, x+n, Kii(m,n));
-                    }
-                }
+                Ke.template block<Dimension, Dimension>(i*Dimension, i*Dimension)
+                    .template triangularView<Eigen::Upper>()
+                    += Kii;
 
                 // We now loop only on the upper triangular part of the
                 // element stiffness matrix Ke since it is symmetric
                 for (std::size_t j = i+1; j < NumberOfNodes; ++j) {
-                    // Node index of the ith node in the global stiffness matrix
-                    const auto y = (node_indices[j]*Dimension);
-
                     // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
                     const Vec3 dxj = dN_dx.row(j).transpose();
 
@@ -520,11 +525,28 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
                     // The 3x3 sub-matrix Kij is NOT symmetric, we store its full part
                     Mat33 Kij = (dxi.dot(S*dxj)*Id + Bi.transpose()*D*Bj) * detJ * w;
+                    Ke.template block<Dimension, Dimension>(i*Dimension, j*Dimension)
+                        .noalias() += Kij;
+                }
+            }
+        }
 
-                    for (std::size_t m = 0; m < Dimension; ++m) {
-                        for (size_t n = 0; n < Dimension; ++n) {
-                            triplets.emplace_back(x+m, y+n, Kij(m,n));
-                        }
+        #pragma omp critical
+        for (std::size_t i = 0; i < NumberOfNodes; ++i) {
+            // Node index of the ith node in the global stiffness matrix
+            const auto x = (node_indices[i]*Dimension);
+            for (std::size_t m = 0; m < Dimension; ++m) {
+                for (size_t n = m; n < Dimension; ++n) {
+                    triplets.emplace_back(x+m, x+n, Ke(i*Dimension+m,i*Dimension+n));
+                }
+            }
+
+            for (std::size_t j = i+1; j < NumberOfNodes; ++j) {
+                // Node index of the jth node in the global stiffness matrix
+                const auto y = (node_indices[j]*Dimension);
+                for (std::size_t m = 0; m < Dimension; ++m) {
+                    for (size_t n = 0; n < Dimension; ++n) {
+                        triplets.emplace_back(x+m, y+n, Ke(i*Dimension+m,j*Dimension+n));
                     }
                 }
             }

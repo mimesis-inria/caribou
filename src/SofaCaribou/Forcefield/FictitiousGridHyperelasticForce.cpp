@@ -25,8 +25,8 @@ auto FictitiousGridHyperelasticForcefield<SubdividedGaussHexahedron>::get_gauss_
     // GaussContainer is a std::vector<GaussNode>
     GaussContainer gauss_nodes {};
     const auto g_nodes = d_grid->get_gauss_nodes_of_cell(element_id);
-    gauss_nodes.resize(gauss_nodes.size());
-    for (std::size_t gauss_node_id = 0; gauss_node_id < gauss_nodes.size(); ++gauss_node_id) {
+    gauss_nodes.resize(g_nodes.size());
+    for (std::size_t gauss_node_id = 0; gauss_node_id < g_nodes.size(); ++gauss_node_id) {
         const auto & gauss_node = g_nodes[gauss_node_id].first;
         const auto & gauss_weight = g_nodes[gauss_node_id].second;
         const auto J = e.jacobian(gauss_node);
