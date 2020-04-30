@@ -50,6 +50,11 @@ TEST(Hexahedron, Linear) {
             EXPECT_FLOAT_EQ(h.interpolate(x, values), p1(h.world_coordinates(x)));
         }
 
+        // Inverse transformation
+        for (const auto & gauss_node : h.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, h.local_coordinates(h.world_coordinates(gauss_node.position)), 1e-5);
+        }
+
         // Integration
         // Hexa
         FLOATING_POINT_TYPE numerical_solution_hexa = 0;
@@ -114,6 +119,11 @@ TEST(Hexahedron, Quadratic) {
         for (const auto & gauss_node : h.gauss_nodes()) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(h.interpolate(x, values), p2(h.world_coordinates(x)));
+        }
+
+        // Inverse transformation
+        for (const auto & gauss_node : h.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, h.local_coordinates(h.world_coordinates(gauss_node.position)), 1e-5);
         }
 
         // Integration

@@ -31,7 +31,7 @@ namespace caribou::topology {
      * @tparam NodeIndex The type of integer used for a node index
      */
     template <typename Element, typename NodeIndex = UNSIGNED_INTEGER_TYPE>
-    class Domain : public BaseDomain, private DomainStorage<Element> {
+    class Domain final : public BaseDomain, private DomainStorage<Element> {
         friend Mesh<geometry::traits<Element>::Dimension>;
     public:
         static constexpr INTEGER_TYPE Dimension = geometry::traits<Element>::Dimension;
@@ -54,7 +54,7 @@ namespace caribou::topology {
 
         /*! Copy constructor */
         Domain(const Domain<Element> & other) noexcept
-        : DomainStorage<Element>(other) {}
+        : DomainStorage<Element>(other), p_mesh(other.p_mesh), p_buffer(other.p_buffer), p_elements(other.p_elements) {}
 
         /*! Move constructor */
         Domain(Domain && other) noexcept {

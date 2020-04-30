@@ -6,6 +6,8 @@
 #include <Eigen/Dense>
 #include <vector>
 
+#include <iostream>
+
 namespace caribou::geometry {
 
 template<typename T>
@@ -22,10 +24,10 @@ struct element_has_boundaries : std::false_type {};
 template< class T>
 constexpr bool element_has_boundaries_v = element_has_boundaries<T>::value;
 
-template<typename Derived, typename _Scalar = FLOATING_POINT_TYPE>
+template<typename Derived, typename ScalarType = FLOATING_POINT_TYPE>
 struct Element {
     // Types
-    using Scalar = _Scalar;
+    using Scalar = ScalarType;
 
     template <INTEGER_TYPE Dim>
     using Vector = Eigen::Matrix<Scalar, Dim, 1>;
@@ -131,8 +133,74 @@ struct Element {
     inline auto center() const -> WorldCoordinates {return self().get_center();}
 
     /** Get the world coordinates of a point from its local coordinates. */
-    inline auto world_coordinates(const LocalCoordinates & coordinates) const {
+    inline auto world_coordinates(const LocalCoordinates & coordinates) const -> WorldCoordinates {
         return WorldCoordinates(self().interpolate(coordinates, self().nodes()));
+    }
+
+    /**
+     * Get the local coordinates of a point from its world coordinates by doing a set of Newton-Raphson iterations.
+     *
+     * \note By default, the Newton-Raphson will start by an approximation of the local coordinates at [0, 0, 0].
+     *       The iterations will stop at 5 iterations, or if the norm o*       f relative residual |R|/|R0| is less than 1e-5.
+     */
+    inline auto local_coordinates(const WorldCoordinates & coordinates) -> LocalCoordinates {
+        return local_coordinates(coordinates, LocalCoordinates::Constant(-1), 1e-5, 5);
+    }
+
+    /**
+     * Get the local coordinates of a point from its world coordinates by doing a set of Newton-Raphson iterations.
+     * @param coordinates    The world coordinates of the point from which we want to get the local coordinates.
+     * @param starting_point An approximation of the real local coordinates we want the get. The closer it is to the
+     *                       solution, the faster the Newton will converge.
+     * @param residual_tolerance The threshold of relative norm of the residual at which point the Newton is
+     *                           said to converge (|R|/|R0| < threshold).
+     * @param maximum_number_of_iterations The maximum number of Newton-Raphson iterations we can do before divergence.
+     * @return The local coordinates of the point at the last Newton-Raphson iteration completed.
+     */
+    inline auto local_coordinates(
+        const WorldCoordinates & coordinates,
+        const LocalCoordinates & starting_point,
+        const FLOATING_POINT_TYPE & residual_tolerance,
+        const UNSIGNED_INTEGER_TYPE & maximum_number_of_iterations) -> LocalCoordinates {
+
+        static_assert(Dimension == CanonicalDimension, "The local coordinates of a world position can only be found if "
+                                                       "the local and world dimension are the same.");
+
+        LocalCoordinates xi = starting_point;
+        UNSIGNED_INTEGER_TYPE iteration = 0;
+        FLOATING_POINT_TYPE squared_threshold = residual_tolerance*residual_tolerance;
+
+        // Initial residual
+        WorldCoordinates residual = coordinates - world_coordinates(xi);
+        FLOATING_POINT_TYPE r_norm_2 = residual.squaredNorm();
+        FLOATING_POINT_TYPE r0_norm_2 = r_norm_2;
+
+        if (r_norm_2 < squared_threshold) {
+            // The initial guess is good enough
+            return xi;
+        }
+
+        // Start the iterations
+        do {
+
+            Matrix<Dimension, Dimension> J;
+
+            J.noalias() = -1. * jacobian(xi);
+
+            Matrix<Dimension, Dimension> Jinv = J.inverse();
+
+            xi.noalias() = (xi - (Jinv * residual)).eval();
+            residual.noalias() = coordinates - world_coordinates(xi);
+            r_norm_2 = residual.squaredNorm();
+
+            std::cout << "It # " << iteration << ": |R|/|R0| = " << sqrt(r_norm_2/r0_norm_2) << "\n";
+
+            ++iteration;
+
+        }
+        while (iteration < maximum_number_of_iterations and r_norm_2 >= r0_norm_2*squared_threshold);
+
+        return xi;
     }
 
     /**
@@ -149,12 +217,12 @@ struct Element {
         static_assert(Eigen::MatrixBase<MatrixType>::RowsAtCompileTime == NumberOfNodesAtCompileTime,
                       "The matrix containing the values at each nodes must have one node-value per row.");
         constexpr auto NbCols = Eigen::MatrixBase<MatrixType>::ColsAtCompileTime;
-        using Scalar = typename Eigen::MatrixBase<MatrixType>::Scalar;
+        using MatrixScalar = typename Eigen::MatrixBase<MatrixType>::Scalar;
         const auto result = ((values.array().colwise() * self().L(coordinates).array()).matrix().colwise().sum().transpose()).eval();
         if constexpr (NbCols == 1) {
-            return static_cast<Scalar>(result[0]);
+            return static_cast<MatrixScalar>(result[0]);
         } else {
-            return result.template cast<Scalar>();
+            return result.template cast<MatrixScalar>();
         }
     }
 

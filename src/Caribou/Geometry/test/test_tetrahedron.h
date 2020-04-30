@@ -25,6 +25,11 @@ TEST(Tetrahedron, Linear) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
         }
+
+        // Inverse transformation
+        for (const auto & gauss_node : t.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, t.local_coordinates(t.world_coordinates(gauss_node.position)), 1e-5);
+        }
     }
 }
 
@@ -50,6 +55,11 @@ TEST(Tetrahedron, Quadratic) {
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(t.interpolate(x, values), p2(t.world_coordinates(x)));
+        }
+
+        // Inverse transformation
+        for (const auto & gauss_node : t.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, t.local_coordinates(t.world_coordinates(gauss_node.position)), 1e-5);
         }
     }
 }
