@@ -249,6 +249,32 @@ void FictitiousGrid<DataTypes>::init() {
         }
     }
 
+    // If no bounds are given to the grid, find the bounding box of the surface nodes
+    if (not d_min.isSet() or not d_max.isSet()) {
+        // Make sure we have a surface mesh and not an implicit field
+        if (d_iso_surface.get()) {
+            msg_error() << "No bounds (min and max corner) given to the fictitious grid.";
+        } else {
+            const auto & surface_positions = d_surface_positions.getValue();
+            static const SofaFloat max_real = std::numeric_limits<SofaFloat>::max();
+            static const SofaFloat min_real = std::numeric_limits<SofaFloat>::lowest();
+            SofaVecFloat min, max;
+            max.fill(min_real);
+            min.fill(max_real);
+
+            for (const auto & p : surface_positions) {
+                for (int c=0; c<Dimension; c++) {
+                    if (p[c] > max[c])
+                        max[c] = static_cast<SofaFloat>(p[c]);
+                    if (p[c] < min[c])
+                        min[c] = static_cast<SofaFloat>(p[c]);
+                }
+            }
+            d_min.setValue(min);
+            d_max.setValue(max);
+        }
+    }
+
     // Create the grid
     create_grid();
 }
