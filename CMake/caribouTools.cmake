@@ -20,6 +20,7 @@ function(caribou_add_python_module NAME)
 
     cmake_parse_arguments(A "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    set(PYBIND11_PYTHON_VERSION 3)
     find_package(pybind11 QUIET CONFIG REQUIRED)
 
     if (A_TARGET_NAME)

@@ -31,6 +31,7 @@ CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to 
 
 
 # Python 3 option
+set(PYBIND11_PYTHON_VERSION 3)
 find_package(pybind11 CONFIG QUIET)
 find_package(Python3 QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python3_FOUND;pybind11_FOUND" OFF)
