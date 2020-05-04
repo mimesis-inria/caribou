@@ -102,7 +102,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 if (CARIBOU_OPTIMIZE_FOR_NATIVE)
-    target_compile_options(${PROJECT_NAME} PRIVATE -march=native)
+#    todo(jnbrunet2000@gmail.com) Deactivated since it seems to create mis-alignments
+#                                 issues for the SparseMatrix used in the CG. To reproduce:
+#                                 https://gist.github.com/jnbrunet/7dfb354fbf2c6e0971674a1a83c29806
+#    target_compile_options(${PROJECT_NAME} PRIVATE -march=native)
 endif()
 
 if (LAPACK_FOUND AND LAPACKE_FOUND AND MKL_FOUND)
