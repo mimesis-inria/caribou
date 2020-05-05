@@ -6,5 +6,6 @@ cmake-build*
 venv
 *.pyc
 build/
-doc/
+doc/Doxygen
+doc/sphinx/build
 scenes/*.log
