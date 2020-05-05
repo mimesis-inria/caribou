@@ -92,7 +92,111 @@ environment variable defined earlier.
         $SP3_INSTALL/lib/cmake/SofaPython3/PluginTargets.cmake
 
 
-Compiling Caribou
------------------
+Compiling
+---------
 All right, at this point you should have everything needed to compile Caribou. If you are also building SofaCaribou and
 its python bindings, you also have defined the ``SOFA_INSTALL`` and ``SP3_INSTALL`` environment variables.
+
+Start of by cloning the Caribou source code and create a build directory inside of it.
+
+.. code-block:: bash
+
+    $ git clone https://github.com/jnbrunet/caribou.git
+    $ cd caribou
+    $ mkdir build
+    $ cd build
+
+Next, cmake will be use to configure the build option. It is used with the following format: ``cmake -DVAR=VALUE ..``
+where **VAR** is the name of a configuration variable and **VALUE** is the value assigned to the variable. Caribou provides
+the following configuration variables:
+
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| VAR                         | VALUE  | DEFAULT  | DESCRIPTION                                                                               |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| CARIBOU_USE_DOUBLE          | ON/OFF | ON       | Specify if the floating point type should be double (ON) or float(OFF).                   |
+|                             |        |          | .                                                                                         |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| CARIBOU_BUILD_TESTS         | ON/OFF | OFF      | Whether or not the test suite of Caribou should be build.                                 |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| CARIBOU_WITH_SOFA           | ON/OFF | ON       | Compile the Caribou's SOFA plugin (SofaCaribou).                                          |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| CARIBOU_OPTIMIZE_FOR_NATIVE | ON/OFF | ON       | Tell the compiler to optimize Caribou following the architecture of your computer.        |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| CARIBOU_WITH_PYTHON_3       | ON/OFF | ON       | Compile Caribou's python bindings.                                                        |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| CARIBOU_WITH_MKL            | ON/OFF | ON       | Compile Caribou with Intel® Math Kernel Library (MKL) support.                            |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| CARIBOU_WITH_OPENMP         | ON/OFF | ON       | Compile Caribou with OpenMP support.                                                      |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+| CMAKE_INSTALL_PREFIX        | Path   | install/ | Specify where the built files (following the `make install` command) should be installed. |
++-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
+
+If you are compiling the Caribou's SOFA plugin, you will also need to tell cmake where it should find it. This can be
+done by setting the cmake variable ``CMAKE_PREFIX_PATH`` to ``$SOFA_INSTALL/lib/install/cmake``. The same
+thing needs to be done with SofaPython3 if you are also compiling Caribou's python bindings. In this case, you can set
+``CMAKE_PREFIX_PATH`` to ``$SOFA_INSTALL/lib/install/cmake;$SP3_INSTALL/lib/install/cmake`` (note the semicolon ``;``
+between the two paths).
+
+For example, if you want to compile Caribou with MKL support and python bindings:
+
+.. code-block:: bash
+
+    $ cmake -DCARIBOU_WITH_MKL=ON -DCARIBOU_WITH_PYTHON_3=ON ..
+
+If you want to compile Caribou with SOFA and python bindings:
+
+.. code-block:: bash
+
+    $ cmake -DCARIBOU_WITH_PYTHON_3=ON -DCMAKE_PREFIX_PATH="$SOFA_INSTALL/lib/install/cmake;$SP3_INSTALL/lib/install/cmake" ..
+
+You can now start the compilation.
+
+.. code-block:: bash
+
+    $ cmake --build . -j4
+    $ cmake --install .
+
+The last command (``cmake --install .``) installed all the built files inside the directory ``install`` (or the directory
+specified by the cmake variable ``CMAKE_INSTALL_PREFIX`` if you changed it). Export this path to the environment variable
+``CARIBOU_INSTALL``:
+
+.. code-block:: bash
+
+    $ export CARIBOU_INSTALL="${PWD}/install"
+
+.. note::
+
+   To make sure your ``CARIBOU_INSTALL`` is well defined, you can verify that the following file path exists:
+
+   .. code-block:: bash
+
+        $CARIBOU_INSTALL/lib/cmake/Caribou/CaribouTargets.cmake
+
+
+Installing python bindings
+--------------------------
+
+If you compiled the Caribou's python bindings, and you want them to be found automatically by your python scripts,
+you can create a symbolic link to the binding directories inside Python's site-package path:
+
+For linux, this can be done with the following command:
+
+.. code-block:: bash
+
+    $ ln -sFfv $(find $CARIBOU_INSTALL/lib/python3.7/site-packages -maxdepth 1 -mindepth 1) $(python3 -m site --user-site)
+
+And for Mac OSX:
+
+.. code-block:: bash
+
+    $ ln -sFfv $(find $CARIBOU_INSTALL/lib/python3.7/site-packages -d 1) $(python3 -m site --user-site)
+
+You can test that the bindings have been correctly installed by starting a python shell and import Caribou:
+
+.. code-block:: python
+
+    import Caribou
+
+    # Do the following only if you compiled the Caribou's SOFA plugin
+    import SofaRuntime
+    import SofaCaribou
