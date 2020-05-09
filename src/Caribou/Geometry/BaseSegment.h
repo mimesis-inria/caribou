@@ -59,6 +59,10 @@ private:
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const {return WorldCoordinates(p_nodes.row(index));};
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::world_coordinates(LocalCoordinates(0));};
+    inline auto get_contains_local(const LocalCoordinates & xi, const FLOATING_POINT_TYPE & eps) const -> bool {
+        const auto & u = xi[0];
+        return IN_CLOSED_INTERVAL(-1-eps, u, 1+eps);
+    }
 
     template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
     inline

@@ -29,6 +29,8 @@ option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." OFF)
 option(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
 
+# Tests
+find_package(GMock QUIET) # This find_package needs to be executed at MOST once, else it will fails on the second call
 
 # Python 3 option
 set(PYBIND11_PYTHON_VERSION 3)
@@ -52,7 +54,7 @@ CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_OPENMP "Compile the plugin with OpenMP suppo
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
 endif()
-message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

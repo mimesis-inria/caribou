@@ -22,6 +22,7 @@ TEST(Quad, Linear) {
         using Triangle = caribou::geometry::Triangle<_2D, Linear>;
         using Quad = caribou::geometry::Quad<_2D, Linear>;
 
+        using LocalCoordinates = Quad::LocalCoordinates;
         using WorldCoordinates = Quad::WorldCoordinates;
 
         Quad q (
@@ -35,11 +36,50 @@ TEST(Quad, Linear) {
         EXPECT_FLOAT_EQ(q.center()[0], 0);
         EXPECT_FLOAT_EQ(q.center()[1], 0);
 
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                q.local_coordinates(q.center()),
+                q.local_coordinates(q.world_coordinates({-1-epsilon/2., 0})),
+                q.local_coordinates(q.world_coordinates({+1+epsilon/2., 0})),
+                q.local_coordinates(q.world_coordinates({0, +1+epsilon/2})),
+                q.local_coordinates(q.world_coordinates({0, -1-epsilon/2}))
+            };
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < q.number_of_nodes();++node_id) {
+                inside_points.push_back(q.local_coordinates(q.node(node_id)));
+            }
+            for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < q.number_of_gauss_nodes();++gauss_node_id) {
+                inside_points.push_back(q.gauss_node(gauss_node_id).position);
+            }
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(q.contains_local(p, epsilon)) <<
+                                                          "Local point [" << p[0] << ", " << p[1] << "] is found outside the element, but it should be inside.";
+            }
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {
+                q.local_coordinates(q.node(0)) - LocalCoordinates(epsilon*1.1, 0),
+                q.local_coordinates(q.node(1)) + LocalCoordinates(epsilon*1.1, 0),
+                q.local_coordinates(q.node(2)) + LocalCoordinates(epsilon*1.1, epsilon*1.1),
+                q.local_coordinates(q.node(3)) + LocalCoordinates(0, epsilon*1.1),
+            };
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(q.contains_local(p, epsilon)) <<
+                                                           "Local point [" << p[0] << ", " << p[1] << "] is found inside the element, but it should be outside.";
+            }
+        }
+
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 1> values (p1(q.node(0)), p1(q.node(1)), p1(q.node(2)), p1(q.node(3)));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(q.interpolate(x, values), p1(q.world_coordinates(x)));
+        }
+
+        // Inverse transformation
+        for (const auto & gauss_node : q.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, q.local_coordinates(q.world_coordinates(gauss_node.position)), 1e-5);
         }
 
         // Integration
@@ -104,6 +144,7 @@ TEST(Quad, Linear) {
         using Triangle = caribou::geometry::Triangle<_3D, Linear>;
         using Quad = caribou::geometry::Quad<_3D, Linear>;
 
+        using LocalCoordinates = Quad::LocalCoordinates;
         using WorldCoordinates = Quad::WorldCoordinates;
 
         Quad q (
@@ -118,11 +159,50 @@ TEST(Quad, Linear) {
         EXPECT_FLOAT_EQ(q.center()[1], 0);
         EXPECT_FLOAT_EQ(q.center()[2], 0);
 
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                q.local_coordinates(q.center()),
+                q.local_coordinates(q.world_coordinates({-1-epsilon/2., 0})),
+                q.local_coordinates(q.world_coordinates({+1+epsilon/2., 0})),
+                q.local_coordinates(q.world_coordinates({0, +1+epsilon/2})),
+                q.local_coordinates(q.world_coordinates({0, -1-epsilon/2}))
+            };
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < q.number_of_nodes();++node_id) {
+                inside_points.push_back(q.local_coordinates(q.node(node_id)));
+            }
+            for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < q.number_of_gauss_nodes();++gauss_node_id) {
+                inside_points.push_back(q.gauss_node(gauss_node_id).position);
+            }
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(q.contains_local(p, epsilon)) <<
+                                                          "Local point [" << p[0] << ", " << p[1] << "] is found outside the element, but it should be inside.";
+            }
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {
+                q.local_coordinates(q.node(0)) - LocalCoordinates(epsilon*1.1, 0),
+                q.local_coordinates(q.node(1)) + LocalCoordinates(epsilon*1.1, 0),
+                q.local_coordinates(q.node(2)) + LocalCoordinates(epsilon*1.1, epsilon*1.1),
+                q.local_coordinates(q.node(3)) + LocalCoordinates(0, epsilon*1.1),
+            };
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(q.contains_local(p, epsilon)) <<
+                                                           "Local point [" << p[0] << ", " << p[1] << "] is found inside the element, but it should be outside.";
+            }
+        }
+
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 1> values (p1(q.node(0)), p1(q.node(1)), p1(q.node(2)), p1(q.node(3)));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(q.interpolate(x, values), p1(q.world_coordinates(x)));
+        }
+
+        // Inverse transformation
+        for (const auto & gauss_node : q.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, q.local_coordinates(q.world_coordinates(gauss_node.position)), 1e-5);
         }
 
         // Integration
@@ -201,6 +281,7 @@ TEST(Quad, Quadratic) {
         using Triangle = caribou::geometry::Triangle<_2D, Quadratic>;
         using Quad = caribou::geometry::Quad<_2D, Quadratic>;
 
+        using LocalCoordinates = Quad::LocalCoordinates;
         using WorldCoordinates = Quad::WorldCoordinates;
 
         Quad q (
@@ -213,6 +294,48 @@ TEST(Quad, Quadratic) {
         // Center
         EXPECT_FLOAT_EQ(q.center()[0], 0);
         EXPECT_FLOAT_EQ(q.center()[1], 0);
+
+        // Inverse transformation
+        for (const auto & gauss_node : q.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, q.local_coordinates(q.world_coordinates(gauss_node.position)), 1e-5);
+        }
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < q.number_of_nodes();++node_id) {
+            EXPECT_MATRIX_NEAR(q.node(node_id), q.world_coordinates(q.local_coordinates(q.node(node_id))), 1e-5);
+        }
+
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                q.local_coordinates(q.center()),
+                q.local_coordinates(q.world_coordinates({-1., 0.5})),
+                q.local_coordinates(q.world_coordinates({+1, -0.5})),
+                q.local_coordinates(q.world_coordinates({0.5, +1})),
+                q.local_coordinates(q.world_coordinates({-0.5, -1}))
+            };
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < q.number_of_nodes();++node_id) {
+                inside_points.push_back(q.local_coordinates(q.node(node_id)));
+            }
+            for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < q.number_of_gauss_nodes();++gauss_node_id) {
+                inside_points.push_back(q.gauss_node(gauss_node_id).position);
+            }
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(q.contains_local(p, epsilon)) <<
+                                                          "Local point [" << p[0] << ", " << p[1] << "] is found outside the element, but it should be inside.";
+            }
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {
+                q.local_coordinates(q.node(0)) - LocalCoordinates(epsilon*1.1, 0),
+                q.local_coordinates(q.node(1)) + LocalCoordinates(epsilon*1.1, 0),
+                q.local_coordinates(q.node(2)) + LocalCoordinates(epsilon*1.1, epsilon*1.1),
+                q.local_coordinates(q.node(3)) + LocalCoordinates(0, epsilon*1.1),
+            };
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(q.contains_local(p, epsilon)) <<
+                                                           "Local point [" << p[0] << ", " << p[1] << "] is found inside the element, but it should be outside.";
+            }
+        }
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 8, 1> values;
@@ -283,6 +406,7 @@ TEST(Quad, Quadratic) {
         using Triangle = caribou::geometry::Triangle<_3D, Quadratic>;
         using Quad = caribou::geometry::Quad<_3D, Quadratic>;
 
+        using LocalCoordinates = Quad::LocalCoordinates;
         using WorldCoordinates = Quad::WorldCoordinates;
 
         Quad q (
@@ -296,6 +420,48 @@ TEST(Quad, Quadratic) {
         EXPECT_FLOAT_EQ(q.center()[0], 0);
         EXPECT_FLOAT_EQ(q.center()[1], 0);
         EXPECT_FLOAT_EQ(q.center()[2], 0);
+
+        // Inverse transformation
+        for (const auto & gauss_node : q.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, q.local_coordinates(q.world_coordinates(gauss_node.position)), 1e-5);
+        }
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < q.number_of_nodes();++node_id) {
+            EXPECT_MATRIX_NEAR(q.node(node_id), q.world_coordinates(q.local_coordinates(q.node(node_id))), 1e-5);
+        }
+
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                q.local_coordinates(q.center()),
+                q.local_coordinates(q.world_coordinates({-1., 0.5})),
+                q.local_coordinates(q.world_coordinates({+1, -0.5})),
+                q.local_coordinates(q.world_coordinates({0.5, +1})),
+                q.local_coordinates(q.world_coordinates({-0.5, -1}))
+            };
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < q.number_of_nodes();++node_id) {
+                inside_points.push_back(q.local_coordinates(q.node(node_id)));
+            }
+            for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < q.number_of_gauss_nodes();++gauss_node_id) {
+                inside_points.push_back(q.gauss_node(gauss_node_id).position);
+            }
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(q.contains_local(p, epsilon)) <<
+                                                          "Local point [" << p[0] << ", " << p[1] << "] is found outside the element, but it should be inside.";
+            }
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {
+                q.local_coordinates(q.node(0)) - LocalCoordinates(epsilon*1.1, 0),
+                q.local_coordinates(q.node(1)) + LocalCoordinates(epsilon*1.1, 0),
+                q.local_coordinates(q.node(2)) + LocalCoordinates(epsilon*1.1, epsilon*1.1),
+                q.local_coordinates(q.node(3)) + LocalCoordinates(0, epsilon*1.1),
+            };
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(q.contains_local(p, epsilon)) <<
+                                                           "Local point [" << p[0] << ", " << p[1] << "] is found inside the element, but it should be outside.";
+            }
+        }
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 8, 1> values;

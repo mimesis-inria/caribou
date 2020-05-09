@@ -7,7 +7,7 @@ set(SOURCE_FILES
 )
 
 enable_testing()
-find_package(GTest QUIET REQUIRED)
+
 find_package(SofaFramework QUIET REQUIRED)
 find_package(SofaSimulation QUIET REQUIRED)
 find_package(SofaBase QUIET REQUIRED)

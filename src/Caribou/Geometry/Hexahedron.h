@@ -422,12 +422,12 @@ private:
 
     inline auto get_boundary_elements_nodes() const -> const auto & {
         static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 8>, 6> indices = {{
-            {0, 3, 2, 1,  9, 13, 11,  8}, // Face 0
-            {0, 4, 7, 3, 10, 17, 15,  9}, // Face 1
-            {1, 2, 6, 5, 11, 14, 18, 12}, // Face 2
-            {0, 1, 5, 4,  8, 12, 16, 10}, // Face 3
-            {2, 3, 7, 6, 13, 15, 19, 14}, // Face 4
-            {4, 5, 6, 7, 16, 18, 19, 17}  // Face 5
+            {0, 3, 2, 1, 11, 10,  9,  8}, // Face 0
+            {0, 4, 7, 3, 16, 15, 19, 11}, // Face 1
+            {1, 2, 6, 5,  9, 18, 13, 17}, // Face 2
+            {0, 1, 5, 4,  8, 17, 12, 16}, // Face 3
+            {2, 3, 7, 6, 10, 19, 14, 18}, // Face 4
+            {4, 5, 6, 7, 12, 13, 14, 15}  // Face 5
         }};
         return indices;
     }

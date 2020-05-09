@@ -98,11 +98,32 @@ struct Element {
      *   >
      */
     inline auto boundary_elements_node_indices() const -> const auto & {
-        if constexpr (element_has_boundaries_v<Derived>) {
-            return self().get_boundary_elements_nodes();
-        } else {
-            static_assert(element_has_boundaries_v<Derived>, "This element type has no boundary elements defined.");
+        static_assert(element_has_boundaries_v<Derived>, "This element type has no boundary elements defined.");
+        return self().get_boundary_elements_nodes();
+    }
+
+    /**
+     * Construct and return the given boundary element.
+     *
+     * Example:
+     * \code{.cpp}
+     * Hexahedron<Linear> hexa;
+     * Quad<Linear, _3D> face_0 = hexa.boundary_element(0);
+     *
+     * Tetrahedron<Quadratic> tetra;
+     * Triangle<Quadratic, _3D> face_2 = tetra.boundary_element(2);
+     * \endcode
+     *
+     */
+    inline auto boundary_element(const UNSIGNED_INTEGER_TYPE & boundary_id) const {
+        static_assert(element_has_boundaries_v<Derived>, "This element type has no boundary elements defined.");
+        using BoundaryElement = typename traits<Derived>::BoundaryElementType;
+        const auto & node_indices = boundary_elements_node_indices()[boundary_id];
+        Matrix<BoundaryElement::NumberOfNodesAtCompileTime, Dimension> nodes;
+        for (UNSIGNED_INTEGER_TYPE boundary_node_id = 0; boundary_node_id < nodes.rows(); ++boundary_node_id) {
+            nodes.row(boundary_node_id) = self().node(node_indices[boundary_node_id]);
         }
+        return BoundaryElement(nodes);
     }
 
     /**
@@ -140,15 +161,57 @@ struct Element {
     /**
      * Get the local coordinates of a point from its world coordinates by doing a set of Newton-Raphson iterations.
      *
+     * \sa local_coordinates() for more details.
+     *
      * \note By default, the Newton-Raphson will start by an approximation of the local coordinates at [0, 0, 0].
      *       The iterations will stop at 5 iterations, or if the norm o*       f relative residual |R|/|R0| is less than 1e-5.
      */
-    inline auto local_coordinates(const WorldCoordinates & coordinates) -> LocalCoordinates {
-        return local_coordinates(coordinates, LocalCoordinates::Constant(-1), 1e-5, 5);
+    inline auto local_coordinates(const WorldCoordinates & coordinates) const -> LocalCoordinates {
+        return local_coordinates(coordinates, LocalCoordinates::Constant(0), 1e-5, 5);
     }
 
     /**
      * Get the local coordinates of a point from its world coordinates by doing a set of Newton-Raphson iterations.
+     *
+     * By taking the Taylor expansion of the transformation \f$T(\vec{\xi}) \rightarrow \vec{x} \f$
+     * with \f$\vec{x} = [x,y,z]^T\f$ being the world coordinates of a point and \f$\vec{\xi} = [u,v,w]^T\f$ its local coordinates
+     * within the element, we have
+     *
+     * \f{eqnarray*}{
+     *     x_p &= x_0 + \frac{\partial x}{\partial u} \cdot (u_p - u_0) + \frac{\partial x}{\partial v} \cdot (v_p - v_0) + \frac{\partial x}{\partial w} \cdot (w_p - w_0) \\
+     *     y_p &= y_0 + \frac{\partial y}{\partial u} \cdot (u_p - u_0) + \frac{\partial y}{\partial v} \cdot (v_p - v_0) + \frac{\partial y}{\partial w} \cdot (w_p - w_0) \\
+     *     z_p &= z_0 + \frac{\partial z}{\partial u} \cdot (u_p - u_0) + \frac{\partial z}{\partial v} \cdot (v_p - v_0) + \frac{\partial z}{\partial w} \cdot (w_p - w_0) \\
+     * \f}
+     *
+     * where partial derivatives are evaluated at \f$\vec{\xi}_0 = [u_0,v_0,w_0]^T\f$. We can reformulate with the following matrix form
+     *
+     * \f{eqnarray*}{
+     *     \vec{x}_p = \vec{x}_0 + \mathrm{J} \cdot (\vec{\xi}_p - \vec{\xi}_0)
+     * \f}
+     *
+     * where \f$ \vec{x}_p = T(\vec{\xi}_p) \f$, \f$ \vec{x}_0 = T(\vec{\xi}_0) \f$ and \f$ \mathrm{J} \f$ is the Jacobian
+     * of the transformation \f$T\f$. Since we are trying to find \f$\vec{\xi}_p\f$, we can rearange the last equation to get
+     *
+     * \f{eqnarray*}{
+     *     \vec{\xi}_p = \vec{\xi}_0 + \mathrm{J}^{-1} (\vec{x}_p - \vec{x}_0)
+     * \f}
+     *
+     * Hence, starting from an initial guess at local coordinates \f$ \vec{\xi}_0 \f$, we have the following iterative
+     * method:
+     *
+     * \f{eqnarray*}{
+     *     \vec{\xi}_p^{k+1} = \vec{\xi}_k + \mathrm{J}^{-1} (\vec{x}_p - T(\vec{\xi}_k))
+     * \f}
+     *
+     * The iterations stop when \f$ \frac{|\vec{x}_p - T(\vec{\xi}_k)|}{|\vec{x}_p - T(\vec{\xi}_0)|} < \epsilon \f$
+     *
+     * \note
+     * When trying to find the local coordinates of non-matching manifolds (for example, the local coordinates
+     * of a triangle in a 3D manifold), the following recursive formulae is used:
+     * \f{eqnarray*}{
+     *     \vec{\xi}_p^{k+1} = \vec{\xi}_k + (\mathrm{J}^T\mathrm{J})^{-1} \mathrm{J}^T (\vec{x}_p - T(\vec{\xi}_k))
+     * \f}
+     *
      * @param coordinates    The world coordinates of the point from which we want to get the local coordinates.
      * @param starting_point An approximation of the real local coordinates we want the get. The closer it is to the
      *                       solution, the faster the Newton will converge.
@@ -161,10 +224,9 @@ struct Element {
         const WorldCoordinates & coordinates,
         const LocalCoordinates & starting_point,
         const FLOATING_POINT_TYPE & residual_tolerance,
-        const UNSIGNED_INTEGER_TYPE & maximum_number_of_iterations) -> LocalCoordinates {
+        const UNSIGNED_INTEGER_TYPE & maximum_number_of_iterations) const -> LocalCoordinates {
 
-        static_assert(Dimension == CanonicalDimension, "The local coordinates of a world position can only be found if "
-                                                       "the local and world dimension are the same.");
+        using namespace Eigen;
 
         LocalCoordinates xi = starting_point;
         UNSIGNED_INTEGER_TYPE iteration = 0;
@@ -182,25 +244,33 @@ struct Element {
 
         // Start the iterations
         do {
+            Matrix<Dimension, CanonicalDimension> J = jacobian(xi);
 
-            Matrix<Dimension, Dimension> J;
+            LocalCoordinates dxi;
+            if constexpr (Dimension == CanonicalDimension) {
+                dxi.noalias() = J.inverse() * residual;
+            } else {
+                dxi.noalias() = (J.transpose()*J).inverse() * (J.transpose()*residual);
+            }
 
-            J.noalias() = -1. * jacobian(xi);
-
-            Matrix<Dimension, Dimension> Jinv = J.inverse();
-
-            xi.noalias() = (xi - (Jinv * residual)).eval();
+            xi.noalias() = (xi + dxi).eval();
             residual.noalias() = coordinates - world_coordinates(xi);
             r_norm_2 = residual.squaredNorm();
 
-            std::cout << "It # " << iteration << ": |R|/|R0| = " << sqrt(r_norm_2/r0_norm_2) << "\n";
-
             ++iteration;
-
         }
         while (iteration < maximum_number_of_iterations and r_norm_2 >= r0_norm_2*squared_threshold);
 
         return xi;
+    }
+
+    /**
+     * Return true if the element contains the point located at the given local coordinates.
+     * @param coordinates Local coordinates of a point
+     * @param eps If the given point is located barely outside the element, which is, less than this eps value, returns true.
+     */
+    inline auto contains_local(const LocalCoordinates & xi, const FLOATING_POINT_TYPE & eps = EPSILON) const -> bool {
+        return self().get_contains_local(xi, eps);
     }
 
     /**
@@ -232,6 +302,10 @@ struct Element {
      * The Jacobian is defined as:
      *
      * \verbatim
+     *
+     * |dx|     |du|
+     * |dy| = J |dv|
+     * |dz|     |dw|
      *
      * 1D canonical element
      * --------------------

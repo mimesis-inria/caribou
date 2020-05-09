@@ -140,7 +140,7 @@ struct traits<Quad <_Dimension, Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
-    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
 
     using BoundaryElementType = Segment<_Dimension, Quadratic>;
     static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
