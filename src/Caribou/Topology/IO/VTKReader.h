@@ -60,11 +60,13 @@ public:
      *                    Where mesh is the current mesh being created and
      *                    ElementsIndices is an array of the following form:
      *
+     *                    \verbatim
      *                      // Node 1   Node 2   Node 3    ...    Node M
      *                    [[   e1n1,    e1n2,    e1n3,    ...,    e1nM   ], // Element 1
      *                     [   e2n1,    e2n2,    e2n3,    ...,    e2nM   ], // Element 2
      *                                                    ...
      *                     [   eNn1,    eNn2,    eNn3,    ...,    eNnM]  ] // Element N
+     *                     \endverbatim
      *
      *                    Here, for example, e2n4 means the indice of the second node of the fourth element of the mesh.
      *

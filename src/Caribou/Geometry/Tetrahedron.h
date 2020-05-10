@@ -25,6 +25,7 @@ struct traits<Tetrahedron <Linear>> {
 /**
  * Linear Tetrahedron
  *
+ * \verbatim
  *                    v
  *                  .
  *                ,/
@@ -43,6 +44,7 @@ struct traits<Tetrahedron <Linear>> {
  *              `3
  *                 `\.
  *                    ` w
+ * \endverbatim
  *
  */
 template<>
@@ -153,6 +155,7 @@ struct traits<Tetrahedron <Quadratic>> {
 /**
  * Quadratic Tetrahedron
  *
+ * \verbatim
  *                    v
  *                  .
  *                ,/
@@ -171,6 +174,7 @@ struct traits<Tetrahedron <Quadratic>> {
  *              `3
  *                 `\.
  *                    ` w
+ * \endverbatim
  *
  */
 template<>

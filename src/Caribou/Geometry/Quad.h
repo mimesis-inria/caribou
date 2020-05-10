@@ -25,6 +25,7 @@ struct traits<Quad <_Dimension, Linear>> {
 /**
  * Linear Quad
  *
+ * \verbatim
  *        v
  *        ^
  *        |
@@ -35,6 +36,7 @@ struct traits<Quad <_Dimension, Linear>> {
  *  |           |
  *  |           |
  *  0-----------1
+ *  \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */
@@ -149,6 +151,7 @@ struct traits<Quad <_Dimension, Quadratic>> {
 /**
  * Quadratic Quad
  *
+ * \verbatim
  *       v
  *       ^
  *       |
@@ -159,6 +162,7 @@ struct traits<Quad <_Dimension, Quadratic>> {
  * |           |
  * |           |
  * 0-----4-----1
+ * \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */

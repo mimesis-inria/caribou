@@ -25,6 +25,7 @@ struct traits<RectangularHexahedron <Linear>> {
 /**
  * Linear Rectangular Hexahedron
  *
+ * \verbatim
  *        v
  * 3----------2
  * |\     ^   |\
@@ -37,6 +38,7 @@ struct traits<RectangularHexahedron <Linear>> {
  *   \ |     \  \ |
  *    \|      w  \|
  *     4----------5
+ * \endverbatim
  *
  */
 template<>
@@ -200,6 +202,7 @@ struct traits<RectangularHexahedron <Quadratic>> {
 /**
  * Quadratic Rectangular Hexahedron (20 nodes)
  *
+ * \verbatim
  *         v
  *         ^
  *         |
@@ -214,6 +217,7 @@ struct traits<RectangularHexahedron <Quadratic>> {
  *   16 |     \  17|
  *     \|      w  \|
  *      4----12----5   u
+ * \endverbatim
  *
  */
 template<>

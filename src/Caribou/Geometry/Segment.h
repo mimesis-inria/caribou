@@ -20,7 +20,9 @@ template<UNSIGNED_INTEGER_TYPE _Dimension>
 /**
  * Linear segment
  *
+ * \verbatim
  * P1 : 0-----+-----1 --> u
+ * \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */
@@ -100,7 +102,9 @@ struct traits<Segment <_Dimension, Quadratic>> {
 /**
  * Quadratic segment
  *
+ * \verbatim
  * P2 : 0-----2-----1 --> u
+ * \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */

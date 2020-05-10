@@ -25,7 +25,52 @@ namespace caribou::topology {
     class DomainStorage {};
 
     /*!
-     * A domain implements the BaseDomain interface with a given element type.
+     * A domain is a subspace of a mesh containing a set of points and the topological relation between them. It does not
+     * contain any world positions of the points, but only their connectivity.
+     *
+     * The domain class supports either internal storing of the node connectivity, or external storing (
+     * for example when the vector of node indices for every elements are stored externally).
+     *
+     * In a domain, all the elements are of the same type. For example, a domain can not contain both hexahedrons and
+     * tetrahedrons.
+     *
+     * A domain can only reside inside one and only one mesh. In fact, only a mesh can create a Domain instance. The mesh
+     * will typically contain one or more domains.
+     *
+     * Example of a domain that stores internally its connectivity:
+     * \code{.cpp}
+     * // We supposed the mesh containing the position of the nodes have been created before.
+     * Mesh<_3D> * mesh = get_mesh();
+     *
+     * // Set the node connectivity of 4 triangles (each having 3 nodes).
+     * Eigen::Matrix<unsigned int, 4, 3> indices;
+     * indices << 0, 1, 3, // Triangle 1
+     *            1, 4, 5, // Triangle 2
+     *            8, 3, 1, // Triangle 3
+     *            9, 5, 1; // Triangle 4
+     *
+     * // Here the indices array will be copied into the domain. It can therefore
+     * // be safely deleted once the domain has been added to the mesh
+     * mesh->add_domain<Triangle<_3D, Linear>>(indices);
+     * \endcode
+     *
+     * Example of a domain that uses the connectivity stored externally:
+     * \code{.cpp}
+     * // We supposed the mesh containing the position of the nodes have been created before.
+     * Mesh<_3D> * mesh = get_mesh();
+     *
+     * // Set the node connectivity of 4 triangles (each having 3 nodes).
+     * unsigned int indices[8] = {0, 1, 3,  // Triangle 1
+     *                            1, 4, 5,  // Triangle 2
+     *                            8, 3, 1,  // Triangle 3
+     *                            9, 5, 1}; // Triangle 4
+     *
+     * // Here the indices array will NOT be copied into the domain.
+     * // Hence, it must remain valid for the entire lifetime of the domain.
+     * mesh->add_domain<Triangle<_3D, Linear>>(indices, 4, 3);
+     * \endcode
+     *
+     * \note More examples can be found in the file src/Caribou/Topology/test/test_domain.cpp
      *
      * @tparam Element See caribou::geometry::Element
      * @tparam NodeIndex The type of integer used for a node index
