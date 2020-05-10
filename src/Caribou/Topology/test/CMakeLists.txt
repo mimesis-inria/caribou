@@ -9,8 +9,9 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
         Grid/Grid.cpp
-        test_mesh.cpp
+        test_barycentric_container.cpp
         test_domain.cpp
+        test_mesh.cpp
         main.cpp)
 
 set(MESH_FILES

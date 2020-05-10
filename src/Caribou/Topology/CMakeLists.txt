@@ -2,6 +2,7 @@ project(Topology)
 
 set(HEADER_FILES
     config.h.in
+    BarycentricContainer.h
     BaseMesh.h
     BaseDomain.h
     Domain.h
