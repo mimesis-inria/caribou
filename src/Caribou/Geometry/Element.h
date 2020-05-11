@@ -77,7 +77,7 @@ struct Element {
         if constexpr (element_has_boundaries_v<Derived>) {
             return self().get_number_of_boundary_elements();
         } else {
-            static_assert(element_has_boundaries_v<Derived>, "This element type has no boundary elements defined.");
+            return 0;
         }
     }
 

@@ -29,6 +29,10 @@ foreach(component ${Caribou_COMPONENTS})
     add_subdirectory(${component})
 endforeach()
 
+if (CARIBOU_WITH_PYTHON_3)
+    add_subdirectory(Python)
+endif()
+
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/CaribouConfig.cmake.in"
     "${CMAKE_BINARY_DIR}/cmake/Caribou/CaribouConfig.cmake"

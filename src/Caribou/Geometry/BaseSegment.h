@@ -40,6 +40,10 @@ struct BaseSegment : public Element<Derived> {
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
     explicit BaseSegment(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
 
+    /** Constructor from an Eigen matrix reference containing the positions of the segment's nodes */
+    template<typename EigenType, int Options, typename StrideType>
+    explicit BaseSegment(const Eigen::Ref<EigenType, Options, StrideType> & nodes) : p_nodes(nodes) {}
+
     /** Constructor from a serie of nodes. */
     template <
         typename ...Nodes,

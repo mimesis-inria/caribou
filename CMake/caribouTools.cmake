@@ -15,8 +15,8 @@ endfunction()
 
 function(caribou_add_python_module NAME)
     set(options QUIET)
-    set(oneValueArgs PREFIX TESTS_PREFIX DESTINATION TESTS_DESTINATION TARGET_NAME)
-    set(multiValueArgs SOURCE_FILES PYTHON_FILES PYTHON_TEST_FILES DEPENDS)
+    set(oneValueArgs PREFIX DESTINATION TARGET_NAME)
+    set(multiValueArgs SOURCE_FILES HEADERSHEADERS PYTHON_FILES PYTHON_TEST_FILES DEPENDS)
 
     cmake_parse_arguments(A "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -29,35 +29,25 @@ function(caribou_add_python_module NAME)
         set(TARGET_NAME "${NAME}.python.${PYTHON_LIBRARY_SUFFIX}")
     endif()
 
-
-    if (A_TESTS_PREFIX)
-        set(TESTS_PREFIX "${A_TESTS_PREFIX}")
-    else()
-        set(TESTS_PREFIX "bin/python_tests/python${PYTHON_LIBRARY_SUFFIX}")
-    endif()
-
     if (A_DESTINATION)
         set(DESTINATION "${A_DESTINATION}")
     else()
         set(DESTINATION "")
     endif ()
 
-    if (A_TESTS_DESTINATION)
-        set(TESTS_DESTINATION "${A_TESTS_DESTINATION}")
+    if (A_PREFIX)
+        set(PREFIX "${A_PREFIX}")
     else()
-        set(TESTS_DESTINATION "")
-    endif ()
+        set(PREFIX "python${PYTHON_LIBRARY_SUFFIX}/site-packages")
+    endif()
+
+    # Fetch the current path relative to /*/src
+    string(REGEX MATCH "(.*)/src" path_to_src "${CMAKE_CURRENT_SOURCE_DIR}")
 
     if (A_SOURCE_FILES)
         set(PYBIND11_CPP_STANDARD -std=c++17)
 
         project(${TARGET_NAME})
-
-        if (A_PREFIX)
-            set(PREFIX "${A_PREFIX}")
-        else()
-            set(PREFIX "python${PYTHON_LIBRARY_SUFFIX}/site-packages")
-        endif()
 
         set(MODULENAME ${NAME})
 
@@ -67,6 +57,7 @@ function(caribou_add_python_module NAME)
 
         pybind11_add_module(${TARGET_NAME} SHARED "${A_SOURCE_FILES}")
         target_link_libraries(${TARGET_NAME} PUBLIC ${A_DEPENDS} pybind11::module)
+        target_include_directories(${TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${path_to_src}/>")
         target_include_directories(${TARGET_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
 
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -90,6 +81,19 @@ function(caribou_add_python_module NAME)
         )
     endif ()
 
+    foreach(header ${A_HEADERS})
+        file(RELATIVE_PATH path_from_package "${path_to_src}" "${header}")
+        get_filename_component(dir_from_package ${path_from_package} DIRECTORY)
+
+        install(
+            FILES
+                "${header}"
+            DESTINATION
+                "include/${dir_from_package}"
+            COMPONENT headers
+        )
+    endforeach()
+
     if (A_PYTHON_FILES)
         foreach(t ${A_PYTHON_FILES})
             configure_file(${t} "${CMAKE_BINARY_DIR}/lib/${PREFIX}/${DESTINATION}/${t}")
@@ -98,9 +102,12 @@ function(caribou_add_python_module NAME)
     endif()
 
     if (A_PYTHON_TEST_FILES)
+        set(CARIBOU_PYTHON_LIB_PATH "${CMAKE_BINARY_DIR}/lib/${PREFIX}/${DESTINATION}")
+        string(REGEX MATCH "(.*)/site-packages" CARIBOU_PYTHON_LIB_PATH "${CARIBOU_PYTHON_LIB_PATH}")
         foreach(t ${A_PYTHON_TEST_FILES})
-            configure_file(${t} "${CMAKE_BINARY_DIR}/${TESTS_PREFIX}/${TESTS_DESTINATION}/${t}")
-            install(FILES "${CMAKE_BINARY_DIR}/${TESTS_PREFIX}/${TESTS_DESTINATION}/${t}" DESTINATION ${TESTS_PREFIX}/${TESTS_DESTINATION})
+            get_filename_component(test_filename "${CMAKE_CURRENT_SOURCE_DIR}/${t}" NAME)
+            configure_file(${t} "${CMAKE_BINARY_DIR}/bin/${test_filename}")
+            install(FILES "${CMAKE_BINARY_DIR}/bin/${test_filename}" DESTINATION bin)
         endforeach()
     endif()
 
