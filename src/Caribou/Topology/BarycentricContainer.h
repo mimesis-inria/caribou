@@ -3,7 +3,6 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
-#include <map>
 
 #include <Caribou/config.h>
 #include <Caribou/macros.h>
@@ -133,21 +132,22 @@ public:
         const auto mesh_entry = p_embedded_meshes.find(&embedded_mesh);
         if (mesh_entry == p_embedded_meshes.end()) {
             // The embedded mesh is not registered
-            return {-1, LocalCoordinates::Zero()};
+            throw std::runtime_error("The embedded mesh hasn't been registered to the barycentric container. "
+                                     "Make sure you called the add_embedded_mesh method before calling this one.");
         }
 
-        const auto node_entry = mesh_entry->second.find(embedded_node_index);
-        if (node_entry == mesh_entry->second.end()) {
-            // The queried point is lying outside the containing mesh
-            return {-1, LocalCoordinates::Zero()};
-        }
+        const std::vector<BarycentricPoint> & barycentric_points = mesh_entry->second;
+        caribou_assert(embedded_node_index < barycentric_points.size());
 
         // Return the barycentric point registered for the queried point
-        return node_entry->second;
+        return barycentric_points[embedded_node_index];
     }
 
     /**
-     * Add an embedded mesh to the container.
+     * Add an embedded mesh to the container. If one or more node of the embedded mesh are found outside of the
+     * containing domain (ie, no elements containing the node can be found), the operation will fail and the
+     * list of nodes found outside the domain are returned.
+     *
      * @param mesh The embedded mesh.
      * @return The list of node indices of the embedded mesh for which their positions
      *         was found outside of the container domain. If the embedded mesh lies
@@ -155,25 +155,109 @@ public:
      */
     auto add_embedded_mesh(const Mesh<Dimension> * embedded_mesh) -> std::vector<UNSIGNED_INTEGER_TYPE> {
         std::vector<UNSIGNED_INTEGER_TYPE> outside_nodes;
-        outside_nodes.reserve(std::floor(embedded_mesh->number_of_nodes() / 10)); // Reserve 10% of the mesh size for outside nodes
+        outside_nodes.reserve(std::floor(embedded_mesh->number_of_nodes() / 10.)); // Reserve 10% of the mesh size for outside nodes
 
-        std::map<UNSIGNED_INTEGER_TYPE, BarycentricPoint> inside_nodes;
+        std::vector<BarycentricPoint> inside_nodes;
+        inside_nodes.reserve(embedded_mesh->number_of_nodes());
 
         for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < embedded_mesh->number_of_nodes(); ++node_id) {
             BarycentricPoint b_point = barycentric_point(embedded_mesh->position(node_id));
             if (b_point.element_index < 0) {
                 outside_nodes.emplace_back(node_id);
             } else {
-                inside_nodes.emplace_hint(inside_nodes.end(), node_id, b_point);
+                inside_nodes.emplace_back(b_point);
             }
         }
 
-        p_embedded_meshes[embedded_mesh] = inside_nodes;
+        // Add the mesh only if no nodes were found outside
+        if (outside_nodes.empty()) {
+            p_embedded_meshes[embedded_mesh] = inside_nodes;
+        }
+
         return outside_nodes;
+    }
+
+    /**
+     * Interpolate a field (scalar or vector field) from the container domain to the embedded mesh.
+     *
+     * This methods take an input field values (one value per node of the container mesh) and interpolate it onto
+     * the values of the embedded nodes (outputs one value per node of the embedded mesh).
+     *
+     * @tparam Derived1 The matrix (Eigen) type of the input field values.
+     * @tparam Derived2 The matrix (Eigen) type of the output field valuse.
+     * @param embedded_mesh [INPUT] The embedded mesh on which the values will be interpolated. It must have been added
+     *                              to the BarycentricContainer beforehand using the BarycentricContainer::add_embedded_mesh
+     *                              method.
+     * @param container_field_values [INPUT] The field values on every nodes of the container domain's mesh. This should be a
+     *                                       matrix (Eigen) having one field value (scalar or vector) per rows. The number of
+     *                                       rows should match the number of nodes of the container domain's mesh.
+     * @param embedded_field_values [OUTPUT] The matrix (Eigen) where the interpolated field values should be written to.
+     *                                       This should be a matrix (Eigen) having one field value (scalar or vector) per
+     *                                       rows. The number of rows should match the number of nodes of the embedded mesh.
+     */
+    template <typename Derived1, typename Derived2>
+    void interpolate_field(const Mesh<Dimension> & embedded_mesh,
+                           const Eigen::MatrixBase<Derived1> & container_field_values,
+                           Eigen::MatrixBase<Derived2> & embedded_field_values) const {
+
+        // Make sure the embedded mesh has been registered.
+        const auto mesh_entry = p_embedded_meshes.find(&embedded_mesh);
+        if (mesh_entry == p_embedded_meshes.end()) {
+            throw std::runtime_error("The embedded mesh hasn't been registered to the barycentric container. "
+                                     "Make sure you called the add_embedded_mesh method before calling this one.");
+        }
+
+        // Make sure we have one field value per node of the container domain's mesh.
+        if (static_cast<unsigned>(container_field_values.rows()) != p_container_domain->mesh().number_of_nodes()) {
+            throw std::runtime_error("The number of rows of the input matrix must be the same as the number of nodes"
+                                     "in the container domain's mesh.");
+        }
+
+        // Make sure we can write one field value per node of the embedded mesh.
+        if (static_cast<unsigned>(embedded_field_values.rows()) != embedded_mesh.number_of_nodes()) {
+            throw std::runtime_error("The number of rows of the output matrix must be the same as the number of nodes"
+                                     "in the embedded mesh.");
+        }
+
+        if (container_field_values.rows() != embedded_field_values.rows()) {
+            throw std::runtime_error("The number of columns of the input matrix (container field values) must be the "
+                                     "same as the number of columns of the output matrix (embedded field values).");
+        }
+
+        // Get the barycentric coordinates of the embedded nodes
+        const std::vector<BarycentricPoint> & barycentric_points = mesh_entry->second;
+        if (embedded_mesh.number_of_nodes() != barycentric_points.size()) {
+            throw std::runtime_error("The number of registered barycentric points does not match the number of nodes"
+                                     "in the embedded mesh. Did the mesh size changed since it was added to the "
+                                     "BarycentricContainer?");
+        }
+
+        // Interpolate field values
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < embedded_mesh.number_of_nodes(); ++node_id) {
+            const auto & element_index = barycentric_points[node_id].element_index;
+            const auto & local_coordinates = barycentric_points[node_id].local_coordinates;
+            const auto & element_node_indices = p_container_domain->element_indices(element_index);
+
+            const auto element = ContainerElement(p_container_domain->mesh().positions(element_node_indices));
+
+            // Get the field values at the nodes of the containing element
+            Eigen::Matrix<FLOATING_POINT_TYPE, ContainerElement::NumberOfNodesAtCompileTime, Derived1::ColsAtCompileTime>
+                values (element.number_of_nodes(), container_field_values.cols());
+
+            for (UNSIGNED_INTEGER_TYPE i = 0; i < element.number_of_nodes(); ++i) {
+                values.row(i) = container_field_values.row(element_node_indices[i]);
+            }
+
+            // Interpolate the field value at the local position
+            const auto interpolated_value = element.interpolate(local_coordinates, values);
+
+            // Write back the interpolated value in the output embedded field
+            embedded_field_values.row(node_id) = interpolated_value;
+        }
     }
 private:
     const Domain<ContainerElement, NodeIndex> * p_container_domain;
-    std::unordered_map<const Mesh<Dimension> *, std::map<UNSIGNED_INTEGER_TYPE, BarycentricPoint>> p_embedded_meshes;
+    std::unordered_map<const Mesh<Dimension> *, std::vector<BarycentricPoint>> p_embedded_meshes;
     std::unique_ptr<HashGridT> p_hash_grid;
 };
 

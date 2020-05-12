@@ -30,7 +30,9 @@ option(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
 
 # Tests
-find_package(GMock QUIET) # This find_package needs to be executed at MOST once, else it will fails on the second call
+if (CARIBOU_BUILD_TESTS)
+    find_package(GMock QUIET REQUIRED) # This find_package needs to be executed at MOST once, else it will fails on the second call
+endif()
 
 # Python 3 option
 set(PYBIND11_PYTHON_VERSION 3)

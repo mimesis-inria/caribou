@@ -25,21 +25,21 @@ namespace caribou::topology {
     class DomainStorage {};
 
     /*!
-     * A domain is a subspace of a mesh containing a set of points and the topological relation between them. It does not
+     * A Domain is a subspace of a Mesh containing a set of points and the topological relation between them. It does not
      * contain any world positions of the points, but only their connectivity.
      *
-     * The domain class supports either internal storing of the node connectivity, or external storing (
+     * The Domain class supports either internal storing of the node connectivity, or external storing (
      * for example when the vector of node indices for every elements are stored externally).
      *
-     * In a domain, all the elements are of the same type. For example, a domain can not contain both hexahedrons and
+     * In a Domain, all the elements are of the same type. For example, a Domain can not contain both hexahedrons and
      * tetrahedrons.
      *
-     * A domain can only reside inside one and only one mesh. In fact, only a mesh can create a Domain instance. The mesh
+     * A Domain can only reside inside one and only one Mesh. In fact, only a Mesh can create a Domain instance. The Mesh
      * will typically contain one or more domains.
      *
      * Example of a domain that stores internally its connectivity:
      * \code{.cpp}
-     * // We supposed the mesh containing the position of the nodes have been created before.
+     * // We supposed the Mesh containing the position of the nodes have been created before.
      * Mesh<_3D> * mesh = get_mesh();
      *
      * // Set the node connectivity of 4 triangles (each having 3 nodes).

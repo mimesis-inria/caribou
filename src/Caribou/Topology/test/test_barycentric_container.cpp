@@ -121,6 +121,14 @@ TEST(BarycentricContainer, _2D) {
         EXPECT_MATRIX_NEAR(embedded_mesh_1.position(node_id), element.world_coordinates(bary_p.local_coordinates), 1e-10);
     }
 
+    // Interpolation
+    Eigen::Map<Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 2, Eigen::RowMajor>> values(&positions[0][0], positions.size(), 2);
+    Eigen::Matrix<FLOATING_POINT_TYPE, 9, 2> interpolated_values;
+    barycentric_container.interpolate_field(embedded_mesh_1, values, interpolated_values);
+    for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < (unsigned) interpolated_values.rows(); ++node_id) {
+        EXPECT_MATRIX_EQUAL(interpolated_values.row(node_id).transpose(), embedded_positions_1[node_id]);
+    }
+
     // Embedded mesh 2
 
     //      +----+----+
@@ -154,27 +162,6 @@ TEST(BarycentricContainer, _2D) {
 
     Mesh embedded_mesh_2 (embedded_positions_2);
 
-    Domain<Quad>::ElementsIndices embedded_quad_indices_2(4, 4);
-    embedded_quad_indices_2 <<
-        0, 1, 4, 3,
-        1, 2, 5, 4,
-        3, 4, 7, 6,
-        4, 5, 8, 7;
-    embedded_mesh_2.add_domain<Quad>("quads", embedded_quad_indices_2);
-
     const auto outside_nodes = barycentric_container.add_embedded_mesh(&embedded_mesh_2);
     EXPECT_EQ(outside_nodes, std::vector<UNSIGNED_INTEGER_TYPE>({0, 3, 6, 7, 8}));
-
-    // Make sure we are able to find all nodes of the embedded mesh
-    UNSIGNED_INTEGER_TYPE nb_of_inside_nodes = 0;
-    for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < embedded_mesh_2.number_of_nodes(); ++node_id) {
-        const auto bary_p = barycentric_container.barycentric_point(embedded_mesh_2, node_id);
-        if (bary_p.element_index < 0) {
-            continue;
-        }
-        const Quad element = container_domain->element(bary_p.element_index);
-        EXPECT_MATRIX_NEAR(embedded_mesh_2.position(node_id), element.world_coordinates(bary_p.local_coordinates), 1e-10);
-        nb_of_inside_nodes++;
-    }
-    EXPECT_EQ(nb_of_inside_nodes + outside_nodes.size(), embedded_mesh_2.number_of_nodes());
 }
