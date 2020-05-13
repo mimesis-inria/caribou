@@ -11,7 +11,7 @@ namespace py = pybind11;
 
 namespace caribou::geometry::python {
 
-std::string order_name(const UNSIGNED_INTEGER_TYPE & order) {
+static auto order_name(const UNSIGNED_INTEGER_TYPE & order) -> std::string {
     if (order == Linear)
         return "Linear";
     else if (order == Quadratic) {

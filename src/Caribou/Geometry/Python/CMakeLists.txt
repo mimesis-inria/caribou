@@ -10,12 +10,13 @@ set(PYTHON_TEST_FILES
 
 set(HEADER_FILES
         Element.h
-        Segment.h
 )
 
 set(SOURCE_FILES
         Geometry.cpp
+        Quad.cpp
         Segment.cpp
+        Triangle.cpp
 )
 
 unset(PYTHON_MODULE_PREFIX)
