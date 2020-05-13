@@ -14,8 +14,10 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
         Geometry.cpp
+        Hexahedron.cpp
         Quad.cpp
         Segment.cpp
+        Tetrahedron.cpp
         Triangle.cpp
 )
 
