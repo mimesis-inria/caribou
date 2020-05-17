@@ -31,7 +31,12 @@ CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to 
 
 # Tests
 if (CARIBOU_BUILD_TESTS)
-    find_package(GMock QUIET REQUIRED) # This find_package needs to be executed at MOST once, else it will fails on the second call
+    # SOFA is exporting its own gtest, let's try to find it first
+    find_package(GTest QUIET)
+    if (NOT GTest_FOUND)
+        # This find_package needs to be executed at MOST once, else it will fails on the second call
+        find_package(GMock QUIET REQUIRED)
+    endif ()
 endif()
 
 # Python 3 option
