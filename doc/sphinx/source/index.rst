@@ -11,6 +11,10 @@ The project is composed of two modules:
 
 2. The **Sofa caribou library** is built on top of the **caribou library**, but brings new components to the SOFA project as a plugin.
 
+.. raw:: html
+
+    <object data="_static/img/caribou.svg" type="image/svg+xml"></object>
+
 .. toctree::
    :maxdepth: 2
    :hidden:
