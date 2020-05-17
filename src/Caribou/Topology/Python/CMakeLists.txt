@@ -5,17 +5,16 @@ set(PYTHON_FILES
 )
 
 set(PYTHON_TEST_FILES
+        test/Caribou.Topology.Test.py
 )
 
 set(HEADER_FILES
-        Grid.h
-        HashGrid.h
-        IO/IO.h
 )
 
 set(SOURCE_FILES
         Grid.cpp
         HashGrid.cpp
+        Mesh.cpp
         IO/IO.cpp
         Topology.cpp
 )

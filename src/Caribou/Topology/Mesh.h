@@ -11,11 +11,11 @@
 
 namespace caribou::topology {
 
-    template <UNSIGNED_INTEGER_TYPE _Dimension>
+    template <UNSIGNED_INTEGER_TYPE WorldDimension>
     class Mesh : public BaseMesh {
     public:
 
-        static constexpr INTEGER_TYPE Dimension = _Dimension;
+        static constexpr INTEGER_TYPE Dimension = WorldDimension;
         using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
 
         /*!
@@ -32,7 +32,7 @@ namespace caribou::topology {
         explicit Mesh(const std::vector<WorldCoordinates> & positions) : p_positions(positions) {}
 
         /*! Copy constructor */
-        Mesh(const Mesh<_Dimension> & other)
+        Mesh(const Mesh<Dimension> & other)
             : p_positions(other.p_positions) {}
 
         /*! Move constructor */
@@ -73,8 +73,8 @@ namespace caribou::topology {
          * Adds a node to the mesh.
          * @param position The position coordinates of the node.
          */
-        inline void add_node(const WorldCoordinates position) {
-            p_positions.push_back(position);
+        inline void add_node(const WorldCoordinates & position) {
+            p_positions.emplace_back(position);
         }
 
         /*!
@@ -294,7 +294,7 @@ namespace caribou::topology {
         template <typename IntegerType>
         inline auto positions(const std::vector<IntegerType> & indices) const {
             const auto number_of_indices = indices.size();
-            Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Dimension, Eigen::RowMajor> positions;
+            Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Dimension, (Dimension == 1) ? Eigen::ColMajor : Eigen::RowMajor> positions;
             positions.resize(number_of_indices, Dimension);
             for (std::size_t i = 0; i < number_of_indices; ++i) {
                 positions.row(i) = p_positions[indices[i]];

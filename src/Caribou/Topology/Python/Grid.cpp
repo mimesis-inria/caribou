@@ -3,7 +3,6 @@
 #include <pybind11/stl.h>
 
 #include <Caribou/Topology/Grid/Grid.h>
-#include "Grid.h"
 
 namespace py = pybind11;
 

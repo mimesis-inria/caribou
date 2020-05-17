@@ -157,4 +157,5 @@ TEST(Mesh, Tetrahedron) {
     mesh.remove(domain);
     EXPECT_EQ(mesh.number_of_domains(), 0);
 }
+
 #endif //CARIBOU_TOPOLOGY_TEST_MESH_H

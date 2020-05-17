@@ -7,7 +7,6 @@
 #include <Caribou/Geometry/Tetrahedron.h>
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
-#include "HashGrid.h"
 
 namespace py = pybind11;
 

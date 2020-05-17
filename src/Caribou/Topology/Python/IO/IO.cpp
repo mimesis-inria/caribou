@@ -1,4 +1,3 @@
-#include "IO.h"
 #include <pybind11/pybind11.h>
 
 #include <Caribou/Topology/config.h>
