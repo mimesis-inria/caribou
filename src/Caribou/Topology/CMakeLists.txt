@@ -44,19 +44,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CUR
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../../>")
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Geometry)
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+target_link_libraries(${PROJECT_NAME} PRIVATE $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>)
 
 caribou_install_target(Caribou ${PROJECT_NAME} ${HEADER_FILES})
 
 if (CARIBOU_WITH_VTK)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${VTK_LIBRARIES})
-    if (VTK_VERSION VERSION_GREATER_EQUAL "8.90.0")
-        # new system
-        vtk_module_autoinit(
-                TARGETS ${PROJECT_NAME}
-                MODULES ${VTK_LIBRARIES}
-        )
-    endif()
 endif()
 
 if (CARIBOU_BUILD_TESTS)
