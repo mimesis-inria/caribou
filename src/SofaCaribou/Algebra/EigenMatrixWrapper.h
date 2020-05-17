@@ -15,7 +15,7 @@ namespace SofaCaribou::Algebra {
  *
  * \note The wrapper around Eigen sparse matrices has special restrictions.
  *
- * @example
+ * Example:
  * \code{.cpp}
  *    // Wrapper by copy
  *    using EigenDense = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
@@ -29,7 +29,7 @@ namespace SofaCaribou::Algebra {
  *    std::cout << m(30, 30) == wrapper(30, 30); // FALSE
  * \endcode
  *
- * @example
+ * Example:
  * \code{.cpp}
  *    // Wrapper by reference
  *    using EigenDense = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;

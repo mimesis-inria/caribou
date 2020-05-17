@@ -82,12 +82,10 @@ struct BaseRectangularHexahedron : public Element<Derived> {
     }
 
     /** Returns true if the given world coordinates are within the hexahedron's boundaries, false otherwise. */
-    inline bool contains(const WorldCoordinates & coordinates) const
+    inline auto contains(const WorldCoordinates & coordinates) const -> bool
     {
         const auto c = local_coordinates(coordinates);
-        return IN_CLOSED_INTERVAL(-1, c[0], 1) and
-               IN_CLOSED_INTERVAL(-1, c[1], 1) and
-               IN_CLOSED_INTERVAL(-1, c[2], 1);
+        return self().contains_local(c);
     }
 
     /**
@@ -96,13 +94,17 @@ struct BaseRectangularHexahedron : public Element<Derived> {
      * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
      */
     [[nodiscard]]
-    inline bool intersects(const Segment<_3D, Linear> & segment, const FLOATING_POINT_TYPE eps=EPSILON) const {
+    inline auto intersects(const Segment<_3D, Linear> & segment, const FLOATING_POINT_TYPE eps=EPSILON) const -> bool {
         return intersects_local_segment(local_coordinates(segment.node(0)), local_coordinates(segment.node(1)), eps);
     }
 
-    inline bool
-    intersects(const Triangle<_3D, Linear> & t, const FLOATING_POINT_TYPE eps=1e-10) const
-    {
+    /**
+     * Test if the cube intersects the given 3D triangle (in world coordinates)
+     *
+     * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
+     */
+    [[nodiscard]]
+    inline auto intersects(const Triangle<_3D, Linear> & t, const FLOATING_POINT_TYPE eps=1e-10) const -> bool {
         LocalCoordinates nodes[3];
         for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
             nodes[i] = local_coordinates(t.node(i));
@@ -121,6 +123,14 @@ private:
     inline auto get_center() const {return p_center;};
     [[nodiscard]]
     inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 6;};
+    inline auto get_contains_local(const LocalCoordinates & xi, const FLOATING_POINT_TYPE & eps) const -> bool {
+        const auto & u = xi[0];
+        const auto & v = xi[1];
+        const auto & w = xi[2];
+        return IN_CLOSED_INTERVAL(-1-eps, u, 1+eps) and
+               IN_CLOSED_INTERVAL(-1-eps, v, 1+eps) and
+               IN_CLOSED_INTERVAL(-1-eps, w, 1+eps);
+    }
 
     auto self() -> Derived& { return *static_cast<Derived*>(this); }
     auto self() const -> const Derived& { return *static_cast<const Derived*>(this); }
@@ -131,7 +141,7 @@ private:
      * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
      */
     [[nodiscard]]
-    inline bool intersects_local_segment(LocalCoordinates v0, LocalCoordinates v1, const FLOATING_POINT_TYPE & eps) const;
+    inline auto intersects_local_segment(LocalCoordinates v0, LocalCoordinates v1, const FLOATING_POINT_TYPE & eps) const -> bool;
 
     /**
      * Test if the cube intersects the given 3D polygon (in world coordinates).
@@ -143,7 +153,7 @@ private:
      * @return True if the polygon intersects the cube, false otherwise.
      */
     template <int NNodes>
-    inline bool intersects_local_polygon(const LocalCoordinates nodes[NNodes], const Vector<3> & polynormal, const FLOATING_POINT_TYPE & eps) const;
+    inline auto intersects_local_polygon(const LocalCoordinates nodes[NNodes], const Vector<3> & polynormal, const FLOATING_POINT_TYPE & eps) const -> bool;
 
 protected:
     WorldCoordinates p_center; ///< Position of the center point of the hexahedron
@@ -152,7 +162,7 @@ protected:
 };
 
 template<typename Derived>
-bool BaseRectangularHexahedron<Derived>::intersects_local_segment(LocalCoordinates v0, LocalCoordinates v1, const FLOATING_POINT_TYPE & eps) const
+auto BaseRectangularHexahedron<Derived>::intersects_local_segment(LocalCoordinates v0, LocalCoordinates v1, const FLOATING_POINT_TYPE & eps) const -> bool
 {
     const auto edge = (v1 - v0);
     INTEGER_TYPE edge_signs[3];
@@ -192,7 +202,7 @@ bool BaseRectangularHexahedron<Derived>::intersects_local_segment(LocalCoordinat
 
 template<typename Derived>
 template <int NNodes>
-inline bool BaseRectangularHexahedron<Derived>::intersects_local_polygon(const LocalCoordinates nodes[NNodes], const Vector<3> & polynormal, const FLOATING_POINT_TYPE & eps) const {
+inline auto BaseRectangularHexahedron<Derived>::intersects_local_polygon(const LocalCoordinates nodes[NNodes], const Vector<3> & polynormal, const FLOATING_POINT_TYPE & eps) const -> bool {
 
     // Check if any edges of the polygon intersect the hexa
     for (UNSIGNED_INTEGER_TYPE i = 0; i < NNodes; ++i) {

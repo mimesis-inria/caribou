@@ -25,6 +25,7 @@ struct traits<Quad <_Dimension, Linear>> {
 /**
  * Linear Quad
  *
+ * \verbatim
  *        v
  *        ^
  *        |
@@ -35,6 +36,7 @@ struct traits<Quad <_Dimension, Linear>> {
  *  |           |
  *  |           |
  *  0-----------1
+ *  \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */
@@ -140,7 +142,7 @@ struct traits<Quad <_Dimension, Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
-    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
 
     using BoundaryElementType = Segment<_Dimension, Quadratic>;
     static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
@@ -149,6 +151,7 @@ struct traits<Quad <_Dimension, Quadratic>> {
 /**
  * Quadratic Quad
  *
+ * \verbatim
  *       v
  *       ^
  *       |
@@ -159,6 +162,7 @@ struct traits<Quad <_Dimension, Quadratic>> {
  * |           |
  * |           |
  * 0-----4-----1
+ * \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */

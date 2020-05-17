@@ -25,6 +25,7 @@ struct traits<Triangle <_Dimension, Linear>> {
 /**
  * Linear Triangle
  *
+ * \verbatim
  * v
  * ^
  * |
@@ -35,6 +36,7 @@ struct traits<Triangle <_Dimension, Linear>> {
  * |      `\
  * |        `\
  * 0----------1 --> u
+ * \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */
@@ -130,6 +132,7 @@ struct traits<Triangle <_Dimension, Quadratic>> {
 /**
  * Quadratic Triangle
  *
+ * \verbatim
  * v
  * ^
  * |
@@ -140,6 +143,7 @@ struct traits<Triangle <_Dimension, Quadratic>> {
  * |      `\
  * |        `\
  * 0-----3----1 --> u
+ * \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */

@@ -25,6 +25,7 @@ struct traits<Tetrahedron <Linear>> {
 /**
  * Linear Tetrahedron
  *
+ * \verbatim
  *                    v
  *                  .
  *                ,/
@@ -43,6 +44,7 @@ struct traits<Tetrahedron <Linear>> {
  *              `3
  *                 `\.
  *                    ` w
+ * \endverbatim
  *
  */
 template<>
@@ -153,6 +155,7 @@ struct traits<Tetrahedron <Quadratic>> {
 /**
  * Quadratic Tetrahedron
  *
+ * \verbatim
  *                    v
  *                  .
  *                ,/
@@ -171,6 +174,7 @@ struct traits<Tetrahedron <Quadratic>> {
  *              `3
  *                 `\.
  *                    ` w
+ * \endverbatim
  *
  */
 template<>
@@ -308,9 +312,9 @@ private:
     inline auto get_boundary_elements_nodes() const -> const auto & {
         static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 6>, 4> indices = {{
             {0, 2, 1, 6, 5, 4}, // Face 0
-            {0, 1, 3, 4, 9, 7}, // Face 1
-            {0, 3, 2, 7, 8, 6}, // Face 2
-            {3, 1, 2, 9, 5, 8}  // Face 3
+            {0, 1, 3, 4, 8, 7}, // Face 1
+            {0, 3, 2, 7, 9, 6}, // Face 2
+            {3, 1, 2, 8, 5, 9}  // Face 3
         }};
         return indices;
     }

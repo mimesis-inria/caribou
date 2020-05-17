@@ -11,6 +11,9 @@ TEST(Hexahedron, Linear) {
     using namespace caribou;
     using Hexahedron = caribou::geometry::Hexahedron<Linear>;
     using Tetrahedron = caribou::geometry::Tetrahedron<Linear>;
+    using Quad = caribou::geometry::Quad<3, Linear>;
+    using Edge = caribou::geometry::Segment<3, Linear>;
+    using LocalCoordinates = Hexahedron::LocalCoordinates;
     using WorldCoordinates = Hexahedron::WorldCoordinates;
 
     {
@@ -50,6 +53,71 @@ TEST(Hexahedron, Linear) {
             EXPECT_FLOAT_EQ(h.interpolate(x, values), p1(h.world_coordinates(x)));
         }
 
+        // Inverse transformation
+        for (const auto & gauss_node : h.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, h.local_coordinates(h.world_coordinates(gauss_node.position)), 1e-5);
+        }
+
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                h.local_coordinates(h.center())
+            };
+
+            for (UNSIGNED_INTEGER_TYPE face_id = 0; face_id < h.number_of_boundary_elements(); ++face_id) {
+                Quad face = h.boundary_element(face_id);
+                for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < face.number_of_gauss_nodes();++gauss_node_id) {
+                    inside_points.push_back(h.local_coordinates(face.world_coordinates(face.gauss_node(gauss_node_id).position)));
+                }
+                for (UNSIGNED_INTEGER_TYPE edge_id = 0; edge_id < face.number_of_boundary_elements(); ++edge_id) {
+                    Edge edge = face.boundary_element(edge_id);
+                    for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < edge.number_of_gauss_nodes();++gauss_node_id) {
+                        inside_points.push_back(h.local_coordinates(face.world_coordinates(face.gauss_node(gauss_node_id).position)));
+                    }
+                }
+            }
+
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < h.number_of_nodes();++node_id) {
+                inside_points.push_back(h.local_coordinates(h.node(node_id)));
+            }
+            for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < h.number_of_gauss_nodes();++gauss_node_id) {
+                inside_points.push_back(h.gauss_node(gauss_node_id).position);
+            }
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(h.contains_local(p, epsilon)) <<
+                "Local point [" << p[0] << ", " << p[1] << ", " << p[2] << "] is found outside the element, but it should be inside.";
+            }
+
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {};
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < h.number_of_nodes();++node_id) {
+                const WorldCoordinates center_to_point = h.node(node_id) - h.center();
+                outside_points.emplace_back(h.center() + center_to_point*1.01);
+            }
+            for (UNSIGNED_INTEGER_TYPE face_id = 0; face_id < h.number_of_boundary_elements(); ++face_id) {
+                Quad face = h.boundary_element(face_id);
+                for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < face.number_of_gauss_nodes(); ++gauss_node_id) {
+                    const WorldCoordinates p = face.world_coordinates(face.gauss_node(gauss_node_id).position);
+                    const WorldCoordinates center_to_point = p - h.center();
+                    outside_points.push_back(h.local_coordinates(h.center() + center_to_point*1.01));
+                }
+                for (UNSIGNED_INTEGER_TYPE edge_id = 0; edge_id < face.number_of_boundary_elements(); ++edge_id) {
+                    Edge edge = face.boundary_element(edge_id);
+                    for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < edge.number_of_gauss_nodes();++gauss_node_id) {
+                        const WorldCoordinates p = edge.world_coordinates(edge.gauss_node(gauss_node_id).position);
+                        const WorldCoordinates center_to_point = p - h.center();
+                        outside_points.push_back(h.local_coordinates(h.center() + center_to_point*1.01));
+                    }
+                }
+            }
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(h.contains_local(p, epsilon)) <<
+                "Local point [" << p[0] << ", " << p[1] << ", " << p[2] << "] is found inside the element, but it should be outside.";
+            }
+        }
+
         // Integration
         // Hexa
         FLOATING_POINT_TYPE numerical_solution_hexa = 0;
@@ -84,6 +152,11 @@ TEST(Hexahedron, Quadratic) {
     using namespace caribou;
     using Hexahedron = caribou::geometry::Hexahedron<Quadratic>;
     using Tetrahedron = caribou::geometry::Tetrahedron<Quadratic>;
+    using Quad = caribou::geometry::Quad<3, Quadratic>;
+    using Edge = caribou::geometry::Segment<3, Quadratic>;
+    using LocalCoordinates = Hexahedron::LocalCoordinates;
+    using WorldCoordinates = Hexahedron::WorldCoordinates;
+
     {
         Hexahedron h;
         for (unsigned int i = 0; i < h.number_of_nodes(); ++i) {
@@ -114,6 +187,73 @@ TEST(Hexahedron, Quadratic) {
         for (const auto & gauss_node : h.gauss_nodes()) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(h.interpolate(x, values), p2(h.world_coordinates(x)));
+        }
+
+        // Inverse transformation
+        for (const auto & gauss_node : h.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, h.local_coordinates(h.world_coordinates(gauss_node.position)), 1e-5);
+        }
+
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                h.local_coordinates(h.center())
+            };
+
+            for (UNSIGNED_INTEGER_TYPE face_id = 0; face_id < h.number_of_boundary_elements(); ++face_id) {
+                Quad face = h.boundary_element(face_id);
+                for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < face.number_of_gauss_nodes();++gauss_node_id) {
+                    inside_points.push_back(h.gauss_node(gauss_node_id).position);
+                }
+                for (UNSIGNED_INTEGER_TYPE edge_id = 0; edge_id < face.number_of_boundary_elements(); ++edge_id) {
+                    Edge edge = face.boundary_element(edge_id);
+                    for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < edge.number_of_gauss_nodes();++gauss_node_id) {
+                        inside_points.push_back(h.local_coordinates(face.world_coordinates(face.gauss_node(gauss_node_id).position)));
+                    }
+                }
+            }
+
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < h.number_of_nodes();++node_id) {
+                inside_points.push_back(h.local_coordinates(h.node(node_id)));
+            }
+            for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < h.number_of_gauss_nodes();++gauss_node_id) {
+                inside_points.push_back(h.gauss_node(gauss_node_id).position);
+            }
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(h.contains_local(p, epsilon)) <<
+                "Local point [" << p[0] << ", " << p[1] << ", " << p[2] << "] is found outside the element, but it should be inside.";
+            }
+
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {};
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < h.number_of_nodes();++node_id) {
+                const WorldCoordinates center_to_point = h.node(node_id) - h.center();
+                const auto length = center_to_point.norm();
+                const auto n = center_to_point / length;
+                outside_points.emplace_back(h.center() + n*length*1.01);
+            }
+            for (UNSIGNED_INTEGER_TYPE face_id = 0; face_id < h.number_of_boundary_elements(); ++face_id) {
+                Quad face = h.boundary_element(face_id);
+                for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < face.number_of_gauss_nodes(); ++gauss_node_id) {
+                    const WorldCoordinates p = face.world_coordinates(face.gauss_node(gauss_node_id).position);
+                    const WorldCoordinates center_to_point = p - h.center();
+                    outside_points.push_back(h.local_coordinates(h.center() + center_to_point*1.01));
+                }
+                for (UNSIGNED_INTEGER_TYPE edge_id = 0; edge_id < face.number_of_boundary_elements(); ++edge_id) {
+                    Edge edge = face.boundary_element(edge_id);
+                    for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < edge.number_of_gauss_nodes();++gauss_node_id) {
+                        const WorldCoordinates p = edge.world_coordinates(edge.gauss_node(gauss_node_id).position);
+                        const WorldCoordinates center_to_point = p - h.center();
+                        outside_points.push_back(h.local_coordinates(h.center() + center_to_point*1.01));
+                    }
+                }
+            }
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(h.contains_local(p, epsilon)) <<
+                "Local point [" << p[0] << ", " << p[1] << ", " << p[2] << "] is found inside the element, but it should be outside.";
+            }
         }
 
         // Integration

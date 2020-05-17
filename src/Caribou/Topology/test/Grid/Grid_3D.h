@@ -4,6 +4,7 @@
 #include <Caribou/Geometry/Hexahedron.h>
 #include <vector>
 #include <chrono>
+
 #define BEGIN_CLOCK ;std::chrono::steady_clock::time_point __time_point_begin;
 #define TICK ;__time_point_begin = std::chrono::steady_clock::now();
 #define TOCK (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - __time_point_begin).count())
@@ -200,7 +201,7 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_EQ(grid.face(15), Grid::FaceNodes({{5, 8, 17, 14}}));
 
     // Second slice (2D grid)
-    unsigned int s = 9; // slice_corner_node_index
+    int s = 9; // slice_corner_node_index
     EXPECT_EQ(grid.face(16), Grid::FaceNodes({{s + 0, s + 1, s + 4, s + 3}}));
     EXPECT_EQ(grid.face(17), Grid::FaceNodes({{s + 1, s + 2, s + 5, s + 4}}));
     EXPECT_EQ(grid.face(18), Grid::FaceNodes({{s + 3, s + 4, s + 7, s + 6}}));
@@ -239,7 +240,7 @@ TEST(Topology_Grid_3D, BenchMark)
     using Dimensions = Grid::Dimensions;
     BEGIN_CLOCK;
 
-    Grid grid(WorldCoordinates{0, 0, 0}, Subdivisions{100, 100, 100}, Dimensions{100, 100, 100});
+    Grid grid(WorldCoordinates{0, 0, 0}, Subdivisions{10, 10, 10}, Dimensions{100, 100, 100});
 
     std::vector<WorldCoordinates> positions(grid.number_of_nodes());
     std::vector<Grid::ElementNodes> hexahedrons(grid.number_of_cells());

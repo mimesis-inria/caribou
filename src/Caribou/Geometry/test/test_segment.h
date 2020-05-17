@@ -21,6 +21,7 @@ TEST(Segment, Linear) {
 // 1D
     {
         using Segment = caribou::geometry::Segment<_1D, Linear>;
+        using LocalCoordinates  = Segment::LocalCoordinates;
         using WorldCoordinates  = Segment::WorldCoordinates;
 
         Segment segment(WorldCoordinates(-5.5), WorldCoordinates(1.1));
@@ -29,6 +30,44 @@ TEST(Segment, Linear) {
 
         // Center
         EXPECT_FLOAT_EQ(segment.center()[0], -2.2);
+
+        // Inverse transformation
+        for (const auto & gauss_node : segment.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, segment.local_coordinates(segment.world_coordinates(gauss_node.position)), 1e-5);
+        }
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < segment.number_of_nodes();++node_id) {
+            EXPECT_MATRIX_NEAR(segment.node(node_id), segment.world_coordinates(segment.local_coordinates(segment.node(node_id))), 1e-5);
+        }
+
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                segment.local_coordinates(segment.center()),
+                segment.local_coordinates(segment.world_coordinates(LocalCoordinates(-1))),
+                segment.local_coordinates(segment.world_coordinates(LocalCoordinates(+1))),
+            };
+            for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < segment.number_of_nodes();++node_id) {
+                inside_points.push_back(segment.local_coordinates(segment.node(node_id)));
+            }
+            for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < segment.number_of_gauss_nodes();++gauss_node_id) {
+                inside_points.push_back(segment.gauss_node(gauss_node_id).position);
+            }
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(segment.contains_local(p, epsilon)) <<
+                "Local point [" << p[0] << ", " << p[1] << "] is found outside the element, but it should be inside.";
+            }
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {
+                segment.local_coordinates(segment.node(0)) - LocalCoordinates(epsilon*1.1),
+                segment.local_coordinates(segment.node(1)) + LocalCoordinates(epsilon*1.1),
+            };
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(segment.contains_local(p, epsilon)) <<
+                "Local point [" << p[0] << ", " << p[1] << "] is found inside the element, but it should be outside.";
+            }
+        }
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> values (p1(segment.node(0)), p1(segment.node(1)));

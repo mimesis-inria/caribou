@@ -31,11 +31,47 @@ TEST(Triangle, Linear) {
         EXPECT_FLOAT_EQ(t.center()[0], center[0]);
         EXPECT_FLOAT_EQ(t.center()[1], center[1]);
 
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                t.local_coordinates(t.node(0)),
+                t.local_coordinates(t.node(1)),
+                t.local_coordinates(t.node(2)),
+                t.local_coordinates(t.center()),
+                t.gauss_node(0).position,
+                t.local_coordinates(t.world_coordinates({-epsilon/2., 0.5})),
+                t.local_coordinates(t.world_coordinates({0.5, -epsilon/2}))
+            };
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(t.contains_local(p, epsilon)) <<
+                "Local point [" << p[0] << ", " << p[1] << "] is found outside the triangle, but it should be inside.";
+            }
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {
+                t.local_coordinates(t.node(0)) - LocalCoordinates(epsilon*1.1, 0),
+                t.local_coordinates(t.node(1)) + LocalCoordinates(epsilon*1.1, 0),
+                t.local_coordinates(t.node(2)) + LocalCoordinates(0, epsilon*1.1),
+                t.local_coordinates(t.world_coordinates({-epsilon*1.1, 0.5})),
+                t.local_coordinates(t.world_coordinates({0.5, -epsilon*1.1}))
+            };
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(t.contains_local(p, epsilon)) <<
+                "Local point [" << p[0] << ", " << p[1] << "] is found inside the triangle, but it should be outside.";
+            }
+        }
+
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p1(t.node(0)), p1(t.node(1)), p1(t.node(2)));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
+        }
+
+        // Inverse transformation
+        for (const auto & gauss_node : t.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, t.local_coordinates(t.world_coordinates(gauss_node.position)), 1e-5);
         }
 
         // Integration
@@ -62,6 +98,7 @@ TEST(Triangle, Linear) {
     {
         using Triangle = caribou::geometry::Triangle<_3D, Linear>;
 
+        using LocalCoordinates = Triangle::LocalCoordinates;
         using WordCoordinates = Triangle::WorldCoordinates;
 
         Triangle t (
@@ -77,11 +114,47 @@ TEST(Triangle, Linear) {
         EXPECT_FLOAT_EQ(t.center()[1], center[1]);
         EXPECT_FLOAT_EQ(t.center()[2], center[2]);
 
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                t.local_coordinates(t.node(0)),
+                t.local_coordinates(t.node(1)),
+                t.local_coordinates(t.node(2)),
+                t.local_coordinates(t.center()),
+                t.gauss_node(0).position,
+                t.local_coordinates(t.world_coordinates({-epsilon/2., 0.5})),
+                t.local_coordinates(t.world_coordinates({0.5, -epsilon/2}))
+            };
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(t.contains_local(p, epsilon)) <<
+                                                          "Local point [" << p[0] << ", " << p[1] << "] is found outside the triangle, but it should be inside.";
+            }
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {
+                t.local_coordinates(t.node(0)) - LocalCoordinates(epsilon*1.1, 0),
+                t.local_coordinates(t.node(1)) + LocalCoordinates(epsilon*1.1, 0),
+                t.local_coordinates(t.node(2)) + LocalCoordinates(0, epsilon*1.1),
+                t.local_coordinates(t.world_coordinates({-epsilon*1.1, 0.5})),
+                t.local_coordinates(t.world_coordinates({0.5, -epsilon*1.1}))
+            };
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(t.contains_local(p, epsilon)) <<
+                                                           "Local point [" << p[0] << ", " << p[1] << "] is found inside the triangle, but it should be outside.";
+            }
+        }
+
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p1(t.node(0)), p1(t.node(1)), p1(t.node(2)));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
+        }
+
+        // Inverse transformation
+        for (const auto & gauss_node : t.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, t.local_coordinates(t.world_coordinates(gauss_node.position)), 1e-5);
         }
 
         // Integration
@@ -132,6 +205,40 @@ TEST(Triangle, Quadratic) {
         EXPECT_FLOAT_EQ(t.center()[0], center[0]);
         EXPECT_FLOAT_EQ(t.center()[1], center[1]);
 
+        // Contains point
+        {
+            FLOATING_POINT_TYPE epsilon = 0.000001;
+            // Test that all the following points are INSIDE the element
+            std::vector<LocalCoordinates> inside_points = {
+                t.local_coordinates(t.node(0)),
+                t.local_coordinates(t.node(1)),
+                t.local_coordinates(t.node(2)),
+                t.local_coordinates(t.node(3)),
+                t.local_coordinates(t.node(4)),
+                t.local_coordinates(t.node(5)),
+                t.local_coordinates(t.center()),
+                t.gauss_node(0).position,
+                t.local_coordinates(t.world_coordinates({-epsilon/2., 0.5})),
+                t.local_coordinates(t.world_coordinates({0.5, -epsilon/2}))
+            };
+            for (const auto & p : inside_points) {
+                ASSERT_TRUE(t.contains_local(p, epsilon)) <<
+                                                          "Local point [" << p[0] << ", " << p[1] << "] is found outside the triangle, but it should be inside.";
+            }
+            // Test that all the following points are OUTSIDE the element
+            std::vector<LocalCoordinates> outside_points = {
+                t.local_coordinates(t.node(0)) - LocalCoordinates(epsilon*1.1, 0),
+                t.local_coordinates(t.node(1)) + LocalCoordinates(epsilon*1.1, 0),
+                t.local_coordinates(t.node(2)) + LocalCoordinates(0, epsilon*1.1),
+                t.local_coordinates(t.world_coordinates({-epsilon*1.1, 0.5})),
+                t.local_coordinates(t.world_coordinates({0.5, -epsilon*1.1}))
+            };
+            for (const auto & p : outside_points) {
+                ASSERT_FALSE(t.contains_local(p, epsilon)) <<
+                                                           "Local point [" << p[0] << ", " << p[1] << "] is found inside the triangle, but it should be outside.";
+            }
+        }
+
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 6, 1> values;
         values << p2(t.node(0)), p2(t.node(1)), p2(t.node(2)),
@@ -139,6 +246,11 @@ TEST(Triangle, Quadratic) {
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
             EXPECT_FLOAT_EQ(t.interpolate(x, values), p2(t.world_coordinates(x)));
+        }
+
+        // Inverse transformation
+        for (const auto & gauss_node : t.gauss_nodes()) {
+            EXPECT_MATRIX_NEAR(gauss_node.position, t.local_coordinates(t.world_coordinates(gauss_node.position)), 1e-5);
         }
 
         // Integration

@@ -8,6 +8,7 @@
 # ifndef CARIBOU_DEBUG
 #  define CARIBOU_DEBUG
 # endif
+# include <cassert>
 #endif
 
 

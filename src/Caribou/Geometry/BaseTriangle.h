@@ -85,6 +85,11 @@ private:
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::world_coordinates(LocalCoordinates({1/3., 1/3.}));};
     inline auto get_number_of_boundary_elements() const -> UNSIGNED_INTEGER_TYPE {return 3;};
+    inline auto get_contains_local(const LocalCoordinates & xi, const FLOATING_POINT_TYPE & eps) const -> bool {
+        const auto & u = xi[0];
+        const auto & v = xi[1];
+        return (u > -eps) and (v > -eps) and (1 - u - v > -eps);
+    }
 
     auto self() -> Derived& { return *static_cast<Derived*>(this); }
     auto self() const -> const Derived& { return *static_cast<const Derived*>(this); }

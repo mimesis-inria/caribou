@@ -40,6 +40,10 @@ struct BaseSegment : public Element<Derived> {
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
     explicit BaseSegment(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
 
+    /** Constructor from an Eigen matrix reference containing the positions of the segment's nodes */
+    template<typename EigenType, int Options, typename StrideType>
+    explicit BaseSegment(const Eigen::Ref<EigenType, Options, StrideType> & nodes) : p_nodes(nodes) {}
+
     /** Constructor from a serie of nodes. */
     template <
         typename ...Nodes,
@@ -59,6 +63,10 @@ private:
     inline auto get_node(const UNSIGNED_INTEGER_TYPE & index) const {return WorldCoordinates(p_nodes.row(index));};
     inline auto get_nodes() const -> const auto & {return p_nodes;};
     inline auto get_center() const {return Base::world_coordinates(LocalCoordinates(0));};
+    inline auto get_contains_local(const LocalCoordinates & xi, const FLOATING_POINT_TYPE & eps) const -> bool {
+        const auto & u = xi[0];
+        return IN_CLOSED_INTERVAL(-1-eps, u, 1+eps);
+    }
 
     template <size_t index, typename ...Nodes, REQUIRES(sizeof...(Nodes) >= 1)>
     inline

@@ -5,7 +5,7 @@
 
 The caribou project is aimed at multiphysics computation. 
 It brings a plugin that complements [SOFA multiphysics framework](https://www.sofa-framework.org/). 
-It provides generic c++ utilities, a set of sofa components such as solvers and forcefields.
+It also provides generic c++ utilities, and SOFA components such as solvers and forcefields.
 
 The project is composed of two modules:
 1. **Caribou library** brings multiple geometric, linear analysis and topological tools that are designed to 
