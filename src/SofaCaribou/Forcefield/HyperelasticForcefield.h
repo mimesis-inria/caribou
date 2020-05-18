@@ -221,6 +221,7 @@ private:
     Link<sofa::core::topology::BaseMeshTopology> d_topology_container;
     Link<material::HyperelasticMaterial<DataTypes>> d_material;
     Data<bool> d_enable_multithreading;
+    Data<double> d_drawScale;
 
     // Private variables
     std::vector<GaussContainer> p_elements_quadrature_nodes;

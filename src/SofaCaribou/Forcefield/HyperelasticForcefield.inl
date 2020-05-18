@@ -24,6 +24,11 @@ HyperelasticForcefield<Element>::HyperelasticForcefield()
     "Enable the multithreading computation of the stiffness matrix. Only use this if you have a "
     "very large number of elements, otherwise performance might be worse than single threading."
     "When enabled, use the environment variable OMP_NUM_THREADS=N to use N threads."))
+, d_drawScale(initData(&d_drawScale,
+    0.85,
+    "draw_scale",
+    "Scaling factor for the drawing of elements (between 0 and 1). The factor allows to shrink "
+    "the element relative to its center point when drawing it."))
 {
 }
 
@@ -646,7 +651,6 @@ static const unsigned long long kelly_colors_hex[] =
 template <typename Element>
 void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParams *vparams) {
     using Color = sofa::defaulttype::Vec4f;
-
     using Face = typename caribou::geometry::traits<Element>::BoundaryElementType;
     constexpr static auto NumberOfFaces = caribou::geometry::traits<Element>::NumberOfBoundaryElementsAtCompileTime;
     constexpr static auto NumberOfNodesPerFaces = caribou::geometry::traits<Face>::NumberOfNodesAtCompileTime;
@@ -662,8 +666,9 @@ void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParam
     vparams->drawTool()->saveLastState();
     if (vparams->displayFlags().getShowWireFrame())
         vparams->drawTool()->setPolygonMode(0,true);
-
     vparams->drawTool()->disableLighting();
+
+    const double & scale = d_drawScale.getValue();
     const VecCoord& sofa_x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.data()->data(),  sofa_x.size(), Dimension);
 
@@ -687,10 +692,9 @@ void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParam
 
         // Scale down the element around its center point
         const auto c = e.center();
-        const Real s = 0.85;
         for (std::size_t node_id = 0; node_id < NumberOfNodes; ++node_id) {
             const auto & p = element_nodes_position.row(node_id).transpose();
-            element_nodes_position.row(node_id) = (c + (p - c)*s).transpose();
+            element_nodes_position.row(node_id) = (c + (p - c)*scale).transpose();
         }
 
         // Push the faces scaled-down nodes
