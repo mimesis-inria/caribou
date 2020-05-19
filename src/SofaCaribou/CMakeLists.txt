@@ -87,10 +87,6 @@ find_package(SofaBase QUIET REQUIRED)
 find_package(SofaCommon QUIET REQUIRED)
 
 # Optional packages
-find_package(OpenMP QUIET)
-find_package(LAPACK QUIET)
-find_package(LAPACKE QUIET)
-find_package(MKL QUIET)
 find_package(Eigen3 REQUIRED NO_MODULE QUIET)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
@@ -99,6 +95,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_
 target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology SofaBaseLinearSolver SofaEigen2Solver)
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry Caribou::Topology Caribou::Mechanics)
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 if (CARIBOU_OPTIMIZE_FOR_NATIVE)
@@ -108,19 +105,12 @@ if (CARIBOU_OPTIMIZE_FOR_NATIVE)
 #    target_compile_options(${PROJECT_NAME} PRIVATE -march=native)
 endif()
 
-if (LAPACK_FOUND AND LAPACKE_FOUND AND MKL_FOUND)
-    OPTION(CARIBOU_WITH_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" ON)
-else()
-    OPTION(CARIBOU_WITH_EIGEN_MKL "Use EIGEN with MKL/LAPACK/LAPACKE support" OFF)
-endif()
-
-if (CARIBOU_WITH_EIGEN_MKL)
-    find_package(LAPACK REQUIRED QUIET)
+if (CARIBOU_WITH_MKL)
     find_package(LAPACKE REQUIRED QUIET)
     find_package(MKL REQUIRED QUIET)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_USE_LAPACKE)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${LAPACKE_INCLUDE_DIRS} ${LAPACKE_INCLUDE_DIRS_DEP} ${MKL_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES} ${LAPACKE_LIBRARIES_DEP} ${MKL_LIBRARIES})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_USE_MKL_ALL)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${LAPACKE_INCLUDE_DIRS} ${MKL_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES} ${MKL_LIBRARIES})
 endif()
 
 

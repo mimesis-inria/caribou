@@ -100,7 +100,7 @@ endif()
 # LAPACKE depends on LAPACK anyway, try to find it
 if (NOT LAPACK_FOUND)
     if(LAPACKE_FIND_REQUIRED)
-        find_package(LAPACK REQUIRED)
+        find_package(LAPACK QUIET REQUIRED)
     else()
         find_package(LAPACK QUIET)
     endif()

@@ -46,15 +46,24 @@ find_package(Python3 QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python3_FOUND;pybind11_FOUND" OFF)
 
 # MKL option
+set(BUILD_SHARED_LIBS ON)
+set(BLA_VENDOR Intel10_64lp)
+find_package(BLAS QUIET)
+find_package(LAPACKE QUIET)
 find_package(MKL QUIET)
-CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_MKL "Compile the plugin with MKL support" ON "MKL_FOUND" OFF)
-if (CARIBOU_WITH_MKL AND MKL_FOUND)
-    message(STATUS "MKL Library found\n\tInclude directories: ${MKL_INCLUDE_DIRS}\n\tLibraries: ${MKL_LIBRARIES} ${MKL_INTERFACE_LIBRARY} ${MKL_SEQUENTIAL_LAYER_LIBRARY} ${MKL_CORE_LIBRARY}")
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_MKL "Compile the plugin with MKL support (uses LAPACK(E) and BLAS)" ON "MKL_FOUND;LAPACKE_FOUND;BLAS_FOUND" OFF)
+if (CARIBOU_WITH_MKL)
+    set(CARIBOU_MKL_LIBRARIES "${MKL_LIBRARIES};${LAPACKE_LIBRARIES};${BLAS_LIBRARIES}")
+    list(REMOVE_DUPLICATES CARIBOU_MKL_LIBRARIES)
+    message(STATUS "Caribou with MKL support\n\tInclude directories: ${MKL_INCLUDE_DIRS}\n\tLibraries: ${CARIBOU_MKL_LIBRARIES}")
 endif()
 
 # OpenMP option
 find_package(OpenMP QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_OPENMP "Compile the plugin with OpenMP support" ON "OPENMP_FOUND" OFF)
+if (CARIBOU_WITH_OPENMP)
+    message(STATUS "Caribou with OpenMP support\n\tInclude directories: ${OpenMP_CXX_INCLUDE_DIRS}\n\tLibraries: ${OpenMP_CXX_LIBRARIES}")
+endif()
 
 
 ## Change default install prefix
@@ -66,11 +75,6 @@ message(STATUS "Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-message(STATUS "Build prefix: ${CMAKE_BINARY_DIR}")
-message(STATUS "Archive prefix: ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
-message(STATUS "Library prefix: ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-message(STATUS "Runtime prefix: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
 # Compiler options
 set(CMAKE_CXX_STANDARD 17)
