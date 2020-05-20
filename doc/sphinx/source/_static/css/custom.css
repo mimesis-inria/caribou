@@ -14,6 +14,10 @@ div.wy-menu a:visited {
     color: #d9d9d9;
 }
 
+div.wy-side-nav-search a:visited {
+    color: #fcfcfc;
+}
+
 @media screen and (min-width: 768px) {
     div.wy-table-responsive table {
         table-layout: fixed;

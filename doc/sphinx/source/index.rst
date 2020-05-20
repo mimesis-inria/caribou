@@ -20,7 +20,6 @@ The project is composed of two modules:
     :hidden:
 
     installation
-    quickstart
 
 
 .. toctree::
@@ -45,7 +44,7 @@ The project is composed of two modules:
     NeoHookean <neohookean_material_doc.rst>
 
 .. toctree::
-    :caption: ODEs
+    :caption: ODE
     :maxdepth: 1
     :titlesonly:
     :hidden:
@@ -62,3 +61,11 @@ The project is composed of two modules:
     SparseLLT <sparse_llt_doc.rst>
     SparseLDLT <sparse_ldlt_doc.rst>
     SparseLU <sparse_lu_doc.rst>
+
+.. toctree::
+    :caption: Topology
+    :maxdepth: 1
+    :titlesonly:
+    :hidden:
+
+    FictitiousGrid <fictitious_grid_doc.rst>

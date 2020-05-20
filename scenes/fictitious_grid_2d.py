@@ -12,7 +12,7 @@ cell_size = 2*radius/(n[0]-1)
 subcell_size = cell_size / pow(2, subdivisions)
 eps = subcell_size/2
 
-s = 0.99
+s = 0
 circle_corner = cos(pi/4)*radius
 mx = ((circle_corner + 2*circle_corner) - radius)*s + eps
 
