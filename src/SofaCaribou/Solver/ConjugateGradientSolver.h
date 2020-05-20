@@ -8,15 +8,6 @@
 #include <sofa/helper/OptionsGroup.h>
 #include <Eigen/Core>
 
-// Do not activate openMP for the SofaEigen2Solver since it is broken
-#ifdef _OPENMP
-#undef _OPENMP
-#include <SofaEigen2Solver/EigenBaseSparseMatrix.h>
-#define _OPENMP
-#else
-#include <SofaEigen2Solver/EigenBaseSparseMatrix.h>
-#endif
-
 #include <Eigen/IterativeLinearSolvers>
 
 namespace SofaCaribou::solver {
@@ -71,12 +62,14 @@ public:
     };
 
     /**
-     * Reset the complete system (A, x and b are cleared). This does absolutely nothing here since the complete
+     * Reset the complete system (A, x and b are cleared).
+     *
+     * When using no preconditioner (None), this does absolutely nothing here since the complete
      * system is never built.
      *
      * This method is called by the MultiMatrix::clear() and MultiMatrix::reset() methods.
      */
-    void resetSystem() final {}
+    void resetSystem() final;
 
     /**
      * Set the linear system matrix A = (mM + bB + kK), storing the coefficients m, b and k of

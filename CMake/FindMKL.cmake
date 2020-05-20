@@ -18,7 +18,7 @@
 #  MKL_CORE_LIBRARY - MKL core library
 #
 #  The environment variables MKLROOT and INTEL are used to find the library.
-#  Everything else is ignored. If MKL is found "-DMKL_ILP64" is added to
+#  Everything else is ignored. If MKL is found "-DMKL_LP64" is added to
 #  CMAKE_C_FLAGS and CMAKE_CXX_FLAGS.
 #
 #  Example usage:
@@ -100,8 +100,8 @@ if (MKL_INCLUDE_DIR AND
         set(ABI "-m64")
     endif()
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMKL_ILP64 ${ABI}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMKL_ILP64 ${ABI}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ABI}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ABI}")
 
 else()
 

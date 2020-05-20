@@ -13,6 +13,10 @@ set(HEADER_FILES
     Material/SaintVenantKirchhoffMaterial.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
+    Solver/EigenSparseSolver.h
+    Solver/SparseLDLTSolver.h
+    Solver/SparseLLTSolver.h
+    Solver/SparseLUSolver.h
     Topology/CircleIsoSurface.h
     Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
@@ -25,6 +29,7 @@ set(HEADER_FILES
 
 set(TEMPLATE_FILES
     Forcefield/HyperelasticForcefield.inl
+    Solver/EigenSparseSolver.inl
     Topology/FictitiousGrid.inl
     )
 
@@ -38,6 +43,9 @@ set(SOURCE_FILES
     Material/HyperelasticMaterial.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
+    Solver/SparseLDLTSolver.cpp
+    Solver/SparseLLTSolver.cpp
+    Solver/SparseLUSolver.cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
     Visitor/AssembleGlobalMatrix.cpp
@@ -109,8 +117,10 @@ if (CARIBOU_WITH_MKL)
     find_package(LAPACKE REQUIRED QUIET)
     find_package(MKL REQUIRED QUIET)
     target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_USE_MKL_ALL)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_MKL)
     target_include_directories(${PROJECT_NAME} PUBLIC ${LAPACKE_INCLUDE_DIRS} ${MKL_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES} ${MKL_LIBRARIES})
+    target_link_options(${PROJECT_NAME} PRIVATE ${LAPACK_LINKER_FLAGS} ${LAPACKE_LINKER_FLAGS})
 endif()
 
 

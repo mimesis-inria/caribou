@@ -162,6 +162,20 @@ void ConjugateGradientSolver::assemble (const sofa::core::MechanicalParams* mpar
     Timer::stepEnd("BuildMatrix");
 }
 
+void ConjugateGradientSolver::resetSystem() {
+    // Get the preconditioning method
+    const PreconditioningMethod preconditioning_method = get_preconditioning_method_from_string(d_preconditioning_method.getValue().getSelectedItem());
+
+    if (preconditioning_method == PreconditioningMethod::None) {
+        return;
+    }
+
+    p_A.resize(0, 0);
+    p_x.resize(0);
+    p_b.resize(0);
+    p_accessor.clear();
+}
+
 void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) {
     Timer::stepBegin("ConjugateGradient::ComputeGlobalMatrix");
     // Save the current mechanical parameters (m, b and k factors of the mass (M), damping (B) and
