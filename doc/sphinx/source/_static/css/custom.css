@@ -9,3 +9,25 @@ a:visited {
 li.toctree-l1 a:visited {
     color: #d9d9d9;
 }
+
+div.wy-menu a:visited {
+    color: #d9d9d9;
+}
+
+@media screen and (min-width: 768px) {
+    div.wy-table-responsive table {
+        table-layout: fixed;
+        width: auto;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    div.wy-table-responsive table td, div.wy-table-responsive table th {
+        white-space: nowrap;
+    }
+
+    div.wy-table-responsive table td:last-child, div.wy-table-responsive table th:last-child {
+        white-space: normal;
+        width: 100%;
+    }
+}

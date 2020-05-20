@@ -11,7 +11,7 @@ Implementation of a corotational linear elasticity forcefield for hexahedral top
 
 
 .. list-table::
-    :widths: 10 10 10 70
+    :widths: 1 1 1 100
     :header-rows: 1
     :stub-columns: 0
 
@@ -22,7 +22,7 @@ Implementation of a corotational linear elasticity forcefield for hexahedral top
     * - printLog
       - bool
       - false
-      - Whether or not to output informative messages at the initialization and during the simulation.
+      - Output informative messages at the initialization and during the simulation.
     * - youngModulus
       - float
       - 1000
@@ -44,6 +44,7 @@ Implementation of a corotational linear elasticity forcefield for hexahedral top
       - option
       - Regular
       - Integration method used to integrate the stiffness matrix.
+
             * **Regular**
                   Regular 8 points gauss integration (default).
             * **OnePointGauss**

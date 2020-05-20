@@ -11,7 +11,7 @@ Implementation of a traction forcefield for triangle and quad topologies.
 
 
 .. list-table::
-    :widths: 10 10 10 70
+    :widths: 1 1 1 100
     :header-rows: 1
     :stub-columns: 0
 
@@ -22,7 +22,7 @@ Implementation of a traction forcefield for triangle and quad topologies.
     * - printLog
       - bool
       - false
-      - Whether or not to output informative messages at the initialization and during the simulation.
+      - Output informative messages at the initialization and during the simulation.
     * - traction
       - [tx, ty, tz]
       -

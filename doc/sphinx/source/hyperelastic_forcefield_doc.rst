@@ -12,7 +12,7 @@ Implementation of an hyperelasticity forcefield for any element type topologies.
 
 
 .. list-table::
-    :widths: 10 10 10 70
+    :widths: 1 1 1 100
     :header-rows: 1
     :stub-columns: 0
 
@@ -23,7 +23,7 @@ Implementation of an hyperelasticity forcefield for any element type topologies.
     * - printLog
       - bool
       - false
-      - Whether or not to output informative messages at the initialization and during the simulation.
+      - Output informative messages at the initialization and during the simulation.
     * - enable_multithreading
       - bool
       - false
