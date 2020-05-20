@@ -16,16 +16,20 @@ The project is composed of two modules:
     <object data="_static/img/caribou.svg" type="image/svg+xml"></object>
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
+    :maxdepth: 2
+    :hidden:
 
-   installation
-   quickstart
+    installation
+    quickstart
 
 
 .. toctree::
-   :caption: Caribou
-   :maxdepth: 1
-   :hidden:
+    :caption: Forcefields
+    :maxdepth: 1
+    :titlesonly:
+    :hidden:
 
-   caribou_doc
+    HexahedronElasticForce <hexahedron_elastic_force_doc.rst>
+    TetrahedronElasticForce <tetrahedron_elastic_force_doc.rst>
+    HyperelasticForceField <hyperelastic_forcefield_doc.rst>
+    TractionForce <traction_force_doc.rst>
