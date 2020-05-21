@@ -47,7 +47,6 @@ ConjugateGradientSolver::ConjugateGradientSolver()
     )"
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
     R"(
-            LeastSquareDiagonal: Preconditioning using an approximation of A'A.x = A'.b by ignoring all off-diagonal entries of A' A.
             IncompleteCholesky:  Preconditioning based on the incomplete Cholesky factorization.
     )"
 #endif
@@ -61,7 +60,6 @@ ConjugateGradientSolver::ConjugateGradientSolver()
     p_preconditioners.emplace_back("Identity", PreconditioningMethod::Identity);
     p_preconditioners.emplace_back("Diagonal", PreconditioningMethod::Diagonal);
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
-    p_preconditioners.emplace_back("LeastSquareDiagonal", PreconditioningMethod::LeastSquareDiagonal);
     p_preconditioners.emplace_back("IncompleteCholesky", PreconditioningMethod::IncompleteCholesky);
 #endif
     p_preconditioners.emplace_back("IncompleteLU", PreconditioningMethod::IncompleteLU);
@@ -160,6 +158,9 @@ void ConjugateGradientSolver::assemble (const sofa::core::MechanicalParams* mpar
     wrapper.compress();
     Timer::stepEnd("ConvertToSparse");
     Timer::stepEnd("BuildMatrix");
+
+    // Remove the global matrix from the accessor since the wrapper was temporary
+    p_accessor.setGlobalMatrix(nullptr);
 }
 
 void ConjugateGradientSolver::resetSystem() {
@@ -203,8 +204,6 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
             } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
                 p_diag.analyzePattern(p_A);
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
-            } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
-                p_ls_diag.analyzePattern(p_A);
             } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
                 p_ichol.analyzePattern(p_A);
 #endif
@@ -221,8 +220,6 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
         } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
             p_diag.factorize(p_A);
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
-        } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
-            p_ls_diag.factorize(p_A);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
             p_ichol.factorize(p_A);
 #endif
@@ -230,9 +227,6 @@ void ConjugateGradientSolver::setSystemMBKMatrix(const sofa::core::MechanicalPar
             p_iLU.factorize(p_A);
         }
         Timer::stepEnd("PreconditionerFactorization");
-
-        // Remove the global matrix from the accessor since the wrapper was temporary
-        p_accessor.setGlobalMatrix(nullptr);
     }
 
     Timer::stepEnd("ConjugateGradient::ComputeGlobalMatrix");
@@ -532,8 +526,6 @@ void ConjugateGradientSolver::solveSystem() {
         } else if (preconditioning_method == PreconditioningMethod::Diagonal) {
             solve(p_diag, p_A, p_b, p_x);
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
-        } else if (preconditioning_method == PreconditioningMethod::LeastSquareDiagonal) {
-            solve(p_ls_diag, p_A, p_b, p_x);
         } else if (preconditioning_method == PreconditioningMethod::IncompleteCholesky) {
             solve(p_ichol, p_A, p_b, p_x);
 #endif

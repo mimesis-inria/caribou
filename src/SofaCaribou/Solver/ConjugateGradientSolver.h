@@ -2,8 +2,6 @@
 
 #include <Caribou/config.h>
 #include <sofa/core/behavior/LinearSolver.h>
-#include <SofaBaseLinearSolver/FullVector.h>
-#include <SofaBaseLinearSolver/FullMatrix.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <Eigen/Core>
@@ -50,9 +48,6 @@ public:
         Diagonal = 2,
 
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
-        /// Preconditioning using an approximation of A'A.x = A'.b and ignoring all off-diagonal entries of A' A.
-        LeastSquareDiagonal = 3,
-
         /// Preconditioning based on the incomplete Cholesky factorization.
         IncompleteCholesky = 4,
 #endif
@@ -206,9 +201,6 @@ private:
     Eigen::DiagonalPreconditioner<FLOATING_POINT_TYPE> p_diag;
 
 #if EIGEN_VERSION_AT_LEAST(3,3,0)
-    ///< Least-Square Diagonal preconditioner
-    Eigen::LeastSquareDiagonalPreconditioner<FLOATING_POINT_TYPE> p_ls_diag;
-
     ///< Incomplete Cholesky preconditioner
     Eigen::IncompleteCholesky<FLOATING_POINT_TYPE> p_ichol;
 #endif

@@ -22,7 +22,6 @@ cg_solvers = [
     {'name':'None', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'None',     'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
     {'name':'Id',   'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Identity', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
     {'name':'Dia',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'Diagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
-#    {'name':'LSDia', 'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'LeastSquareDiagonal', 'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
     {'name':'iChol',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteCholesky',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
     # {'name':'iLU',  'solver':'ConjugateGradientSolver', 'arguments' : {'preconditioning_method':'IncompleteLU',  'maximum_number_of_iterations':number_of_cg_iterations, 'residual_tolerance_threshold':threshold}},
 

@@ -5,7 +5,7 @@
 <ConjugateGradientSolver />
 ===========================
 
-Implementation of a Conjugate Gradient linear solver.
+Implementation of a Conjugate Gradient linear solver for selfadjoint (symmetric) positive-definite matrices.
 
 .. list-table::
     :widths: 1 1 1 100
@@ -34,6 +34,22 @@ Implementation of a Conjugate Gradient linear solver.
       - Convergence criterion: The CG iterations will stop when the residual norm of the residual
         :math:`\frac{|r_{k}|}{|r_0|} = \frac{|r_{k} - a_k A p_k|}{|b|}` at iteration k is lower than
         this threshold (here :math:`b` is the right-hand side vector).
+    * - preconditioning_method
+      - option
+      - None
+      - Preconditioning method used.
+
+            * **None**: No preconditioning, hence the complete matrix won't be built. **(default)**
+            * **Identity**: A naive preconditioner which approximates any matrix as the identity matrix. This is
+              equivalent as using **None**, except the system matrix is built.
+            * **Diagonal**: Preconditioning using an approximation of A.x = b by ignoring all off-diagonal entries of A.
+              Also called Jacobi preconditioner, work very well on diagonal dominant matrices.
+              This preconditioner is suitable for both selfadjoint and general problems. The diagonal entries are pre-inverted and stored into a dense vector.
+              See `here <https://eigen.tuxfamily.org/dox/classEigen_1_1DiagonalPreconditioner.html>`__ for more details.
+            * **IncompleteCholesky**: Preconditioning based on an modified incomplete Cholesky with dual threshold.
+              See `here <https://eigen.tuxfamily.org/dox/classEigen_1_1IncompleteCholesky.html>`__ for more details.
+            * **IncompleteLU**: Preconditioning based on the incomplete LU factorization.
+              See `here <https://eigen.tuxfamily.org/dox/classEigen_1_1IncompleteLUT.html>`__ for more details.
 
 Quick example
 *************
