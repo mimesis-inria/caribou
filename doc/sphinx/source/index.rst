@@ -30,7 +30,7 @@ The project is composed of two modules:
 
     HexahedronElasticForce <hexahedron_elastic_force_doc.rst>
     TetrahedronElasticForce <tetrahedron_elastic_force_doc.rst>
-    HyperelasticForceField <hyperelastic_forcefield_doc.rst>
+    HyperelasticForcefield <hyperelastic_forcefield_doc.rst>
     TractionForce <traction_force_doc.rst>
 
 

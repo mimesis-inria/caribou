@@ -1,8 +1,10 @@
  .. _hyperelastic_forcefield_doc:
  .. role:: important
 
-<HyperelasticForceField />
+<HyperelasticForcefield />
 ==========================
+
+:cpp:class:`SofaCaribou::forcefield::HyperelasticForcefield`
 
 Implementation of an hyperelasticity forcefield for any element type topologies.
 

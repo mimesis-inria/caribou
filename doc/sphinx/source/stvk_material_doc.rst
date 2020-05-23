@@ -4,6 +4,8 @@
 <SaintVenantKirchhoffMaterial />
 ================================
 
+:cpp:class:`SofaCaribou::material::SaintVenantKirchhoffMaterial`
+
 Implementation of a Saint-Venant-Kirchhoff hyperelastic material.
 
 

@@ -4,6 +4,8 @@
 <StaticODESolver />
 ===================
 
+:cpp:class:`SofaCaribou::ode::StaticODESolver`
+
 Implementation of a Newton-Raphson static ODE solver.
 
 

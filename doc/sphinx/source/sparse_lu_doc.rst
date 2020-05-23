@@ -5,6 +5,8 @@
 <SparseLUSolver />
 ==================
 
+:cpp:class:`SofaCaribou::solver::SparseLUSolver`
+
 Implementation of a sparse LU linear solver.
 
 

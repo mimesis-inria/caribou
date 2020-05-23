@@ -6,95 +6,119 @@
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:xlink="http://www.w3.org/1999/xlink"
-   id="svg2095"
-   version="1.1"
-   viewBox="0 0 209.6803 164.61594"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (1.0+r73+1)"
+   sodipodi:docname="caribou.svg"
+   width="209.6803mm"
    height="164.61594mm"
-   width="209.6803mm">
+   viewBox="0 0 209.6803 164.61594"
+   version="1.1"
+   id="svg2095">
+  <sodipodi:namedview
+     inkscape:current-layer="g4813"
+     inkscape:window-maximized="1"
+     inkscape:window-y="27"
+     inkscape:window-x="0"
+     inkscape:cy="182.15021"
+     inkscape:cx="338.44137"
+     inkscape:zoom="1.3452905"
+     showgrid="false"
+     id="namedview237"
+     inkscape:window-height="983"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
   <defs
      id="defs2089">
     <marker
-       style="overflow:visible"
+       orient="auto"
+       refY="0"
+       refX="0"
        id="marker3988"
-       refX="0"
-       refY="0"
-       orient="auto">
+       style="overflow:visible">
       <path
-         transform="matrix(0.8,0,0,0.8,10,0)"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         id="path3986"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         id="path3986" />
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
+         transform="matrix(0.8,0,0,0.8,10,0)" />
     </marker>
     <marker
-       style="overflow:visible"
+       orient="auto"
+       refY="0"
+       refX="0"
        id="marker3954"
-       refX="0"
-       refY="0"
-       orient="auto">
+       style="overflow:visible">
       <path
-         transform="matrix(0.8,0,0,0.8,10,0)"
+         id="path3952"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
          style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
-         d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         id="path3952" />
+         transform="matrix(0.8,0,0,0.8,10,0)" />
     </marker>
     <marker
-       style="overflow:visible"
+       orient="auto"
+       refY="0"
+       refX="0"
        id="marker3926"
-       refX="0"
-       refY="0"
-       orient="auto">
+       style="overflow:visible">
       <path
-         transform="matrix(0.8,0,0,0.8,10,0)"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         id="path3924"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         id="path3924" />
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(0.8,0,0,0.8,10,0)" />
     </marker>
     <marker
-       style="overflow:visible"
+       orient="auto"
+       refY="0"
+       refX="0"
        id="marker3904"
-       refX="0"
-       refY="0"
-       orient="auto">
+       style="overflow:visible">
       <path
-         transform="matrix(0.8,0,0,0.8,10,0)"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         id="path3902"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         id="path3902" />
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(0.8,0,0,0.8,10,0)" />
     </marker>
     <marker
-       style="overflow:visible"
+       orient="auto"
+       refY="0"
+       refX="0"
        id="marker3888"
-       refX="0"
-       refY="0"
-       orient="auto">
+       style="overflow:visible">
       <path
-         transform="matrix(0.8,0,0,0.8,10,0)"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         id="path3886"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         id="path3886" />
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(0.8,0,0,0.8,10,0)" />
     </marker>
     <marker
-       style="overflow:visible"
-       id="Arrow1Lstart"
-       refX="0"
+       orient="auto"
        refY="0"
-       orient="auto">
+       refX="0"
+       id="Arrow1Lstart"
+       style="overflow:visible">
       <path
-         transform="matrix(0.8,0,0,0.8,10,0)"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         id="path3616"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         id="path3616" />
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(0.8,0,0,0.8,10,0)" />
     </marker>
     <filter
-       height="1.0123878"
-       y="-0.0070337057"
-       width="1.0229928"
-       x="-0.013603568"
+       style="color-interpolation-filters:sRGB"
        id="filter4060"
-       style="color-interpolation-filters:sRGB">
+       x="-0.013603568"
+       width="1.0229928"
+       y="-0.0070337057"
+       height="1.0123878">
       <feGaussianBlur
-         id="feGaussianBlur4062"
-         stdDeviation="7.9698355e-05" />
+         stdDeviation="7.9698355e-05"
+         id="feGaussianBlur4062" />
     </filter>
   </defs>
   <metadata
@@ -105,448 +129,434 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     transform="translate(-0.35581574,-0.10491991)"
+     id="layer1"
      style="opacity:0.988"
-     id="layer1">
+     transform="translate(-0.35581574,-0.10491991)">
     <rect
-       y="0.10491991"
-       x="0.35581574"
-       height="83.62262"
-       width="209.6803"
+       style="fill:#d5e8d4;fill-opacity:1;stroke-width:1.7564"
        id="rect2658"
-       style="fill:#d5e8d4;fill-opacity:1;stroke-width:1.7564" />
-    <rect
-       style="fill:#dae8fc;fill-opacity:1;stroke-width:1.72857"
-       id="rect4271"
        width="209.6803"
-       height="80.993324"
+       height="83.62262"
        x="0.35581574"
-       y="83.727539" />
+       y="0.10491991" />
+    <rect
+       y="83.727539"
+       x="0.35581574"
+       height="80.993324"
+       width="209.6803"
+       id="rect4271"
+       style="fill:#dae8fc;fill-opacity:1;stroke-width:1.72857" />
   </g>
   <g
-     transform="translate(-0.35581574,-0.10491991)"
+     id="layer2"
      style="display:inline;opacity:1"
-     id="layer2">
+     transform="translate(-0.35581574,-0.10491991)">
     <text
-       id="text2663"
-       y="13.318245"
-       x="78.530411"
+       xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.76111px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#606060;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.76111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#606060;fill-opacity:1;stroke-width:0.264583"
-         y="13.318245"
+       x="78.530411"
+       y="13.318245"
+       id="text2663"><tspan
+         id="tspan2661"
          x="78.530411"
-         id="tspan2661">SofaCaribou</tspan></text>
+         y="13.318245"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.76111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#606060;fill-opacity:1;stroke-width:0.264583">SofaCaribou</tspan></text>
     <g
-       transform="matrix(0.65793142,0,0,0.65793142,2.2098763,8.4883082)"
-       id="g3366">
+       id="g3366"
+       transform="matrix(0.65793142,0,0,0.65793142,2.2098763,8.4883082)">
       <rect
-         ry="5.8935771"
-         y="23.210732"
-         x="6.3467298"
-         height="74.629807"
-         width="43.878139"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="rect2667-7"
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         width="43.878139"
+         height="74.629807"
+         x="6.3467298"
+         y="23.210732"
+         ry="5.8935771" />
       <text
-         id="text2678-6"
-         y="28.364119"
-         x="15.127951"
+         xml:space="preserve"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-         xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-           y="28.364119"
+         x="15.127951"
+         y="28.364119"
+         id="text2678-6"><tspan
+           id="tspan2676-5"
            x="15.127951"
-           id="tspan2676-5">Forcefields</tspan></text>
+           y="28.364119"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Forcefields</tspan></text>
       <a
-         transform="translate(-2.9721627,-20.234323)"
-         xlink:title="HexahedronElasticForce"
+         id="a2758"
          xlink:href="https://caribou.readthedocs.io/en/latest/hexahedron_elastic_force_doc.html"
-         id="a2758">
+         xlink:title="HexahedronElasticForce"
+         transform="translate(-2.9721627,-20.234323)"
+         target="_top">
         <g
-           id="g2718"
-           transform="translate(0,26.458334)">
+           transform="translate(0,26.458334)"
+           id="g2718">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect2709"
+             width="41.100582"
+             height="8.0082092"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="10.736104"
+             y="44.934624"
+             id="text2713"><tspan
+               id="tspan2711"
+               x="10.736104"
+               y="44.934624"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;HexahedronElasticForce /&gt;</tspan></text>
+        </g>
+      </a>
+      <a
+         id="a2752"
+         xlink:href="https://caribou.readthedocs.io/en/latest/tetrahedron_elastic_force_doc.html"
+         xlink:title="TetrahedronElasticForce"
+         transform="translate(-2.9721627,-20.463548)"
+         target="_top">
+        <g
+           style="opacity:1"
+           id="g2718-3"
+           transform="translate(0,16.333457)">
           <rect
              y="39.873024"
              x="10.481544"
              height="8.0082092"
              width="41.100582"
-             id="rect2709"
+             id="rect2709-4"
              style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
           <text
-             id="text2713"
+             id="text2713-4"
              y="44.934624"
-             x="10.736104"
+             x="10.849103"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
              xml:space="preserve"><tspan
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
                y="44.934624"
-               x="10.736104"
-               id="tspan2711">&lt;HexahedronElasticForce /&gt;</tspan></text>
-        </g>
-      </a>
-      <a
-         transform="translate(-2.9721627,-20.463548)"
-         xlink:title="TetrahedronElasticForce"
-         xlink:href="https://caribou.readthedocs.io/en/latest/tetrahedron_elastic_force_doc.html"
-         id="a2752">
-        <g
-           transform="translate(0,16.333457)"
-           id="g2718-3"
-           style="opacity:1">
-          <rect
-             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-             id="rect2709-4"
-             width="41.100582"
-             height="8.0082092"
-             x="10.481544"
-             y="39.873024" />
-          <text
-             xml:space="preserve"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-             x="10.849103"
-             y="44.934624"
-             id="text2713-4"><tspan
-               id="tspan2711-9"
                x="10.849103"
-               y="44.934624"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;TetrahedronElasticForce /&gt;</tspan></text>
+               id="tspan2711-9">&lt;TetrahedronElasticForce /&gt;</tspan></text>
         </g>
       </a>
       <a
-         transform="translate(-2.9721627,-20.463548)"
-         xlink:title="HyperelasticForceField"
+         id="a2764"
          xlink:href="https://caribou.readthedocs.io/en/latest/hyperelastic_forcefield_doc.html"
-         id="a2764">
+         xlink:title="HyperelasticForceField"
+         transform="translate(-2.9721627,-20.463548)"
+         target="_top">
         <g
-           transform="translate(0,37.041668)"
-           id="g2750">
-          <rect
-             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-             id="rect2744"
-             width="41.100582"
-             height="8.0082092"
-             x="10.481544"
-             y="39.873024" />
-          <text
-             xml:space="preserve"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-             x="11.866094"
-             y="44.934624"
-             id="text2748"><tspan
-               id="tspan2746"
-               x="11.866094"
-               y="44.934624"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;HyperelasticForceField /&gt;</tspan></text>
-        </g>
-      </a>
-      <a
-         id="a2966"
-         xlink:href="https://caribou.readthedocs.io/en/latest/traction_force_doc.html"
-         xlink:title="TractionForce"
-         transform="translate(-2.9721627,-4.5885442)">
-        <g
-           id="g2964"
+           id="g2750"
            transform="translate(0,37.041668)">
           <rect
              y="39.873024"
              x="10.481544"
              height="8.0082092"
              width="41.100582"
-             id="rect2958"
+             id="rect2744"
              style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
           <text
-             id="text2962"
+             id="text2748"
              y="44.934624"
-             x="18.3346"
+             x="11.866094"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
              xml:space="preserve"><tspan
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
                y="44.934624"
+               x="11.866094"
+               id="tspan2746">&lt;HyperelasticForceField /&gt;</tspan></text>
+        </g>
+      </a>
+      <a
+         transform="translate(-2.9721627,-4.5885442)"
+         xlink:title="TractionForce"
+         xlink:href="https://caribou.readthedocs.io/en/latest/traction_force_doc.html"
+         id="a2966"
+         target="_top">
+        <g
+           transform="translate(0,37.041668)"
+           id="g2964">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect2958"
+             width="41.100582"
+             height="8.0082092"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="18.3346"
+             y="44.934624"
+             id="text2962"><tspan
+               id="tspan2960"
                x="18.3346"
-               id="tspan2960">&lt;TractionForce /&gt;</tspan></text>
+               y="44.934624"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;TractionForce /&gt;</tspan></text>
         </g>
       </a>
     </g>
     <g
-       transform="matrix(0.65793142,0,0,0.65793142,2.2098763,8.4883082)"
-       id="g3444">
+       id="g3444"
+       transform="matrix(0.65793142,0,0,0.65793142,2.2098763,8.4883082)">
+      <rect
+         ry="5.8935771"
+         y="23.210732"
+         x="53.971733"
+         height="75.195"
+         width="45.939747"
+         id="rect2993"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text2997"
+         y="28.364119"
+         x="60.051693"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+           y="28.364119"
+           x="60.051693"
+           id="tspan2995">Linear solvers</tspan></text>
+      <a
+         transform="matrix(1.0000098,0,0,0.99999985,44.66304,-20.463536)"
+         xlink:title="ConjugateGradientSolver"
+         xlink:href="https://caribou.readthedocs.io/en/latest/cg_solver_doc.html"
+         id="a3017"
+         target="_top">
+        <g
+           transform="translate(0,16.333457)"
+           id="g3015"
+           style="opacity:1">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect3009"
+             width="43.344276"
+             height="11.48802"
+             x="10.606322"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="11.202041"
+             y="44.934624"
+             id="text3013"><tspan
+               id="tspan3011"
+               x="11.202041"
+               y="44.934624"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;ConjugateGradientSolver /&gt;</tspan></text>
+        </g>
+        <text
+           id="text3043"
+           y="65.286484"
+           x="16.857306"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+           xml:space="preserve"><tspan
+             id="tspan3045"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14476px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+             y="65.286484"
+             x="16.857306">Identity, Diagonal, iChol, iLU</tspan></text>
+      </a>
+      <a
+         id="a3017-2"
+         xlink:href="https://caribou.readthedocs.io/en/latest/sparse_llt_doc.html"
+         xlink:title="SparseLLTSolver"
+         transform="translate(44.701034,-6.1675191)"
+         target="_top">
+        <g
+           style="opacity:1"
+           id="g3015-1"
+           transform="translate(0,16.333457)">
+          <rect
+             y="39.873024"
+             x="10.606322"
+             height="12.062118"
+             width="43.268497"
+             id="rect3009-3"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             id="text3013-2"
+             y="44.934624"
+             x="17.422396"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="44.934624"
+               x="17.422396"
+               id="tspan3011-7">&lt;SparseLLTSolver /&gt;</tspan></text>
+        </g>
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+           x="24.645384"
+           y="65.13591"
+           id="text3043-3"><tspan
+             x="24.645384"
+             y="65.13591"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+             id="tspan3045-2">Eigen, Pardiso</tspan></text>
+      </a>
+      <a
+         transform="translate(44.701034,8.1285108)"
+         xlink:title="SparseLDLTSolver"
+         xlink:href="https://caribou.readthedocs.io/en/latest/sparse_ldlt_doc.html"
+         id="a3115"
+         target="_top">
+        <g
+           transform="translate(0,16.333457)"
+           id="g3109"
+           style="opacity:1">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect3103"
+             width="43.268497"
+             height="12.062118"
+             x="10.606322"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="16.346291"
+             y="44.934624"
+             id="text3107"><tspan
+               id="tspan3105"
+               x="16.346291"
+               y="44.934624"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;SparseLDLTSolver /&gt;</tspan></text>
+        </g>
+        <text
+           id="text3113"
+           y="65.13591"
+           x="24.645384"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+           xml:space="preserve"><tspan
+             id="tspan3111"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+             y="65.13591"
+             x="24.645384">Eigen, Pardiso</tspan></text>
+      </a>
+      <a
+         id="a3115-9"
+         xlink:href="https://caribou.readthedocs.io/en/latest/sparse_lu_doc.html"
+         xlink:title="SparseLUSolver"
+         transform="translate(44.701034,22.424545)"
+         target="_top">
+        <g
+           style="opacity:1"
+           id="g3109-4"
+           transform="translate(0,16.333457)">
+          <rect
+             y="39.873024"
+             x="10.606322"
+             height="12.062118"
+             width="43.268497"
+             id="rect3103-9"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             id="text3107-6"
+             y="44.934624"
+             x="17.922766"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="44.934624"
+               x="17.922766"
+               id="tspan3105-8">&lt;SparseLUSolver /&gt;</tspan></text>
+        </g>
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+           x="24.645386"
+           y="65.13591"
+           id="text3113-2"><tspan
+             x="24.645386"
+             y="65.13591"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+             id="tspan3111-4">Eigen, Pardiso</tspan></text>
+      </a>
+    </g>
+    <g
+       id="g3375"
+       transform="matrix(0.65793142,0,0,0.65793142,2.2098763,8.0700874)">
       <rect
          style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect2993"
-         width="45.939747"
-         height="75.195"
-         x="53.971733"
-         y="23.210732"
-         ry="5.8935771" />
+         id="rect2667-5"
+         width="46.505001"
+         height="35"
+         x="103.84797"
+         y="23.846392"
+         ry="5.8940001" />
       <text
          xml:space="preserve"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-         x="60.051693"
-         y="28.364119"
-         id="text2997"><tspan
-           id="tspan2995"
-           x="60.051693"
-           y="28.364119"
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Linear solvers</tspan></text>
-      <a
-         id="a3017"
-         xlink:href="https://caribou.readthedocs.io/en/latest/cg_solver_doc.html"
-         xlink:title="ConjugateGradientSolver"
-         transform="matrix(1.0000098,0,0,0.99999985,44.66304,-20.463536)">
-        <g
-           style="opacity:1"
-           id="g3015"
-           transform="translate(0,16.333457)">
-          <rect
-             y="39.873024"
-             x="10.606322"
-             height="11.48802"
-             width="43.344276"
-             id="rect3009"
-             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-          <text
-             id="text3013"
-             y="44.934624"
-             x="11.202041"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-             xml:space="preserve"><tspan
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-               y="44.934624"
-               x="11.202041"
-               id="tspan3011">&lt;ConjugateGradientSolver /&gt;</tspan></text>
-        </g>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="12.696072"
-           y="64.862617"
-           id="text3043"><tspan
-             x="12.696072"
-             y="64.862617"
-             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             id="tspan3045">Identity, Diagonal, Incomplete Cholesky, Incomplete LU</tspan></text>
-      </a>
-      <a
-         transform="translate(44.701034,-6.1675191)"
-         xlink:title="SparseLLTSolver"
-         xlink:href="https://caribou.readthedocs.io/en/latest/sparse_llt_doc.html"
-         id="a3017-2">
-        <g
-           transform="translate(0,16.333457)"
-           id="g3015-1"
-           style="opacity:1">
-          <rect
-             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-             id="rect3009-3"
-             width="43.268497"
-             height="12.062118"
-             x="10.606322"
-             y="39.873024" />
-          <text
-             xml:space="preserve"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-             x="17.422396"
-             y="44.934624"
-             id="text3013-2"><tspan
-               id="tspan3011-7"
-               x="17.422396"
-               y="44.934624"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;SparseLLTSolver /&gt;</tspan></text>
-        </g>
-        <text
-           id="text3043-3"
-           y="65.13591"
-           x="27.230576"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             id="tspan3045-2"
-             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="65.13591"
-             x="27.230576">Eigen, Pardiso</tspan></text>
-      </a>
-      <a
-         id="a3115"
-         xlink:href="https://caribou.readthedocs.io/en/latest/sparse_ldlt_doc.html"
-         xlink:title="SparseLDLTSolver"
-         transform="translate(44.701034,8.1285108)">
-        <g
-           style="opacity:1"
-           id="g3109"
-           transform="translate(0,16.333457)">
-          <rect
-             y="39.873024"
-             x="10.606322"
-             height="12.062118"
-             width="43.268497"
-             id="rect3103"
-             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-          <text
-             id="text3107"
-             y="44.934624"
-             x="16.346291"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-             xml:space="preserve"><tspan
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-               y="44.934624"
-               x="16.346291"
-               id="tspan3105">&lt;SparseLDLTSolver /&gt;</tspan></text>
-        </g>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="27.230576"
-           y="65.13591"
-           id="text3113"><tspan
-             x="27.230576"
-             y="65.13591"
-             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             id="tspan3111">Eigen, Pardiso</tspan></text>
-      </a>
-      <a
-         transform="translate(44.701034,22.424545)"
-         xlink:title="SparseLUSolver"
-         xlink:href="https://caribou.readthedocs.io/en/latest/sparse_lu_doc.html"
-         id="a3115-9">
-        <g
-           transform="translate(0,16.333457)"
-           id="g3109-4"
-           style="opacity:1">
-          <rect
-             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-             id="rect3103-9"
-             width="43.268497"
-             height="12.062118"
-             x="10.606322"
-             y="39.873024" />
-          <text
-             xml:space="preserve"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-             x="17.922766"
-             y="44.934624"
-             id="text3107-6"><tspan
-               id="tspan3105-8"
-               x="17.922766"
-               y="44.934624"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;SparseLUSolver /&gt;</tspan></text>
-        </g>
-        <text
-           id="text3113-2"
-           y="65.13591"
-           x="27.230576"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             id="tspan3111-4"
-             style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="65.13591"
-             x="27.230576">Eigen, Pardiso</tspan></text>
-      </a>
-    </g>
-    <g
-       transform="matrix(0.65793142,0,0,0.65793142,2.2098763,8.0700874)"
-       id="g3375">
-      <rect
-         ry="5.8940001"
-         y="23.846392"
-         x="103.84797"
-         height="35"
-         width="46.505001"
-         id="rect2667-5"
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <text
-         id="text2678-3"
-         y="28.999779"
          x="120.83316"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-         xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-           y="28.999779"
-           x="120.83316"
-           id="tspan2676-4">ODEs</tspan></text>
-      <a
-         transform="translate(94.314572,-20.253144)"
-         xlink:title="StaticODESolver"
-         xlink:href="https://caribou.readthedocs.io/en/latest/static_ode_doc.html"
-         id="a3017-7"
-         style="opacity:1">
-        <rect
-           y="56.206482"
-           x="10.606322"
-           height="8.1404362"
-           width="43.709999"
-           id="rect3009-7"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text3013-1"
-           y="61.268082"
-           x="17.608837"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="61.268082"
-             x="17.608837"
-             id="tspan3011-4">&lt;StaticODESolver /&gt;</tspan></text>
-      </a>
-    </g>
-    <g
-       transform="matrix(0.65793142,0,0,0.65793142,2.2098763,34.515641)"
-       id="g3460">
-      <rect
-         ry="5.8940001"
-         y="23.846392"
-         x="103.84797"
-         height="35"
-         width="46.505001"
-         id="rect3446"
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <text
-         id="text3450"
          y="28.999779"
-         x="115.82882"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-         xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="text2678-3"><tspan
+           id="tspan2676-4"
+           x="120.83316"
            y="28.999779"
-           x="115.82882"
-           id="tspan3448">Materials</tspan></text>
-      <a
-         transform="translate(94.639148,-21.576143)"
-         xlink:title="SaintVenantKirchhoffMaterial"
-         xlink:href="https://caribou.readthedocs.io/en/latest/stvk_material_doc.html"
-         id="a3458"
-         style="opacity:1">
-        <rect
-           y="56.206482"
-           x="10.606322"
-           height="8.1404362"
-           width="43.709999"
-           id="rect3452"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text3456"
-           y="61.464306"
-           x="11.606129"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="61.464306"
-             x="11.606129"
-             id="tspan3454">&lt;SaintVenantKirchhoffMaterial /&gt;</tspan></text>
-      </a>
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">ODEs</tspan></text>
       <a
          style="opacity:1"
-         id="a3468"
-         xlink:href="https://caribou.readthedocs.io/en/latest/neohookean_material_doc.html"
-         xlink:title="NeoHookeanMaterial"
-         transform="translate(94.639148,-10.463642)">
+         id="a3017-7"
+         xlink:href="https://caribou.readthedocs.io/en/latest/static_ode_doc.html"
+         xlink:title="StaticODESolver"
+         transform="translate(94.314572,-20.253144)"
+         target="_top">
         <rect
            style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect3462"
+           id="rect3009-7"
+           width="43.709999"
+           height="8.1404362"
+           x="10.606322"
+           y="56.206482" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+           x="17.608837"
+           y="61.268082"
+           id="text3013-1"><tspan
+             id="tspan3011-4"
+             x="17.608837"
+             y="61.268082"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;StaticODESolver /&gt;</tspan></text>
+      </a>
+    </g>
+    <g
+       id="g3460"
+       transform="matrix(0.65793142,0,0,0.65793142,2.2098763,34.515641)">
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect3446"
+         width="46.505001"
+         height="35"
+         x="103.84797"
+         y="23.846392"
+         ry="5.8940001" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="115.82882"
+         y="28.999779"
+         id="text3450"><tspan
+           id="tspan3448"
+           x="115.82882"
+           y="28.999779"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Materials</tspan></text>
+      <a
+         style="opacity:1"
+         id="a3458"
+         xlink:href="https://caribou.readthedocs.io/en/latest/stvk_material_doc.html"
+         xlink:title="SaintVenantKirchhoffMaterial"
+         transform="translate(94.639148,-21.576143)"
+         target="_top">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect3452"
            width="43.709999"
            height="8.1404362"
            x="10.606322"
@@ -554,284 +564,614 @@
         <text
            xml:space="preserve"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="16.713818"
+           x="11.606129"
            y="61.464306"
-           id="text3466"><tspan
-             id="tspan3464"
-             x="16.713818"
+           id="text3456"><tspan
+             id="tspan3454"
+             x="11.606129"
              y="61.464306"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;NeoHookeanMaterial /&gt;</tspan></text>
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;SaintVenantKirchhoffMaterial /&gt;</tspan></text>
       </a>
-    </g>
-    <text
-       xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.992;fill:#941700;fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter4060)"
-       x="45.928562"
-       y="20.596209"
-       id="text4066"><tspan
-         id="tspan4064"
-         x="45.928562"
-         y="20.596209"
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#941700;fill-opacity:1;stroke-width:0.264583">Scene components</tspan></text>
-    <path
-       id="path3614"
-       d="M 153.84314,22.271216 V 77.320532 Z"
-       style="fill:none;stroke:#000000;stroke-width:0.346946;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.693891, 0.346946;stroke-dashoffset:0;stroke-opacity:1" />
-    <text
-       id="text4080"
-       y="20.676901"
-       x="180.81442"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.992;fill:#941700;fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter4060)"
-       xml:space="preserve"><tspan
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#941700;fill-opacity:1;stroke-width:0.264583"
-         y="20.676901"
-         x="180.81442"
-         id="tspan4078">Utilities</tspan></text>
-    <g
-       id="g4124"
-       transform="matrix(0.65793142,0,0,0.65793142,105.14487,7.9079741)">
-      <rect
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect4110"
-         width="46.505001"
-         height="18.421373"
-         x="103.84797"
-         y="23.846392"
-         ry="5.8940001" />
-      <text
-         xml:space="preserve"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-         x="115.58801"
-         y="28.999779"
-         id="text4114"><tspan
-           id="tspan4112"
-           x="115.58801"
-           y="28.999779"
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Wrappers</tspan></text>
-      <g
-         transform="translate(1.9073486e-6,-4.7936817)"
-         id="g4242">
+      <a
+         transform="translate(94.639148,-10.463642)"
+         xlink:title="NeoHookeanMaterial"
+         xlink:href="https://caribou.readthedocs.io/en/latest/neohookean_material_doc.html"
+         id="a3468"
+         style="opacity:1"
+         target="_top">
         <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect4116"
-           width="43.709999"
-           height="8.1404362"
-           x="105.24547"
-           y="35.953339" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="112.5546"
-           y="41.014938"
-           id="text4120"><tspan
-             id="tspan4118"
-             x="112.5546"
-             y="41.014938"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">EigenMatrixWrapper</tspan></text>
-      </g>
-    </g>
-    <g
-       id="g4148"
-       transform="matrix(0.65793142,0,0,0.65793142,105.14487,22.815567)">
-      <rect
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect4126"
-         width="46.505001"
-         height="52.500912"
-         x="103.84797"
-         y="23.846392"
-         ry="5.8940001" />
-      <text
-         xml:space="preserve"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-         x="118.10051"
-         y="28.999779"
-         id="text4130"><tspan
-           id="tspan4128"
-           x="118.10051"
-           y="28.999779"
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Visitors</tspan></text>
-      <g
-         id="g4252">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect4132"
-           width="43.709999"
-           height="8.1404362"
-           x="105.24547"
-           y="34.630341" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="113.32261"
-           y="39.888165"
-           id="text4136"><tspan
-             id="tspan4134"
-             x="113.32261"
-             y="39.888165"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">AssembleGlobalMatrix</tspan></text>
-      </g>
-      <g
-         transform="translate(0,13.672898)"
-         id="g4260">
-        <rect
-           y="34.630341"
-           x="105.24547"
+           y="56.206482"
+           x="10.606322"
            height="8.1404362"
            width="43.709999"
-           id="rect4254"
+           id="rect3462"
            style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
         <text
-           id="text4258"
-           y="39.888165"
-           x="113.3208"
+           id="text3466"
+           y="61.464306"
+           x="16.713818"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
            xml:space="preserve"><tspan
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="39.888165"
-             x="113.3208"
-             id="tspan4256">ConstrainGlobalMatrix</tspan></text>
-      </g>
-      <g
-         id="g4268"
-         transform="translate(0,27.345807)">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect4262"
-           width="43.709999"
-           height="8.1404362"
-           x="105.24547"
-           y="34.630329" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="118.43934"
-           y="39.888165"
-           id="text4266"><tspan
-             id="tspan4264"
-             x="118.43934"
-             y="39.888165"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">MultiVecEqual</tspan></text>
-      </g>
+             y="61.464306"
+             x="16.713818"
+             id="tspan3464">&lt;NeoHookeanMaterial /&gt;</tspan></text>
+      </a>
+    </g>
+    <text
+       id="text4066"
+       y="20.596209"
+       x="45.928562"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.992;fill:#941700;fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter4060)"
+       xml:space="preserve"><tspan
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#941700;fill-opacity:1;stroke-width:0.264583"
+         y="20.596209"
+         x="45.928562"
+         id="tspan4064">Scene components</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.346946;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.693891, 0.346946;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 153.84314,22.271216 V 77.320532 Z"
+       id="path3614" />
+    <text
+       xml:space="preserve"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.992;fill:#941700;fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter4060)"
+       x="180.81442"
+       y="20.676901"
+       id="text4080"><tspan
+         id="tspan4078"
+         x="180.81442"
+         y="20.676901"
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#941700;fill-opacity:1;stroke-width:0.264583">Utilities</tspan></text>
+    <g
+       transform="matrix(0.65793142,0,0,0.65793142,105.14487,7.9079741)"
+       id="g4124">
+      <rect
+         ry="5.8940001"
+         y="23.846392"
+         x="103.84797"
+         height="18.421373"
+         width="46.505001"
+         id="rect4110"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text4114"
+         y="28.999779"
+         x="115.58801"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+           y="28.999779"
+           x="115.58801"
+           id="tspan4112">Wrappers</tspan></text>
+      <a
+         xlink:title="EigenMatrixWrapper"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/classSofaCaribou_1_1Algebra_1_1EigenMatrixWrapper.html"
+         id="a3012">
+        <g
+           transform="translate(1.9073486e-6,-4.7936817)"
+           id="g4242">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect4116"
+             width="43.709999"
+             height="8.1404362"
+             x="105.24547"
+             y="35.953339" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="112.5546"
+             y="41.014938"
+             id="text4120"><tspan
+               id="tspan4118"
+               x="112.5546"
+               y="41.014938"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">EigenMatrixWrapper</tspan></text>
+        </g>
+      </a>
     </g>
     <g
-       transform="translate(3.7041668)"
-       id="g4186">
+       transform="matrix(0.65793142,0,0,0.65793142,105.14487,22.815567)"
+       id="g4148">
       <rect
-         ry="3.8775697"
-         y="23.759378"
-         x="100.16493"
-         height="49.473152"
-         width="30.225203"
-         id="rect3486"
-         style="opacity:0.992;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.371731;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;filter:url(#filter4060)" />
+         ry="5.8940001"
+         y="23.846392"
+         x="103.84797"
+         height="52.500912"
+         width="46.505001"
+         id="rect4126"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <text
-         id="text3490"
-         y="27.149954"
-         x="108.27635"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.78524px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.992;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.174077;filter:url(#filter4060)"
+         id="text4130"
+         y="28.999779"
+         x="118.10051"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.78524px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.174077"
-           y="27.149954"
-           x="108.27635"
-           id="tspan3488">Topology</tspan></text>
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+           y="28.999779"
+           x="118.10051"
+           id="tspan4128">Visitors</tspan></text>
       <a
-         style="opacity:0.992;filter:url(#filter4060)"
-         transform="matrix(0.65793142,0,0,0.65793142,-1.521587,16.12918)"
-         xlink:title="FictitiousGrid"
-         xlink:href="https://caribou.readthedocs.io/en/latest/fictitious_grid_doc.html"
-         id="a3581">
+         target="_top"
+         xlink:title="AssembleGlobalMatrix"
+         xlink:href="https://caribou.jndb.ca/classSofaCaribou_1_1visitor_1_1AssembleGlobalMatrix.html"
+         id="a3018">
         <g
-           id="g2718-3-1"
-           transform="translate(146.49293,-5.206932)">
+           id="g4252">
           <rect
-             y="39.873024"
-             x="10.481544"
-             height="8.0082092"
-             width="41.100582"
-             id="rect2709-4-8"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect4132"
+             width="43.709999"
+             height="8.1404362"
+             x="105.24547"
+             y="34.630341" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="113.32261"
+             y="39.888165"
+             id="text4136"><tspan
+               id="tspan4134"
+               x="113.32261"
+               y="39.888165"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">AssembleGlobalMatrix</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="ConstrainGlobalMatrix"
+         xlink:href="https://caribou.jndb.ca/classSofaCaribou_1_1visitor_1_1ConstrainGlobalMatrix.html"
+         target="_top"
+         id="a3024">
+        <g
+           transform="translate(0,13.672898)"
+           id="g4260">
+          <rect
+             y="34.630341"
+             x="105.24547"
+             height="8.1404362"
+             width="43.709999"
+             id="rect4254"
              style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
           <text
-             id="text2713-4-5"
-             y="44.934624"
-             x="18.513746"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             id="text4258"
+             y="39.888165"
+             x="113.3208"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
              xml:space="preserve"><tspan
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-               y="44.934624"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="39.888165"
+               x="113.3208"
+               id="tspan4256">ConstrainGlobalMatrix</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="MultiVecEqual"
+         xlink:href="https://caribou.jndb.ca/classSofaCaribou_1_1visitor_1_1MultiVecEqualVisitor.html"
+         target="_top"
+         id="a3030">
+        <g
+           id="g4268"
+           transform="translate(0,27.345807)">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect4262"
+             width="43.709999"
+             height="8.1404362"
+             x="105.24547"
+             y="34.630329" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="118.43934"
+             y="39.888165"
+             id="text4266"><tspan
+               id="tspan4264"
+               x="118.43934"
+               y="39.888165"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.46944px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">MultiVecEqual</tspan></text>
+        </g>
+      </a>
+    </g>
+    <g
+       id="g4186"
+       transform="translate(3.7041668)">
+      <rect
+         style="opacity:0.992;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.371731;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;filter:url(#filter4060)"
+         id="rect3486"
+         width="30.225203"
+         height="49.473152"
+         x="100.16493"
+         y="23.759378"
+         ry="3.8775697" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.78524px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:0.992;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.174077;filter:url(#filter4060)"
+         x="108.27635"
+         y="27.149954"
+         id="text3490"><tspan
+           id="tspan3488"
+           x="108.27635"
+           y="27.149954"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:2.78524px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.174077">Topology</tspan></text>
+      <a
+         id="a3581"
+         xlink:href="https://caribou.readthedocs.io/en/latest/fictitious_grid_doc.html"
+         xlink:title="FictitiousGrid"
+         transform="matrix(0.65793142,0,0,0.65793142,-1.521587,16.12918)"
+         style="opacity:0.992;filter:url(#filter4060)"
+         target="_top">
+        <g
+           transform="translate(146.49293,-5.206932)"
+           id="g2718-3-1">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect2709-4-8"
+             width="41.100582"
+             height="8.0082092"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="18.513746"
+             y="44.934624"
+             id="text2713-4-5"><tspan
+               id="tspan2711-9-7"
                x="18.513746"
-               id="tspan2711-9-7">&lt;FictitiousGrid /&gt;</tspan></text>
+               y="44.934624"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;FictitiousGrid /&gt;</tspan></text>
         </g>
       </a>
       <g
-         style="opacity:0.992;filter:url(#filter4060)"
+         transform="matrix(0.65793142,0,0,0.65793142,94.860715,19.666484)"
          id="g3598"
-         transform="matrix(0.65793142,0,0,0.65793142,94.860715,19.666484)">
+         style="opacity:0.992;filter:url(#filter4060)">
         <rect
-           y="39.873024"
-           x="10.481544"
-           height="8.0082092"
-           width="41.100582"
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
            id="rect3592"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text3596"
-           y="44.934624"
-           x="16.380545"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="44.934624"
-             x="16.380545"
-             id="tspan3594">&lt;CircleIsoSurface /&gt;</tspan></text>
-      </g>
-      <g
-         style="opacity:0.992;filter:url(#filter4060)"
-         transform="translate(142.88277,24.647161)"
-         id="g3612">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.240146;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect3606"
-           width="27.041365"
-           height="5.2688527"
-           x="-41.125916"
-           y="28.216146" />
+           width="41.100582"
+           height="8.0082092"
+           x="10.481544"
+           y="39.873024" />
         <text
            xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.85683px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.174077"
-           x="-37.908451"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+           x="16.380545"
+           y="44.934624"
+           id="text3596"><tspan
+             id="tspan3594"
+             x="16.380545"
+             y="44.934624"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;CircleIsoSurface /&gt;</tspan></text>
+      </g>
+      <g
+         id="g3612"
+         transform="translate(142.88277,24.647161)"
+         style="opacity:0.992;filter:url(#filter4060)">
+        <rect
+           y="28.216146"
+           x="-41.125916"
+           height="5.2688527"
+           width="27.041365"
+           id="rect3606"
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.240146;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+        <text
+           id="text3610"
            y="31.546331"
-           id="text3610"><tspan
-             id="tspan3608"
-             x="-37.908451"
+           x="-37.908451"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.85683px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.174077"
+           xml:space="preserve"><tspan
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.85683px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.174077"
              y="31.546331"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.85683px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.174077">&lt;SphereIsoSurface /&gt;</tspan></text>
+             x="-37.908451"
+             id="tspan3608">&lt;SphereIsoSurface /&gt;</tspan></text>
       </g>
     </g>
   </g>
   <g
-     transform="translate(-0.35581574,-0.10491991)"
+     id="layer3"
      style="display:inline"
-     id="layer3">
+     transform="translate(-0.35581574,-0.10491991)">
     <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.7611px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:1;fill:#606060;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="88.392883"
+       id="text2663-2"
        y="96.729774"
-       id="text2663-2"><tspan
-         id="tspan2661-9"
-         x="88.392883"
+       x="88.392883"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.7611px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;opacity:1;fill:#606060;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.7611px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#606060;fill-opacity:1;stroke-width:0.264583"
          y="96.729774"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.7611px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#606060;fill-opacity:1;stroke-width:0.264583">Caribou</tspan></text>
+         x="88.392883"
+         id="tspan2661-9">Caribou</tspan></text>
+    <g
+       transform="matrix(0.65793141,0,0,0.65793141,2.2098764,95.586032)"
+       id="g3366-8"
+       style="display:inline;opacity:1">
+      <rect
+         ry="5.8935771"
+         y="23.210732"
+         x="6.3467298"
+         height="52.54195"
+         width="141.06367"
+         id="rect2667-7-8"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text2678-6-6"
+         y="28.364119"
+         x="65.104622"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+           y="28.364119"
+           x="65.104622"
+           id="tspan2676-5-8">Geometry</tspan></text>
+      <a
+         xlink:title="Element"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/structcaribou_1_1geometry_1_1Element.html"
+         id="a3036">
+        <g
+           transform="translate(0.64959926,-4.3874079)"
+           id="g2718-3-5">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect2709-4-6"
+             width="41.100582"
+             height="8.0082092"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="25.082159"
+             y="44.934624"
+             id="text2713-4-4"><tspan
+               id="tspan2711-9-6"
+               x="25.082159"
+               y="44.934624"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Element</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="Segment"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/structcaribou_1_1geometry_1_1BaseSegment.html"
+         id="a3062">
+        <g
+           id="g4385"
+           transform="translate(1.2513653,8.8836693)">
+          <rect
+             y="39.873024"
+             x="10.481544"
+             height="11.024046"
+             width="41.100582"
+             id="rect4379"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             id="text4383"
+             y="44.934624"
+             x="24.620516"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="44.934624"
+               x="24.620516"
+               id="tspan4381">Segment</tspan></text>
+          <text
+             id="text4389"
+             y="47.976273"
+             x="25.087116"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+               y="47.976273"
+               x="25.087116"
+               id="tspan4387">1D, 2D, 3D</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="Triangle"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/structcaribou_1_1geometry_1_1BaseTriangle.html"
+         id="a3042">
+        <g
+           transform="translate(45.947985,-5.8953263)"
+           id="g4401">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect4391"
+             width="41.100582"
+             height="11.024046"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="25.565849"
+             y="44.130337"
+             id="text4395"><tspan
+               id="tspan4393"
+               x="25.565849"
+               y="44.130337"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Triangle</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             x="27.317236"
+             y="47.171986"
+             id="text4399"><tspan
+               id="tspan4397"
+               x="27.317236"
+               y="47.171986"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">2D, 3D</tspan></text>
+          <text
+             id="text4429"
+             y="49.584846"
+             x="21.705017"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+               y="49.584846"
+               x="21.705017"
+               id="tspan4427">Linear, Quadratic</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="Quad"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/structcaribou_1_1geometry_1_1BaseQuad.html"
+         id="a3052">
+        <g
+           id="g4445"
+           transform="translate(91.246363,-5.8953263)">
+          <rect
+             y="39.873024"
+             x="10.481544"
+             height="11.024046"
+             width="41.100582"
+             id="rect4431"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             id="text4435"
+             y="44.130337"
+             x="27.313202"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="44.130337"
+               x="27.313202"
+               id="tspan4433">Quad</tspan></text>
+          <text
+             id="text4439"
+             y="47.171986"
+             x="27.317236"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+               y="47.171986"
+               x="27.317236"
+               id="tspan4437">2D, 3D</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             x="21.705017"
+             y="49.584846"
+             id="text4443"><tspan
+               id="tspan4441"
+               x="21.705017"
+               y="49.584846"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">Linear, Quadratic</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="Tetrahedron"
+         xlink:type=""
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/structcaribou_1_1geometry_1_1BaseTetrahedron.html"
+         id="a3070">
+        <g
+           id="g4461"
+           transform="translate(46.248869,8.8836693)">
+          <rect
+             y="39.873024"
+             x="10.481544"
+             height="11.024046"
+             width="41.100582"
+             id="rect4447"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             id="text4451"
+             y="44.130337"
+             x="22.696089"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="44.130337"
+               x="22.696089"
+               id="tspan4449">Tetrahedron</tspan></text>
+          <text
+             id="text4455"
+             y="47.171986"
+             x="29.504942"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+               y="47.171986"
+               x="29.504942"
+               id="tspan4453">3D</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             x="21.705017"
+             y="49.584846"
+             id="text4459"><tspan
+               id="tspan4457"
+               x="21.705017"
+               y="49.584846"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">Linear, Quadratic</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="Hexahedron"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/structcaribou_1_1geometry_1_1BaseHexahedron.html"
+         id="a3080">
+        <g
+           transform="translate(91.246363,8.8836693)"
+           id="g4477">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect4463"
+             width="41.100582"
+             height="11.024046"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             x="22.440462"
+             y="44.130337"
+             id="text4467"><tspan
+               id="tspan4465"
+               x="22.440462"
+               y="44.130337"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Hexahedron</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             x="29.504942"
+             y="47.171986"
+             id="text4471"><tspan
+               id="tspan4469"
+               x="29.504942"
+               y="47.171986"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">3D</tspan></text>
+          <text
+             id="text4475"
+             y="49.584846"
+             x="21.705017"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+               y="49.584846"
+               x="21.705017"
+               id="tspan4473">Linear, Quadratic</tspan></text>
+        </g>
+      </a>
+    </g>
     <g
        style="display:inline;opacity:1"
-       id="g3366-8"
-       transform="matrix(0.65793141,0,0,0.65793141,2.2098764,95.586032)">
+       id="g4615"
+       transform="matrix(0.65793141,0,0,0.65793141,137.96009,87.289891)" />
+    <g
+       style="display:inline;opacity:1"
+       id="g4813"
+       transform="matrix(0.65793141,0,0,0.65793141,107.0201,95.538007)">
       <rect
          style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect2667-7-8"
+         id="rect4723"
          width="141.06367"
-         height="52.54195"
+         height="51.976292"
          x="6.3467298"
          y="23.210732"
          ry="5.8935771" />
@@ -840,440 +1180,244 @@
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
          x="65.104622"
          y="28.364119"
-         id="text2678-6-6"><tspan
-           id="tspan2676-5-8"
+         id="text4727"><tspan
+           id="tspan4725"
            x="65.104622"
            y="28.364119"
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Geometry</tspan></text>
-      <g
-         transform="translate(0.64959926,-4.3874079)"
-         id="g2718-3-5">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect2709-4-6"
-           width="41.100582"
-           height="8.0082092"
-           x="10.481544"
-           y="39.873024" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="25.082159"
-           y="44.934624"
-           id="text2713-4-4"><tspan
-             id="tspan2711-9-6"
-             x="25.082159"
-             y="44.934624"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Element</tspan></text>
-      </g>
-      <g
-         id="g4385"
-         transform="translate(1.2513653,8.8836693)">
-        <rect
-           y="39.873024"
-           x="10.481544"
-           height="11.024046"
-           width="41.100582"
-           id="rect4379"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text4383"
-           y="44.934624"
-           x="24.620516"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="44.934624"
-             x="24.620516"
-             id="tspan4381">Segment</tspan></text>
-        <text
-           id="text4389"
-           y="47.976273"
-           x="25.087116"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
-             y="47.976273"
-             x="25.087116"
-             id="tspan4387">1D, 2D, 3D</tspan></text>
-      </g>
-      <g
-         transform="translate(45.947985,-5.8953263)"
-         id="g4401">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect4391"
-           width="41.100582"
-           height="11.024046"
-           x="10.481544"
-           y="39.873024" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="25.565849"
-           y="44.130337"
-           id="text4395"><tspan
-             id="tspan4393"
-             x="25.565849"
-             y="44.130337"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Triangle</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           x="27.317236"
-           y="47.171986"
-           id="text4399"><tspan
-             id="tspan4397"
-             x="27.317236"
-             y="47.171986"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">2D, 3D</tspan></text>
-        <text
-           id="text4429"
-           y="49.584846"
-           x="21.705017"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
-             y="49.584846"
-             x="21.705017"
-             id="tspan4427">Linear, Quadratic</tspan></text>
-      </g>
-      <g
-         id="g4445"
-         transform="translate(91.246363,-5.8953263)">
-        <rect
-           y="39.873024"
-           x="10.481544"
-           height="11.024046"
-           width="41.100582"
-           id="rect4431"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text4435"
-           y="44.130337"
-           x="27.313202"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="44.130337"
-             x="27.313202"
-             id="tspan4433">Quad</tspan></text>
-        <text
-           id="text4439"
-           y="47.171986"
-           x="27.317236"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
-             y="47.171986"
-             x="27.317236"
-             id="tspan4437">2D, 3D</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           x="21.705017"
-           y="49.584846"
-           id="text4443"><tspan
-             id="tspan4441"
-             x="21.705017"
-             y="49.584846"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">Linear, Quadratic</tspan></text>
-      </g>
-      <g
-         id="g4461"
-         transform="translate(46.248869,8.8836693)">
-        <rect
-           y="39.873024"
-           x="10.481544"
-           height="11.024046"
-           width="41.100582"
-           id="rect4447"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text4451"
-           y="44.130337"
-           x="22.696089"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-             y="44.130337"
-             x="22.696089"
-             id="tspan4449">Tetrahedron</tspan></text>
-        <text
-           id="text4455"
-           y="47.171986"
-           x="29.504942"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
-             y="47.171986"
-             x="29.504942"
-             id="tspan4453">3D</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           x="21.705017"
-           y="49.584846"
-           id="text4459"><tspan
-             id="tspan4457"
-             x="21.705017"
-             y="49.584846"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">Linear, Quadratic</tspan></text>
-      </g>
-      <g
-         transform="translate(91.246363,8.8836693)"
-         id="g4477">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect4463"
-           width="41.100582"
-           height="11.024046"
-           x="10.481544"
-           y="39.873024" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="22.440462"
-           y="44.130337"
-           id="text4467"><tspan
-             id="tspan4465"
-             x="22.440462"
-             y="44.130337"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Hexahedron</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           x="29.504942"
-           y="47.171986"
-           id="text4471"><tspan
-             id="tspan4469"
-             x="29.504942"
-             y="47.171986"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">3D</tspan></text>
-        <text
-           id="text4475"
-           y="49.584846"
-           x="21.705017"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
-             y="49.584846"
-             x="21.705017"
-             id="tspan4473">Linear, Quadratic</tspan></text>
-      </g>
-    </g>
-    <g
-       transform="matrix(0.65793141,0,0,0.65793141,137.96009,87.289891)"
-       id="g4615"
-       style="display:inline;opacity:1" />
-    <g
-       transform="matrix(0.65793141,0,0,0.65793141,107.0201,95.538007)"
-       id="g4813"
-       style="display:inline;opacity:1">
-      <rect
-         ry="5.8935771"
-         y="23.210732"
-         x="6.3467298"
-         height="51.976292"
-         width="141.06367"
-         id="rect4723"
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.565;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <text
-         id="text4727"
-         y="28.364119"
-         x="65.104622"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-         xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-           y="28.364119"
-           x="65.104622"
-           id="tspan4725">Topology</tspan></text>
-      <g
-         id="g4763"
-         transform="translate(45.947985,-5.8953263)">
-        <rect
-           y="39.873024"
-           x="10.481544"
-           height="11.024046"
-           width="41.100582"
-           id="rect4749"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text4753"
-           y="44.130337"
-           x="27.296665"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Topology</tspan></text>
+      <a
+         xlink:title="Mesh"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/classcaribou_1_1topology_1_1Mesh.html"
+         id="a3106">
+        <g
+           id="g4763"
+           transform="translate(45.947985,-5.8953263)">
+          <rect
+             y="39.873024"
+             x="10.481544"
+             height="11.024046"
+             width="41.100582"
+             id="rect4749"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             id="text4753"
              y="44.130337"
              x="27.296665"
-             id="tspan4751">Mesh</tspan></text>
-        <text
-           id="text4757"
-           y="47.171986"
-           x="25.428518"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="44.130337"
+               x="27.296665"
+               id="tspan4751">Mesh</tspan></text>
+          <text
+             id="text4757"
              y="47.171986"
              x="25.428518"
-             id="tspan4755">1D,2D, 3D</tspan></text>
-      </g>
-      <g
-         transform="translate(91.246363,-5.8953263)"
-         id="g4779">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect4765"
-           width="41.100582"
-           height="11.024046"
-           x="10.481544"
-           y="39.873024" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="23.434715"
-           y="44.130337"
-           id="text4769"><tspan
-             id="tspan4767"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+               y="47.171986"
+               x="25.428518"
+               id="tspan4755">1D,2D, 3D</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="VTKLoader"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/classcaribou_1_1topology_1_1io_1_1VTKReader.html"
+         id="a3130">
+        <g
+           transform="translate(91.246363,-5.8953263)"
+           id="g4779">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect4765"
+             width="41.100582"
+             height="11.024046"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
              x="23.434715"
              y="44.130337"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">VTKLoader</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           x="25.087114"
-           y="47.171986"
-           id="text4773"><tspan
-             id="tspan4771"
+             id="text4769"><tspan
+               id="tspan4767"
+               x="23.434715"
+               y="44.130337"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">VTKLoader</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
              x="25.087114"
              y="47.171986"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">1D, 2D, 3D</tspan></text>
-      </g>
-      <g
-         transform="translate(-0.700748,-5.8953263)"
-         id="g4829">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect4815"
-           width="41.100582"
-           height="11.024046"
-           x="10.481544"
-           y="39.873024" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="28.117975"
-           y="44.130337"
-           id="text4819"><tspan
-             id="tspan4817"
+             id="text4773"><tspan
+               id="tspan4771"
+               x="25.087114"
+               y="47.171986"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">1D, 2D, 3D</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="Grid"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/structcaribou_1_1topology_1_1Grid_3_013_01_4.html"
+         id="a3090">
+        <g
+           transform="translate(-0.700748,-5.8953263)"
+           id="g4829">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect4815"
+             width="41.100582"
+             height="11.024046"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
              x="28.117975"
              y="44.130337"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Grid</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           x="25.087114"
-           y="47.171986"
-           id="text4823"><tspan
-             id="tspan4821"
+             id="text4819"><tspan
+               id="tspan4817"
+               x="28.117975"
+               y="44.130337"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Grid</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
              x="25.087114"
              y="47.171986"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">1D, 2D, 3D</tspan></text>
-      </g>
-      <g
-         id="g4841"
-         transform="translate(-0.700748,8.3306105)">
-        <rect
-           y="39.873024"
-           x="10.481544"
-           height="11.024046"
-           width="41.100582"
-           id="rect4831"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text4835"
-           y="44.130337"
-           x="24.500628"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+             id="text4823"><tspan
+               id="tspan4821"
+               x="25.087114"
+               y="47.171986"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">1D, 2D, 3D</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:href="https://caribou.jndb.ca/classcaribou_1_1topology_1_1HashGrid.html"
+         xlink:title="HashGrid"
+         target="_top"
+         id="a3098">
+        <g
+           id="g4841"
+           transform="translate(-0.700748,8.3306105)">
+          <rect
+             y="39.873024"
+             x="10.481544"
+             height="11.024046"
+             width="41.100582"
+             id="rect4831"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             id="text4835"
              y="44.130337"
              x="24.500628"
-             id="tspan4833">HashGrid</tspan></text>
-        <text
-           id="text4839"
-           y="47.171986"
-           x="25.087114"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="44.130337"
+               x="24.500628"
+               id="tspan4833">HashGrid</tspan></text>
+          <text
+             id="text4839"
              y="47.171986"
              x="25.087114"
-             id="tspan4837">1D, 2D, 3D</tspan></text>
-      </g>
-      <g
-         transform="translate(45.947985,8.3306105)"
-         id="g4853">
-        <rect
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="rect4843"
-           width="41.100582"
-           height="11.024046"
-           x="10.481544"
-           y="39.873024" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           x="25.53829"
-           y="44.130337"
-           id="text4847"><tspan
-             id="tspan4845"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+               y="47.171986"
+               x="25.087114"
+               id="tspan4837">1D, 2D, 3D</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="Domain"
+         xlink:href="https://caribou.jndb.ca/classcaribou_1_1topology_1_1Domain.html"
+         target="_top"
+         id="a3114">
+        <g
+           transform="translate(45.947985,8.3306105)"
+           id="g4853">
+          <rect
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+             id="rect4843"
+             width="41.100582"
+             height="11.024046"
+             x="10.481544"
+             y="39.873024" />
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
              x="25.53829"
              y="44.130337"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Domain</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           x="25.428518"
-           y="47.171986"
-           id="text4851"><tspan
-             id="tspan4849"
+             id="text4847"><tspan
+               id="tspan4845"
+               x="25.53829"
+               y="44.130337"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">Domain</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
              x="25.428518"
              y="47.171986"
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">1D,2D, 3D</tspan></text>
-      </g>
-      <g
-         id="g4869"
-         transform="translate(45.947985,22.556566)">
-        <rect
-           y="39.873024"
-           x="10.481544"
-           height="11.024046"
-           width="41.100582"
-           id="rect4859"
-           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-        <text
-           id="text4863"
-           y="44.130337"
-           x="15.89892"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+             id="text4851"><tspan
+               id="tspan4849"
+               x="25.428518"
+               y="47.171986"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144">1D,2D, 3D</tspan></text>
+        </g>
+      </a>
+      <a
+         xlink:title="BarycentricContainer"
+         target="_top"
+         xlink:href="https://caribou.jndb.ca/classcaribou_1_1topology_1_1BarycentricContainer.html"
+         id="a3122">
+        <g
+           id="g4869"
+           transform="translate(45.947985,22.556566)">
+          <rect
+             y="39.873024"
+             x="10.481544"
+             height="11.024046"
+             width="41.100582"
+             id="rect4859"
+             style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+          <text
+             id="text4863"
              y="44.130337"
              x="15.89892"
-             id="tspan4861">BarycentricContainer</tspan></text>
-        <text
-           id="text4867"
-           y="47.171986"
-           x="25.428518"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
-           xml:space="preserve"><tspan
-             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+               y="44.130337"
+               x="15.89892"
+               id="tspan4861">BarycentricContainer</tspan></text>
+          <text
+             id="text4867"
              y="47.171986"
              x="25.428518"
-             id="tspan4865">1D,2D, 3D</tspan></text>
-      </g>
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.402144"
+             xml:space="preserve"><tspan
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.14477px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.402144"
+               y="47.171986"
+               x="25.428518"
+               id="tspan4865">1D,2D, 3D</tspan></text>
+        </g>
+      </a>
+      <text
+         id="text3140"
+         y="-138.99434"
+         x="-64.855659"
+         style="font-style:normal;font-weight:normal;font-size:16.0858px;line-height:1.25;font-family:sans-serif;fill:#c87137;fill-opacity:1;stroke:none;stroke-width:0.402144;"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.28954px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#c87137;stroke-width:0.402144;"
+           y="-138.99434"
+           x="-64.855659"
+           id="tspan3138"
+           sodipodi:role="line">(click on components to navigate to their documentation)</tspan></text>
     </g>
   </g>
 </svg>

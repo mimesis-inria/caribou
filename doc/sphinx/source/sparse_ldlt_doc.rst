@@ -5,6 +5,8 @@
 <SparseLDLTSolver />
 ====================
 
+:cpp:class:`SofaCaribou::solver::SparseLDLTSolver`
+
 Implementation of a sparse :math:`LDL^T` linear solver.
 
 

@@ -4,6 +4,8 @@
 <HexahedronElasticForce />
 ==========================
 
+:cpp:class:`SofaCaribou::forcefield::HexahedronElasticForce`
+
 Implementation of a corotational linear elasticity forcefield for hexahedral topologies.
 
 :important:`Requires a mechanical object.`

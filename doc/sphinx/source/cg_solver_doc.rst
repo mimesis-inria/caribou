@@ -5,6 +5,8 @@
 <ConjugateGradientSolver />
 ===========================
 
+:cpp:class:`SofaCaribou::solver::ConjugateGradientSolver`
+
 Implementation of a Conjugate Gradient linear solver for selfadjoint (symmetric) positive-definite matrices.
 
 .. list-table::

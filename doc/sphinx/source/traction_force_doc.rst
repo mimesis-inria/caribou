@@ -4,6 +4,8 @@
 <TractionForce />
 =================
 
+:cpp:class:`SofaCaribou::forcefield::TractionForce`
+
 Implementation of a traction forcefield for triangle and quad topologies.
 
 :important:`Requires a mechanical object.`

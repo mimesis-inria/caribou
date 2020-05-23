@@ -5,6 +5,8 @@
 <FictitiousGrid />
 ==================
 
+:cpp:class:`SofaCaribou::topology::FictitiousGrid`
+
 Implementation of an advanced fictitious (sparse) grid.
 
 An fictitious grid is a regular grid of hexahedral elements that embed an implicit (iso) or explicit (mesh) surface.

@@ -4,6 +4,8 @@
 <TetrahedronElasticForce />
 ===========================
 
+:cpp:class:`SofaCaribou::forcefield::TetrahedronElasticForce`
+
 Implementation of a corotational linear elasticity forcefield for tetrahedral topologies.
 
 :important:`Requires a mechanical object.`

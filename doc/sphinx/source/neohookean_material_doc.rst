@@ -4,6 +4,8 @@
 <NeoHookeanMaterial />
 ================================
 
+:cpp:class:`SofaCaribou::material::NeoHookeanMaterial`
+
 Implementation of a NeoHookean hyperelastic material.
 
 
