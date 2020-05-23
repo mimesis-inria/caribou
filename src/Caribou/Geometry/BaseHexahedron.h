@@ -8,6 +8,10 @@
 
 namespace caribou::geometry {
 
+/**
+ * Base class for hexahedral elements.
+ * @tparam Derived Derived hexahedral type (usually a leaf type, which is a type that is used by the user, eg Hexahedron).
+ */
 template<typename Derived>
 struct BaseHexahedron : public Element<Derived> {
     // Types

@@ -115,8 +115,11 @@ volume inside the embedded surface.
         | :note: Only available in 3D (template="Vec3D")
 
 
-Quick example
-*************
+Quick examples
+**************
+
+Using an implicit surface with level-set
+----------------------------------------
 .. content-tabs::
 
     .. tab-container:: tab1
@@ -153,6 +156,44 @@ Quick example
 
             node.addObject('MechanicalObject', template='Vec2d', position='@grid.position')
             node.addObject('QuadSetTopologyContainer', quads='@grid.quads')
+
+Using an explicit surface with mesh intersection
+------------------------------------------------
+
+.. content-tabs::
+
+    .. tab-container:: tab1
+        :title: XML
+
+        .. code-block:: xml
+
+            <Node>
+                <MeshVTKLoader name="loader" filename="liver_surface.vtk" />
+                <FictitiousGrid name="grid" template="Vec3d" surface_positions="@loader.position" surface_triangles="@loader.triangles" n="20 20 20" maximum_number_of_subdivision_levels="4" draw_boundary_cells="1" printLog="1" />
+
+                <MechanicalObject template="Vec3d" position="@grid.position" />
+                <HexahedronSetTopologyContainer hexahedrons="@grid.hexahedrons" />
+            </Node>
+
+    .. tab-container:: tab2
+        :title: Python
+
+        .. code-block:: python
+
+            node.addObject('MeshVTKLoader', name='loader', filename='liver_surface.vtk')
+            node.addObject('FictitiousGrid',
+                           template='Vec3d',
+                           surface_positions='@loader.position',
+                           surface_triangles='@loader.triangles'
+                           name='grid',
+                           n=[20, 20, 20],
+                           maximum_number_of_subdivision_levels=4,
+                           printLog=True,
+                           draw_boundary_cells=True
+                           )
+
+            node.addObject('MechanicalObject', template='Vec3d', position='@grid.position')
+            node.addObject('HexahedronSetTopologyContainer', hexahedrons='@grid.hexahedrons')
 
 Available python bindings
 *************************

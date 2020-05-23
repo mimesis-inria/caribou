@@ -13,7 +13,7 @@ The project is composed of two modules:
 
 .. raw:: html
 
-    <object data="_static/img/caribou.svg" type="image/svg+xml"></object>
+    <object data="_static/img/caribou.svg" type="image/svg+xml" width="85%"></object>
 
 .. toctree::
     :maxdepth: 2
@@ -69,3 +69,5 @@ The project is composed of two modules:
     :hidden:
 
     FictitiousGrid <fictitious_grid_doc.rst>
+    CircleIsoSurface <circle_iso_doc.rst>
+    SphereIsoSurface <sphere_iso_doc.rst>
