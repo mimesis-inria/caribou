@@ -97,6 +97,10 @@ void EigenSparseSolver<EigenSolver>::setSystemMBKMatrix(const sofa::core::Mechan
     using Timer = sofa::helper::AdvancedTimer;
     Timer::stepBegin("EigenSparseSolver::AssembleGlobalMatrix");
 
+    // This will be set back to true once the system matrix has been successfully factorized
+    // It is used to avoid trying to solve the system when something went wrong in this stage.
+    p_A_is_factorized = false;
+
     // Save the current mechanical parameters (m, b and k factors of the mass (M), damping (B) and
     // stiffness (K) matrices)
     p_mechanical_params = *mparams;
@@ -124,6 +128,8 @@ void EigenSparseSolver<EigenSolver>::setSystemMBKMatrix(const sofa::core::Mechan
     if (p_solver.info() != Eigen::Success) {
         msg_error() << "Failed to factorize the system matrix (" +
                        std::string((p_solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
+    } else {
+        p_A_is_factorized = true;
     }
     Timer::stepEnd("MatrixFactorization");
 
@@ -184,16 +190,19 @@ void EigenSparseSolver<EigenSolver>::solveSystem() {
 
     Timer::stepBegin("EigenSparseSolver::solve");
 
-    // Solve the system
-    p_x = p_solver.solve(p_b);
-    if (p_solver.info() != Eigen::Success) {
-        msg_error() << "Failed to solve the system (" +
-                       std::string((p_solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
-    }
+    if (p_A_is_factorized) {
+        // Solve the system
+        p_x = p_solver.solve(p_b);
+        if (p_solver.info() != Eigen::Success) {
+            msg_error() << "Failed to solve the system (" +
+                           std::string(
+                               (p_solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
+        }
 
-    // Copy the solution into the mechanical objects of the current context sub-graph.
-    EigenVectorWrapper<FLOATING_POINT_TYPE> x_wrapper(p_x);
-    mop.baseVector2MultiVector(&x_wrapper, p_x_id, &p_accessor);
+        // Copy the solution into the mechanical objects of the current context sub-graph.
+        EigenVectorWrapper<FLOATING_POINT_TYPE> x_wrapper(p_x);
+        mop.baseVector2MultiVector(&x_wrapper, p_x_id, &p_accessor);
+    }
 
     Timer::stepEnd("EigenSparseSolver::solve");
 }

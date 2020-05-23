@@ -112,6 +112,9 @@ private:
 
     ///< Global system right-hand side vector
     Vector p_b;
+
+    ///< True if the solver has successfully factorize the system matrix
+    bool p_A_is_factorized;
 };
 
 } // namespace SofaCaribou::solver
