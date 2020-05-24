@@ -53,46 +53,13 @@ set(SOURCE_FILES
     Visitor/MultiVecEqualVisitor.cpp
     init.cpp)
 
-# Try to find Sofa's cmake prefix
-# First, make sure it isn't already been manually set by the user's cmake variables
-find_path (SOFA_PREFIX SofaFramework/SofaFrameworkConfig.cmake)
-if (SOFA_PREFIX)
-    find_package(SofaFramework QUIET)
-    if (NOT SofaFramework_FOUND AND NOT "${SOFA_PREFIX}" IN_LIST CMAKE_PREFIX_PATH)
-        list(APPEND CMAKE_PREFIX_PATH "${SOFA_PREFIX}")
-    endif()
-    # The user already set the correct sofa cmake prefix
-    message(STATUS "Sofa prefix already specified at path ${SOFA_PREFIX}")
-else()
-    # If it isn't found, let's try to find it from enviromnemnt variables such as SOFA_ROOT
-    find_path (
-        SOFA_PREFIX
-        SofaFramework/SofaFrameworkConfig.cmake
-        PATHS
-        $ENV{SOFA_ROOT}/install/lib/cmake
-        $ENV{SOFA_ROOT}/build/install/lib/cmake
-        $ENV{SOFA_ROOT}/build/master/install/lib/cmake
-        $ENV{SOFA_ROOT}/lib/cmake
-        NO_DEFAULT_PATH
-    )
-
-    # If we found it, add it to cmake prefix path so that further find_package correctly locate sofa
-    if (SOFA_PREFIX)
-        message(STATUS "Sofa found at ${SOFA_PREFIX}")
-        list(APPEND CMAKE_PREFIX_PATH "${SOFA_PREFIX}")
-    endif()
-endif()
-
 # Caribou
 if (NOT TARGET Caribou::Algebra)
     find_package(Caribou COMPONENTS Algebra Geometry Topology Mechanics REQUIRED QUIET)
 endif()
 
 # Sofa's packages
-cmake_policy(SET CMP0072 NEW)
-find_package(SofaFramework QUIET REQUIRED)
-find_package(SofaBase QUIET REQUIRED)
-find_package(SofaCommon QUIET REQUIRED)
+find_package(SOFA COMPONENTS SofaFramework SofaBase SofaCommon QUIET REQUIRED)
 
 # Optional packages
 find_package(Eigen3 REQUIRED NO_MODULE QUIET)

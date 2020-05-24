@@ -1410,14 +1410,14 @@
       <text
          id="text3140"
          y="-138.99434"
-         x="-64.855659"
-         style="font-style:normal;font-weight:normal;font-size:16.0858px;line-height:1.25;font-family:sans-serif;fill:#c87137;fill-opacity:1;stroke:none;stroke-width:0.402144;"
+         x="-63.291069"
+         style="font-style:normal;font-weight:normal;font-size:16.0858px;line-height:1.25;font-family:sans-serif;fill:#c87137;fill-opacity:1;stroke:none;stroke-width:0.402144"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.28954px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#c87137;stroke-width:0.402144;"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.28954px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#c87137;stroke-width:0.402144"
            y="-138.99434"
-           x="-64.855659"
+           x="-63.291069"
            id="tspan3138"
-           sodipodi:role="line">(click on components to navigate to their documentation)</tspan></text>
+           sodipodi:role="line">(click on a component to navigate to its documentation)</tspan></text>
     </g>
   </g>
 </svg>

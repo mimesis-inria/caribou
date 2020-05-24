@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 project(Caribou)
 
 # Manually define VERSION
@@ -6,6 +6,10 @@ set(Caribou_VERSION_MAJOR 1)
 set(Caribou_VERSION_MINOR 0)
 set(Caribou_VERSION_PATCH 0)
 set(Caribou_VERSION ${Caribou_VERSION_MAJOR}.${Caribou_VERSION_MINOR}.${Caribou_VERSION_PATCH})
+
+# Policies
+cmake_policy(SET CMP0072 NEW)
+cmake_policy(SET CMP0074 NEW)
 
 ## Default build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -19,14 +23,12 @@ include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
 include(caribouTools)
 set(CMAKE_REQUIRED_QUIET 1)
-# OPTIONS
 
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 
 # OPTIONS
 option(CARIBOU_USE_DOUBLE "Use double precision for floating point values." ON)
 option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." OFF)
-option(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
 
 # Tests
@@ -37,6 +39,13 @@ if (CARIBOU_BUILD_TESTS)
         # This find_package needs to be executed at MOST once, else it will fails on the second call
         find_package(GMock QUIET REQUIRED)
     endif ()
+endif()
+
+# SOFA option
+find_package(SOFA COMPONENTS SofaFramework QUIET)
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
+if (CARIBOU_WITH_SOFA)
+    message(STATUS "Caribou with SOFA support\n\tSOFA root: ${SOFA_ROOT}")
 endif()
 
 # Python 3 option
@@ -62,7 +71,7 @@ endif()
 find_package(OpenMP QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_OPENMP "Compile the plugin with OpenMP support" ON "OPENMP_FOUND" OFF)
 if (CARIBOU_WITH_OPENMP)
-    message(STATUS "Caribou with OpenMP support\n\tInclude directories: ${OpenMP_CXX_INCLUDE_DIRS}\n\tLibraries: ${OpenMP_CXX_LIBRARIES}")
+    message(STATUS "Caribou with OpenMP support\n\tLibraries: ${OpenMP_CXX_LIBRARIES}")
 endif()
 
 
