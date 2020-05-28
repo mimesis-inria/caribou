@@ -73,6 +73,13 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry 
 target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
+set_target_properties(
+    ${PROJECT_NAME}
+    PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH TRUE
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+)
+
 if (CARIBOU_OPTIMIZE_FOR_NATIVE)
 #    todo(jnbrunet2000@gmail.com) Deactivated since it seems to create mis-alignments
 #                                 issues for the SparseMatrix used in the CG. To reproduce:
