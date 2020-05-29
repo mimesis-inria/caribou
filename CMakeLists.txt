@@ -54,19 +54,6 @@ find_package(pybind11 CONFIG QUIET)
 find_package(Python3 QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python3_FOUND;pybind11_FOUND" OFF)
 
-# MKL option
-set(BUILD_SHARED_LIBS ON)
-set(BLA_VENDOR Intel10_64lp)
-find_package(BLAS QUIET)
-find_package(LAPACKE QUIET)
-find_package(MKL QUIET)
-CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_MKL "Compile the plugin with MKL support (uses LAPACK(E) and BLAS)" ON "MKL_FOUND;LAPACKE_FOUND;BLAS_FOUND" OFF)
-if (CARIBOU_WITH_MKL)
-    set(CARIBOU_MKL_LIBRARIES "${MKL_LIBRARIES};${LAPACKE_LIBRARIES};${BLAS_LIBRARIES}")
-    list(REMOVE_DUPLICATES CARIBOU_MKL_LIBRARIES)
-    message(STATUS "Caribou with MKL support\n\tInclude directories: ${MKL_INCLUDE_DIRS}\n\tLibraries: ${CARIBOU_MKL_LIBRARIES}")
-endif()
-
 # OpenMP option
 find_package(OpenMP QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_OPENMP "Compile the plugin with OpenMP support" ON "OPENMP_FOUND" OFF)
@@ -74,6 +61,16 @@ if (CARIBOU_WITH_OPENMP)
     message(STATUS "Caribou with OpenMP support\n\tLibraries: ${OpenMP_CXX_LIBRARIES}")
 endif()
 
+# MKL option
+set(MKL_STATIC ON)
+if (NOT CARIBOU_WITH_OPENMP)
+    set(MKL_THREADING_VENDOR SEQUENTIAL)
+endif()
+find_package(MKL QUIET)
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_MKL "Compile the plugin with MKL support." ON "MKL_FOUND" OFF)
+if (CARIBOU_WITH_MKL)
+    message(STATUS "Caribou with MKL support\n\tInclude directories: ${MKL_INCLUDE_DIRS}\n\tLibraries: ${MKL_LIBRARIES}\n\tFlags: ${MKL_LINKER_FLAGS}")
+endif()
 
 ## Change default install prefix
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

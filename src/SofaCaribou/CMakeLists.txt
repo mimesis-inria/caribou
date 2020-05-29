@@ -72,6 +72,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology SofaBaseL
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry Caribou::Topology Caribou::Mechanics)
 target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 set_target_properties(
     ${PROJECT_NAME}
@@ -88,13 +89,17 @@ if (CARIBOU_OPTIMIZE_FOR_NATIVE)
 endif()
 
 if (CARIBOU_WITH_MKL)
-    find_package(LAPACKE REQUIRED QUIET)
+    set(MKL_STATIC ON)
+    if (NOT CARIBOU_WITH_OPENMP)
+        set(MKL_THREADING_VENDOR SEQUENTIAL)
+    endif()
     find_package(MKL REQUIRED QUIET)
+
     target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_USE_MKL_ALL)
     target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_MKL)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${LAPACKE_INCLUDE_DIRS} ${MKL_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${LAPACK_LIBRARIES} ${LAPACKE_LIBRARIES} ${MKL_LIBRARIES})
-    target_link_options(${PROJECT_NAME} PRIVATE ${LAPACK_LINKER_FLAGS} ${LAPACKE_LINKER_FLAGS})
+    target_include_directories(${PROJECT_NAME} PUBLIC ${MKL_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PRIVATE -Wl,--start-group ${MKL_LIBRARIES} -Wl,--end-group)
+    target_link_options(${PROJECT_NAME} PRIVATE ${MKL_LINKER_FLAGS})
 endif()
 
 
