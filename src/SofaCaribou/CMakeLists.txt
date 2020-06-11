@@ -98,7 +98,7 @@ if (CARIBOU_WITH_MKL)
     target_compile_definitions(${PROJECT_NAME} PUBLIC EIGEN_USE_MKL_ALL)
     target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_MKL)
     target_include_directories(${PROJECT_NAME} PUBLIC ${MKL_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PRIVATE -Wl,--start-group ${MKL_LIBRARIES} -Wl,--end-group)
+    target_link_libraries(${PROJECT_NAME} PRIVATE  ${MKL_LIBRARIES})
     target_link_options(${PROJECT_NAME} PRIVATE ${MKL_LINKER_FLAGS})
 endif()
 

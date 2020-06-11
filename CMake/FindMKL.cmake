@@ -72,6 +72,7 @@ if(MKL_STATIC)
     set(INT_LIB "lib${INT_LIB}.a")
     set(COR_LIB "lib${COR_LIB}.a")
     set(THR_LIB "lib${THR_LIB}.a")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
 
 find_path(MKL_INCLUDE_DIR
@@ -87,6 +88,7 @@ find_library(MKL_INTERFACE_LIBRARY
     PATHS $ENV{MKLROOT}/lib
     $ENV{HOME}/intel/mkl/lib/intel64_lin
     /opt/intel/mkl/lib/intel64_lin
+    /opt/intel/mkl/lib
     /usr/lib/x86_64-linux-gnu
     $ENV{MKLROOT}/lib/intel64
     $ENV{INTEL}/mkl/lib/intel64)
@@ -96,6 +98,7 @@ find_library(MKL_THREAD_LAYER_LIBRARY
     PATHS $ENV{MKLROOT}/lib
     $ENV{HOME}/intel/mkl/lib/intel64_lin
     /opt/intel/mkl/lib/intel64_lin
+    /opt/intel/mkl/lib
     /usr/lib/x86_64-linux-gnu
     $ENV{MKLROOT}/lib/intel64
     $ENV{INTEL}/mkl/lib/intel64)
@@ -105,6 +108,7 @@ find_library(MKL_CORE_LIBRARY
     PATHS $ENV{MKLROOT}/lib
     $ENV{HOME}/intel/mkl/lib/intel64_lin
     /opt/intel/mkl/lib/intel64_lin
+    /opt/intel/mkl/lib
     /usr/lib/x86_64-linux-gnu
     $ENV{MKLROOT}/lib/intel64
     $ENV{INTEL}/mkl/lib/intel64)

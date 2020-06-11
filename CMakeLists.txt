@@ -46,6 +46,8 @@ find_package(SOFA COMPONENTS SofaFramework QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
 if (CARIBOU_WITH_SOFA)
     message(STATUS "Caribou with SOFA support\n\tSOFA root: ${SOFA_ROOT}")
+    list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
+    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 endif()
 
 # Python 3 option
