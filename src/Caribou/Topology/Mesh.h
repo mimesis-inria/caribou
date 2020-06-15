@@ -11,28 +11,63 @@
 
 namespace caribou::topology {
 
-    template <UNSIGNED_INTEGER_TYPE WorldDimension>
+    template <
+        UNSIGNED_INTEGER_TYPE WorldDimension,
+        typename MatrixType = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, WorldDimension, (WorldDimension>1?Eigen::RowMajor:Eigen::ColMajor)>>
     class Mesh : public BaseMesh {
     public:
+        using PositionsContainer = MatrixType;
+
+        static_assert(std::is_base_of_v<Eigen::MatrixBase<PositionsContainer>, PositionsContainer>, "The matrix type must inherit Eigen::MatrixBase");
+        static_assert(Eigen::MatrixBase<PositionsContainer>::ColsAtCompileTime == WorldDimension, "The matrix type must have  N columns at compile time for a mesh of dimension N.");
+        static_assert(WorldDimension == 1 or WorldDimension == 2 or WorldDimension == 3, "The world dimension must be 1, 2 or 3.");
 
         static constexpr INTEGER_TYPE Dimension = WorldDimension;
-        using WorldCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, Dimension, 1>;
+        using Real = typename PositionsContainer::Scalar;
+        using WorldCoordinates = Eigen::Matrix<Real, 1, Dimension>;
+
+        template <typename Element, typename NodeIndex = UNSIGNED_INTEGER_TYPE>
+        using Domain = Domain<Mesh<Dimension, MatrixType>, Element, NodeIndex>;
 
         /*!
-         * Default constructor.
-         * Initializes an empty unstructured mesh.
+         * Default constructor for an empty mesh.
          */
         Mesh() = default;
+
+        /*!
+         * Virtual default destructor
+         */
+        virtual ~Mesh() = default;
 
         /**
          * Construct the unstructured mesh with a set of point positions from a position vector.
          * @param positions
          * \note A copy of the full position vector is made.
          */
-        explicit Mesh(const std::vector<WorldCoordinates> & positions) : p_positions(positions) {}
+        explicit Mesh(const std::vector<WorldCoordinates> & positions) {
+            p_positions.resize(positions.size(), Dimension);
+            for (std::size_t i = 0; i < positions.size(); ++i) {
+                p_positions.row(static_cast<Eigen::Index>(i)) = positions[i];
+            }
+        }
+
+        /**
+         * Construct the unstructured mesh with an Eigen matrix containing the position vector
+         * (NxD with N nodes of D world dimension).
+         * \note A copy of the full position vector is made.
+         */
+        explicit Mesh(const MatrixType & positions) : p_positions(positions) {}
+
+        /**
+         * Construct the unstructured mesh with an Eigen matrix containing the position vector
+         * (NxD with N nodes of D world dimension)
+         * \note Reference to the position vector is stored, no copy made.
+         */
+        template <typename EigenDerived>
+        explicit Mesh(const EigenDerived * positions) : p_positions(*positions) {}
 
         /*! Copy constructor */
-        Mesh(const Mesh<Dimension> & other)
+        Mesh(const Mesh & other)
             : p_positions(other.p_positions) {}
 
         /*! Move constructor */
@@ -67,23 +102,7 @@ namespace caribou::topology {
          * Get the number of nodes of the mesh.
          */
         [[nodiscard]]
-        inline auto number_of_nodes() const -> UNSIGNED_INTEGER_TYPE final {return p_positions.size();};
-
-        /*!
-         * Adds a node to the mesh.
-         * @param position The position coordinates of the node.
-         */
-        inline void add_node(const WorldCoordinates & position) {
-            p_positions.emplace_back(position);
-        }
-
-        /*!
-         * Adds nodes to the mesh.
-         * @param position The position coordinates of the node.
-         */
-        inline void add_nodes(const std::vector<WorldCoordinates> & positions) {
-            p_positions.insert(p_positions.end(), positions.begin(), positions.end());
-        }
+        inline auto number_of_nodes() const -> UNSIGNED_INTEGER_TYPE final {return p_positions.rows();};
 
         /*!
          * Get the list of domains of the mesh.
@@ -132,8 +151,10 @@ namespace caribou::topology {
          *
          * \note The domain is managed by this mesh instance, and will be freed upon the deletion of the mesh.
          */
-        template<typename Element, typename... Args>
-        inline auto add_domain(const std::string & name, Args ...args) -> Domain<Element> * {
+        template<typename Element, typename NodeIndex, typename... Args>
+        inline
+        typename std::enable_if_t<std::is_integral_v<NodeIndex>, Domain<Element, NodeIndex> *>
+        add_domain(const std::string & name, Args ...args) {
             static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
             for (const auto & d : p_domains) {
                 if (d.first == name) {
@@ -141,14 +162,28 @@ namespace caribou::topology {
                 }
             }
 
-            auto domain_ptr = new Domain<Element>(this, std::forward<Args>(args)...);
+            auto domain_ptr = new Domain<Element, NodeIndex>(this, std::forward<Args>(args)...);
             auto res = p_domains.emplace(p_domains.end(), name, std::unique_ptr<BaseDomain>(static_cast<BaseDomain *>(domain_ptr)));
             if (res->second) {
                 return domain_ptr;
             } else {
                 delete domain_ptr;
-                return static_cast<Domain<Element>*> (nullptr);
+                return static_cast<Domain<Element, NodeIndex>*> (nullptr);
             }
+        }
+
+        /*!
+         * Adds a domain with the Element type supplied as a template parameter.
+         * @tparam Element The type of Element
+         * @param name
+         * @return A pointer to the newly created domain, or null if the creation failed
+         *
+         * \note The domain is managed by this mesh instance, and will be freed upon the deletion of the mesh.
+         */
+        template<typename Element, typename... Args>
+        inline auto add_domain(const std::string & name, Args ...args) -> Domain<Element> * {
+            static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
+            return add_domain<Element, UNSIGNED_INTEGER_TYPE, Args...>(name, std::forward<Args>(args)...);
         }
 
         /*!
@@ -174,7 +209,6 @@ namespace caribou::topology {
         template<typename Element, typename... Args>
         inline auto add_domain(Args ...args) -> Domain<Element> * {
             static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
-
             auto domain_ptr = new Domain<Element>(this, std::forward<Args>(args)...);
 
             std::ostringstream ss;
@@ -223,10 +257,11 @@ namespace caribou::topology {
         * Get the position coordinates of a node from its index.
         */
         [[nodiscard]]
-        inline auto position(UNSIGNED_INTEGER_TYPE index) const -> const WorldCoordinates & {
-            caribou_assert(index < p_positions.size() && "Trying to access the position vector at a node index greater "
-                                                         "than the number of nodes in the mesh.");
-            return p_positions[index];
+        inline auto position(UNSIGNED_INTEGER_TYPE index) const {
+            caribou_assert(static_cast<Eigen::Index>(index) < p_positions.rows()
+                           && "Trying to access the position vector at a node index greater "
+                              "than the number of nodes in the mesh.");
+            return p_positions.row(index);
         }
 
         /*!
@@ -245,9 +280,9 @@ namespace caribou::topology {
          */
         template <typename IntegerType, std::size_t N>
         inline auto positions(const IntegerType(&indices)[N]) const {
-            Eigen::Matrix<FLOATING_POINT_TYPE, N, Dimension, Eigen::RowMajor> positions;
+            Eigen::Matrix<Real, N, Dimension, (Dimension>1?Eigen::RowMajor:Eigen::ColMajor)> positions;
             for (std::size_t i = 0; i < N; ++i) {
-                positions.row(i) = p_positions[indices[i]];
+                positions.row(i) = p_positions.row(indices[i]);
             }
             return positions;
         }
@@ -269,11 +304,7 @@ namespace caribou::topology {
          */
         template <typename IntegerType, std::size_t N>
         inline auto positions(const std::array<IntegerType, N> & indices) const {
-            Eigen::Matrix<FLOATING_POINT_TYPE, N, Dimension, Eigen::RowMajor> positions;
-            for (std::size_t i = 0; i < N; ++i) {
-                positions.row(i) = p_positions[indices[i]];
-            }
-            return positions;
+            return positions<IntegerType, N>(indices.data());
         }
 
         /*!
@@ -294,10 +325,10 @@ namespace caribou::topology {
         template <typename IntegerType>
         inline auto positions(const std::vector<IntegerType> & indices) const {
             const auto number_of_indices = indices.size();
-            Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, Dimension, (Dimension == 1) ? Eigen::ColMajor : Eigen::RowMajor> positions;
+            Eigen::Matrix<Real, Eigen::Dynamic, Dimension, (Dimension == 1) ? Eigen::ColMajor : Eigen::RowMajor> positions;
             positions.resize(number_of_indices, Dimension);
             for (std::size_t i = 0; i < number_of_indices; ++i) {
-                positions.row(i) = p_positions[indices[i]];
+                positions.row(i) = p_positions.row(indices[i]);
             }
             return positions;
         }
@@ -323,19 +354,19 @@ namespace caribou::topology {
             static_assert(EigenDerived::RowsAtCompileTime == 1 or EigenDerived::ColsAtCompileTime == 1,
                 "Only vector type matrix can be used as the indices container.");
             const auto number_of_indices = indices.size();
-            Eigen::Matrix<FLOATING_POINT_TYPE,
+            Eigen::Matrix<Real,
                           EigenDerived::RowsAtCompileTime == 1 ? EigenDerived::ColsAtCompileTime : EigenDerived::RowsAtCompileTime,
                           Dimension,
-                          Eigen::RowMajor> positions;
+                          (Dimension>1 ? Eigen::RowMajor : Eigen::ColMajor)> positions;
             positions.resize(number_of_indices, Dimension);
             for (Eigen::Index i = 0; i < number_of_indices; ++i) {
-                positions.row(i) = p_positions[indices.derived()[i]];
+                positions.row(i) = p_positions.row(indices.derived()[i]);
             }
             return positions;
         }
 
         /*! Swap the data of two meshes */
-        friend void swap(Mesh<Dimension> & first, Mesh<Dimension>& second) noexcept
+        friend void swap(Mesh & first, Mesh& second) noexcept
         {
             // enable ADL
             using std::swap;
@@ -343,9 +374,24 @@ namespace caribou::topology {
         }
 
     private:
-        std::vector<WorldCoordinates> p_positions;
+        PositionsContainer p_positions;
         std::vector<std::pair<std::string, std::unique_ptr<BaseDomain>>> p_domains;
     };
+
+    // Template deduction guides
+    template <typename MatrixType>
+    Mesh(const MatrixType &) -> Mesh<MatrixType::ColsAtCompileTime, MatrixType>;
+
+    template <typename MatrixType>
+    Mesh(const MatrixType *) ->
+    Mesh<
+        MatrixType::ColsAtCompileTime,
+        Eigen::Ref<
+            const std::decay_t<MatrixType>,
+            Eigen::internal::traits<MatrixType>::Alignment,
+            Eigen::Stride<MatrixType::OuterStrideAtCompileTime,MatrixType::InnerStrideAtCompileTime>
+        >
+    >;
 }
 
 #endif //CARIBOU_TOPOLOGY_MESH_H

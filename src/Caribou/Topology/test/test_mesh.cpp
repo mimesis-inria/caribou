@@ -14,28 +14,60 @@ TEST(Mesh, Mesh) {
     using namespace caribou::geometry;
     using caribou::topology::Mesh;
 
-    Mesh<3> mesh;
-    mesh.add_node({0,0,0});
-    mesh.add_node({1,1,1});
 
     {
+        // Construct by copy (from std::vector)
+        std::vector<Mesh<3>::WorldCoordinates> initial_positions = {{0,0,0}, {1,1,1}};
+        Mesh<3> mesh (initial_positions);
         auto positions = mesh.positions({1, 0});
-        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0).transpose());
-        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1).transpose());
+        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
+        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
     }
 
     {
-        std::array<unsigned int, 2> indices = {{1, 0}};
-        auto positions = mesh.positions(indices);
-        EXPECT_MATRIX_EQUAL(mesh.position(indices[0]), positions.row(0).transpose());
-        EXPECT_MATRIX_EQUAL(mesh.position(indices[1]), positions.row(1).transpose());
+        // Construct by copy (from Eigen::Matrix)
+        Eigen::Matrix<FLOATING_POINT_TYPE, 2, 3> initial_positions;
+        initial_positions << 0, 0, 0,
+                             1, 1, 1;
+        Mesh<3> mesh (initial_positions);
+        auto positions = mesh.positions({1, 0});
+        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
+        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
     }
 
     {
-        std::vector<int> indices = {1, 0};
-        auto positions = mesh.positions(indices);
-        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0).transpose());
-        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1).transpose());
+        // Construct by reference (from Eigen::Matrix)
+        Eigen::Matrix<FLOATING_POINT_TYPE, 2, 3> initial_positions;
+        initial_positions << 0, 0, 0,
+            1, 1, 1;
+        Mesh mesh (&initial_positions);
+        auto positions = mesh.positions({1, 0});
+        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
+        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
+        EXPECT_MATRIX_EQUAL(mesh.position(0), initial_positions.row(0));
+        EXPECT_MATRIX_EQUAL(mesh.position(1), initial_positions.row(1));
+        EXPECT_EQ(&(mesh.position(0).coeff(0)), &(initial_positions.row(0).coeff(0)));
+    }
+
+    {
+        // Construct by reference (from Eigen::Map)
+        std::vector<float> initial_positions = {
+            0, 1, 2, 3, 4, 5, 6,
+            7, 8, 9, // Ignored
+            10, 11, 12, 13, 14, 15, 16,
+            17, 18, 19, // Ignored
+            20, 21, 22, 23, 24, 25, 26
+        };
+        Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>, Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic, 3>> map(initial_positions.data(), {10, 3});
+        Mesh mesh (map);
+        using WorldCoordinates = Eigen::Matrix<float, 3, 1>;
+        auto positions = mesh.positions({1, 0});
+        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
+        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
+        EXPECT_MATRIX_EQUAL(mesh.position(0), WorldCoordinates(0, 3, 6).transpose());
+        EXPECT_MATRIX_EQUAL(mesh.position(1), WorldCoordinates(10, 13, 16).transpose());
+        EXPECT_MATRIX_EQUAL(mesh.position(2), WorldCoordinates(20, 23, 26).transpose());
+        EXPECT_EQ(&(mesh.position(0).coeff(0)), initial_positions.data());
     }
 }
 
@@ -43,11 +75,10 @@ TEST(Mesh, Segment) {
     using namespace caribou;
     using namespace caribou::topology;
     using namespace caribou::geometry;
-    using Domain = Domain<Segment<_3D>>;
+    using Mesh = Mesh<_3D>;
+    using Domain = Mesh::Domain<Segment<_3D>>;
 
-    Mesh<_3D> mesh;
-    mesh.add_node({0,0,0});
-    mesh.add_node({1,1,1});
+    Mesh mesh({{0, 0, 0}, {1, 1, 1}});
 
     Domain::ElementsIndices domain_indices(1, 2); // One element of two nodes
     domain_indices << 0, 1;
@@ -77,12 +108,10 @@ TEST(Mesh, Triangle) {
     using namespace caribou;
     using namespace caribou::topology;
     using namespace caribou::geometry;
-    using Domain = Domain<Triangle<_3D>>;
+    using Mesh = Mesh<_3D>;
+    using Domain = Mesh::Domain<Triangle<_3D>>;
 
-    Mesh<_3D> mesh;
-    mesh.add_node({50,50,33});
-    mesh.add_node({60, 50, 21});
-    mesh.add_node({55, 55, -4});
+    Mesh mesh ({{50,50,33}, {60, 50, 21}, {55, 55, -4}});
 
     Domain::ElementsIndices domain_indices(1, 3); // One element of three nodes
     domain_indices << 2, 1, 0;
@@ -120,13 +149,10 @@ TEST(Mesh, Tetrahedron) {
     using namespace caribou;
     using namespace caribou::topology;
     using namespace caribou::geometry;
-    using Domain = Domain<Tetrahedron<Linear>>;
+    using Mesh = Mesh<_3D>;
+    using Domain = Mesh::Domain<Tetrahedron<Linear>>;
 
-    Mesh<3> mesh;
-    mesh.add_node({50,50,33});
-    mesh.add_node({60, 50, 21});
-    mesh.add_node({55, 55, -4});
-    mesh.add_node({55, 55, -40});
+    Mesh mesh ({{50,50,33}, {50,50,33}, {55, 55, -4}, {55, 55, -40}});
 
     Domain::ElementsIndices domain_indices(1, 4); // One element of four nodes
     domain_indices << 3, 2, 1, 0;

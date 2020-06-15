@@ -41,11 +41,11 @@ struct BaseHexahedron : public Element<Derived> {
 
     /** Constructor from an Eigen matrix containing the positions of the hexahedron's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseHexahedron(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+    explicit BaseHexahedron(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
 
     /** Constructor from an Eigen matrix containing the positions of the hexahedron's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseHexahedron(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+    explicit BaseHexahedron(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
 
     /** Constructor from a serie of nodes. */
     template <

@@ -37,11 +37,11 @@ struct BaseTetrahedron : public Element<Derived> {
 
     /** Constructor from an Eigen matrix containing the positions of the tetra's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseTetrahedron(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+    explicit BaseTetrahedron(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
 
     /** Constructor from an Eigen matrix containing the positions of the tetra's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseTetrahedron(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+    explicit BaseTetrahedron(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
 
     /** Constructor from a serie of nodes. */
     template <

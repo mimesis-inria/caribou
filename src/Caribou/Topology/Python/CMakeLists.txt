@@ -1,7 +1,7 @@
 set(DIRECTORY Caribou/Topology)
 
 set(PYTHON_FILES
-    __init__.py
+        __init__.py
 )
 
 set(PYTHON_TEST_FILES
@@ -9,6 +9,7 @@ set(PYTHON_TEST_FILES
 )
 
 set(HEADER_FILES
+        Domain.h
 )
 
 set(SOURCE_FILES

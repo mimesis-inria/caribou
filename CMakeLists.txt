@@ -32,13 +32,15 @@ option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." OFF)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
 
 # Tests
+# SOFA is exporting its own gtest, let's try to find it first
+find_package(GTest QUIET)
+if (NOT GTest_FOUND)
+    # This find_package needs to be executed at MOST once, else it will fails on the second call
+    find_package(GMock QUIET REQUIRED)
+endif ()
+CMAKE_DEPENDENT_OPTION(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." ON "GTest_FOUND OR GMock_FOUND" OFF)
 if (CARIBOU_BUILD_TESTS)
-    # SOFA is exporting its own gtest, let's try to find it first
-    find_package(GTest QUIET)
-    if (NOT GTest_FOUND)
-        # This find_package needs to be executed at MOST once, else it will fails on the second call
-        find_package(GMock QUIET REQUIRED)
-    endif ()
+    message(STATUS "Caribou with unittests\n\tLibraries: ${GTEST_BOTH_LIBRARIES}\n\tInclude directories: ${GTEST_INCLUDE_DIRS}")
 endif()
 
 # SOFA option
@@ -70,6 +72,18 @@ find_package(MKL QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_MKL "Compile the plugin with MKL support." ON "MKL_FOUND" OFF)
 if (CARIBOU_WITH_MKL)
     message(STATUS "Caribou with MKL support\n\tInclude directories: ${MKL_INCLUDE_DIRS}\n\tLibraries: ${MKL_LIBRARIES}\n\tFlags: ${MKL_LINKER_FLAGS}")
+endif()
+
+# VTK option
+set(CARIBOU_VTK_MODULES CommonDataModel IOLegacy)
+find_package(VTK QUIET)
+if (VTK_FOUND AND VTK_VERSION VERSION_LESS "9.0")
+    set(CARIBOU_VTK_MODULES vtkCommonDataModel vtkIOLegacy)
+endif()
+find_package(VTK COMPONENTS ${CARIBOU_VTK_MODULES} QUIET)
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_VTK "Compile the plugin with VTK support." ON "VTK_FOUND" OFF)
+if (CARIBOU_WITH_VTK)
+    message(STATUS "Caribou with VTK support\n\tVersion: ${VTK_VERSION}")
 endif()
 
 ## Change default install prefix

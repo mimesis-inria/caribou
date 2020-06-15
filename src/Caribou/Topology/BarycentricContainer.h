@@ -26,7 +26,7 @@ namespace caribou::topology {
  * @tparam ContainerElement The type of element of the container domain.
  * @tparam NodeIndex The type of integer used for a node index of the container domain.
  */
- template <typename ContainerElement, typename NodeIndex>
+ template <typename Mesh, typename ContainerElement, typename NodeIndex>
 class BarycentricContainer {
 public:
 
@@ -56,7 +56,7 @@ public:
      * be set to the mean size of the container elements.
      * @param container_domain The mesh domain that will contain the embedded meshes.
      */
-    explicit BarycentricContainer(const Domain<ContainerElement, NodeIndex> * container_domain)
+    explicit BarycentricContainer(const Domain<Mesh, ContainerElement, NodeIndex> * container_domain)
     : p_container_domain(container_domain) {
         if (container_domain->number_of_elements() == 0) {
             throw std::runtime_error("Trying to create a barycentric container from an empty domain.");
@@ -128,7 +128,8 @@ public:
      * \warning If the given point lies directly between two or more elements (for example, if the point is on a face,
      *          an edge or a node of the domain), the first element found containing the point will be return.
      */
-    auto barycentric_point(const Mesh<Dimension> & embedded_mesh, const NodeIndex & embedded_node_index) const -> BarycentricPoint {
+    template <typename EmbeddedMesh>
+    auto barycentric_point(const EmbeddedMesh & embedded_mesh, const NodeIndex & embedded_node_index) const -> BarycentricPoint {
         const auto mesh_entry = p_embedded_meshes.find(&embedded_mesh);
         if (mesh_entry == p_embedded_meshes.end()) {
             // The embedded mesh is not registered
@@ -153,7 +154,8 @@ public:
      *         was found outside of the container domain. If the embedded mesh lies
      *         completely inside the containing domain, this will be empty.
      */
-    auto add_embedded_mesh(const Mesh<Dimension> * embedded_mesh) -> std::vector<UNSIGNED_INTEGER_TYPE> {
+    template <typename EmbeddedMesh>
+    auto add_embedded_mesh(const EmbeddedMesh * embedded_mesh) -> std::vector<UNSIGNED_INTEGER_TYPE> {
         std::vector<UNSIGNED_INTEGER_TYPE> outside_nodes;
         outside_nodes.reserve(std::floor(embedded_mesh->number_of_nodes() / 10.)); // Reserve 10% of the mesh size for outside nodes
 
@@ -196,7 +198,7 @@ public:
      *                                       rows. The number of rows should match the number of nodes of the embedded mesh.
      */
     template <typename Derived1, typename Derived2>
-    void interpolate_field(const Mesh<Dimension> & embedded_mesh,
+    void interpolate_field(const BaseMesh & embedded_mesh,
                            const Eigen::MatrixBase<Derived1> & container_field_values,
                            Eigen::MatrixBase<Derived2> & embedded_field_values) const {
 
@@ -256,14 +258,14 @@ public:
         }
     }
 private:
-    const Domain<ContainerElement, NodeIndex> * p_container_domain;
-    std::unordered_map<const Mesh<Dimension> *, std::vector<BarycentricPoint>> p_embedded_meshes;
+    const Domain<Mesh, ContainerElement, NodeIndex> * p_container_domain;
+    std::unordered_map<const BaseMesh *, std::vector<BarycentricPoint>> p_embedded_meshes;
     std::unique_ptr<HashGridT> p_hash_grid;
 };
 
 
  // Template deduction guides
- template <typename ContainerElement, typename NodeIndex>
- BarycentricContainer(const Domain<ContainerElement, NodeIndex> *) -> BarycentricContainer<ContainerElement, NodeIndex>;
+ template <typename Mesh, typename ContainerElement, typename NodeIndex>
+ BarycentricContainer(const Domain<Mesh, ContainerElement, NodeIndex> *) -> BarycentricContainer<Mesh, ContainerElement, NodeIndex>;
 
 } // namespace caribou::topology

@@ -39,7 +39,8 @@ enable_testing()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} Topology)
-target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES} pthread)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${GTEST_INCLUDE_DIRS})
 
 foreach(file ${MESH_FILES})
     file(RELATIVE_PATH path_from_package "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${file}")

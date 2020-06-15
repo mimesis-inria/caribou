@@ -36,11 +36,11 @@ struct BaseTriangle : public Element<Derived> {
 
     /** Constructor from an Eigen matrix containing the positions of the triangle's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseTriangle(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+    explicit BaseTriangle(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
 
     /** Constructor from an Eigen matrix containing the positions of the triangle's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseTriangle(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+    explicit BaseTriangle(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
 
     /** Constructor from a serie of nodes. */
     template <
