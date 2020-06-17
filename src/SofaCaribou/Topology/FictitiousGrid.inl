@@ -306,7 +306,7 @@ void FictitiousGrid<DataTypes>::create_grid()
 
     // Initialize the full regular grid quadtree (resp. octree) with 0 subdivisions
     for (auto & cell : p_cells) {
-        cell.data = std::make_unique<CellData>(Type::Undefined, 1, -1);
+        cell.data = std::make_unique<CellData>(Type::Undefined, 1, -1, false);
         cell.childs.reset();
     }
 

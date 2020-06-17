@@ -13,7 +13,7 @@ find_package(SofaSimulation QUIET REQUIRED)
 find_package(SofaBase QUIET REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES} pthread)
 target_link_libraries(${PROJECT_NAME} SofaCaribou)
 target_link_libraries(${PROJECT_NAME} SofaHelper SofaSimulationGraph SofaBaseMechanics)
 

@@ -1,7 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
-#include <pybind11/stl_bind.h>
 
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/Quad.h>
@@ -11,7 +10,9 @@
 
 #include <Caribou/Topology/Mesh.h>
 #include <Caribou/Topology/Domain.h>
+
 #include <Caribou/Python/Caribou.h>
+#include <Caribou/Topology/Python/BarycentricContainer.h>
 
 namespace py = pybind11;
 
@@ -30,6 +31,8 @@ void declare_domain(py::class_<Mesh> & m, const std::string & name) {
 
     c.def("element_indices", &D::element_indices, py::arg("index"));
     c.def("mesh", &D::mesh);
+
+    declare_barycentric_container(c);
 }
 
 template <typename Mesh, typename Element>
@@ -62,8 +65,6 @@ void declare_domains(py::class_<Mesh> & m) {
         declare_domain<Mesh, Quad<Mesh::Dimension, Quadratic>>(m, "Domain"+std::to_string(Mesh::Dimension)+"DQuadQuadratic");
     }
 
-
-
     if constexpr (Mesh::Dimension == 3) {
         // Hexahedrons
         declare_domain<Mesh, Hexahedron<Linear>>(m, "Domain3DHexahedronLinear");
@@ -73,7 +74,5 @@ void declare_domains(py::class_<Mesh> & m) {
         declare_domain<Mesh, Tetrahedron<Linear>>(m, "Domain3DTetrahedronLinear");
         declare_domain<Mesh, Tetrahedron<Quadratic>>(m, "Domain3DTetrahedronQuadratic");
     }
-
-
 }
 } // namespace caribou::topology::python

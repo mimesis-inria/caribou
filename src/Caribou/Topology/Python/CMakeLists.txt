@@ -9,6 +9,7 @@ set(PYTHON_TEST_FILES
 )
 
 set(HEADER_FILES
+        BarycentricContainer.h
         Domain.h
 )
 

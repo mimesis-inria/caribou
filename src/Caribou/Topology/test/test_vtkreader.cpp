@@ -14,6 +14,7 @@ TEST(VTKReader, Segment) {
     using namespace caribou::geometry;
 
     { // Linear
+        using Mesh = io::VTKReader<_3D>::MeshType;
         auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/1D_linear.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 11);
@@ -22,7 +23,7 @@ TEST(VTKReader, Segment) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 10);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto domain = dynamic_cast<const Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
+        const auto * domain = dynamic_cast<const Mesh::Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_NE(domain, nullptr);
 
         FLOATING_POINT_TYPE segment_length = 0;
@@ -40,6 +41,7 @@ TEST(VTKReader, Segment) {
     }
 
     { // Quadratic
+        using Mesh = io::VTKReader<_3D>::MeshType;
         auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/1D_quadratic.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 21);
@@ -48,7 +50,7 @@ TEST(VTKReader, Segment) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 10);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto domain = dynamic_cast<const Domain<Segment<_3D, Quadratic>> * >(mesh.domain(0));
+        const auto * domain = dynamic_cast<const Mesh::Domain<Segment<_3D, Quadratic>> * >(mesh.domain(0));
         ASSERT_NE(domain, nullptr);
 
         FLOATING_POINT_TYPE segment_length = 0;
@@ -72,6 +74,7 @@ TEST(VTKReader, Triangle2D) {
     using namespace caribou::geometry;
 
     { // Linear 2D
+        using Mesh = io::VTKReader<_2D>::MeshType;
         auto reader = io::VTKReader<_2D>::Read(executable_directory_path + "/meshes/2D_triangle_linear.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 25);
@@ -82,18 +85,18 @@ TEST(VTKReader, Triangle2D) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto segment_domain = dynamic_cast<const Domain<Segment<_2D, Linear>> * >(mesh.domain(0));
+        const auto * segment_domain = dynamic_cast<const Mesh::Domain<Segment<_2D, Linear>> * >(mesh.domain(0));
         ASSERT_NE(segment_domain, nullptr);
 
         // Trying to cast a segment to a triangle domain will return nullptr
-        auto bad_domain = dynamic_cast<const Domain<Triangle<_2D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain = dynamic_cast<const Mesh::Domain<Triangle<_2D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain, nullptr);
 
         // Triangle domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 32);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto triangle_domain = dynamic_cast<const Domain<Triangle<_2D, Linear>> * >(mesh.domain(1));
+        const auto * triangle_domain = dynamic_cast<const Mesh::Domain<Triangle<_2D, Linear>> * >(mesh.domain(1));
         ASSERT_NE(triangle_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), triangle_domain->number_of_elements());
 
@@ -111,6 +114,7 @@ TEST(VTKReader, Triangle2D) {
     }
 
     { // Quadratic 2D
+        using Mesh = io::VTKReader<_2D>::MeshType;
         auto reader = io::VTKReader<_2D>::Read(executable_directory_path + "/meshes/2D_triangle_quadratic.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 81);
@@ -121,22 +125,22 @@ TEST(VTKReader, Triangle2D) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto segment_domain = dynamic_cast<const Domain<Segment<_2D, Quadratic>> * >(mesh.domain(0));
+        const auto * segment_domain = dynamic_cast<const Mesh::Domain<Segment<_2D, Quadratic>> * >(mesh.domain(0));
         ASSERT_NE(segment_domain, nullptr);
 
         // Trying to cast a quadratic segment to a linear segment domain will return nullptr
-        auto bad_domain1 = dynamic_cast<const Domain<Segment<_2D, Linear>> * >(mesh.domain(0));
+        const auto *  bad_domain1 = dynamic_cast<const Mesh::Domain<Segment<_2D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain1, nullptr);
 
         // Trying to cast a segment to a triangle domain will return nullptr
-        auto bad_domain2 = dynamic_cast<const Domain<Triangle<_2D, Linear>> * >(mesh.domain(0));
+        const auto *  bad_domain2 = dynamic_cast<const Mesh::Domain<Triangle<_2D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain2, nullptr);
 
         // Triangle domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 32);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto triangle_domain = dynamic_cast<const Domain<Triangle<_2D, Quadratic>> * >(mesh.domain(1));
+        const auto *  triangle_domain = dynamic_cast<const Mesh::Domain<Triangle<_2D, Quadratic>> * >(mesh.domain(1));
         ASSERT_NE(triangle_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), triangle_domain->number_of_elements());
 
@@ -160,6 +164,7 @@ TEST(VTKReader, Triangle3D) {
     using namespace caribou::geometry;
 
     { // Linear 3D
+        using Mesh = io::VTKReader<_3D>::MeshType;
         auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/3D_triangle_linear.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 25);
@@ -170,22 +175,22 @@ TEST(VTKReader, Triangle3D) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto segment_domain = dynamic_cast<const Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
+        const auto * segment_domain = dynamic_cast<const Mesh::Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_NE(segment_domain, nullptr);
 
         // Trying to cast a segment to a triangle domain will return nullptr
-        auto bad_domain1 = dynamic_cast<const Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain1 = dynamic_cast<const Mesh::Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain1, nullptr);
 
         // Trying to cast a 3D domain to a 2D domain will return nullptr
-        auto bad_domain2 = dynamic_cast<const Domain<Triangle<_2D, Linear>> * >(mesh.domain(1));
+        const auto * bad_domain2 = dynamic_cast<const Mesh::Domain<Triangle<_2D, Linear>> * >(mesh.domain(1));
         ASSERT_EQ(bad_domain2, nullptr);
 
         // Triangle domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 32);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto triangle_domain = dynamic_cast<const Domain<Triangle<_3D, Linear>> * >(mesh.domain(1));
+        const auto * triangle_domain = dynamic_cast<const Mesh::Domain<Triangle<_3D, Linear>> * >(mesh.domain(1));
         ASSERT_NE(triangle_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), triangle_domain->number_of_elements());
 
@@ -204,6 +209,7 @@ TEST(VTKReader, Triangle3D) {
     }
 
     { // Quadratic 3D
+        using Mesh = io::VTKReader<_3D>::MeshType;
         auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/2D_triangle_quadratic.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 81);
@@ -214,22 +220,22 @@ TEST(VTKReader, Triangle3D) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto segment_domain = dynamic_cast<const Domain<Segment<_3D, Quadratic>> * >(mesh.domain(0));
+        const auto * segment_domain = dynamic_cast<const Mesh::Domain<Segment<_3D, Quadratic>> * >(mesh.domain(0));
         ASSERT_NE(segment_domain, nullptr);
 
         // Trying to cast a quadratic segment to a linear segment domain will return nullptr
-        auto bad_domain1 = dynamic_cast<const Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain1 = dynamic_cast<const Mesh::Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain1, nullptr);
 
         // Trying to cast a segment to a triangle domain will return nullptr
-        auto bad_domain2 = dynamic_cast<const Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain2 = dynamic_cast<const Mesh::Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain2, nullptr);
 
         // Triangle domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 32);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto triangle_domain = dynamic_cast<const Domain<Triangle<_3D, Quadratic>> * >(mesh.domain(1));
+        const auto * triangle_domain = dynamic_cast<const Mesh::Domain<Triangle<_3D, Quadratic>> * >(mesh.domain(1));
         ASSERT_NE(triangle_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), triangle_domain->number_of_elements());
 
@@ -254,6 +260,7 @@ TEST(VTKReader, Quad2D) {
     using namespace caribou::geometry;
 
     { // Linear 2D
+        using Mesh = io::VTKReader<_2D>::MeshType;
         auto reader = io::VTKReader<_2D>::Read(executable_directory_path + "/meshes/2D_quad_linear.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 25);
@@ -264,18 +271,18 @@ TEST(VTKReader, Quad2D) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto segment_domain = dynamic_cast<const Domain<Segment<_2D, Linear>> * >(mesh.domain(0));
+        const auto * segment_domain = dynamic_cast<const Mesh::Domain<Segment<_2D, Linear>> * >(mesh.domain(0));
         ASSERT_NE(segment_domain, nullptr);
 
         // Trying to cast a segment to a quad domain will return nullptr
-        auto bad_domain = dynamic_cast<const Domain<Quad<_2D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain = dynamic_cast<const Mesh::Domain<Quad<_2D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain, nullptr);
 
         // Quad domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto quad_domain = dynamic_cast<const Domain<Quad<_2D, Linear>> * >(mesh.domain(1));
+        const auto * quad_domain = dynamic_cast<const Mesh::Domain<Quad<_2D, Linear>> * >(mesh.domain(1));
         ASSERT_NE(quad_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), quad_domain->number_of_elements());
 
@@ -293,6 +300,7 @@ TEST(VTKReader, Quad2D) {
     }
 
     { // Quadratic 2D
+        using Mesh = io::VTKReader<_2D>::MeshType;
         auto reader = io::VTKReader<_2D>::Read(executable_directory_path + "/meshes/2D_quad_quadratic.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 65);
@@ -303,23 +311,23 @@ TEST(VTKReader, Quad2D) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto segment_domain = dynamic_cast<const Domain<Segment<_2D, Quadratic>> * >(mesh.domain(0));
+        const auto * segment_domain = dynamic_cast<const Mesh::Domain<Segment<_2D, Quadratic>> * >(mesh.domain(0));
         ASSERT_NE(segment_domain, nullptr);
 
 
         // Trying to cast a quadratic segment to a linear segment domain will return nullptr
-        auto bad_domain1 = dynamic_cast<const Domain<Segment<_2D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain1 = dynamic_cast<const Mesh::Domain<Segment<_2D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain1, nullptr);
 
         // Trying to cast a quad to a triangle domain will return nullptr
-        auto bad_domain2 = dynamic_cast<const Domain<Triangle<_2D, Quadratic>> * >(mesh.domain(1));
+        const auto * bad_domain2 = dynamic_cast<const Mesh::Domain<Triangle<_2D, Quadratic>> * >(mesh.domain(1));
         ASSERT_EQ(bad_domain2, nullptr);
 
         // Quad domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto quad_domain = dynamic_cast<const Domain<Quad<_2D, Quadratic>> * >(mesh.domain(1));
+        const auto * quad_domain = dynamic_cast<const Mesh::Domain<Quad<_2D, Quadratic>> * >(mesh.domain(1));
         ASSERT_NE(quad_domain, nullptr);
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), quad_domain->number_of_elements());
 
@@ -343,6 +351,7 @@ TEST(VTKReader, Quad3D) {
     using namespace caribou::geometry;
 
     { // Linear 3D
+        using Mesh = io::VTKReader<_3D>::MeshType;
         auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/3D_quad_linear.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 25);
@@ -353,18 +362,18 @@ TEST(VTKReader, Quad3D) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto segment_domain = dynamic_cast<const Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
+        const auto * segment_domain = dynamic_cast<const Mesh::Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_NE(segment_domain, nullptr);
 
         // Trying to cast a segment to a quad domain will return nullptr
-        auto bad_domain = dynamic_cast<const Domain<Quad<_3D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain = dynamic_cast<const Mesh::Domain<Quad<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain, nullptr);
 
         // Quad domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto quad_domain = dynamic_cast<const Domain<Quad<_3D, Linear>> * >(mesh.domain(1));
+        const auto * quad_domain = dynamic_cast<const Mesh::Domain<Quad<_3D, Linear>> * >(mesh.domain(1));
         ASSERT_NE(quad_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), quad_domain->number_of_elements());
 
@@ -383,6 +392,7 @@ TEST(VTKReader, Quad3D) {
     }
 
     { // Quadratic 3D
+        using Mesh = io::VTKReader<_3D>::MeshType;
         auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/3D_quad_quadratic.vtk");
         auto mesh = reader.mesh();
         EXPECT_EQ(mesh.number_of_nodes(), 65);
@@ -393,23 +403,23 @@ TEST(VTKReader, Quad3D) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto segment_domain = dynamic_cast<const Domain<Segment<_3D, Quadratic>> * >(mesh.domain(0));
+        const auto * segment_domain = dynamic_cast<const Mesh::Domain<Segment<_3D, Quadratic>> * >(mesh.domain(0));
         ASSERT_NE(segment_domain, nullptr);
 
 
         // Trying to cast a quadratic segment to a linear segment domain will return nullptr
-        auto bad_domain1 = dynamic_cast<const Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain1 = dynamic_cast<const Mesh::Domain<Segment<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain1, nullptr);
 
         // Trying to cast a quad to a triangle domain will return nullptr
-        auto bad_domain2 = dynamic_cast<const Domain<Triangle<_3D, Quadratic>> * >(mesh.domain(1));
+        const auto * bad_domain2 = dynamic_cast<const Mesh::Domain<Triangle<_3D, Quadratic>> * >(mesh.domain(1));
         ASSERT_EQ(bad_domain2, nullptr);
 
         // Quad domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 16);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto quad_domain = dynamic_cast<const Domain<Quad<_3D, Quadratic>> * >(mesh.domain(1));
+        const auto * quad_domain = dynamic_cast<const Mesh::Domain<Quad<_3D, Quadratic>> * >(mesh.domain(1));
         ASSERT_NE(quad_domain, nullptr);
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), quad_domain->number_of_elements());
 
@@ -435,6 +445,7 @@ TEST(VTKReader, Tetrahedron) {
 
     double pi = 3.14159265358979323846;
     double r = 5;
+    using Mesh = io::VTKReader<_3D>::MeshType;
 
     { // Linear
         auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/3D_tetrahedron_linear.vtk");
@@ -447,7 +458,7 @@ TEST(VTKReader, Tetrahedron) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 316);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto triangle_domain = dynamic_cast<const Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
+        const auto * triangle_domain = dynamic_cast<const Mesh::Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_NE(triangle_domain, nullptr);
 
         FLOATING_POINT_TYPE area = 0;
@@ -465,14 +476,14 @@ TEST(VTKReader, Tetrahedron) {
         EXPECT_LE( abs((area-exact_area)/exact_area), 0.1);
 
         // Trying to cast a triangle to a tetra domain will return nullptr
-        auto bad_domain = dynamic_cast<const Domain<Tetrahedron<Linear>> * >(mesh.domain(0));
+        const auto * bad_domain = dynamic_cast<const Mesh::Domain<Tetrahedron<Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain, nullptr);
 
         // Tetra domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 681);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto tetra_domain = dynamic_cast<const Domain<Tetrahedron<Linear>> * >(mesh.domain(1));
+        const auto * tetra_domain = dynamic_cast<const Mesh::Domain<Tetrahedron<Linear>> * >(mesh.domain(1));
         ASSERT_NE(tetra_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), tetra_domain->number_of_elements());
 
@@ -502,7 +513,7 @@ TEST(VTKReader, Tetrahedron) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 316);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto triangle_domain = dynamic_cast<const Domain<Triangle<_3D, Quadratic>> * >(mesh.domain(0));
+        const auto * triangle_domain = dynamic_cast<const Mesh::Domain<Triangle<_3D, Quadratic>> * >(mesh.domain(0));
         ASSERT_NE(triangle_domain, nullptr);
 
         FLOATING_POINT_TYPE area = 0;
@@ -520,18 +531,18 @@ TEST(VTKReader, Tetrahedron) {
         EXPECT_LE( abs((area-exact_area)/exact_area), 0.0005);
 
         // Trying to cast a triangle to a tetra domain will return nullptr
-        auto bad_domain1 = dynamic_cast<const Domain<Tetrahedron<Linear>> * >(mesh.domain(0));
+        const auto * bad_domain1 = dynamic_cast<const Mesh::Domain<Tetrahedron<Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain1, nullptr);
 
         // Trying to cast a quadratic triangle to a linear triangle domain will return nullptr
-        auto bad_domain2 = dynamic_cast<const Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
+        const auto * bad_domain2 = dynamic_cast<const Mesh::Domain<Triangle<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_EQ(bad_domain2, nullptr);
 
         // Tetra domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 681);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto tetra_domain = dynamic_cast<const Domain<Tetrahedron<Quadratic>> * >(mesh.domain(1));
+        const auto * tetra_domain = dynamic_cast<const Mesh::Domain<Tetrahedron<Quadratic>> * >(mesh.domain(1));
         ASSERT_NE(tetra_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), tetra_domain->number_of_elements());
 
@@ -556,6 +567,8 @@ TEST(VTKReader, Hexahedron) {
     using namespace caribou::topology;
     using namespace caribou::geometry;
 
+    using Mesh = io::VTKReader<_3D>::MeshType;
+
     { // Linear
         auto reader = io::VTKReader<_3D>::Read(executable_directory_path + "/meshes/3D_hexahedron_linear.vtk");
         auto mesh = reader.mesh();
@@ -568,7 +581,7 @@ TEST(VTKReader, Hexahedron) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16*6);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto quad_domain = dynamic_cast<const Domain<Quad<_3D, Linear>> * >(mesh.domain(0));
+        const auto * quad_domain = dynamic_cast<const Mesh::Domain<Quad<_3D, Linear>> * >(mesh.domain(0));
         ASSERT_NE(quad_domain, nullptr);
 
         for (UNSIGNED_INTEGER_TYPE quad_id = 0; quad_id < quad_domain->number_of_elements(); ++quad_id) {
@@ -585,14 +598,14 @@ TEST(VTKReader, Hexahedron) {
         EXPECT_LE( abs((area-exact_area)/exact_area), 0.001);
 
         // Trying to cast an hexa to a tetra domain will return nullptr
-        auto bad_domain = dynamic_cast<const Domain<Tetrahedron<Linear>> * >(mesh.domain(1));
+        const auto * bad_domain = dynamic_cast<const Mesh::Domain<Tetrahedron<Linear>> * >(mesh.domain(1));
         ASSERT_EQ(bad_domain, nullptr);
 
         // Hexa domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 64);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto hexa_domain = dynamic_cast<const Domain<Hexahedron<Linear>> * >(mesh.domain(1));
+        const auto * hexa_domain = dynamic_cast<const Mesh::Domain<Hexahedron<Linear>> * >(mesh.domain(1));
         ASSERT_NE(hexa_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), hexa_domain->number_of_elements());
 
@@ -623,7 +636,7 @@ TEST(VTKReader, Hexahedron) {
         EXPECT_EQ(mesh.domain(0)->number_of_elements(), 16*6);
         EXPECT_EQ(mesh.domain(0), mesh.domain("domain_1"));
 
-        auto quad_domain = dynamic_cast<const Domain<Quad<_3D, Quadratic>> * >(mesh.domain(0));
+        const auto * quad_domain = dynamic_cast<const Mesh::Domain<Quad<_3D, Quadratic>> * >(mesh.domain(0));
         ASSERT_NE(quad_domain, nullptr);
 
         for (UNSIGNED_INTEGER_TYPE quad_id = 0; quad_id < quad_domain->number_of_elements(); ++quad_id) {
@@ -640,14 +653,14 @@ TEST(VTKReader, Hexahedron) {
         EXPECT_LE( abs((area-exact_area)/exact_area), 0.001);
 
         // Trying to cast an hexa to a tetra domain will return nullptr
-        auto bad_domain = dynamic_cast<const Domain<Tetrahedron<Linear>> * >(mesh.domain(1));
+        const auto * bad_domain = dynamic_cast<const Mesh::Domain<Tetrahedron<Linear>> * >(mesh.domain(1));
         ASSERT_EQ(bad_domain, nullptr);
 
         // Hexa domain
         EXPECT_EQ(mesh.domains()[1].first, "domain_2");
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), 64);
         EXPECT_EQ(mesh.domain(1), mesh.domain("domain_2"));
-        auto hexa_domain = dynamic_cast<const Domain<Hexahedron<Quadratic>> * >(mesh.domain(1));
+        const auto * hexa_domain = dynamic_cast<const Mesh::Domain<Hexahedron<Quadratic>> * >(mesh.domain(1));
         ASSERT_NE(hexa_domain, nullptr);
         EXPECT_EQ(mesh.domain(1)->number_of_elements(), hexa_domain->number_of_elements());
 

@@ -288,7 +288,7 @@ struct Element {
                       "The matrix containing the values at each nodes must have one node-value per row.");
         constexpr auto NbCols = Eigen::MatrixBase<MatrixType>::ColsAtCompileTime;
         using MatrixScalar = typename Eigen::MatrixBase<MatrixType>::Scalar;
-        const auto result = ((values.array().colwise() * self().L(coordinates).array()).matrix().colwise().sum().transpose()).eval();
+        const auto result = ((values.array().colwise() * self().L(coordinates).array().template cast<typename Eigen::MatrixBase<MatrixType>::Scalar>()).matrix().colwise().sum().transpose()).eval();
         if constexpr (NbCols == 1) {
             return static_cast<MatrixScalar>(result[0]);
         } else {

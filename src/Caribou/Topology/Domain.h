@@ -76,6 +76,9 @@ namespace caribou::topology {
         friend Mesh;
     public:
         static constexpr INTEGER_TYPE Dimension = geometry::traits<Element>::Dimension;
+        using MeshType = Mesh;
+        using ElementType = Element;
+        using NodeIndexType = NodeIndex;
 
         /*!
          * The type of container that stores the node indices of all the elements of the domain.
