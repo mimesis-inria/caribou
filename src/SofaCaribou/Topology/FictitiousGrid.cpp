@@ -98,12 +98,37 @@ FictitiousGrid<Vec3Types>::tag_intersected_cells()
             for (const auto &cell_index : enclosing_cells) {
                 const auto e = p_grid->cell_at(cell_index);
                 TICK;
-                const bool intersects = e.intersects(t);
-                time_to_find_intersections += TOCK;
-                if (intersects) {
+
+//                    todo(jnbrunet2000@gmail.com): The test intersection does not work on some triangles
+//                        Failing test is in SofaCaribou/test/Topology/test_fictitiousgrid.cpp
+//                        meshes/deformed_liver_surface.stl
+//                        n = [37, 37, 37] and subdivision_level = 4
+//                const bool intersects = e.intersects(t);
+//                time_to_find_intersections += TOCK;
+//                if (intersects) {
+//                    p_cells_types[cell_index] = Type::Boundary;
+//                    p_triangles_of_cell[cell_index].emplace_back(triangle_index);
+//                }
+
+                const auto cube_diagonal = (e.node(6) - e.node(0)).eval();
+                const auto cube_center = (e.node(0) + 0.5*cube_diagonal).eval();
+
+                float points[3][3];
+
+                for (unsigned short w=0; w<3; ++w)
+                {
+                    points[0][w] = (float) ((nodes[0][w]-cube_center[w])/cube_diagonal[w]);
+                    points[1][w] = (float) ((nodes[1][w]-cube_center[w])/cube_diagonal[w]);
+                    points[2][w] = (float) ((nodes[2][w]-cube_center[w])/cube_diagonal[w]);
+                }
+
+                float normal[3];
+                sofa::helper::polygon_cube_intersection::get_polygon_normal(normal,3,points);
+                if (sofa::helper::polygon_cube_intersection::fast_polygon_intersects_cube(3,points,normal,0,0)) {
                     p_cells_types[cell_index] = Type::Boundary;
                     p_triangles_of_cell[cell_index].emplace_back(triangle_index);
                 }
+                time_to_find_intersections += TOCK;
             }
         }
     }
