@@ -9,6 +9,7 @@
 #include "FictitiousGrid.inl"
 
 #include <Caribou/Geometry/Triangle.h>
+#include <sofa/helper/polygon_cube_intersection/polygon_cube_intersection.h>
 
 namespace SofaCaribou::topology {
 
@@ -196,7 +197,7 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
 
             if (level+1 > number_of_subdivision or not subdivide_the_cell) {
                 // We got a leaf, store the data
-                cell->data = std::make_unique<CellData>(type, weight, -1);
+                cell->data = std::make_unique<CellData>(type, weight, -1, false);
             } else {
                 // Split the cell into subcells
                 cell->data.reset();
@@ -294,10 +295,36 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
                         const Eigen::Map<const WorldCoordinates> p(&surface_positions[node_index][0]);
                         nodes[i] = p;
                     }
-                    const caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
-                    const bool intersects = e.intersects(t);
+//                    todo(jnbrunet2000@gmail.com): The test intersection does not work on some triangles
+//                        Failing test is in SofaCaribou/test/Topology/test_fictitiousgrid.cpp
+//                        meshes/deformed_liver_surface.stl
+//                        n = [15, 15, 15] and subdivision_level = 4
+//                    const caribou::geometry::Triangle<3> t(nodes[0], nodes[1], nodes[2]);
+//                    const bool intersects = e.intersects(t, 0);
+//
+//                    if (intersects) {
+//                        subdivide_the_cell = true;
+//                        type = Type::Boundary;
+//                        break;
+//                    }
 
-                    if (intersects) {
+                    const auto cube_diagonal = (e.node(6) - e.node(0)).eval();
+                    const auto cube_center = (e.node(0) + 0.5*cube_diagonal).eval();
+
+                    float points[3][3];
+
+                    for (unsigned short w=0; w<3; ++w)
+                    {
+                        points[0][w] = (float) ((nodes[0][w]-cube_center[w])/cube_diagonal[w]);
+                        points[1][w] = (float) ((nodes[1][w]-cube_center[w])/cube_diagonal[w]);
+                        points[2][w] = (float) ((nodes[2][w]-cube_center[w])/cube_diagonal[w]);
+                    }
+
+
+                    float normal[3];
+                    sofa::helper::polygon_cube_intersection::get_polygon_normal(normal,3,points);
+
+                    if (sofa::helper::polygon_cube_intersection::fast_polygon_intersects_cube(3,points,normal,0,0)) {
                         subdivide_the_cell = true;
                         type = Type::Boundary;
                         break;
@@ -307,7 +334,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
 
             if (level+1 > number_of_subdivision or not subdivide_the_cell) {
                 // We got a leaf, store the data
-                cell->data = std::make_unique<CellData>(type, weight, -1);
+                cell->data = std::make_unique<CellData>(type, weight, -1, false);
             } else {
                 // Split the cell into subcells
                 cell->data.reset();

@@ -13,7 +13,7 @@ TEST(Domain, Segment) {
 
     { // Segment Linear (copy)
         using Segment = Segment<_3D, Linear>;
-        using Domain = Domain<Segment>;
+        using Domain = Mesh::Domain<Segment>;
 
         Mesh mesh;
         Domain::ElementsIndices indices(4, 2); // Four elements of two nodes each
@@ -29,7 +29,7 @@ TEST(Domain, Segment) {
 
     { // Segment Linear (reference)
         using Segment = Segment<_3D, Linear>;
-        using Domain = Domain<Segment>;
+        using Domain = Mesh::Domain<Segment>;
 
         Domain::ElementsIndices indices(4, 2); // Four elements of two nodes each
         indices << 1, 2,
@@ -47,7 +47,7 @@ TEST(Domain, Segment) {
 
     { // Segment Linear (map)
         using Segment = Segment<_3D, Linear>;
-        using Domain = Domain<Segment>;
+        using Domain = Mesh::Domain<Segment>;
 
         UNSIGNED_INTEGER_TYPE indices[8] = {1, 2, 2, 3, 3, 4, 5, 6};
         Mesh mesh;
@@ -62,7 +62,7 @@ TEST(Domain, Segment) {
 
     { // Segment Linear (map with stride)
         using Segment = Segment<_3D, Linear>;
-        using Domain = Domain<Segment>;
+        using Domain = Mesh::Domain<Segment>;
 
         // Two unused between columns, three unused betwen rows
         UNSIGNED_INTEGER_TYPE indices[25] = {1, 0, 0, 2, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 3, 0, 0, 4, 0, 0, 0, 5, 0, 0, 6};

@@ -23,6 +23,7 @@ public:
 
     using ElementsIndices = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using DomainBuilder =  std::function<BaseDomain* (Mesh<Dimension> &, const ElementsIndices &)>;
+    using MeshType = Mesh<Dimension>;
 
     /** Build a new VTKReader instance by reading a vtk file. */
     static auto Read(const std::string & filepath) -> VTKReader;
@@ -32,12 +33,12 @@ public:
 
     /** Build the actual unstructured mesh from the vtk file. */
     [[nodiscard]]
-    auto mesh() const -> Mesh<Dimension>;
+    auto mesh() const -> MeshType;
 
     /** Register an element type to the given VTK cell type */
     template<typename Element>
     auto register_element_type(const VTKCellType & vtkCellType) -> VTKReader & {
-        p_domain_builders[vtkCellType] = [](Mesh<Dimension> & m, const ElementsIndices & indices) {
+        p_domain_builders[vtkCellType] = [](MeshType & m, const ElementsIndices & indices) {
             return m.template add_domain<Element>("domain_"+std::to_string(m.number_of_domains()+1), indices);
         };
         return *this;

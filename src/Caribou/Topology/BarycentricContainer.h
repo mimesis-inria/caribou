@@ -26,9 +26,11 @@ namespace caribou::topology {
  * @tparam ContainerElement The type of element of the container domain.
  * @tparam NodeIndex The type of integer used for a node index of the container domain.
  */
- template <typename ContainerElement, typename NodeIndex>
+ template <typename Domain>
 class BarycentricContainer {
 public:
+    using Mesh = typename Domain::MeshType;
+    using ContainerElement = typename Domain::ElementType;
 
     static constexpr INTEGER_TYPE Dimension = ContainerElement::Dimension;
     using ElementIndex = INTEGER_TYPE;
@@ -56,7 +58,7 @@ public:
      * be set to the mean size of the container elements.
      * @param container_domain The mesh domain that will contain the embedded meshes.
      */
-    explicit BarycentricContainer(const Domain<ContainerElement, NodeIndex> * container_domain)
+    explicit BarycentricContainer(const Domain * container_domain)
     : p_container_domain(container_domain) {
         if (container_domain->number_of_elements() == 0) {
             throw std::runtime_error("Trying to create a barycentric container from an empty domain.");
@@ -128,7 +130,7 @@ public:
      * \warning If the given point lies directly between two or more elements (for example, if the point is on a face,
      *          an edge or a node of the domain), the first element found containing the point will be return.
      */
-    auto barycentric_point(const Mesh<Dimension> & embedded_mesh, const NodeIndex & embedded_node_index) const -> BarycentricPoint {
+    auto barycentric_point(const BaseMesh & embedded_mesh, const UNSIGNED_INTEGER_TYPE & embedded_node_index) const -> BarycentricPoint {
         const auto mesh_entry = p_embedded_meshes.find(&embedded_mesh);
         if (mesh_entry == p_embedded_meshes.end()) {
             // The embedded mesh is not registered
@@ -144,6 +146,36 @@ public:
     }
 
     /**
+     * Get the barycentric points of a set of positions embedded inside the container mesh.
+     * @tparam Derived NXD Eigen matrix representing the D dimensional coordinates of the N embedded positions.
+     * @param embedded_points The positions (in world coordinates) embedded in the container mesh for which the barycentric
+     *                        points have to be found.
+     * @return Barycentric points (element_id, local coordinates) of every embedded positions passed as argument.
+     * \note When an embedded position lie completly outside the container mesh (i.e. it is not contained inside any
+     *       container element), the element id of the barycentric point for that position will be -1.
+     */
+    template <typename Derived>
+    auto barycentric_points(const Eigen::MatrixBase<Derived> & embedded_points) const -> std::vector<BarycentricPoint> {
+        static_assert(Eigen::MatrixBase<Derived>::ColsAtCompileTime == Dimension or Eigen::MatrixBase<Derived>::ColsAtCompileTime == Eigen::Dynamic);
+
+        if (Eigen::MatrixBase<Derived>::ColsAtCompileTime == Eigen::Dynamic and embedded_points.cols() != Dimension) {
+            throw std::runtime_error("Trying to get the barycentric coordinates of " +
+                                     std::to_string(embedded_points.cols()) + "D points from a " +
+                                     std::to_string(Dimension) + "D mesh");
+        }
+
+        std::vector<BarycentricPoint> barycentric_points;
+        barycentric_points.reserve(embedded_points.rows());
+
+        const auto number_of_embedded_points = embedded_points.rows();
+        for (Eigen::Index node_id = 0; node_id < number_of_embedded_points; ++node_id) {
+            barycentric_points.emplace_back(barycentric_point(embedded_points.row(node_id).template cast<typename WorldCoordinates::Scalar>()));
+        }
+
+        return barycentric_points;
+    }
+
+    /**
      * Add an embedded mesh to the container. If one or more node of the embedded mesh are found outside of the
      * containing domain (ie, no elements containing the node can be found), the operation will fail and the
      * list of nodes found outside the domain are returned.
@@ -153,7 +185,8 @@ public:
      *         was found outside of the container domain. If the embedded mesh lies
      *         completely inside the containing domain, this will be empty.
      */
-    auto add_embedded_mesh(const Mesh<Dimension> * embedded_mesh) -> std::vector<UNSIGNED_INTEGER_TYPE> {
+    template <typename EmbeddedMesh>
+    auto add_embedded_mesh(const EmbeddedMesh * embedded_mesh) -> std::vector<UNSIGNED_INTEGER_TYPE> {
         std::vector<UNSIGNED_INTEGER_TYPE> outside_nodes;
         outside_nodes.reserve(std::floor(embedded_mesh->number_of_nodes() / 10.)); // Reserve 10% of the mesh size for outside nodes
 
@@ -196,7 +229,7 @@ public:
      *                                       rows. The number of rows should match the number of nodes of the embedded mesh.
      */
     template <typename Derived1, typename Derived2>
-    void interpolate_field(const Mesh<Dimension> & embedded_mesh,
+    void interpolate_field(const BaseMesh & embedded_mesh,
                            const Eigen::MatrixBase<Derived1> & container_field_values,
                            Eigen::MatrixBase<Derived2> & embedded_field_values) const {
 
@@ -219,7 +252,7 @@ public:
                                      "in the embedded mesh.");
         }
 
-        if (container_field_values.rows() != embedded_field_values.rows()) {
+        if (container_field_values.cols() != embedded_field_values.cols()) {
             throw std::runtime_error("The number of columns of the input matrix (container field values) must be the "
                                      "same as the number of columns of the output matrix (embedded field values).");
         }
@@ -255,15 +288,91 @@ public:
             embedded_field_values.row(node_id) = interpolated_value;
         }
     }
+
+    /**
+     * Interpolate a field (scalar or vector field) from the container domain to the embedded nodes.
+     *
+     * This methods take an input field values (one value per node of the container mesh) and interpolate it onto
+     * the values of the embedded nodes (outputs one value per embedded node).
+     *
+     * @tparam Derived1 The matrix (Eigen) type of the embedded node positions.
+     * @tparam Derived2 The matrix (Eigen) type of the input field values.
+     * @tparam Derived2 The matrix (Eigen) type of the output field valuse.
+     * @param embedded_mesh [INPUT] The embedded nodes on which the values will be interpolated.
+     * @param container_field_values [INPUT] The field values on every nodes of the container domain's mesh. This should be a
+     *                                       matrix (Eigen) having one field value (scalar or vector) per rows. The number of
+     *                                       rows should match the number of nodes of the container domain's mesh.
+     * @param embedded_field_values [OUTPUT] The matrix (Eigen) where the interpolated field values should be written to.
+     *                                       This should be a matrix (Eigen) having one field value (scalar or vector) per
+     *                                       rows. The number of rows should match the number of embedded nodes.
+     */
+    template <typename Derived1, typename Derived2, typename Derived3>
+    void interpolate_field(const Eigen::MatrixBase<Derived1> & embedded_positions,
+                           const Eigen::MatrixBase<Derived2> & container_field_values,
+                           Eigen::MatrixBase<Derived3> & embedded_field_values) const {
+
+        // Make sure we have one field value per node of the container domain's mesh.
+        if (static_cast<unsigned>(container_field_values.rows()) != p_container_domain->mesh().number_of_nodes()) {
+            throw std::runtime_error("The number of rows of the input matrix must be the same as the number of nodes"
+                                     "in the container domain's mesh.");
+        }
+
+        // Make sure we can write one field value per node of the embedded mesh.
+        if (static_cast<unsigned>(embedded_field_values.rows()) != embedded_positions.rows()) {
+            throw std::runtime_error("The number of rows of the output matrix must be the same as the number of embedded nodes.");
+        }
+
+        if (container_field_values.cols() != embedded_field_values.cols()) {
+            throw std::runtime_error("The number of columns of the input matrix (container field values) must be the "
+                                     "same as the number of columns of the output matrix (embedded field values).");
+        }
+
+        // Get the barycentric coordinates of the embedded nodes
+        const auto b_points = barycentric_points(embedded_positions);
+
+        // Make sure every points are contained inside an element of the domain
+        std::size_t number_of_outside_points = 0;
+        for (const BarycentricPoint & b_point : b_points) {
+            if (b_point.element_index < 0) {
+                ++number_of_outside_points;
+            }
+        }
+
+        if (number_of_outside_points > 0) {
+            throw std::runtime_error("There is " + std::to_string(number_of_outside_points) +
+                                     " points outside of the domain (ie no element is embedding them).");
+        }
+
+        // Interpolate field values
+        const auto number_of_embedded_points = embedded_positions.rows();
+        for (Eigen::Index node_id = 0; node_id < number_of_embedded_points; ++node_id) {
+            const auto & element_index = b_points[node_id].element_index;
+            const auto & local_coordinates = b_points[node_id].local_coordinates;
+            const auto & element_node_indices = p_container_domain->element_indices(element_index);
+
+            const auto element = ContainerElement(p_container_domain->mesh().positions(element_node_indices));
+
+            // Get the field values at the nodes of the containing element
+            Eigen::Matrix<typename Eigen::MatrixBase<Derived2>::Scalar,
+                          ContainerElement::NumberOfNodesAtCompileTime,
+                          Eigen::MatrixBase<Derived2>::ColsAtCompileTime>
+                values (element.number_of_nodes(), container_field_values.cols());
+
+            for (UNSIGNED_INTEGER_TYPE i = 0; i < element.number_of_nodes(); ++i) {
+                values.row(i) = container_field_values.row(element_node_indices[i]);
+            }
+
+            // Interpolate the field value at the local position
+            const auto interpolated_value = element.interpolate(local_coordinates, values);
+
+            // Write back the interpolated value in the output embedded field
+            embedded_field_values.row(node_id) = interpolated_value;
+        }
+    }
 private:
-    const Domain<ContainerElement, NodeIndex> * p_container_domain;
-    std::unordered_map<const Mesh<Dimension> *, std::vector<BarycentricPoint>> p_embedded_meshes;
+    const Domain * p_container_domain;
+    std::unordered_map<const BaseMesh *, std::vector<BarycentricPoint>> p_embedded_meshes;
     std::unique_ptr<HashGridT> p_hash_grid;
 };
-
-
- // Template deduction guides
- template <typename ContainerElement, typename NodeIndex>
- BarycentricContainer(const Domain<ContainerElement, NodeIndex> *) -> BarycentricContainer<ContainerElement, NodeIndex>;
 
 } // namespace caribou::topology

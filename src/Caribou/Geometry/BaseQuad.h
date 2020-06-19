@@ -36,11 +36,11 @@ struct BaseQuad : public Element<Derived> {
 
     /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseQuad(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+    explicit BaseQuad(Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
 
     /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit BaseQuad(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes) {}
+    explicit BaseQuad(const Eigen::EigenBase<EigenType> & nodes) :p_nodes(nodes.derived().template cast<typename Base::Scalar>()) {}
 
     /** Constructor from a serie of nodes. */
     template <

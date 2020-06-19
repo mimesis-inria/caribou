@@ -18,17 +18,8 @@ set(SOURCE_FILES
     topology.cpp
 )
 
-find_package(VTK COMPONENTS vtkCommonDataModel vtkIOLegacy QUIET)
-
-if (VTK_FOUND)
-    option(CARIBOU_WITH_VTK "Use the VTK for importing mesh files." ON)
-else()
-    option(CARIBOU_WITH_VTK "Use the VTK for importing mesh files." OFF)
-endif()
-
 if (CARIBOU_WITH_VTK)
-    find_package(VTK COMPONENTS vtkCommonDataModel vtkIOLegacy REQUIRED)
-    message (STATUS "VTK_VERSION: ${VTK_VERSION}")
+    find_package(VTK COMPONENTS ${CARIBOU_VTK_MODULES} REQUIRED)
     list(APPEND HEADER_FILES IO/VTKReader.h)
     list(APPEND SOURCE_FILES IO/VTKReader.cpp)
     if (VTK_VERSION VERSION_LESS "8.90.0")

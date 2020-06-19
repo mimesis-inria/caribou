@@ -128,8 +128,8 @@ class TestQuad(unittest.TestCase):
     def assertMatrixEqual(self, A, B):
         return self.assertTrue((A == B).all(), f"Matrices are not equal, with \nA={A} \nand\nB={B}")
 
-    def assertMatrixAlmostEqual(self, A, B):
-        return np.allclose(A, B)
+    def assertMatrixAlmostEqual(self, A, B, rtol=1.e-5, atol=1.e-8, equal_nan=False):
+        return self.assertTrue(np.allclose(A, B, rtol, atol, equal_nan), f"Matrices are not almost equal, with \nA={A} \nand\nB={B}")
 
     def test_constructor_linear(self):
         s = Quad()
@@ -188,8 +188,8 @@ class TestTriangle(unittest.TestCase):
     def assertMatrixEqual(self, A, B):
         return self.assertTrue((A == B).all(), f"Matrices are not equal, with \nA={A} \nand\nB={B}")
 
-    def assertMatrixAlmostEqual(self, A, B):
-        return np.allclose(A, B)
+    def assertMatrixAlmostEqual(self, A, B, rtol=1.e-5, atol=1.e-8, equal_nan=False):
+        return self.assertTrue(np.allclose(A, B, rtol, atol, equal_nan), f"Matrices are not almost equal, with \nA={A} \nand\nB={B}")
 
     def test_constructor_linear(self):
         t = Triangle()
@@ -247,8 +247,8 @@ class TestTetrahedron(unittest.TestCase):
     def assertMatrixEqual(self, A, B):
         return self.assertTrue((A == B).all(), f"Matrices are not equal, with \nA={A} \nand\nB={B}")
 
-    def assertMatrixAlmostEqual(self, A, B):
-        return np.allclose(A, B)
+    def assertMatrixAlmostEqual(self, A, B, rtol=1.e-5, atol=1.e-8, equal_nan=False):
+        return self.assertTrue(np.allclose(A, B, rtol, atol, equal_nan), f"Matrices are not almost equal, with \nA={A} \nand\nB={B}")
 
     def test_constructor_linear(self):
         t = Tetrahedron()
@@ -270,7 +270,7 @@ class TestTetrahedron(unittest.TestCase):
         self.assertEqual(t.number_of_nodes(), 10)
 
         # Center
-        self.assertMatrixAlmostEqual(t.center(), (t.node(0) + t.node(1) + t.node(2)) / 3.)
+        self.assertMatrixAlmostEqual(t.center(), (t.node(0) + t.node(1) + t.node(2) + t.node(3)) / 4.)
 
         # Inverse transformation
         for gauss_node in t.gauss_nodes():
@@ -299,8 +299,8 @@ class TestHexahedron(unittest.TestCase):
     def assertMatrixEqual(self, A, B):
         return self.assertTrue((A == B).all(), f"Matrices are not equal, with \nA={A} \nand\nB={B}")
 
-    def assertMatrixAlmostEqual(self, A, B):
-        return np.allclose(A, B)
+    def assertMatrixAlmostEqual(self, A, B, rtol=1.e-5, atol=1.e-8, equal_nan=False):
+        return self.assertTrue(np.allclose(A, B, rtol, atol, equal_nan), f"Matrices are not almost equal, with \nA={A} \nand\nB={B}")
 
     def test_constructor_linear(self):
         t = Hexahedron()

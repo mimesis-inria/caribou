@@ -12,6 +12,8 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkPolyData.h>
 #include <vtkCellData.h>
+#include <vtkCellType.h>
+#include <vtkCellTypes.h>
 #include <vtkUnstructuredGridReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkPointData.h>

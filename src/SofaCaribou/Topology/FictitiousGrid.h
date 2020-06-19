@@ -80,15 +80,17 @@ public:
         Boundary = (unsigned) 1 << (unsigned) 2
     };
 
-    ///< The Cell structure contains the quadtree (resp. octree) data of a given cell or subcell.
+    ///< The Cell data represent data attached to a leaf-cell. Only leaf-cells have this data structure assigned.
     struct CellData {
-        CellData(const Type & t, const Float& w, const int & r)
-        : type(t), weight(w), region_id(r) {}
+        CellData(const Type & t, const Float& w, const int & r, const bool &b)
+        : type(t), weight(w), region_id(r), boundary_of_region(b) {}
         Type type = Type::Undefined;
         Float weight = 0.; // 1 for full cell, 1/4 (resp. 1/8) for the first level of subdivision in 2D (resp. 3D), etc.
         int region_id = -1;
+        bool boundary_of_region = false; // True if the leaf-cell makes the boundary between its region and another one
     };
 
+    ///< The Cell structure contains the quadtree (resp. octree) data of a given cell or subcell.
     struct Cell {
         Cell * parent = nullptr;
         CellIndex index = 0; // Index relative to the parent cell
@@ -102,7 +104,7 @@ public:
     ///< of the grid
     struct Region {
         Type type = Type::Undefined;
-        std::vector<Cell*> cells;
+        std::vector<Cell*> cells; // Leaf cells filling the region
     };
 
     // -------
@@ -144,7 +146,15 @@ public:
      * or if a face contains one of the face of the other. Neighbors outside of the surface boundary are excluded.
      */
     std::vector<Cell *>
-    get_neighbors(Cell * cell);
+    get_neighbors(const Cell * cell) const;
+
+    /**
+     * Get cells neighbors in a given axis (x=0, y=1, z=2) and direction (-1, 1) of a given cell. For example,
+     * to get the neighbors cells that are on the top of the given cell (in the y direction), axis would be 1 and
+     * direction would be 1. Neighbors outside of the surface boundary are excluded.
+     */
+    std::vector<Cell *>
+    get_neighbors(const Cell * cell, UNSIGNED_INTEGER_TYPE axis, INTEGER_TYPE direction) const;
 
     /**
      * Get the list of gauss nodes coordinates and their respective weight inside a cell. Here, all the gauss nodes of
@@ -256,6 +266,7 @@ private:
     virtual void create_regions_from_same_type_cells();
     virtual void create_sparse_grid();
     virtual void populate_drawing_vectors();
+    virtual void validate_grid();
 
     std::array<CellElement, (unsigned) 1 << Dimension> get_subcells_elements(const CellElement & e) const;
     std::vector<Cell *> get_leaf_cells(const Cell & c) const {return std::move(get_leaf_cells(&c));}
@@ -275,6 +286,7 @@ private:
     Data<bool> d_draw_boundary_cells;
     Data<bool> d_draw_outside_cells;
     Data<bool> d_draw_inside_cells;
+    Data<double> d_draw_scale;
 
     Data< SofaVecCoord > d_surface_positions;
 

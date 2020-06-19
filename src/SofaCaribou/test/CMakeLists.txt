@@ -4,6 +4,7 @@ set(SOURCE_FILES
         main.cpp
         Algebra/test_eigen_matrix_wrapper.cpp
         Forcefield/test_tractionforce.cpp
+        Topology/test_fictitiousgrid.cpp
 )
 
 enable_testing()
@@ -13,7 +14,7 @@ find_package(SofaSimulation QUIET REQUIRED)
 find_package(SofaBase QUIET REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES} pthread)
 target_link_libraries(${PROJECT_NAME} SofaCaribou)
 target_link_libraries(${PROJECT_NAME} SofaHelper SofaSimulationGraph SofaBaseMechanics)
 

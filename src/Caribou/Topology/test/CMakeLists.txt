@@ -29,6 +29,9 @@ set(MESH_FILES
         meshes/3D_tetrahedron_quadratic.vtk
         meshes/3D_triangle_linear.vtk
         meshes/3D_triangle_quadratic.vtk
+        meshes/deformed_liver_surface.stl
+        meshes/deformed_liver_volume_hexahedrons.vtu
+        meshes/deformed_liver_volume_tetrahedrons.vtu
 )
 
 if (CARIBOU_WITH_VTK)
@@ -39,7 +42,8 @@ enable_testing()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} Topology)
-target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${GTEST_BOTH_LIBRARIES} pthread)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${GTEST_INCLUDE_DIRS})
 
 foreach(file ${MESH_FILES})
     file(RELATIVE_PATH path_from_package "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${file}")
