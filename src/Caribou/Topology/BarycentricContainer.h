@@ -252,7 +252,7 @@ public:
                                      "in the embedded mesh.");
         }
 
-        if (container_field_values.rows() != embedded_field_values.rows()) {
+        if (container_field_values.cols() != embedded_field_values.cols()) {
             throw std::runtime_error("The number of columns of the input matrix (container field values) must be the "
                                      "same as the number of columns of the output matrix (embedded field values).");
         }

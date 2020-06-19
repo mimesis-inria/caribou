@@ -4,6 +4,7 @@ set(SOURCE_FILES
         main.cpp
         Algebra/test_eigen_matrix_wrapper.cpp
         Forcefield/test_tractionforce.cpp
+        Topology/test_fictitiousgrid.cpp
 )
 
 enable_testing()

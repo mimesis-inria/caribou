@@ -29,6 +29,7 @@ set(MESH_FILES
         meshes/3D_tetrahedron_quadratic.vtk
         meshes/3D_triangle_linear.vtk
         meshes/3D_triangle_quadratic.vtk
+        meshes/deformed_liver_surface.stl
         meshes/deformed_liver_volume_hexahedrons.vtu
         meshes/deformed_liver_volume_tetrahedrons.vtu
 )
