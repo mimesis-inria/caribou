@@ -5,6 +5,7 @@
 #include <Caribou/macros.h>
 #include <Caribou/Constants.h>
 #include <Caribou/Topology/BaseDomain.h>
+#include <Caribou/Topology/BarycentricContainer.h>
 #include <Caribou/Geometry/Element.h>
 
 #include <vector>
@@ -164,6 +165,18 @@ namespace caribou::topology {
          */
         inline auto mesh() const -> const Mesh & {
             return *p_mesh;
+        }
+
+        /**
+         * Embed a set of nodes (in world coordinates) inside this domain. This will return a BarycentricContainer that
+         * can be used to interpolate field values on these embedded nodes.
+         * @tparam Derived NXD Eigen matrix representing the D dimensional coordinates of the N embedded points.
+         * @param points The positions (in world coordinates) of the nodes embedded in this domain.
+         * @return A BarycentricContainer instance.
+         */
+        template <typename Derived>
+        inline auto embed(const Eigen::MatrixBase<Derived> & points) const -> BarycentricContainer<Domain> {
+            return {this, points};
         }
 
     protected:

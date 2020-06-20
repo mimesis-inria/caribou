@@ -121,8 +121,7 @@ class TestDomain(unittest.TestCase):
             for gauss_node in element.gauss_nodes():
                 gauss_points_global_coordinates.append(element.world_coordinates(gauss_node.position))
 
-        container = domain.BarycentricContainer()
-        interpolated_positions = container.interpolate_field(gauss_points_global_coordinates, m.points)
+        interpolated_positions = domain.embed(gauss_points_global_coordinates).interpolate(m.points)
         self.assertMatrixAlmostEqual(gauss_points_global_coordinates, interpolated_positions, rtol=0, atol=1e-3)
 
     def test_deformed_liver_tetra(self):
@@ -167,8 +166,8 @@ class TestDomain(unittest.TestCase):
                                      [320.86269498,  -198.04169886, -1497.0985972 ],
                                      [304.89113271,  -273.96234025, -1512.40119427],
                                      [320.51991513,  -232.28761329, -1523.22695582]])
-        container = domain.BarycentricContainer()
-        interpolated_displacements = container.interpolate_field(undeformed_markers, m.point_data['u'])
+
+        interpolated_displacements = domain.embed(undeformed_markers).interpolate(m.point_data['u'])
         self.assertMatrixAlmostEqual(interpolated_displacements, (deformed_markers - undeformed_markers))
 
     def test_deformed_liver_hexa(self):
@@ -198,24 +197,25 @@ class TestDomain(unittest.TestCase):
                                        [302.98,  -269.28, -1493.  ],
                                        [315.78,  -226.09, -1504.54]])
 
-        deformed_markers = np.array([[266.95101532,  -163.58943372, -1551.96954456],
-                                     [241.08460582,  -146.96947878, -1556.57202304],
-                                     [280.57002813,  -183.54299576, -1511.21157556],
-                                     [301.58059997,  -215.62035827, -1530.98468085],
-                                     [266.59924967,  -125.97642656, -1512.0359865 ],
-                                     [276.04783871,  -150.94286924, -1485.22343301],
-                                     [261.964357  ,  -174.21013558, -1497.84490952],
-                                     [243.74189014,  -206.13408444, -1536.33511096],
-                                     [243.76309717,  -159.41338592, -1550.22430725],
-                                     [250.96314241,  -263.12255333, -1533.68239846],
-                                     [294.19670471,  -198.92695604, -1474.74988487],
-                                     [302.95558438,  -174.69680277, -1478.04590246],
-                                     [317.21138393,  -207.76812971, -1495.25983324],
-                                     [308.21541394,  -267.34977706, -1523.50177365],
-                                     [315.51769784,  -234.22296498, -1524.1916989 ]])
-        container = domain.BarycentricContainer()
-        interpolated_displacements = container.interpolate_field(undeformed_markers, m.point_data['u'])
+        deformed_markers = np.array([[270.9119593 , -157.71215294, -1555.40946454],
+                                     [262.14820601, -128.06090875, -1552.47007965],
+                                     [277.19378591, -177.43088076, -1516.55486109],
+                                     [293.97624055, -213.41924186, -1522.43362963],
+                                     [265.88433766, -126.62070365, -1524.0396069 ],
+                                     [266.88009204, -147.60863833, -1490.24440459],
+                                     [262.09361709, -173.36263398, -1499.35976378],
+                                     [243.77807901, -199.20167085, -1529.01202647],
+                                     [246.71909105, -156.88296646, -1546.59187345],
+                                     [252.34989369, -255.47322977, -1531.41912502],
+                                     [275.70481717, -198.33630816, -1478.29025749],
+                                     [296.66730156, -168.05975732, -1487.89185992],
+                                     [316.39825186, -196.90427925, -1493.97027093],
+                                     [302.8963988 , -274.06481598, -1510.41305086],
+                                     [319.35443171, -231.06013115, -1521.27203137]])
+
+        interpolated_displacements = domain.embed(undeformed_markers).interpolate(m.point_data['u'])
         self.assertMatrixAlmostEqual(interpolated_displacements, (deformed_markers - undeformed_markers))
+
 
 if __name__ == '__main__':
     unittest.main()

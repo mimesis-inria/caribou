@@ -32,17 +32,35 @@ void declare_domain(py::class_<Mesh> & m, const std::string & name) {
     c.def("element_indices", &D::element_indices, py::arg("index"));
     c.def("mesh", &D::mesh);
 
+    // Mesh's add_domain binding for Domain<Element, NodeIndex> type
+    m.def("add_domain", [](Mesh & mesh, const std::string & domain_name, const Element &, const Eigen::Matrix<NodeIndex, Eigen::Dynamic, geometry::traits<Element>::NumberOfNodesAtCompileTime> & node_indices) {
+        return mesh.template add_domain<Element, NodeIndex>(domain_name, node_indices);
+    }, py::arg("domain_name"), py::arg("element_type"), py::arg("node_indices"));
+
+    m.def("add_domain", [](Mesh & mesh, const std::string & domain_name, const Element &, const Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic> & node_indices) {
+        if (geometry::traits<Element>::NumberOfNodesAtCompileTime != caribou::Dynamic and node_indices.cols() != geometry::traits<Element>::NumberOfNodesAtCompileTime) {
+            std::ostringstream ss;
+            ss << "You tried to create a domain containing elements of " << geometry::traits<Element>::NumberOfNodesAtCompileTime
+               << " nodes, but elements having " << node_indices.cols() << " nodes were found instead. The node indices "
+               << "matrix should have NxM indices where N is the number of elements, and M is the number of nodes per element.";
+            throw py::key_error(ss.str());
+        }
+
+        return mesh.template add_domain<Element, NodeIndex>(domain_name, node_indices);
+    }, py::arg("domain_name"), py::arg("element_type"), py::arg("node_indices"));
+
     declare_barycentric_container(c);
 }
 
 template <typename Mesh, typename Element>
 void declare_domain(py::class_<Mesh> & m, const std::string & name) {
-    declare_domain<Mesh, Element, int>(m, name+"int");
-    declare_domain<Mesh, Element, long int>(m, name+"lint");
-    declare_domain<Mesh, Element, long long int>(m, name+"llint");
+//    todo(jnbrunet2000@gmail.com): Uncomment once we allow a no_copy options for the matrices (pass by ref of a np.array)
+//    declare_domain<Mesh, Element, int>(m, name+"int");
+//    declare_domain<Mesh, Element, long int>(m, name+"lint");
+//    declare_domain<Mesh, Element, long long int>(m, name+"llint");
     declare_domain<Mesh, Element, unsigned int>(m, name+"uint");
-    declare_domain<Mesh, Element, unsigned long int>(m, name+"ulint");
-    declare_domain<Mesh, Element, unsigned long long int>(m, name+"ullint");
+//    declare_domain<Mesh, Element, unsigned long int>(m, name+"ulint");
+//    declare_domain<Mesh, Element, unsigned long long int>(m, name+"ullint");
 }
 
 template<typename Mesh>

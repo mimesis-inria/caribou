@@ -4,6 +4,7 @@
 #include <Caribou/Geometry/Element.h>
 #include <unordered_map>
 #include <vector>
+#include <set>
 #include <Eigen/Core>
 #include <bitset>
 
