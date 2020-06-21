@@ -43,20 +43,29 @@ if (CARIBOU_BUILD_TESTS)
     message(STATUS "Caribou with unittests\n\tLibraries: ${GTEST_BOTH_LIBRARIES}\n\tInclude directories: ${GTEST_INCLUDE_DIRS}")
 endif()
 
-# SOFA option
-find_package(SOFA COMPONENTS SofaFramework QUIET)
-CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
-if (CARIBOU_WITH_SOFA)
-    message(STATUS "Caribou with SOFA support\n\tSOFA root: ${SOFA_ROOT}")
-    list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
-    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
-endif()
-
 # Python 3 option
 set(PYBIND11_PYTHON_VERSION 3)
 find_package(pybind11 CONFIG QUIET)
 find_package(Python3 QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python3_FOUND;pybind11_FOUND" OFF)
+if (CARIBOU_WITH_PYTHON_3)
+    message(STATUS "Caribou with Python support\n\tPython version: ${PYTHON_VERSION_STRING}\n\tPython executabe: ${PYTHON_EXECUTABLE}\n\tpybind11 version: ${pybind11_VERSION}\n\tpybind11 config: ${pybind11_CONFIG}")
+endif()
+
+# SOFA option
+find_package(SOFA COMPONENTS SofaFramework QUIET)
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
+if (CARIBOU_WITH_SOFA)
+    list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
+    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+
+    find_package(SofaPython3 QUIET)
+    if (CARIBOU_WITH_PYTHON_3 AND SofaPython3_FOUND)
+        message(STATUS "Caribou with SOFA support\n\tSOFA: ${SOFA_ROOT}\n\tSofaPython3: ${SofaPython3_CONFIG}")
+    else()
+        message(STATUS "Caribou with SOFA support\n\tSOFA root: ${SOFA_ROOT}")
+    endif ()
+endif()
 
 # OpenMP option
 find_package(OpenMP QUIET)
@@ -92,7 +101,6 @@ endif()
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
 endif()
-message(STATUS "Installation prefix: ${CMAKE_INSTALL_PREFIX}")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

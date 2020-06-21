@@ -51,10 +51,6 @@ function(caribou_add_python_module NAME)
 
         set(MODULENAME ${NAME})
 
-        if (NOT A_QUIET)
-            message(STATUS "${NAME} with python ${PYTHON_VERSION_STRING} support (pybind11 version ${pybind11_VERSION})")
-        endif ()
-
         pybind11_add_module(${TARGET_NAME} SHARED "${A_SOURCE_FILES}")
         target_link_libraries(${TARGET_NAME} PUBLIC ${A_DEPENDS} pybind11::module)
         target_include_directories(${TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${path_to_src}/>")

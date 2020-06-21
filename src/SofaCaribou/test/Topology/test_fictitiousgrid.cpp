@@ -47,5 +47,5 @@ TEST_F(FictitiousGrid, Liver) {
         }
     }
 
-    EXPECT_FLOAT_EQ(volume, 3414171.9465);
+    EXPECT_NEAR(volume, 3414171, 5);
 }

@@ -630,12 +630,12 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
     // 1. Locate all cells that are within the surface boundaries and their nodes.
     for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
         const auto & cell = p_cells[cell_id];
-        if (cell.childs or (cell.data->type != Type::Outside and cell.data->type != Type::Undefined)) {
+        if (cell.childs or cell.data->type == Type::Inside) {
 
             const FLOATING_POINT_TYPE weight = get_cell_weight(cell);
             real_volume += cell_volume*weight;
 
-            const auto ratio = (UNSIGNED_INTEGER_TYPE) std::round(weight*100);
+            const auto ratio = static_cast<UNSIGNED_INTEGER_TYPE> (weight*10)*10;
             if (volume_ratios.find(ratio) == volume_ratios.end())
                 volume_ratios[ratio] = 1;
             else
@@ -734,9 +734,13 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
     msg_info() << "Volume of the sparse grid is " << real_volume;
     for (const auto &p : volume_ratios) {
         if (p.first / 100. >= volume_threshold) {
-            msg_info() << p.second << " cells with a volume ratio of " << p.first / 100.;
+            if (p.first == 100) {
+                msg_info() << p.second << " cells with a volume ratio between of 100%";
+            } else {
+                msg_info() << p.second << " cells with a volume ratio between " << p.first << "% and " << p.first + 10 << "%";
+            }
         } else {
-            msg_info() << p.second << " cells with a volume ratio of " << p.first / 100. << " (IGNORED CELLS)";
+            msg_info() << p.second << " cells with a volume ratio of " << p.first << "% and " << p.first + 10 << "% (IGNORED CELLS)";
         }
     }
 }
