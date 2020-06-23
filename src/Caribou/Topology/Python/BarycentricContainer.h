@@ -32,12 +32,26 @@ void declare_barycentric_container(py::class_<BarycentricContainer<Domain>> & c)
     c.def_property_readonly("outside_nodes", [](const BarycentricContainer<Domain> & container){
         return container.outside_nodes();
     });
+
+    c.def_property_readonly("barycentric_points", [](const BarycentricContainer<Domain> & container){
+        return container.barycentric_points();
+    });
 }
 
 template <typename Domain, typename Holder>
 void declare_barycentric_container(py::class_<Domain, Holder> & m) {
     std::string name = std::string("BarycentricContainer")+typeid(Domain).name();
     py::class_<BarycentricContainer<Domain>> c(m, name.c_str());
+
+    // BarycentricPoint
+    std::string bp_name = name+"_BarycentricPoint";
+    py::class_<typename BarycentricContainer<Domain>::BarycentricPoint> bp(c, name.c_str());
+    bp.def_property_readonly("element_index", [](const typename BarycentricContainer<Domain>::BarycentricPoint & bp) {
+        return bp.element_index;
+    });
+    bp.def_property_readonly("local_coordinates", [](const typename BarycentricContainer<Domain>::BarycentricPoint & bp) {
+        return bp.local_coordinates;
+    });
 
 //    todo(jnbrunet2000@gmail.com): Uncomment once we allow a no_copy options for the matrices (pass by ref of a np.array)
 //    declare_barycentric_container<float, Domain>(c);
