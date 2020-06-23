@@ -624,13 +624,14 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
     std::vector<bool> use_node(p_grid->number_of_nodes(), false);
 
     std::map<UNSIGNED_INTEGER_TYPE, UNSIGNED_INTEGER_TYPE> volume_ratios;
+    UNSIGNED_INTEGER_TYPE ignored_cells_count = 0;
     FLOATING_POINT_TYPE real_volume = 0.;
     FLOATING_POINT_TYPE cell_volume = CellElement::NumberOfGaussNodesAtCompileTime*p_grid->cell_at(0).jacobian(CellElement::LocalCoordinates::Zero()).determinant();
 
     // 1. Locate all cells that are within the surface boundaries and their nodes.
     for (UNSIGNED_INTEGER_TYPE cell_id = 0; cell_id < p_grid->number_of_cells(); ++cell_id) {
-        const auto & cell = p_cells[cell_id];
-        if (cell.childs or cell.data->type == Type::Inside) {
+        const Cell & cell = p_cells[cell_id];
+        if (not cell.is_leaf() or cell.data->type != Type::Outside) {
 
             const FLOATING_POINT_TYPE weight = get_cell_weight(cell);
             real_volume += cell_volume*weight;
@@ -646,6 +647,8 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
                 for (const auto node_index : p_grid->node_indices_of(cell_id)) {
                     use_node[node_index] = true;
                 }
+            } else {
+                ++ignored_cells_count;
             }
         }
     }
@@ -733,15 +736,14 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
 
     msg_info() << "Volume of the sparse grid is " << real_volume;
     for (const auto &p : volume_ratios) {
-        if (p.first / 100. >= volume_threshold) {
-            if (p.first == 100) {
-                msg_info() << p.second << " cells with a volume ratio between of 100%";
-            } else {
-                msg_info() << p.second << " cells with a volume ratio between " << p.first << "% and " << p.first + 10 << "%";
-            }
+        if (p.first == 100) {
+            msg_info() << p.second << " cells with a volume ratio of 100%";
         } else {
-            msg_info() << p.second << " cells with a volume ratio of " << p.first << "% and " << p.first + 10 << "% (IGNORED CELLS)";
+            msg_info() << p.second << " cells with a volume ratio between " << p.first << "% and " << p.first + 10 << "%";
         }
+    }
+    if (ignored_cells_count > 0) {
+        msg_info() << ignored_cells_count << " cells with a volume ratio less than " << static_cast<unsigned int>(volume_threshold*100) << "% (IGNORED CELLS)";
     }
 }
 

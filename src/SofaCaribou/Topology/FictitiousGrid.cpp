@@ -255,7 +255,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
     const auto number_of_subdivision = d_number_of_subdivision.getValue();
     const auto & surface_positions = d_surface_positions.getValue();
     const auto & surface_triangles = d_surface_triangles.getValue();
-    const auto iso_surface = d_iso_surface.get();
+    const auto * iso_surface = d_iso_surface.get();
 
     TICK;
 #pragma omp parallel for
