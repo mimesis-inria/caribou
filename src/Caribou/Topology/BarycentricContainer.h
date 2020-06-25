@@ -43,6 +43,10 @@ public:
      * \note If the point does not exists in any of the containing elements, the index will be -1.
      */
     struct BarycentricPoint {
+        BarycentricPoint() : element_index(-1), local_coordinates(LocalCoordinates::Zero()) {}
+        BarycentricPoint(const ElementIndex & index, const LocalCoordinates & coordinates)
+        : element_index(index), local_coordinates(coordinates) {}
+
         ElementIndex element_index;
         LocalCoordinates local_coordinates;
     };
@@ -114,16 +118,9 @@ public:
      *          an edge or a node of the domain), the first element found containing the point will be return.
      */
     auto barycentric_point(const WorldCoordinates & p) const -> BarycentricPoint {
-        if (not p_hash_grid) {
-            return {-1, LocalCoordinates::Zero()};
-        }
-
         // List of candidate elements that could contain the point
         const auto candidate_element_indices = p_hash_grid->get(p);
 
-        // List of elements that do contain the point
-        std::vector<std::pair<INTEGER_TYPE, LocalCoordinates>> elements;
-        elements.reserve(candidate_element_indices.size());
 
         for (const auto & element_index : candidate_element_indices) {
             const ContainerElement e = p_container_domain->element(element_index);
@@ -136,6 +133,24 @@ public:
 
         // No elements are containing the queried point
         return {-1, LocalCoordinates::Zero()};
+    }
+
+    /**
+     * Get the list of closest elements to a point and its barycentric coordinates within these elements.
+     */
+    auto closest_elements(const WorldCoordinates & p) const -> std::vector<BarycentricPoint> {
+        // List of candidate elements that could contain the point
+        const auto candidate_element_indices = p_hash_grid->get(p);
+
+        std::vector<BarycentricPoint> closest_elements;
+        closest_elements.reserve(candidate_element_indices.size());
+        for (const auto & element_index : candidate_element_indices) {
+            const ContainerElement e = p_container_domain->element(element_index);
+            const LocalCoordinates local_coordinates = e.local_coordinates(p);
+            closest_elements.emplace_back(static_cast<ElementIndex>(element_index), local_coordinates);
+        }
+
+        return closest_elements;
     }
 
     /**

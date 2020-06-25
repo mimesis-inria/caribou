@@ -269,7 +269,7 @@ struct Element {
      * @param coordinates Local coordinates of a point
      * @param eps If the given point is located barely outside the element, which is, less than this eps value, returns true.
      */
-    inline auto contains_local(const LocalCoordinates & xi, const FLOATING_POINT_TYPE & eps = EPSILON) const -> bool {
+    inline auto contains_local(const LocalCoordinates & xi, const FLOATING_POINT_TYPE & eps = 1e-10) const -> bool {
         return self().get_contains_local(xi, eps);
     }
 

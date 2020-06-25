@@ -36,6 +36,10 @@ void declare_barycentric_container(py::class_<BarycentricContainer<Domain>> & c)
     c.def_property_readonly("barycentric_points", [](const BarycentricContainer<Domain> & container){
         return container.barycentric_points();
     });
+
+    c.def("closest_elements", [](const BarycentricContainer<Domain> & container, const typename BarycentricContainer<Domain>::WorldCoordinates & p){
+        return container.closest_elements(p);
+    }, py::arg("world_coordinates"));
 }
 
 template <typename Domain, typename Holder>
