@@ -176,8 +176,11 @@ public:
 
         // Make sure we have one field value per node of the container domain's mesh.
         if (static_cast<unsigned>(container_field_values.rows()) != p_container_domain->mesh().number_of_nodes()) {
-            throw std::runtime_error("The number of rows of the input matrix must be the same as the number of nodes"
-                                     "in the container domain.");
+            std::stringstream ss;
+            ss << "The number of rows of the input matrix must be the same as the number of nodes in the container domain. ";
+            ss << "The number of rows is " << container_field_values.rows() << " and the number of nodes is ";
+            ss << p_container_domain->mesh().number_of_nodes();
+            throw std::runtime_error(ss.str());
         }
 
         // Make sure we can write one field value per node of the embedded mesh.
