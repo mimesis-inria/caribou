@@ -220,10 +220,12 @@ Available python bindings
 
         Get the number of subdivisions in the grid.
 
-    .. py:function:: cell_volume_ratio_distribution(number_of_decimals)
+    .. py:function:: cell_volume_ratio_distribution(number_of_decimals=0)
 
         :param number_of_decimals: Round the volume ratio to the given number of decimals. For example, setting this
                                    value to 2  will generate a distribution of maximum 100 entries (0.00, 0.01, 0.02, ..., 0.99, 1.00).
+                                   Setting a value at zero deactivate the rounding of volume ratio.
+                                   Default is 0 which means no rounding.
         :type number_of_decimals: int
 
         :return: A sorted map where the keys are the percentage of volume inside the cell, and the value is a vector

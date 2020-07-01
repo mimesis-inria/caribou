@@ -18,7 +18,7 @@ auto create_fictitious_grid(py::module & m) {
     c.def("number_of_cells", &FictitiousGrid<DataTypes>::number_of_cells);
     c.def("number_of_nodes", &FictitiousGrid<DataTypes>::number_of_nodes);
     c.def("number_of_subdivisions", &FictitiousGrid<DataTypes>::number_of_subdivisions);
-    c.def("cell_volume_ratio_distribution", &FictitiousGrid<DataTypes>::cell_volume_ratio_distribution);
+    c.def("cell_volume_ratio_distribution", &FictitiousGrid<DataTypes>::cell_volume_ratio_distribution, py::arg("number_of_decimals") = 0);
 
     sofapython3::PythonFactory::registerType<FictitiousGrid<DataTypes>>([](sofa::core::objectmodel::Base* o) {
         return py::cast(dynamic_cast<FictitiousGrid<DataTypes>*>(o));

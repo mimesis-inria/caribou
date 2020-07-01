@@ -155,7 +155,7 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
     // #########################
     // Newton-Raphson iterations
     // #########################
-    while (not converged and not diverged and n_it < newton_iterations) {
+    while (not converged and n_it < newton_iterations) {
         sofa::helper::AdvancedTimer::stepBegin("NewtonStep");
 
         t = steady_clock::now();
@@ -217,53 +217,73 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
         dx_squared_norm = dx.dot(dx);
         du_squared_norm= U.dot(U);
 
-        p_squared_residuals.emplace_back(R_squared_norm);
-
+        // Stop the timers here as the computation is done
         auto iteration_time = duration_cast<nanoseconds>(steady_clock::now() - t).count();
         p_times.emplace_back(static_cast<UNSIGNED_INTEGER_TYPE>(iteration_time));
-
-        if (not converged) {
-            if( print_log ) {
-                info << "Newton iteration #" << std::left << std::setw(5)  << n_it + 1
-                     << std::scientific
-                     << "  |R|/|R0| = " << std::setw(12) << sqrt(R_squared_norm  / p_squared_residuals[0])
-                     << "  |du| = "     << std::setw(12) << sqrt(dx_squared_norm / du_squared_norm)
-                     << std::defaultfloat;
-                if (cg_linear_solver) {
-                    info << "  CG iterations = " << std::setw(5) << cg_linear_solver->squared_residuals().size();
-                }
-                info << "  Time = " << iteration_time/1000/1000 << " ms";
-                info << "\n";
-            }
-        }
         sofa::helper::AdvancedTimer::stepEnd("NewtonStep");
 
-
-        if (not converged and correction_tolerance_threshold > 0 and dx_squared_norm < squared_correction_threshold*du_squared_norm) {
-            converged = true;
-            if (print_log) {
-                info  << "[CONVERGED] The correction's ratio |du|/|U| = " << sqrt(dx_squared_norm/du_squared_norm) << " is smaller than the threshold of " << correction_tolerance_threshold << "\n";
-            }
-        }
-
-        if (not converged and residual_tolerance_threshold > 0 and R_squared_norm < squared_residual_threshold*p_squared_residuals[0]) {
-            converged = true;
-            if (print_log) {
-                info << "[CONVERGED] The residual's ratio |R|/|R0| = " << sqrt(R_squared_norm/p_squared_residuals[0]) << " is smaller than the threshold of " << residual_tolerance_threshold << "\n";
-            }
-        }
-
-        if (not converged and shoud_diverge_when_residual_is_growing and R_squared_norm > Rn_squared_norm and n_it > 1) {
-            diverged = true;
-            if (print_log) {
-                info << "[DIVERGED] Residual's norm increased from "<< sqrt(Rn_squared_norm) << " to " << sqrt(R_squared_norm) << "\n";
-            }
-        }
+        p_squared_residuals.emplace_back(R_squared_norm);
 
         // If the linear solver is the caribou's CG, copy the residual norms of the CG iterations
         if (cg_linear_solver) {
             p_iterative_linear_solver_squared_residuals.emplace_back(cg_linear_solver->squared_residuals());
             p_iterative_linear_solver_squared_rhs_norms.emplace_back(cg_linear_solver->squared_initial_residual());
+        }
+
+        // We completed one iteration, increment the counter
+        n_it++;
+
+        if( print_log ) {
+            info << "Newton iteration #" << std::left << std::setw(5)  << n_it
+                 << std::scientific
+                 << "  |R|/|R0| = " << std::setw(12) << sqrt(R_squared_norm  / p_squared_residuals[0])
+                 << "  |du| = "     << std::setw(12) << sqrt(dx_squared_norm / du_squared_norm)
+                 << std::defaultfloat;
+            if (cg_linear_solver) {
+                info << "  CG iterations = " << std::setw(5) << cg_linear_solver->squared_residuals().size();
+            }
+            info << "  Time = " << iteration_time/1000/1000 << " ms";
+            info << "\n";
+        }
+
+        if (std::isnan(R_squared_norm) or std::isnan(dx_squared_norm)) {
+            diverged = true;
+            if (print_log) {
+                info << "[DIVERGED]";
+                if (std::isnan(R_squared_norm)) {
+                    info << " The residual's ratio |R|/|R0| is NaN.";
+                }
+                if (std::isnan(dx_squared_norm)) {
+                    info << " The correction's ratio |du|/|U| is NaN.";
+                }
+                info << "\n";
+            }
+            break;
+        }
+
+
+        if (correction_tolerance_threshold > 0 and dx_squared_norm < squared_correction_threshold*du_squared_norm) {
+            converged = true;
+            if (print_log) {
+                info  << "[CONVERGED] The correction's ratio |du|/|U| = " << sqrt(dx_squared_norm/du_squared_norm) << " is smaller than the threshold of " << correction_tolerance_threshold << ".\n";
+            }
+            break;
+        }
+
+        if (residual_tolerance_threshold > 0 and R_squared_norm < squared_residual_threshold*p_squared_residuals[0]) {
+            converged = true;
+            if (print_log) {
+                info << "[CONVERGED] The residual's ratio |R|/|R0| = " << sqrt(R_squared_norm/p_squared_residuals[0]) << " is smaller than the threshold of " << residual_tolerance_threshold << ".\n";
+            }
+            break;
+        }
+
+        if (shoud_diverge_when_residual_is_growing and R_squared_norm > Rn_squared_norm and n_it > 1) {
+            diverged = true;
+            if (print_log) {
+                info << "[DIVERGED] Residual's norm increased from "<< sqrt(Rn_squared_norm) << " to " << sqrt(R_squared_norm) << ".\n";
+            }
+            break;
         }
 
         // Save the last residual to check the growing residual criterion at the next step
@@ -273,15 +293,13 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             dx.clear();
         }
 
-        n_it++;
-
     } // End while (not converged and not diverged and n_it < newton_iterations)
 
     n_it--; // Reset to the actual index of the last iteration completed
 
     if (not converged and not diverged and n_it == (newton_iterations-1)) {
         if (print_log) {
-            info << "[DIVERGED] The number of Newton iterations reached the maximum of " << newton_iterations << " iterations" << "\n";
+            info << "[DIVERGED] The number of Newton iterations reached the maximum of " << newton_iterations << " iterations" << ".\n";
         }
     }
 
