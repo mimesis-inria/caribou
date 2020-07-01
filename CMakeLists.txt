@@ -36,7 +36,7 @@ CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to 
 find_package(GTest QUIET)
 if (NOT GTest_FOUND)
     # This find_package needs to be executed at MOST once, else it will fails on the second call
-    find_package(GMock QUIET REQUIRED)
+    find_package(GMock QUIET)
 endif ()
 CMAKE_DEPENDENT_OPTION(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." ON "GTest_FOUND OR GMock_FOUND" OFF)
 if (CARIBOU_BUILD_TESTS)
