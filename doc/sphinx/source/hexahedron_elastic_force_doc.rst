@@ -4,7 +4,9 @@
 <HexahedronElasticForce />
 ==========================
 
-:cpp:class:`SofaCaribou::forcefield::HexahedronElasticForce`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::forcefield::HexahedronElasticForce`
 
 Implementation of a corotational linear elasticity forcefield for hexahedral topologies.
 

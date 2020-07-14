@@ -5,7 +5,9 @@
 <SparseLLTSolver />
 ===================
 
-:cpp:class:`SofaCaribou::solver::SparseLLTSolver`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::solver::SparseLLTSolver`
 
 Implementation of a sparse Cholesky (:math:`LL^T`) linear solver.
 

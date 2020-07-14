@@ -4,7 +4,9 @@
 <HyperelasticForcefield />
 ==========================
 
-:cpp:class:`SofaCaribou::forcefield::HyperelasticForcefield`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::forcefield::HyperelasticForcefield`
 
 Implementation of an hyperelasticity forcefield for any element type topologies.
 

@@ -5,7 +5,9 @@
 <CircleIsoSurface />
 ====================
 
-:cpp:class:`SofaCaribou::topology::CircleIsoSurface`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::topology::CircleIsoSurface`
 
 Implicit surface of a circle to be used with level-set compatible components such as the :ref:`fictitious_grid_doc`.
 

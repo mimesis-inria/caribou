@@ -4,7 +4,9 @@
 <SaintVenantKirchhoffMaterial />
 ================================
 
-:cpp:class:`SofaCaribou::material::SaintVenantKirchhoffMaterial`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::material::SaintVenantKirchhoffMaterial`
 
 Implementation of a Saint-Venant-Kirchhoff hyperelastic material.
 

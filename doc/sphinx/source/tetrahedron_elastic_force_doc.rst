@@ -4,7 +4,9 @@
 <TetrahedronElasticForce />
 ===========================
 
-:cpp:class:`SofaCaribou::forcefield::TetrahedronElasticForce`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::forcefield::TetrahedronElasticForce`
 
 Implementation of a corotational linear elasticity forcefield for tetrahedral topologies.
 

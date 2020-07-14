@@ -18,6 +18,15 @@ div.wy-side-nav-search a:visited {
     color: #fcfcfc;
 }
 
+p.doxy-label{
+    background-color: aliceblue;
+    font-weight: bold;
+    font-family: Courier New;
+    display: inline-block;
+    padding-left: 10px;
+    margin-bottom:50px;
+}
+
 @media screen and (min-width: 768px) {
     div.wy-table-responsive table {
         table-layout: fixed;

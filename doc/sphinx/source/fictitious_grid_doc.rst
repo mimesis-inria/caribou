@@ -5,7 +5,9 @@
 <FictitiousGrid />
 ==================
 
-:cpp:class:`SofaCaribou::topology::FictitiousGrid`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::topology::FictitiousGrid`
 
 Implementation of an advanced fictitious (sparse) grid.
 

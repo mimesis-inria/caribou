@@ -5,7 +5,9 @@
 <SphereIsoSurface />
 ====================
 
-:cpp:class:`SofaCaribou::topology::SphereIsoSurface`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::topology::SphereIsoSurface`
 
 Implicit surface of a sphere to be used with level-set compatible components such as the :ref:`fictitious_grid_doc`.
 

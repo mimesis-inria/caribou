@@ -5,7 +5,9 @@
 <SparseLUSolver />
 ==================
 
-:cpp:class:`SofaCaribou::solver::SparseLUSolver`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::solver::SparseLUSolver`
 
 Implementation of a sparse LU linear solver.
 

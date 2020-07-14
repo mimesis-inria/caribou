@@ -4,9 +4,25 @@
 <StaticODESolver />
 ===================
 
-:cpp:class:`SofaCaribou::ode::StaticODESolver`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::ode::StaticODESolver`
 
 Implementation of a Newton-Raphson static ODE solver.
+
+The solver does a serie of Newton-Raphson iterations where at each iteration :math:`k`, the following linear system is solved:
+
+.. math::
+    \boldsymbol{K}(\boldsymbol{u}^k) \cdot \delta \boldsymbol{u}^{k+1} = \boldsymbol{R}(\boldsymbol{u}^k)
+
+where :math:`\boldsymbol{u}^k = \boldsymbol{u}^0 + \delta \boldsymbol{u}^{k}` is the displacement vector
+from the rest state at the beginning of the simulation. The stiffness matrix :math:`\boldsymbol{K}`
+is the derivative of the residual with respect to the displacement, i.e.
+:math:`\boldsymbol{K} = \frac{\partial \boldsymbol{R}}{\partial \boldsymbol{u}}` and is typically accumulated by
+the `addKtoMatrix` method of forcefields. If an iterative linear solver is used, it is possible that the stiffness
+matrix is never accumulated, instead the operation :math:`\boldsymbol{K}(\boldsymbol{u}^k) \cdot \delta \boldsymbol{u}^{k+1}`
+is done through the `addDForce` method of forcefields. The residual vector :math:`\boldsymbol{R}(\boldsymbol{u}^k)`
+is accumulated by the `addForce` method of forcefields.
 
 
 .. list-table::
@@ -25,7 +41,7 @@ Implementation of a Newton-Raphson static ODE solver.
     * - newton_iterations
       - int
       - 1
-      - Number of newton iterations between each load increments (normally, one load increment per simulation time-step.
+      - Number of newton iterations between each load increments (normally, one load increment per simulation time-step).
     * - correction_tolerance_threshold
       - float
       - 1e-5

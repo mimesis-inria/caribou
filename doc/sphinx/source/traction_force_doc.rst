@@ -4,7 +4,9 @@
 <TractionForce />
 =================
 
-:cpp:class:`SofaCaribou::forcefield::TractionForce`
+.. rst-class:: doxy-label
+.. rubric:: Doxygen:
+    :cpp:class:`SofaCaribou::forcefield::TractionForce`
 
 Implementation of a traction forcefield for triangle and quad topologies.
 
