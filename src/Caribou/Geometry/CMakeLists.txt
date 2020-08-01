@@ -2,17 +2,18 @@ project(Geometry)
 
 set(HEADER_FILES
         BaseHexahedron.h
-        BaseSegment.h
         BaseQuad.h
         BaseRectangularHexahedron.h
         BaseRectangularQuad.h
+        BaseSegment.h
         BaseTetrahedron.h
         BaseTriangle.h
         Element.h
+        Hexahedron.h
+        Quad.h
         RectangularHexahedron.h
         RectangularQuad.h
         Segment.h
-        Quad.h
         Tetrahedron.h
         Triangle.h)
 
