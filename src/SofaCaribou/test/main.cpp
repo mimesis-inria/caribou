@@ -1,4 +1,11 @@
+#ifdef LEGACY_CXX
+#include <experimental/filesystem>
+namespace fs = ::std::experimental::filesystem;
+#else
 #include <filesystem>
+namespace fs = ::std::filesystem;
+#endif
+
 #include <gtest/gtest.h>
 #include <SofaSimulationGraph/init.h>
 
@@ -7,7 +14,11 @@
 std::string executable_directory_path;
 
 int main(int argc, char **argv) {
-    executable_directory_path = weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+#ifdef LEGACY_CXX
+    executable_directory_path = fs::canonical(fs::path(argv[0])).parent_path();
+#else
+    executable_directory_path = weakly_canonical(fs::path(argv[0])).parent_path();
+#endif
     testing::InitGoogleTest(&argc, argv);
     sofa::simulation::graph::init();
     int ret = RUN_ALL_TESTS();
