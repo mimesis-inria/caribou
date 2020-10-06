@@ -31,7 +31,7 @@ find_path (
 )
 
 if (SOFA_MODULE_DIR)
-    get_filename_component(SOFA_ROOT "${SOFA_MODULE_DIR}/../../.." ABSOLUTE)
+    get_filename_component(SOFA_ROOT "${SOFA_MODULE_DIR}/../.." ABSOLUTE)
 endif()
 
 if (NOT SOFA_FIND_COMPONENTS)
