@@ -149,7 +149,7 @@ If you want to compile Caribou with SOFA and python bindings:
 
 .. code-block:: bash
 
-    $ cmake -DCARIBOU_WITH_PYTHON_3=ON -DCMAKE_PREFIX_PATH="$SOFA_INSTALL/lib/install/cmake;$SP3_INSTALL/lib/install/cmake" ..
+    $ cmake -DCARIBOU_WITH_PYTHON_3=ON -DCMAKE_PREFIX_PATH="$SOFA_INSTALL/lib/cmake;$SP3_INSTALL/lib/cmake" ..
 
 You can now start the compilation.
 
