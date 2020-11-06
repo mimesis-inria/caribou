@@ -113,7 +113,8 @@ if (CARIBOU_BUILD_TESTS AND SOFAHELPER_HAVE_GTEST)
     add_subdirectory(test)
 endif()
 
-if (CARIBOU_WITH_PYTHON_3)
+find_package(SofaPython3 QUIET)
+if (CARIBOU_WITH_PYTHON_3 AND SofaPython3_FOUND)
     add_subdirectory(Python)
 endif()
 
