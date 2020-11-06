@@ -246,15 +246,18 @@ void StaticODESolver::solve(const sofa::core::ExecParams* params, double /*dt*/,
             info << "\n";
         }
 
-        if (std::isnan(R_squared_norm) or std::isnan(dx_squared_norm)) {
+        if (std::isnan(R_squared_norm) or std::isnan(dx_squared_norm) or du_squared_norm < EPSILON) {
             diverged = true;
             if (print_log) {
                 info << "[DIVERGED]";
                 if (std::isnan(R_squared_norm)) {
-                    info << " The residual's ratio |R|/|R0| is NaN.";
+                    info << " The residual's ratio |R| is NaN.";
                 }
                 if (std::isnan(dx_squared_norm)) {
-                    info << " The correction's ratio |du|/|U| is NaN.";
+                    info << " The correction's ratio |du| is NaN.";
+                }
+                if (du_squared_norm < EPSILON) {
+                    info << " The correction's ratio |du|/|U| is NaN (|U| is zero).";
                 }
                 info << "\n";
             }
