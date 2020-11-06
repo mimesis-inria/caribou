@@ -591,7 +591,7 @@ FictitiousGrid<DataTypes>::validate_grid() {
     }
 
     FLOATING_POINT_TYPE grid_volume = p_grid->size().prod();
-    if (std::abs(volume - grid_volume) > grid_volume*1e-10) {
+    if (std::abs(volume - grid_volume) > grid_volume*1e-8) {
         std::stringstream ss;
         ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1)
            << "The grid volume (" << grid_volume << ") does not match the volume of the region leaf-cells ("
