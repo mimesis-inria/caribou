@@ -30,7 +30,7 @@ auto HyperelasticForcefield<Triangle<_2D, Linear>>::mesh_is_compatible(const sof
 }
 
 template <>
-auto HyperelasticForcefield<Triangle<_2D, Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
+auto HyperelasticForcefield<Triangle<_2D, Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const sofa::Index * {
     return &(d_topology_container->getTriangles()[element_id][0]);
 }
 
@@ -59,7 +59,7 @@ auto HyperelasticForcefield<Quad<_2D, Linear>>::mesh_is_compatible(const sofa::c
 }
 
 template <>
-auto HyperelasticForcefield<Quad<_2D, Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
+auto HyperelasticForcefield<Quad<_2D, Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const sofa::Index * {
     return &(d_topology_container->getQuads()[element_id][0]);
 }
 
@@ -87,7 +87,7 @@ auto HyperelasticForcefield<Tetrahedron<Linear>>::mesh_is_compatible(const sofa:
 }
 
 template <>
-auto HyperelasticForcefield<Tetrahedron<Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
+auto HyperelasticForcefield<Tetrahedron<Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const sofa::Index * {
     return &(d_topology_container->getTetras()[element_id][0]);
 }
 
@@ -115,7 +115,7 @@ auto HyperelasticForcefield<Hexahedron<Linear>>::mesh_is_compatible(const sofa::
 }
 
 template <>
-auto HyperelasticForcefield<Hexahedron<Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index * {
+auto HyperelasticForcefield<Hexahedron<Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const sofa::Index * {
     return &(d_topology_container->getHexas()[element_id][0]);
 }
 

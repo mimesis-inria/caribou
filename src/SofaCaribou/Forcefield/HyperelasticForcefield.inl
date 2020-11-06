@@ -139,7 +139,7 @@ void HyperelasticForcefield<Element>::addForce(
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
         // Fetch the node indices of the element
-        const Index * node_indices = get_element_nodes_indices(element_id);
+        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
         Matrix<NumberOfNodes, Dimension> current_nodes_position;
@@ -308,7 +308,7 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
-        const Index * node_indices = get_element_nodes_indices(element_id);
+        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
         Matrix<NumberOfNodes, Dimension> initial_nodes_position;
@@ -404,7 +404,7 @@ void HyperelasticForcefield<Element>::initialize_elements()
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
         // Fetch the node indices of the element
-        const Index * node_indices = get_element_nodes_indices(element_id);
+        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
         Matrix<NumberOfNodes, Dimension> initial_nodes_position;
 
         // Fetch the initial positions of the element's nodes
@@ -465,7 +465,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
     #pragma omp parallel for if (enable_multithreading)
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
-        const Index * node_indices = get_element_nodes_indices(element_id);
+        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
 
         using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes*Dimension, NumberOfNodes*Dimension, Eigen::RowMajor>;
         Stiffness Ke = Stiffness::Zero();
@@ -679,7 +679,7 @@ void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParam
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
-        const Index * node_indices = get_element_nodes_indices(element_id);
+        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
         Matrix<NumberOfNodes, Dimension> element_nodes_position;
 
         // Fetch the initial positions of the element's nodes

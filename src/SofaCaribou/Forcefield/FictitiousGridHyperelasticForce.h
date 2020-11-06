@@ -60,7 +60,7 @@ public:
     using FictitiousGrid = SofaCaribou::topology::FictitiousGrid<sofa::defaulttype::Vec3Types>;
 
     using GaussContainer = typename Base::GaussContainer;
-    using Index = typename Base::Index;
+    using Index = sofa::Index;
 
     using typename Base::Mat33;
 

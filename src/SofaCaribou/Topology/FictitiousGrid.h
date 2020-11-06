@@ -49,7 +49,7 @@ public:
     using SofaVecFloat = sofa::defaulttype::Vec<Dimension, SofaFloat>;
     using Coord = typename DataTypes::Coord;
     using SofaVecCoord = sofa::helper::vector<Coord>;
-    using ElementId = sofa::core::topology::Topology::index_type;
+    using ElementId = sofa::Index;
     using VecElementId = sofa::helper::vector<ElementId>;
     using SofaHexahedron = sofa::core::topology::BaseMeshTopology::Hexahedron;
     using SofaQuad = sofa::core::topology::BaseMeshTopology::Quad;

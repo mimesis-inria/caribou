@@ -108,7 +108,7 @@ public:
 
 private:
 
-    template <typename Scalar, int nrows, int ncols>
+    template <typename Scalar, unsigned int nrows, unsigned int ncols>
     void add_block(Index i, Index j, const sofa::defaulttype::Mat<nrows, ncols, Scalar> & m) {
         const Eigen::Map<const Eigen::Matrix<Scalar, nrows, ncols, Eigen::RowMajor>> block(&(m[0][0]));
         p_eigen_matrix.block(i, j, nrows, ncols) += block. template cast<typename EigenType::Scalar>();
@@ -258,7 +258,7 @@ private:
     /**
      * Block addition with a NxC matrix
      */
-    template <typename Scalar, int N, int C>
+    template <typename Scalar, unsigned int N, unsigned int C>
     void add_block(Index i, Index j, const sofa::defaulttype::Mat<N, C, Scalar> & m) {
         for (size_t k=0;k<N;++k) {
             for (size_t l=0;l<C;++l) {

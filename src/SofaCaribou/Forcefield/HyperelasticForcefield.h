@@ -54,7 +54,6 @@ public:
     using Coord    = typename DataTypes::Coord;
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
-    using Index    = sofa::core::topology::BaseMeshTopology::index_type;
 
     using LocalCoordinates = typename caribou::geometry::Element<Element>::LocalCoordinates;
     using WorldCoordinates = typename caribou::geometry::Element<Element>::WorldCoordinates;
@@ -204,7 +203,7 @@ private:
     // These private methods are implemented but can be overridden
 
     /** Get the element nodes indices relative to the state vector */
-    virtual auto get_element_nodes_indices(const std::size_t &) const -> const Index * {
+    virtual auto get_element_nodes_indices(const std::size_t &) const -> const sofa::Index * {
         return nullptr;
     }
 
@@ -234,14 +233,14 @@ private:
 // Tetrahedron specialization
 template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::number_of_elements() const -> std::size_t;
 template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool;
-template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index *;
+template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const sofa::Index *;
 template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::templateName(const HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>> *) -> std::string;
 extern template class HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>;
 
 // Hexahedron specialization
 template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::number_of_elements() const -> std::size_t;
 template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool;
-template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const Index *;
+template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const sofa::Index *;
 template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::templateName(const HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>> *) -> std::string;
 extern template class HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>;
 
