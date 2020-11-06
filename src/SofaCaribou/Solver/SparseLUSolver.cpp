@@ -4,6 +4,12 @@
 #include<Eigen/SparseLU>
 
 #ifdef CARIBOU_WITH_MKL
+
+// Bug introduced in Eigen 3.3.8, fixed in bfdd4a9
+#ifndef EIGEN_USING_STD
+#define EIGEN_USING_STD(a) EIGEN_USING_STD_MATH(a)
+#endif
+
 #include <Eigen/PardisoSupport>
 #endif
 
