@@ -51,7 +51,14 @@ class TestDomain(unittest.TestCase):
             else:
                 cells = m.cells_dict[element_type]
 
+            # Creation with name
             domain = mesh.add_domain("segments", Segment(Caribou._1D, order), cells)
+            self.assertEqual(domain.number_of_elements(), 10)
+            self.assertMatrixEqual(domain.element_indices(0), cells[0])
+            self.assertMatrixEqual(domain.element_indices(9), cells[9])
+
+            # Creation without name
+            domain = mesh.add_domain(Segment(Caribou._1D, order), cells)
             self.assertEqual(domain.number_of_elements(), 10)
             self.assertMatrixEqual(domain.element_indices(0), cells[0])
             self.assertMatrixEqual(domain.element_indices(9), cells[9])

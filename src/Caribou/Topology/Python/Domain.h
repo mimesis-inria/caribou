@@ -36,6 +36,9 @@ void declare_domain(py::class_<Mesh> & m, const std::string & name) {
     m.def("add_domain", [](Mesh & mesh, const std::string & domain_name, const Element &, const Eigen::Matrix<NodeIndex, Eigen::Dynamic, geometry::traits<Element>::NumberOfNodesAtCompileTime> & node_indices) {
         return mesh.template add_domain<Element, NodeIndex>(domain_name, node_indices);
     }, py::arg("domain_name"), py::arg("element_type"), py::arg("node_indices"));
+    m.def("add_domain", [](Mesh & mesh, const Element &, const Eigen::Matrix<NodeIndex, Eigen::Dynamic, geometry::traits<Element>::NumberOfNodesAtCompileTime> & node_indices) {
+        return mesh.template add_domain<Element, NodeIndex>(node_indices);
+    }, py::arg("element_type"), py::arg("node_indices"));
 
     m.def("add_domain", [](Mesh & mesh, const std::string & domain_name, const Element &, const Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic> & node_indices) {
         if (geometry::traits<Element>::NumberOfNodesAtCompileTime != caribou::Dynamic and node_indices.cols() != geometry::traits<Element>::NumberOfNodesAtCompileTime) {
@@ -48,6 +51,18 @@ void declare_domain(py::class_<Mesh> & m, const std::string & name) {
 
         return mesh.template add_domain<Element, NodeIndex>(domain_name, node_indices);
     }, py::arg("domain_name"), py::arg("element_type"), py::arg("node_indices"));
+
+    m.def("add_domain", [](Mesh & mesh, const Element &, const Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic> & node_indices) {
+        if (geometry::traits<Element>::NumberOfNodesAtCompileTime != caribou::Dynamic and node_indices.cols() != geometry::traits<Element>::NumberOfNodesAtCompileTime) {
+            std::ostringstream ss;
+            ss << "You tried to create a domain containing elements of " << geometry::traits<Element>::NumberOfNodesAtCompileTime
+               << " nodes, but elements having " << node_indices.cols() << " nodes were found instead. The node indices "
+               << "matrix should have NxM indices where N is the number of elements, and M is the number of nodes per element.";
+            throw py::key_error(ss.str());
+        }
+
+        return mesh.template add_domain<Element, NodeIndex>(node_indices);
+    }, py::arg("element_type"), py::arg("node_indices"));
 
     declare_barycentric_container(c);
 }

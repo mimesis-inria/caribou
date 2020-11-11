@@ -175,6 +175,34 @@ namespace caribou::topology {
         /*!
          * Adds a domain with the Element type supplied as a template parameter.
          * @tparam Element The type of Element
+         * @tparam NodeIndex The integer type for stored node indices
+         * @return A pointer to the newly created domain, or null if the creation failed
+         *
+         * \note The domain is managed by this mesh instance, and will be freed upon the deletion of the mesh.
+         */
+        template<typename Element, typename NodeIndex, typename... Args>
+        inline
+        typename std::enable_if_t<std::is_integral_v<NodeIndex>, Domain<Element, NodeIndex> *>
+        add_domain(Args ...args) {
+            static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
+
+            auto domain_ptr = new Domain<Element, NodeIndex>(this, std::forward<Args>(args)...);
+
+            std::ostringstream ss;
+            ss << "domain_" << domain_ptr;
+
+            auto res = p_domains.emplace(p_domains.end(), ss.str(), std::unique_ptr<BaseDomain>(static_cast<BaseDomain *>(domain_ptr)));
+            if (res->second) {
+                return domain_ptr;
+            } else {
+                delete domain_ptr;
+                return static_cast<Domain<Element, NodeIndex>*> (nullptr);
+            }
+        }
+
+        /*!
+         * Adds a domain with the Element type supplied as a template parameter.
+         * @tparam Element The type of Element
          * @param name
          * @return A pointer to the newly created domain, or null if the creation failed
          *
