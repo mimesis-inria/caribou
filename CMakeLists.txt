@@ -28,18 +28,36 @@ CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 
 # OPTIONS
 option(CARIBOU_USE_DOUBLE "Use double precision for floating point values." ON)
-option(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." OFF)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
+
+# SOFA option
+find_package(SOFA COMPONENTS SofaFramework QUIET)
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
+if (CARIBOU_WITH_SOFA)
+    list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
+    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+    message(STATUS "${SOFA_MODULE_DIR}")
+endif()
 
 # Tests
 # SOFA is exporting its own gtest, let's try to find it first
-find_package(GTest QUIET)
+find_package(GTest CONFIG QUIET)
 if (NOT GTest_FOUND)
     # This find_package needs to be executed at MOST once, else it will fails on the second call
     find_package(GMock QUIET)
 endif ()
 CMAKE_DEPENDENT_OPTION(CARIBOU_BUILD_TESTS "Compile the automatic tests for Caribou." ON "GTest_FOUND OR GMock_FOUND" OFF)
 if (CARIBOU_BUILD_TESTS)
+    if (TARGET gtest)
+        get_target_property(GTEST_INCLUDE_DIRS gtest INTERFACE_INCLUDE_DIRECTORIES)
+        get_target_property(GTEST_BOTH_LIBRARIES gtest LOCATION)
+    else()
+        add_library(gtest SHARED IMPORTED)
+        set_target_properties(gtest PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
+            IMPORTED_LOCATION "${GTEST_BOTH_LIBRARIES}"
+        )
+    endif ()
     message(STATUS "Caribou with unittests\n\tLibraries: ${GTEST_BOTH_LIBRARIES}\n\tInclude directories: ${GTEST_INCLUDE_DIRS}")
 endif()
 
@@ -52,13 +70,8 @@ if (CARIBOU_WITH_PYTHON_3)
     message(STATUS "Caribou with Python support\n\tPython version: ${PYTHON_VERSION_STRING}\n\tPython executabe: ${PYTHON_EXECUTABLE}\n\tpybind11 version: ${pybind11_VERSION}\n\tpybind11 config: ${pybind11_CONFIG}")
 endif()
 
-# SOFA option
-find_package(SOFA COMPONENTS SofaFramework QUIET)
-CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
+# SOFA Python 3
 if (CARIBOU_WITH_SOFA)
-    list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
-    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
-
     find_package(SofaPython3 QUIET)
     if (CARIBOU_WITH_PYTHON_3 AND SofaPython3_FOUND)
         message(STATUS "Caribou with SOFA support\n\tSOFA: ${SOFA_ROOT}\n\tSofaPython3: ${SofaPython3_CONFIG}")
