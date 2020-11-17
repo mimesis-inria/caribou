@@ -28,17 +28,6 @@ public:
     using SparseMatrix = typename EigenSolver::MatrixType;
     using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
 
-    /// Backend solvers
-    enum class Backend : unsigned int {
-        // Default solvers provided by Eigen (SimplicialLLT, SimplicialLDLT, SparseLU, SparseQR)
-        EigenDefault = 0,
-
-#ifdef CARIBOU_WITH_MKL
-        // Pardiso MKL solvers (PardisoLLT, PardisoLDLT, PardisoLU)
-        Pardiso = 1
-#endif
-    };
-
     /**
      * Assemble the system matrix A = (mM + bB + kK) inside the SparseMatrix p_A.
      * @param mparams Mechanical parameters containing the m, b and k factors.

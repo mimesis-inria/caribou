@@ -2,12 +2,12 @@
 .. role:: important
 .. role:: warning
 
-<SparseLUSolver />
+<LUSolver />
 ==================
 
 .. rst-class:: doxy-label
 .. rubric:: Doxygen:
-    :cpp:class:`SofaCaribou::solver::SparseLUSolver`
+    :cpp:class:`SofaCaribou::solver::LUSolver`
 
 Implementation of a sparse LU linear solver.
 
@@ -43,7 +43,7 @@ Quick example
 
             <Node>
                 <StaticODESolver newton_iterations="10" correction_tolerance_threshold="1e-8" residual_tolerance_threshold="1e-8" printLog="1" />
-                <SparseLUSolver backend="Pardiso" />
+                <LUSolver backend="Pardiso" />
             </Node>
 
     .. tab-container:: tab2
@@ -52,7 +52,7 @@ Quick example
         .. code-block:: python
 
             node.addObject('StaticODESolver', newton_iterations=10, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-            node.addObject('SparseLUSolver', backend="Pardiso")
+            node.addObject('LUSolver', backend="Pardiso")
 
 
 Available python bindings

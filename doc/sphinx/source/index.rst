@@ -58,9 +58,9 @@ The project is composed of two modules:
     :hidden:
 
     ConjugateGradient <cg_solver_doc.rst>
-    SparseLLT <sparse_llt_doc.rst>
-    SparseLDLT <sparse_ldlt_doc.rst>
-    SparseLU <sparse_lu_doc.rst>
+    LLTSolver <sparse_llt_doc.rst>
+    LDLTSolver <sparse_ldlt_doc.rst>
+    LUSolver <sparse_lu_doc.rst>
 
 .. toctree::
     :caption: Topology

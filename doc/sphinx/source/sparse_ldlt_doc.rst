@@ -2,12 +2,12 @@
 .. role:: important
 .. role:: warning
 
-<SparseLDLTSolver />
+<LDLTSolver />
 ====================
 
 .. rst-class:: doxy-label
 .. rubric:: Doxygen:
-    :cpp:class:`SofaCaribou::solver::SparseLDLTSolver`
+    :cpp:class:`SofaCaribou::solver::LDLTSolver`
 
 Implementation of a sparse :math:`LDL^T` linear solver.
 
@@ -43,7 +43,7 @@ Quick example
 
             <Node>
                 <StaticODESolver newton_iterations="10" correction_tolerance_threshold="1e-8" residual_tolerance_threshold="1e-8" printLog="1" />
-                <SparseLDLTSolver backend="Pardiso" />
+                <LDLTSolver backend="Pardiso" />
             </Node>
 
     .. tab-container:: tab2
@@ -52,7 +52,7 @@ Quick example
         .. code-block:: python
 
             node.addObject('StaticODESolver', newton_iterations=10, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-            node.addObject('SparseLDLTSolver', backend="Pardiso")
+            node.addObject('LDLTSolver', backend="Pardiso")
 
 
 Available python bindings

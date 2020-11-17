@@ -1,7 +1,12 @@
-#include "SparseLDLTSolver.h"
+#include "LLTSolver.h"
 #include <SofaCaribou/Solver/EigenSparseSolver.inl>
 
+#include <algorithm>
+#include <cctype>
+#include <string>
+
 #include<Eigen/SparseCholesky>
+
 #ifdef CARIBOU_WITH_MKL
 
 // Bug introduced in Eigen 3.3.8, fixed in bfdd4a9
@@ -16,33 +21,33 @@
 
 namespace SofaCaribou::solver {
 
-
 namespace internal {
+
 template<typename MatrixType, int UpLo, typename Ordering>
-struct solver_traits <Eigen::SimplicialLDLT<MatrixType,UpLo,Ordering>> {
-    static auto TemplateName() -> std::string {return "SimplicialLDLT";}
-    static auto BackendName() -> std::string {return "Eigen";}
+struct solver_traits<Eigen::SimplicialLLT<MatrixType, UpLo, Ordering>> {
+    static auto BackendName() -> std::string { return "Eigen"; }
 };
 
 #ifdef CARIBOU_WITH_MKL
+
 template<typename MatrixType, int UpLo>
-struct solver_traits <Eigen::PardisoLDLT< MatrixType, UpLo >> {
-    static auto TemplateName() -> std::string {return "PardisoLDLT";}
-    static auto BackendName() -> std::string {return "Pardiso";}
+struct solver_traits<Eigen::PardisoLLT<MatrixType, UpLo >> {
+    static auto BackendName() -> std::string { return "Pardiso"; }
 };
+
 #endif
 }
 
 template<typename EigenSolver>
-SparseLDLTSolver<EigenSolver>::SparseLDLTSolver()
+LLTSolver<EigenSolver>::LLTSolver()
     : d_backend(initData(&d_backend,
         "backend",
         R"(
             Solver backend used.
 
             Available backends are:
-                Eigen:   Eigen LDLT solver (SimplicialLDLT) [default].
-                Pardiso: Pardiso LDLT solver.
+                Eigen:   Eigen LLT solver (SimplicialLLT) [default].
+                Pardiso: Pardiso LLT solver.
         )",
         true /*displayed_in_GUI*/, true /*read_only_in_GUI*/))
 {
@@ -50,18 +55,23 @@ SparseLDLTSolver<EigenSolver>::SparseLDLTSolver()
         "Eigen", "Pardiso"
     }));
 
+    // Put the backend name in lower case
+    std::string backend_str = internal::solver_traits<EigenSolver>::BackendName();
+    std::transform(backend_str.begin(), backend_str.end(), backend_str.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+
     sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> backend = d_backend;
-    if (internal::solver_traits<EigenSolver>::TemplateName() == "PardisoLDLT") {
+    if (backend_str == "pardiso") {
         backend->setSelectedItem(static_cast<unsigned int>(1));
     } else {
         backend->setSelectedItem(static_cast<unsigned int>(0));
     }
 }
 
-static int SparseLDLTSolverClass = sofa::core::RegisterObject("Caribou Sparse LDLT linear solver")
-    .add< SparseLDLTSolver<Eigen::SimplicialLDLT<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor>>> >(true)
+static int SparseLLTSolverClass = sofa::core::RegisterObject("Caribou Sparse LLT linear solver")
+    .add< LLTSolver<Eigen::SimplicialLLT<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor, int>, Eigen::Lower, Eigen::AMDOrdering<int>>> >(true)
 #ifdef CARIBOU_WITH_MKL
-    .add< SparseLDLTSolver<Eigen::PardisoLDLT<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::RowMajor, long long int>>> >()
+    .add< LLTSolver<Eigen::PardisoLLT<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::RowMajor, int>>> >()
 #endif
 ;
 

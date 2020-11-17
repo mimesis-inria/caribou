@@ -1,5 +1,9 @@
-#include "SparseLUSolver.h"
+#include "LUSolver.h"
 #include <SofaCaribou/Solver/EigenSparseSolver.inl>
+
+#include <algorithm>
+#include <cctype>
+#include <string>
 
 #include<Eigen/SparseLU>
 
@@ -20,21 +24,19 @@ namespace SofaCaribou::solver {
 namespace internal {
 template<typename MatrixType, typename Ordering>
 struct solver_traits <Eigen::SparseLU<MatrixType,Ordering>> {
-    static auto TemplateName() -> std::string {return "SparseLU";}
     static auto BackendName() -> std::string {return "Eigen";}
 };
 
 #ifdef CARIBOU_WITH_MKL
 template<typename MatrixType>
 struct solver_traits <Eigen::PardisoLU< MatrixType >> {
-    static auto TemplateName() -> std::string {return "PardisoLU";}
     static auto BackendName() -> std::string {return "Pardiso";}
 };
 #endif
 }
 
 template<typename EigenSolver>
-SparseLUSolver<EigenSolver>::SparseLUSolver()
+LUSolver<EigenSolver>::LUSolver()
     : d_backend(initData(&d_backend,
         "backend",
         R"(
@@ -50,8 +52,13 @@ SparseLUSolver<EigenSolver>::SparseLUSolver()
         "Eigen", "Pardiso"
     }));
 
+    // Put the backend name in lower case
+    std::string backend_str = internal::solver_traits<EigenSolver>::BackendName();
+    std::transform(backend_str.begin(), backend_str.end(), backend_str.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+
     sofa::helper::WriteAccessor<Data< sofa::helper::OptionsGroup >> backend = d_backend;
-    if (internal::solver_traits<EigenSolver>::TemplateName() == "PardisoLU") {
+    if (backend_str == "pardiso") {
         backend->setSelectedItem(static_cast<unsigned int>(1));
     } else {
         backend->setSelectedItem(static_cast<unsigned int>(0));
@@ -59,9 +66,9 @@ SparseLUSolver<EigenSolver>::SparseLUSolver()
 }
 
 static int SparseLUSolverClass = sofa::core::RegisterObject("Caribou Sparse LU linear solver")
-    .add< SparseLUSolver<Eigen::SparseLU<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor>>> >(true)
+    .add< LUSolver<Eigen::SparseLU<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor, int>, Eigen::AMDOrdering<int>>> >(true)
 #ifdef CARIBOU_WITH_MKL
-    .add< SparseLUSolver<Eigen::PardisoLU<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::RowMajor, long long int>>> >()
+    .add< LUSolver<Eigen::PardisoLU<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::RowMajor, int>>> >()
 #endif
 ;
 

@@ -209,7 +209,7 @@ void EigenSparseSolver<EigenSolver>::solveSystem() {
 
 template<typename EigenSolver>
 std::string EigenSparseSolver<EigenSolver>::GetCustomTemplateName() {
-    return internal::solver_traits<EigenSolver>::TemplateName();
+    return internal::solver_traits<EigenSolver>::BackendName();
 }
 
 template<typename EigenSolver>

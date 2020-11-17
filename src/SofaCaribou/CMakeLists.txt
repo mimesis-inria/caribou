@@ -14,9 +14,9 @@ set(HEADER_FILES
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
     Solver/EigenSparseSolver.h
-    Solver/SparseLDLTSolver.h
-    Solver/SparseLLTSolver.h
-    Solver/SparseLUSolver.h
+    Solver/LDLTSolver.h
+    Solver/LLTSolver.h
+    Solver/LUSolver.h
     Topology/CircleIsoSurface.h
     Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
@@ -43,9 +43,9 @@ set(SOURCE_FILES
     Material/HyperelasticMaterial.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
-    Solver/SparseLDLTSolver.cpp
-    Solver/SparseLLTSolver.cpp
-    Solver/SparseLUSolver.cpp
+    Solver/LDLTSolver.cpp
+    Solver/LLTSolver.cpp
+    Solver/LUSolver.cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
     Visitor/AssembleGlobalMatrix.cpp

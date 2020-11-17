@@ -2,14 +2,20 @@
 .. role:: important
 .. role:: warning
 
-<SparseLLTSolver />
+<LLTSolver />
 ===================
 
 .. rst-class:: doxy-label
 .. rubric:: Doxygen:
-    :cpp:class:`SofaCaribou::solver::SparseLLTSolver`
+    :cpp:class:`SofaCaribou::solver::LLTSolver`
 
-Implementation of a sparse Cholesky (:math:`LL^T`) linear solver.
+Implementation of a sparse Cholesky (:math:`LL^T`) direct linear solver.
+
+This class provides a :math:`LL^T` Cholesky factorizations of sparse matrices that are selfadjoint and positive definite.
+In order to reduce the fill-in, a symmetric permutation P is applied prior to the factorization such that the
+factorized matrix is :math:`P A P^{-1}`.
+
+The component uses the Eigen SimplicialLLT class as the solver backend.
 
 
 .. list-table::
@@ -43,7 +49,7 @@ Quick example
 
             <Node>
                 <StaticODESolver newton_iterations="10" correction_tolerance_threshold="1e-8" residual_tolerance_threshold="1e-8" printLog="1" />
-                <SparseLLTSolver backend="Pardiso" />
+                <LLTSolver backend="Pardiso" />
             </Node>
 
     .. tab-container:: tab2
@@ -52,7 +58,7 @@ Quick example
         .. code-block:: python
 
             node.addObject('StaticODESolver', newton_iterations=10, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-            node.addObject('SparseLLTSolver', backend="Pardiso")
+            node.addObject('LLTSolver', backend="Pardiso")
 
 
 Available python bindings

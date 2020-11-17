@@ -6,14 +6,14 @@
 namespace SofaCaribou::solver {
 
 template <class EigenSolver>
-class SparseLUSolver : public EigenSparseSolver<EigenSolver> {
+class LDLTSolver : public EigenSparseSolver<EigenSolver> {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(SparseLUSolver, EigenSolver), SOFA_TEMPLATE(EigenSparseSolver, EigenSolver));
+    SOFA_CLASS(SOFA_TEMPLATE(LDLTSolver, EigenSolver), SOFA_TEMPLATE(EigenSparseSolver, EigenSolver));
 
     template <typename T>
     using Data = sofa::Data<T>;
 
-    SparseLUSolver();
+    LDLTSolver();
 private:
     ///< Solver backend used (Eigen or Pardiso)
     Data<sofa::helper::OptionsGroup> d_backend;
