@@ -32,7 +32,7 @@ public:
      * Assemble the system matrix A = (mM + bB + kK) inside the SparseMatrix p_A.
      * @param mparams Mechanical parameters containing the m, b and k factors.
      */
-    void assemble (const sofa::core::MechanicalParams* mparams);
+    virtual void assemble (const sofa::core::MechanicalParams* mparams);
 
     /**
      * Reset the complete system (A, x and b are cleared).
@@ -71,6 +71,27 @@ public:
      */
     void solveSystem() override;
 
+    /**
+     * States if the system matrix is symmetric. Note that this value isn't set automatically, the user must
+     * explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
+     */
+    inline virtual bool symmetric() const {return p_is_symmetric;}
+
+    /**
+     * Explicitly states if this matrix is symmetric.
+     */
+    inline virtual void set_symmetric(bool is_symmetric) { p_is_symmetric = is_symmetric; }
+
+    /**
+     * Get a readonly reference to the backend solver
+     */
+    const EigenSolver & solver() const { return p_solver; }
+
+    /**
+     * Get a reference to the backend solver
+     */
+    EigenSolver & solver() { return p_solver; }
+
     // SOFA overrides
     static std::string GetCustomTemplateName();
     static auto canCreate(EigenSparseSolver<EigenSolver>* o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
@@ -93,7 +114,7 @@ private:
     ///< The identifier of the x vector
     sofa::core::MultiVecDerivId p_x_id;
 
-    ///< Global system matrix (only built when a preconditioning method needs it)
+    ///< Global system matrix
     SparseMatrix p_A;
 
     ///< Global system solution vector (usually filled with an initial guess or the previous solution)
@@ -104,6 +125,10 @@ private:
 
     ///< True if the solver has successfully factorize the system matrix
     bool p_A_is_factorized;
+
+    ///< States if the system matrix is symmetric. Note that this value isn't set automatically, the user must
+    ///< explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
+    bool p_is_symmetric = false;
 };
 
 } // namespace SofaCaribou::solver

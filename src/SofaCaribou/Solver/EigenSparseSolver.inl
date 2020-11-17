@@ -49,6 +49,7 @@ void EigenSparseSolver<EigenSolver>::assemble (const sofa::core::MechanicalParam
     Timer::stepBegin("Clear");
     p_A.resize(n, n);
     Algebra::EigenMatrixWrapper<SparseMatrix &> wrapper (p_A);
+    wrapper.set_symmetric(symmetric()); // Enables some optimization when the system matrix is symmetric
     p_accessor.setGlobalMatrix(&wrapper);
     Timer::stepEnd("Clear");
 

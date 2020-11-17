@@ -30,9 +30,9 @@ direct_solvers = [
     # {'name': 'LDLTPardi', 'solver': 'LDLTSolver', 'arguments': {'backend':'Pardiso'}},
     # {'name': 'LDLTSofa',  'solver': 'SparseLDLSolver', 'arguments': {}},
 
-    # LU
-    # {'name': 'LUEigen', 'solver': 'LUSolver', 'arguments': {'backend':'Eigen'}},
-    # {'name': 'LUPardi', 'solver': 'LUSolver', 'arguments': {'backend':'Pardiso'}},
+    # # LU
+    # {'name': 'LUEigen', 'solver': 'LUSolver', 'arguments': {'backend': 'Eigen', 'symmetric': True}},
+    # {'name': 'LUPardi', 'solver': 'LUSolver', 'arguments': {'backend': 'Pardiso', 'symmetric': True}},
     # {'name': 'LUSofa',  'solver': 'SparseLUSolver', 'arguments': {}},
 ]
 

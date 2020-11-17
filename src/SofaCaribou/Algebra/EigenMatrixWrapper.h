@@ -88,22 +88,22 @@ public:
 
     /** Sets the entire row i to zero */
     inline void clearRow(Index i) final {
-        p_eigen_matrix.row(i) *= 0;
+        p_eigen_matrix.row(i).setZero();
     }
 
     /** Sets the rows from index imin to index imax (inclusively) to zero */
     inline void clearRows(Index imin, Index imax) final {
-        p_eigen_matrix.middleRows(imin, (imax-imin)+1) *= 0;
+        p_eigen_matrix.middleRows(imin, (imax-imin)+1).setZero();
     }
 
     /** Sets the entire columns i to zero */
     inline void clearCol(Index i) final {
-        p_eigen_matrix.col(i) *= 0;
+        p_eigen_matrix.col(i).setZero();
     }
 
     /** Sets the columns from index imin to index imax (inclusively) to zero */
     inline void clearCols(Index imin, Index imax) final {
-        p_eigen_matrix.middleCols(imin, (imax-imin)+1) *= 0;
+        p_eigen_matrix.middleCols(imin, (imax-imin)+1).setZero();
     }
 
 private:
@@ -136,6 +136,17 @@ public:
     // Abstract methods overrides
     inline Index rowSize() const final { return p_eigen_matrix.rows(); }
     inline Index colSize() const final { return p_eigen_matrix.cols(); }
+
+    /** States if the matrix is symmetric. Note that this value isn't set automatically, the user must
+     * explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
+     */
+    inline bool symmetric() const {return p_is_symmetric;}
+
+    /**
+     * Explicitly states if this matrix is symmetric.
+     */
+    inline void set_symmetric(bool is_symmetric) { p_is_symmetric = is_symmetric; }
+
     /**
      * @brief Return the matrix entry (i,j).
      * \warning If the matrix hasn't been initialized by calling compress() or set(), this
@@ -214,16 +225,28 @@ public:
     inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2f & m) override {return add_block(i, j, m);}
 
     /** Sets the entire row i to zero */
-    inline void clearRow(Index i) final {
+    inline void clearRow(Index row_id) final {
         if (not p_initialized) {
             initialize();
         }
 
-#if EIGEN_VERSION_AT_LEAST(3,3,0)
-        p_eigen_matrix.row(i) *= static_cast<const typename EigenType::Scalar &>(0);
-#else
-        p_eigen_matrix.middleRows(i,1) *= static_cast<const typename EigenType::Scalar &>(0);
-#endif
+        using StorageIndex = typename EigenType::StorageIndex;
+        using Scalar = typename EigenType::Scalar;
+
+        if constexpr (EigenType::IsRowMajor) {
+            const auto & start = p_eigen_matrix.outerIndexPtr()[row_id];
+            const auto & end   = p_eigen_matrix.outerIndexPtr()[row_id+1];
+            memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+        } else {
+            for (int col_id=0; col_id<p_eigen_matrix.outerSize(); ++col_id) {
+                const auto & start = p_eigen_matrix.outerIndexPtr()[col_id];
+                const auto & end   = p_eigen_matrix.outerIndexPtr()[col_id+1];
+                const auto id = p_eigen_matrix.data().searchLowerIndex(start, end, static_cast<StorageIndex>(row_id));
+                if ((id<end) && (p_eigen_matrix.data().index(id)==row_id)) {
+                    p_eigen_matrix.data().value(id) =  static_cast<const Scalar &>(0);
+                }
+            }
+        }
     }
 
     /** Sets the rows from index imin to index imax (inclusively) to zero */
@@ -232,16 +255,52 @@ public:
             initialize();
         }
 
-        p_eigen_matrix.middleRows(imin, (imax-imin)+1) *= static_cast<const typename EigenType::Scalar &>(0);
+        using StorageIndex = typename EigenType::StorageIndex;
+        using Scalar = typename EigenType::Scalar;
+
+        if constexpr (EigenType::IsRowMajor) {
+            const auto & start = p_eigen_matrix.outerIndexPtr()[imin];
+            const auto & end   = p_eigen_matrix.outerIndexPtr()[imax+1];
+            memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+        } else {
+            for (int col_id=0; col_id<p_eigen_matrix.outerSize(); ++col_id) {
+                const auto & start = p_eigen_matrix.outerIndexPtr()[col_id];
+                const auto & end   = p_eigen_matrix.outerIndexPtr()[col_id+1];
+                auto id = p_eigen_matrix.data().searchLowerIndex(start, end, static_cast<StorageIndex>(imin));
+                for (;id<end;++id) {
+                    if (imin <= p_eigen_matrix.data().index(id) and p_eigen_matrix.data().index(id) <= imax) {
+                        p_eigen_matrix.data().value(id) =  static_cast<const Scalar &>(0);
+                    } else if (p_eigen_matrix.data().index(id) > imax) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /** Sets the entire columns i to zero */
-    inline void clearCol(Index i) final {
+    inline void clearCol(Index col_id) final {
         if (not p_initialized) {
             initialize();
         }
 
-        p_eigen_matrix.col(i) *= static_cast<const typename EigenType::Scalar &>(0);
+        using StorageIndex = typename EigenType::StorageIndex;
+        using Scalar = typename EigenType::Scalar;
+
+        if constexpr (not EigenType::IsRowMajor) {
+            const auto & start = p_eigen_matrix.outerIndexPtr()[col_id];
+            const auto & end   = p_eigen_matrix.outerIndexPtr()[col_id+1];
+            memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+        } else {
+            for (int row_id=0; row_id<p_eigen_matrix.outerSize(); ++row_id) {
+                const auto & start = p_eigen_matrix.outerIndexPtr()[row_id];
+                const auto & end   = p_eigen_matrix.outerIndexPtr()[row_id+1];
+                const auto id = p_eigen_matrix.data().searchLowerIndex(start, end, static_cast<StorageIndex>(col_id));
+                if ((id<end) && (p_eigen_matrix.data().index(id)==col_id)) {
+                    p_eigen_matrix.data().value(id) =  static_cast<const Scalar &>(0);
+                }
+            }
+        }
     }
 
     /** Sets the columns from index imin to index imax (inclusively) to zero */
@@ -250,7 +309,67 @@ public:
             initialize();
         }
 
-        p_eigen_matrix.middleCols(imin, (imax-imin)+1) *= static_cast<const typename EigenType::Scalar &>(0);
+        using StorageIndex = typename EigenType::StorageIndex;
+        using Scalar = typename EigenType::Scalar;
+
+        if constexpr (not EigenType::IsRowMajor) {
+            const auto & start = p_eigen_matrix.outerIndexPtr()[imin];
+            const auto & end   = p_eigen_matrix.outerIndexPtr()[imax+1];
+            memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+        } else {
+            for (int row_id=0; row_id<p_eigen_matrix.outerSize(); ++row_id) {
+                const auto & start = p_eigen_matrix.outerIndexPtr()[row_id];
+                const auto & end   = p_eigen_matrix.outerIndexPtr()[row_id+1];
+                auto id = p_eigen_matrix.data().searchLowerIndex(start, end, static_cast<StorageIndex>(imin));
+                for (;id<end;++id) {
+                    if (imin <= p_eigen_matrix.data().index(id) and p_eigen_matrix.data().index(id) <= imax) {
+                        p_eigen_matrix.data().value(id) =  static_cast<const Scalar &>(0);
+                    } else if (p_eigen_matrix.data().index(id) > imax) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /** Sets the entire row i and column i to zero */
+    inline void clearRowCol(Index i) final {
+        if (not p_initialized) {
+            initialize();
+        }
+
+        using StorageIndex = typename EigenType::StorageIndex;
+        using Scalar = typename EigenType::Scalar;
+
+        // Clear the complete inner vector i (the row i or column i if it is in row major or column major respectively)
+        const auto & start = p_eigen_matrix.outerIndexPtr()[i];
+        const auto & end   = p_eigen_matrix.outerIndexPtr()[i+1];
+        memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+
+        // Next, to clear the ith inner coefficients of each row in row-major (each column in column-major)
+        if (symmetric() and p_eigen_matrix.rows() == p_eigen_matrix.cols()) {
+            // When the sparse matrix is symmetric, we can avoid doing the binary search on each inner vectors. Instead,
+            // We loop on each inner coefficient of the ith outer vector (eg each (i,j) of the ith row in row major)
+            // and do the binary search only on the jth outer vector
+            for (typename EigenType::InnerIterator it(p_eigen_matrix, i); it; ++it) {
+                const auto inner_index = EigenType::IsRowMajor ? it.col() : it.row();
+                const auto & start = p_eigen_matrix.outerIndexPtr()[inner_index];
+                const auto & end   = p_eigen_matrix.outerIndexPtr()[inner_index+1];
+                const auto id = p_eigen_matrix.data().searchLowerIndex(start, end, static_cast<StorageIndex>(i));
+                if ((id<end) && (p_eigen_matrix.data().index(id)==i)) {
+                    p_eigen_matrix.data().value(id) =  static_cast<const Scalar &>(0);
+                }
+            }
+        } else {
+            for (int outer_id=0; outer_id<p_eigen_matrix.outerSize(); ++outer_id) {
+                const auto & start = p_eigen_matrix.outerIndexPtr()[outer_id];
+                const auto & end   = p_eigen_matrix.outerIndexPtr()[outer_id+1];
+                const auto id = p_eigen_matrix.data().searchLowerIndex(start, end, static_cast<StorageIndex>(i));
+                if ((id<end) && (p_eigen_matrix.data().index(id)==i)) {
+                    p_eigen_matrix.data().value(id) =  static_cast<const Scalar &>(0);
+                }
+            }
+        }
     }
 
 private:
@@ -294,6 +413,10 @@ private:
 
     ///< The actual Eigen Matrix.
     Derived p_eigen_matrix;
+
+    ///< States if the matrix is symmetric. Note that this value isn't set automatically, the user must
+    ///< explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
+    bool p_is_symmetric = false;
 };
 
 } // namespace SofaCaribou::Algebra

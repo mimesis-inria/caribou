@@ -25,14 +25,25 @@ namespace internal {
 template<typename MatrixType, typename Ordering>
 struct solver_traits <Eigen::SparseLU<MatrixType,Ordering>> {
     static auto BackendName() -> std::string {return "Eigen";}
+    static constexpr auto is_eigen() -> bool {return true;}
 };
 
 #ifdef CARIBOU_WITH_MKL
 template<typename MatrixType>
 struct solver_traits <Eigen::PardisoLU< MatrixType >> {
     static auto BackendName() -> std::string {return "Pardiso";}
+    static constexpr auto is_eigen() -> bool {return false;}
 };
 #endif
+}
+
+template<typename EigenSolver>
+void LUSolver<EigenSolver>::assemble (const sofa::core::MechanicalParams* mparams) {
+    if constexpr (internal::solver_traits<EigenSolver>::is_eigen()) {
+        this->solver().isSymmetric(symmetric());
+    }
+
+    EigenSparseSolver<EigenSolver>::assemble(mparams);
 }
 
 template<typename EigenSolver>
@@ -47,6 +58,7 @@ LUSolver<EigenSolver>::LUSolver()
                 Pardiso: Pardiso LU solver.
         )",
         true /*displayed_in_GUI*/, true /*read_only_in_GUI*/))
+        , d_is_symmetric(initData(&d_is_symmetric, "symmetric", "States if the system matrix is symmetric. This will enable some optimizations."))
 {
     d_backend.setValue(sofa::helper::OptionsGroup(std::vector<std::string> {
         "Eigen", "Pardiso"

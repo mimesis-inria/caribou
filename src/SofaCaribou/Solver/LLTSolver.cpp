@@ -66,6 +66,9 @@ LLTSolver<EigenSolver>::LLTSolver()
     } else {
         backend->setSelectedItem(static_cast<unsigned int>(0));
     }
+
+    // Explicitly state that the matrix is symmetric (would not be possible to do an LDLT decomposition otherwise)
+    this->set_symmetric(true);
 }
 
 static int SparseLLTSolverClass = sofa::core::RegisterObject("Caribou Sparse LLT linear solver")

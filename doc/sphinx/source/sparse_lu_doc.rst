@@ -31,6 +31,11 @@ Implementation of a sparse LU linear solver.
 
             * **Pardiso**
                 Pardiso LU solver. :warning:`Requires Intel® Math Kernel Library (MKL) installed.`
+    * - symmetric
+      - bool
+      - False
+      - Allows to explicitly state that the system matrix will be symmetric. This will in turn enable various optimizations.
+        This option is only used by the Eigen backend.
 
 Quick example
 *************
