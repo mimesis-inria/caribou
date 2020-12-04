@@ -81,10 +81,10 @@ public:
     }
 
     // Block operations on 3x3 and 2x2 sub-matrices
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3d & m) override {return add_block(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3f & m) override {return add_block(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2d & m) override {return add_block(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2f & m) override {return add_block(i, j, m);}
+    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3d & m) override { add_block<double, 3, 3>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3f & m) override { add_block<float, 3, 3>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2d & m) override { add_block<double, 2, 2>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2f & m) override { add_block<float, 2, 2>(i, j, m);}
 
     /** Sets the entire row i to zero */
     inline void clearRow(Index i) final {
@@ -219,10 +219,10 @@ public:
     }
 
     // Block operations on 3x3 and 2x2 sub-matrices
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3d & m) override {return add_block(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3f & m) override {return add_block(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2d & m) override {return add_block(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2f & m) override {return add_block(i, j, m);}
+    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3d & m) override { add_block<double, 3, 3>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3f & m) override { add_block<float, 3, 3>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2d & m) override { add_block<double, 2, 2>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2f & m) override { add_block<float, 2, 2>(i, j, m);}
 
     /** Sets the entire row i to zero */
     inline void clearRow(Index row_id) final {
