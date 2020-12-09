@@ -30,7 +30,7 @@ jobs:
       - name: Download SOFA nightly build
         run:  |
           curl --output sofa.zip -L \
-          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_SCOPE=binaries_minimal/artifact/Linux/*zip*/Linux.zip
+          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_minimal/artifact/Linux/*zip*/Linux.zip
 
       - name: Install SOFA nightly build
         run:  |
@@ -112,7 +112,7 @@ jobs:
         if: steps.sofa_cache.outputs.cache-hit != 'true'
         run:  |
           curl --output sofa.zip -L \
-          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_SCOPE=binaries_minimal/artifact/Linux/*zip*/Linux.zip
+          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_minimal/artifact/Linux/*zip*/Linux.zip
 
       - name: Install SOFA nightly build
         if: steps.sofa_cache.outputs.cache-hit != 'true'
@@ -133,6 +133,27 @@ jobs:
       - name: Caribou.Geometry.Test
         if: ${{ always() }}
         run: 
-          export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/caribou/lib:$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
           chmod +x caribou/bin/Caribou.Geometry.Test &&
           ./caribou/bin/Caribou.Geometry.Test
+
+      - name: Caribou.Topology.Test
+        if: ${{ always() }}
+        run:
+          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+          chmod +x caribou/bin/Caribou.Topology.Test &&
+          ./caribou/bin/Caribou.Topology.Test
+
+      - name: Caribou.Mechanics.Test
+        if: ${{ always() }}
+        run:
+          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+          chmod +x caribou/bin/Caribou.Mechanics.Test &&
+          ./caribou/bin/Caribou.Mechanics.Test
+
+      - name: SofaCaribouTest
+        if: ${{ always() }}
+        run:
+          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+          chmod +x caribou/bin/SofaCaribouTest &&
+          ./caribou/bin/SofaCaribouTest

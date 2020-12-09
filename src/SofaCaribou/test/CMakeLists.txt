@@ -25,3 +25,11 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
                            $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:LEGACY_CXX>)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
+
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/../lib" )
+
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT SofaCaribouTargets
+        RUNTIME DESTINATION "bin"
+)
