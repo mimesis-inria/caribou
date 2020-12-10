@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt install -qq libeigen3-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
           sudo apt install -qq ccache ninja-build
-          python3 -m pip install numpy meshio
+          python3 -m pip install numpy
 
       - name: Cache pybind11
         uses: actions/cache@v2
@@ -116,7 +116,7 @@ jobs:
       - name: Install requirements
         run: |
           sudo apt install -qq libboost-all-dev
-          python3 -m pip install numpy
+          python3 -m pip install numpy meshio
 
       - name: Get Date
         id: get-date
