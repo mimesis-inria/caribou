@@ -1,4 +1,5 @@
 #pragma once
+#include <Caribou/config.h>
 #include <Caribou/macros.h>
 #include <Caribou/Traits.h>
 #include <sofa/defaulttype/BaseMatrix.h>
