@@ -33,7 +33,6 @@ unset(PYTHON_MODULE_EXTENSION)
 
 
 if (CARIBOU_WITH_PYTHON_3)
-    find_package(SOFA QUIET)
     find_package(SofaPython3 REQUIRED)
     caribou_add_python_module(SofaCaribouPython
         TARGET_NAME SofaCaribouPython

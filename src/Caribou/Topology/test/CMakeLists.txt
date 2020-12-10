@@ -41,9 +41,25 @@ endif()
 enable_testing()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} Topology)
-target_link_libraries(${PROJECT_NAME} gtest pthread)
+target_link_libraries(${PROJECT_NAME} PUBLIC Topology)
+target_link_libraries(${PROJECT_NAME} PUBLIC gtest pthread)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+                      $<$<AND:$<PLATFORM_ID:Linux>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,8.0>>:stdc++fs>
+                      $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:c++fs>)
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+                           $<$<AND:$<PLATFORM_ID:Linux>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,8.0>>:LEGACY_CXX>
+                           $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:LEGACY_CXX>)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/../lib" )
+
 foreach(file ${MESH_FILES})
     file(RELATIVE_PATH path_from_package "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${file}")
+    get_filename_component(dir_from_package ${path_from_package} DIRECTORY)
     configure_file("${file}" "${CMAKE_BINARY_DIR}/bin/${path_from_package}" COPYONLY)
+    install(FILES "${CMAKE_BINARY_DIR}/bin/${path_from_package}" DESTINATION "bin/${dir_from_package}")
 endforeach()
+
+install(
+    TARGETS ${PROJECT_NAME}
+    EXPORT Caribou
+)

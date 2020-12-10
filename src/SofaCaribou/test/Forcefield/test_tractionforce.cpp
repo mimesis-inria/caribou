@@ -11,7 +11,6 @@ using namespace sofa::simpleapi;
 
 class TractionForce : public sofa::helper::testing::BaseTest {
     void SetUp() override {
-        PluginManager::getInstance().loadPlugin("SofaComponentAll") ;
         setSimulation(new sofa::simulation::graph::DAGSimulation()) ;
         root = getSimulation()->createNewNode("TractionForce");
     }
