@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-18.04]
     env:
       SOFA_ROOT: /opt/sofa
 
@@ -24,8 +24,22 @@ jobs:
       - name: Install requirements
         run: |
           sudo apt install -qq libeigen3-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
-          sudo apt install -qq ccache ninja-build pybind11-dev
+          sudo apt install -qq ccache ninja-build
           python3 -m pip install numpy
+
+      - name: Cache pybind11
+        uses: actions/cache@v2
+        id: pybind11_cache
+        with:
+          path: /tmp/pybind11
+          key: pybind24
+
+      - name: Build pybind11
+        if: steps.pybind11_cache.outputs.cache-hit != 'true'
+        run: git clone -b v2.4 --depth 1 https://github.com/pybind/pybind11.git /tmp/pybind11 && cd /tmp/pybind11 && cmake -DPYBIND11_TEST=OFF . && cmake -DPYBIND11_TEST=OFF . && make
+
+      - name: Install pybind11
+        run: cd /tmp/pybind11  && sudo make install
 
       - name: Download SOFA nightly build
         run:  |
@@ -101,6 +115,7 @@ jobs:
 
       - name: Install requirements
         run: |
+          sudo apt install -qq libboost-all-dev
           python3 -m pip install numpy
 
       - name: Get Date
