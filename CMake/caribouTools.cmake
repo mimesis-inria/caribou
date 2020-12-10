@@ -75,6 +75,22 @@ function(caribou_add_python_module NAME)
                TARGETS ${TARGET_NAME}
                LIBRARY DESTINATION "lib/${PREFIX}/${DESTINATION}" COMPONENT libraries
         )
+
+        # This will get the relative path from the current binding library to the plugin's "lib" directory.
+        # As an example, build/lib/python3.7/site-packages/Caribou/Geometry/CaribouGeometryPython.cpython-39-x86_64-linux.so
+        # will give "../../../.."
+        # We can thereby add this path to the installation RPATH in order to let the binding library find Caribou's
+        # libraries.
+        file(RELATIVE_PATH path_to_lib  "${CMAKE_BINARY_DIR}/lib/${PREFIX}/${DESTINATION}" "${CMAKE_BINARY_DIR}/lib")
+        list(APPEND target_rpath
+            "$ORIGIN/${path_to_lib}"
+            "$loader_path/${path_to_lib}"
+        )
+        set_target_properties(
+                ${TARGET_NAME}
+                PROPERTIES
+                INSTALL_RPATH "${target_rpath}"
+        )
     endif ()
 
     foreach(header ${A_HEADERS})

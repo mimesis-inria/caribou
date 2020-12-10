@@ -116,7 +116,7 @@ jobs:
       - name: Install requirements
         run: |
           sudo apt install -qq libboost-all-dev
-          python3 -m pip install numpy
+          python3 -m pip install numpy meshio
 
       - name: Get Date
         id: get-date
@@ -153,12 +153,26 @@ jobs:
           chmod +x caribou/bin/Caribou.Geometry.Test &&
           ./caribou/bin/Caribou.Geometry.Test
 
+      - name: Caribou.Geometry.PyTest
+        if: ${{ always() }}
+        run: |
+          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
+          export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3.7m/site-packages
+          python3 caribou/bin/Caribou.Geometry.Test.py
+
       - name: Caribou.Topology.Test
         if: ${{ always() }}
         run:
           export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
           chmod +x caribou/bin/Caribou.Topology.Test &&
           ./caribou/bin/Caribou.Topology.Test
+
+      - name: Caribou.Topology.PyTest
+        if: ${{ always() }}
+        run: |
+          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
+          export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3.7m/site-packages
+          python3 caribou/bin/Caribou.Topology.Test.py
 
       - name: Caribou.Mechanics.Test
         if: ${{ always() }}
