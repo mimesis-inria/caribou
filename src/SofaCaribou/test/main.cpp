@@ -8,6 +8,7 @@ namespace fs = ::std::filesystem;
 
 #include <gtest/gtest.h>
 #include <SofaSimulationGraph/init.h>
+#include <SofaBaseMechanics/initBaseMechanics.h>
 
 #include "sofacaribou_test.h"
 
@@ -21,6 +22,7 @@ int main(int argc, char **argv) {
 #endif
     testing::InitGoogleTest(&argc, argv);
     sofa::simulation::graph::init();
+    sofa::component::initBaseMechanics();
     int ret = RUN_ALL_TESTS();
     sofa::simulation::graph::cleanup();
     return ret;
