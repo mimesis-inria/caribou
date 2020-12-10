@@ -155,8 +155,9 @@ jobs:
 
       - name: Caribou.Geometry.PyTest
         if: ${{ always() }}
-        run:
-          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+        run: |
+          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
+          export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3.7m/site-packages
           python3 caribou/bin/Caribou.Geometry.Test.py
 
       - name: Caribou.Topology.Test
@@ -168,8 +169,9 @@ jobs:
 
       - name: Caribou.Topology.PyTest
         if: ${{ always() }}
-        run:
-          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+        run: |
+          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
+          export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3.7m/site-packages
           python3 caribou/bin/Caribou.Topology.Test.py
 
       - name: Caribou.Mechanics.Test
