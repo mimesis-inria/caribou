@@ -34,7 +34,7 @@ jobs:
       - name: Install SOFA nightly build
         run:  |
           sudo unzip sofa.zip -d temp
-          sudo unzip temp/Linux/`ls temp/MacOS/` -d temp
+          sudo unzip temp/MacOS/`ls temp/MacOS/` -d temp
           sudo rm -rf temp/MacOS
           sudo mkdir -p $SOFA_ROOT
           sudo mv temp/`ls temp`/* $SOFA_ROOT/
@@ -111,7 +111,7 @@ jobs:
       - name: Install SOFA nightly build
         run:  |
           sudo unzip sofa.zip -d temp
-          sudo unzip temp/Linux/`ls temp/MacOS/` -d temp
+          sudo unzip temp/MacOS/`ls temp/MacOS/` -d temp
           sudo rm -rf temp/MacOS
           sudo mkdir -p $SOFA_ROOT
           sudo mv temp/`ls temp`/* $SOFA_ROOT/
