@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [macos-10.15]
     env:
       SOFA_ROOT: /opt/sofa
 
@@ -23,34 +23,19 @@ jobs:
 
       - name: Install requirements
         run: |
-          sudo apt install -qq libeigen3-dev libboost-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
-          sudo apt install -qq ccache ninja-build
+          brew install ccache ninja boost eigen pybind11
           python3 -m pip install numpy
-
-      - name: Cache pybind11
-        uses: actions/cache@v2
-        id: pybind11_cache
-        with:
-          path: /tmp/pybind11
-          key: pybind24
-
-      - name: Build pybind11
-        if: steps.pybind11_cache.outputs.cache-hit != 'true'
-        run: git clone -b v2.4 --depth 1 https://github.com/pybind/pybind11.git /tmp/pybind11 && cd /tmp/pybind11 && cmake -DPYBIND11_TEST=OFF . && cmake -DPYBIND11_TEST=OFF . && make
-
-      - name: Install pybind11
-        run: cd /tmp/pybind11  && sudo make install
 
       - name: Download SOFA nightly build
         run:  |
           curl --output sofa.zip -L \
-          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_minimal/artifact/Linux/*zip*/Linux.zip
+          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_minimal/artifact/MacOS/*zip*/MacOS.zip
 
       - name: Install SOFA nightly build
         run:  |
           sudo unzip sofa.zip -d temp
-          sudo unzip temp/Linux/`ls temp/Linux/` -d temp
-          sudo rm -rf temp/Linux
+          sudo unzip temp/MacOS/`ls temp/MacOS/` -d temp
+          sudo rm -rf temp/MacOS
           sudo mkdir -p $SOFA_ROOT
           sudo mv temp/`ls temp`/* $SOFA_ROOT/
           sudo rm -rf temp
@@ -102,7 +87,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [macos-10.15]
     env:
       SOFA_ROOT: /opt/sofa
 
@@ -115,19 +100,19 @@ jobs:
 
       - name: Install requirements
         run: |
-          sudo apt install -qq libboost-all-dev
+          brew install boost
           python3 -m pip install numpy meshio
 
       - name: Download SOFA nightly build
         run:  |
           curl --output sofa.zip -L \
-          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_minimal/artifact/Linux/*zip*/Linux.zip
+          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_minimal/artifact/MacOS/*zip*/MacOS.zip
 
       - name: Install SOFA nightly build
         run:  |
           sudo unzip sofa.zip -d temp
-          sudo unzip temp/Linux/`ls temp/Linux/` -d temp
-          sudo rm -rf temp/Linux
+          sudo unzip temp/MacOS/`ls temp/MacOS/` -d temp
+          sudo rm -rf temp/MacOS
           sudo mkdir -p $SOFA_ROOT
           sudo mv temp/`ls temp`/* $SOFA_ROOT/
           sudo rm -rf temp
@@ -141,41 +126,41 @@ jobs:
       - name: Caribou.Geometry.Test
         if: ${{ always() }}
         run: 
-          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
           chmod +x caribou/bin/Caribou.Geometry.Test &&
           ./caribou/bin/Caribou.Geometry.Test
 
       - name: Caribou.Geometry.PyTest
         if: ${{ always() }}
         run: |
-          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
+          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3.7m/site-packages
           python3 caribou/bin/Caribou.Geometry.Test.py
 
       - name: Caribou.Topology.Test
         if: ${{ always() }}
         run:
-          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
           chmod +x caribou/bin/Caribou.Topology.Test &&
           ./caribou/bin/Caribou.Topology.Test
 
       - name: Caribou.Topology.PyTest
         if: ${{ always() }}
         run: |
-          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
+          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3.7m/site-packages
           python3 caribou/bin/Caribou.Topology.Test.py
 
       - name: Caribou.Mechanics.Test
         if: ${{ always() }}
         run:
-          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
           chmod +x caribou/bin/Caribou.Mechanics.Test &&
           ./caribou/bin/Caribou.Mechanics.Test
 
       - name: SofaCaribouTest
         if: ${{ always() }}
         run:
-          export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
+          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
           chmod +x caribou/bin/SofaCaribouTest &&
           ./caribou/bin/SofaCaribouTest
