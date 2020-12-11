@@ -26,7 +26,12 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 
-set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/../lib" )
+list(APPEND target_rpath
+    "$ORIGIN/../lib"
+    "@executable_path/../lib"
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${target_rpath}" )
 
 install(
         TARGETS ${PROJECT_NAME}
