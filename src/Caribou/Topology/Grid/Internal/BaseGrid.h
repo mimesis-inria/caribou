@@ -127,7 +127,7 @@ struct BaseGrid
      * outside of the grid boundaries. Enabling this option will verify that and return the closest cell inside.
      * */
     inline auto
-    cell_index_at(const WorldCoordinates & coordinates, bool test_for_boundary = false) const noexcept -> CellIndex
+    cell_index_containing(const WorldCoordinates & coordinates, bool test_for_boundary = false) const noexcept -> CellIndex
     {
         return Self().cell_index_at(cell_coordinates_at(coordinates, test_for_boundary));
     }
@@ -170,7 +170,7 @@ struct BaseGrid
 
         if (close_to_axis.none()) {
             // We are not near any axis, which means we are well inside a cell's boundaries
-            const auto cell_index = Self().cell_index_at(GridCoordinates(absolute.unaryExpr(CwiseFloor()). template cast<Int>()));
+            const auto cell_index = Self().cell_index_at(absolute.unaryExpr(CwiseFloor()). template cast<Int>());
             if (IN_CLOSED_INTERVAL(0, cell_index, ncells-1)) {
                 cells.emplace_back(cell_index);
             }
@@ -201,16 +201,16 @@ struct BaseGrid
                 }
             }
 
-            for (UNSIGNED_INTEGER_TYPE i : axis_indices[0]) {
+            for (Eigen::Index i : axis_indices[0]) {
                 if constexpr (Dimension == 1) {
                     cells.emplace_back(Self().cell_index_at(GridCoordinates(i)));
                 } else {
-                    for (UNSIGNED_INTEGER_TYPE j : axis_indices[1]) {
+                    for (Eigen::Index j : axis_indices[1]) {
                         if constexpr (Dimension == 2) {
-                            cells.emplace_back(Self().cell_index_at(GridCoordinates(i, j)));
+                            cells.emplace_back(Self().cell_index_at({i, j}));
                         } else {
-                            for (UNSIGNED_INTEGER_TYPE k : axis_indices[2]) {
-                                cells.emplace_back(Self().cell_index_at(GridCoordinates(i, j, k)));
+                            for (Eigen::Index k : axis_indices[2]) {
+                                cells.emplace_back(Self().cell_index_at({i, j, k}));
                             }
                         }
                     }
@@ -384,12 +384,12 @@ struct BaseGrid
         } else if CONSTEXPR_IF (Dimension == 2) {
             for (CellIndex j = lower_cell[1]; j <= upper_cell[1]; ++j)
                 for (CellIndex i = lower_cell[0]; i <= upper_cell[0]; ++i)
-                    enclosing_cells.emplace_back(Self().cell_index_at(GridCoordinates({i, j})));
+                    enclosing_cells.emplace_back(Self().cell_index_at({i, j}));
         } else { // Dimension == 3
             for (CellIndex k = lower_cell[2]; k <= upper_cell[2]; ++k)
                 for (CellIndex j = lower_cell[1]; j <= upper_cell[1]; ++j)
                     for (CellIndex i = lower_cell[0]; i <= upper_cell[0]; ++i)
-                        enclosing_cells.emplace_back(Self().cell_index_at(GridCoordinates({i, j, k})));
+                        enclosing_cells.emplace_back(Self().cell_index_at({i, j, k}));
         }
 
         return enclosing_cells;

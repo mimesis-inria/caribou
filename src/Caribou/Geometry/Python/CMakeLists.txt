@@ -16,6 +16,7 @@ set(SOURCE_FILES
         Geometry.cpp
         Hexahedron.cpp
         Quad.cpp
+        RectangularHexahedron.cpp
         Segment.cpp
         Tetrahedron.cpp
         Triangle.cpp
