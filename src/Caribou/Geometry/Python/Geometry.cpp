@@ -7,6 +7,7 @@ void create_quad(pybind11::module & m);
 void create_triangle(pybind11::module & m);
 void create_tetrahedron(pybind11::module & m);
 void create_hexahedron(pybind11::module & m);
+void create_rectangular_hexahedron(pybind11::module & m);
 }
 
 PYBIND11_MODULE(CaribouGeometryPython, m) {
@@ -17,4 +18,5 @@ PYBIND11_MODULE(CaribouGeometryPython, m) {
     caribou::geometry::python::create_triangle(m);
     caribou::geometry::python::create_tetrahedron(m);
     caribou::geometry::python::create_hexahedron(m);
+    caribou::geometry::python::create_rectangular_hexahedron(m);
 }

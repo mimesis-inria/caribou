@@ -21,7 +21,7 @@ TEST(Topology_Grid_2D, Grid2D) {
     EXPECT_EQ(grid.number_of_nodes(), (unsigned) 9);
 
 // Cell numbering test
-    EXPECT_EQ((CellIndex) 3, grid.cell_index_at(GridCoordinates(1, 1)));
+    EXPECT_EQ((CellIndex) 3, grid.cell_index_at({1, 1}));
     EXPECT_EQ(GridCoordinates(1, 1), grid.cell_coordinates_at((CellIndex) 3));
 
 // Cell positioning

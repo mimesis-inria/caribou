@@ -27,7 +27,7 @@ void declare_basegrid(py::module &m) {
     o.def("N", &BaseGrid::N);
     o.def("H", &BaseGrid::H);
     o.def("size", &BaseGrid::size);
-    o.def("cell_index_at", &BaseGrid::cell_index_at, py::arg("world_coordinates"), py::arg("test_for_boundary"));
+    o.def("cell_index_containing", &BaseGrid::cell_index_containing, py::arg("world_coordinates"), py::arg("test_for_boundary")=true);
     o.def("cell_coordinates_at", [](const BaseGrid & g, const WorldCoordinates & c) {return g.cell_coordinates_at(c);}, py::arg("world_coordinates"));
     o.def("cell_coordinates_at", [](const BaseGrid & g, const WorldCoordinates & c, bool t) {return g.cell_coordinates_at(c, t);}, py::arg("world_coordinates"), py::arg("test_for_boundary"));
     o.def("cells_around", &BaseGrid::cells_around, py::arg("world_coordinates"));
@@ -68,6 +68,18 @@ void declare_grid(py::module &m) {
     o.def(py::init<WorldCoordinates, Subdivisions, Dimensions>(), py::arg("anchor_position"), py::arg("n"), py::arg("size"));
     o.def("node_indices_of", [](const Grid & g, const GridCoordinates & c) {return g.node_indices_of(c);}, py::arg("cell_coordinates"));
     o.def("node_indices_of", [](const Grid & g, const CellIndex & i) {return g.node_indices_of(i);}, py::arg("cell_index"));
+    o.def("cell_at", [](const Grid & g, const GridCoordinates & c) {return g.cell_at(c);}, py::arg("cell_coordinates"));
+    o.def("cell_at", [](const Grid & g, const CellIndex & i) {return g.cell_at(i);}, py::arg("cell_index"));
+
+    if constexpr (Dim > 1) {
+        o.def("number_of_edges", &Grid::number_of_edges);
+        o.def("edge", &Grid::edge, py::arg("edge_index"));
+    }
+
+    if constexpr (Dim == 3) {
+        o.def("number_of_faces", &Grid::number_of_faces);
+        o.def("face", &Grid::face, py::arg("face_index"));
+    }
 }
 
 void create_grid(pybind11::module & m) {

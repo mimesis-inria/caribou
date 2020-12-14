@@ -2,6 +2,7 @@
 #define CARIBOU_TOPOLOGY_TEST_GRID_3D_H
 
 #include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Topology/Grid/Grid.h>
 #include <vector>
 #include <chrono>
 
@@ -26,15 +27,15 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_EQ(grid.number_of_nodes(), (unsigned) 27);
 
     // Cell numbering test
-    EXPECT_EQ((CellIndex) 5, grid.cell_index_at(GridCoordinates(1, 0, 1)));
+    EXPECT_EQ((CellIndex) 5, grid.cell_index_at({1, 0, 1}));
     EXPECT_EQ(GridCoordinates(1, 0, 1), grid.cell_coordinates_at((CellIndex) 5));
 
     // Cell positioning
-    EXPECT_FALSE(grid.contains(WorldCoordinates{0.24, 0.50, 0.75}));
-    EXPECT_FALSE(grid.contains(WorldCoordinates{0.25, 0.49, 0.75}));
-    EXPECT_FALSE(grid.contains(WorldCoordinates{0.25, 0.50, 0.74}));
-    EXPECT_TRUE (grid.contains(WorldCoordinates{0.25, 0.50, 0.75}));
-    EXPECT_TRUE (grid.contains(WorldCoordinates{50, 50, 50}));
+    EXPECT_FALSE(grid.contains(WorldCoordinates{ 0.24,    0.50,   0.75}));
+    EXPECT_FALSE(grid.contains(WorldCoordinates{ 0.25,    0.49,   0.75}));
+    EXPECT_FALSE(grid.contains(WorldCoordinates{ 0.25,    0.50,   0.74}));
+    EXPECT_TRUE (grid.contains(WorldCoordinates{ 0.25,    0.50,   0.75}));
+    EXPECT_TRUE (grid.contains(WorldCoordinates{ 50.00,  50.00,  50.00}));
     EXPECT_TRUE (grid.contains(WorldCoordinates{100.25, 100.50, 100.75}));
     EXPECT_FALSE(grid.contains(WorldCoordinates{100.26, 100.50, 100.75}));
     EXPECT_FALSE(grid.contains(WorldCoordinates{100.25, 100.51, 100.75}));
@@ -64,9 +65,9 @@ TEST(Topology_Grid_3D, Grid3D) {
 
     // Cells around nodes
     EXPECT_TRUE(list_are_equals({}, grid.cells_around(WorldCoordinates(-50, -50, -50))));
-    EXPECT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(0.25, 0.50, 0.75))));
-    EXPECT_TRUE(list_are_equals({0, 1}, grid.cells_around(WorldCoordinates(50.25, 0.50, 0.75))));
-    EXPECT_TRUE(list_are_equals({1}, grid.cells_around(WorldCoordinates(100.25, 0.50, 0.75))));
+    EXPECT_TRUE(list_are_equals({0},    grid.cells_around(WorldCoordinates(  0.25, 0.50, 0.75))));
+    EXPECT_TRUE(list_are_equals({0, 1}, grid.cells_around(WorldCoordinates( 50.25, 0.50, 0.75))));
+    EXPECT_TRUE(list_are_equals({1},    grid.cells_around(WorldCoordinates(100.25, 0.50, 0.75))));
     EXPECT_TRUE(list_are_equals({0, 4, 2, 6, 1, 5, 3, 7}, grid.cells_around(WorldCoordinates(50.25, 50.50, 50.75))));
 
     // Cells around faces
@@ -88,14 +89,14 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_TRUE(list_are_equals({0, 2, 1, 3}, grid.cells_around(WorldCoordinates(50.25, 50.50, 25.75))));
 
     // Node position queries
-    EXPECT_MATRIX_NEAR(grid.node(0), WorldCoordinates({0.25, 0.5, 0.75}), 1e-15);
-    EXPECT_MATRIX_NEAR(grid.node(2), WorldCoordinates({100.25, 0.5, 0.75}), 1e-15);
-    EXPECT_MATRIX_NEAR(grid.node(6), WorldCoordinates({0.25, 100.5, 0.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(0), WorldCoordinates({  0.25,   0.5, 0.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(2), WorldCoordinates({100.25,   0.5, 0.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(6), WorldCoordinates({  0.25, 100.5, 0.75}), 1e-15);
     EXPECT_MATRIX_NEAR(grid.node(8), WorldCoordinates({100.25, 100.5, 0.75}), 1e-15);
 
-    EXPECT_MATRIX_NEAR(grid.node(18), WorldCoordinates({0.25, 0.5, 100.75}), 1e-15);
-    EXPECT_MATRIX_NEAR(grid.node(20), WorldCoordinates({100.25, 0.5, 100.75}), 1e-15);
-    EXPECT_MATRIX_NEAR(grid.node(24), WorldCoordinates({0.25, 100.5, 100.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(18), WorldCoordinates({  0.25,   0.5, 100.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(20), WorldCoordinates({100.25,   0.5, 100.75}), 1e-15);
+    EXPECT_MATRIX_NEAR(grid.node(24), WorldCoordinates({  0.25, 100.5, 100.75}), 1e-15);
     EXPECT_MATRIX_NEAR(grid.node(26), WorldCoordinates({100.25, 100.5, 100.75}), 1e-15);
 
     // Node indexing
@@ -186,14 +187,14 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_EQ(grid.face(3), Grid::FaceNodes({{4, 5, 8, 7}}));
     // Between the slice 1 and slice 2
     // - xz axis
-    EXPECT_EQ(grid.face(4), Grid::FaceNodes({{0, 1, 10, 9}}));
+    EXPECT_EQ(grid.face(4), Grid::FaceNodes({{0, 1, 10,  9}}));
     EXPECT_EQ(grid.face(5), Grid::FaceNodes({{1, 2, 11, 10}}));
     EXPECT_EQ(grid.face(6), Grid::FaceNodes({{3, 4, 13, 12}}));
     EXPECT_EQ(grid.face(7), Grid::FaceNodes({{4, 5, 14, 13}}));
     EXPECT_EQ(grid.face(8), Grid::FaceNodes({{6, 7, 16, 15}}));
     EXPECT_EQ(grid.face(9), Grid::FaceNodes({{7, 8, 17, 16}}));
     // - yz axis
-    EXPECT_EQ(grid.face(10), Grid::FaceNodes({{0, 3, 12, 9}}));
+    EXPECT_EQ(grid.face(10), Grid::FaceNodes({{0, 3, 12,  9}}));
     EXPECT_EQ(grid.face(11), Grid::FaceNodes({{1, 4, 13, 10}}));
     EXPECT_EQ(grid.face(12), Grid::FaceNodes({{2, 5, 14, 11}}));
     EXPECT_EQ(grid.face(13), Grid::FaceNodes({{3, 6, 15, 12}}));
@@ -228,6 +229,15 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_EQ(grid.face(33), Grid::FaceNodes({{s + 1, s + 2, s + 5, s + 4}}));
     EXPECT_EQ(grid.face(34), Grid::FaceNodes({{s + 3, s + 4, s + 7, s + 6}}));
     EXPECT_EQ(grid.face(35), Grid::FaceNodes({{s + 4, s + 5, s + 8, s + 7}}));
+
+    // Cell queries by position
+    for (UNSIGNED_INTEGER_TYPE i = 0; i < grid.number_of_cells(); ++i) {
+        const auto cell = grid.cell_at(i);
+        for (const auto & gauss_node : cell.gauss_nodes()) {
+            const auto p = cell.world_coordinates(gauss_node.position);
+            EXPECT_EQ(grid.cell_index_containing(p, false), i);
+        }
+    }
 }
 
 TEST(Topology_Grid_3D, BenchMark)
