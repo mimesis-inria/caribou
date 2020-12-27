@@ -2,9 +2,11 @@
 #include <SofaCaribou/Topology/FictitiousGrid.inl>
 
 #include <SofaPython3/PythonFactory.h>
-#include <SofaPython3/Sofa/Core/Binding_BaseObject.h>
+#include <SofaPython3/Sofa/Core/Binding_Base.h>
 
 #include <pybind11/stl.h>
+
+namespace py = pybind11;
 
 namespace SofaCaribou::topology::python {
 
@@ -14,7 +16,7 @@ using sofa::defaulttype::Vec3Types;
 template <typename DataTypes>
 auto create_fictitious_grid(py::module & m) {
     std::string name = "FictitiousGrid" + std::string(DataTypes::Name());
-    py::class_<FictitiousGrid<DataTypes>, sofa::core::objectmodel::BaseObject, sofa::core::sptr<FictitiousGrid<DataTypes>>> c (m, name.c_str());
+    py::class_<FictitiousGrid<DataTypes>, sofa::core::objectmodel::BaseObject, sofapython3::py_shared_ptr<FictitiousGrid<DataTypes>>> c (m, name.c_str());
     c.def("number_of_cells", &FictitiousGrid<DataTypes>::number_of_cells);
     c.def("number_of_nodes", &FictitiousGrid<DataTypes>::number_of_nodes);
     c.def("number_of_subdivisions", &FictitiousGrid<DataTypes>::number_of_subdivisions);

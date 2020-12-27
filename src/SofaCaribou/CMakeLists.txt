@@ -59,7 +59,7 @@ if (NOT TARGET Caribou::Algebra)
 endif()
 
 # Sofa's packages
-find_package(SOFA COMPONENTS SofaFramework SofaBase SofaCommon QUIET REQUIRED)
+find_package(SOFA COMPONENTS SofaFramework SofaBaseLinearSolver SofaBaseTopology SofaEigen2Solver QUIET REQUIRED)
 
 # Optional packages
 find_package(Eigen3 REQUIRED NO_MODULE QUIET)

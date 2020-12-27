@@ -664,12 +664,12 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
         points[5].push_back(pf);
     }
 
-    vparams->drawTool()->drawTriangles(points[0], sofa::defaulttype::Vec<4,float>(0.7f,0.7f,0.1f,1.0f));
-    vparams->drawTool()->drawTriangles(points[1], sofa::defaulttype::Vec<4,float>(0.7f,0.0f,0.0f,1.0f));
-    vparams->drawTool()->drawTriangles(points[2], sofa::defaulttype::Vec<4,float>(0.0f,0.7f,0.0f,1.0f));
-    vparams->drawTool()->drawTriangles(points[3], sofa::defaulttype::Vec<4,float>(0.0f,0.0f,0.7f,1.0f));
-    vparams->drawTool()->drawTriangles(points[4], sofa::defaulttype::Vec<4,float>(0.1f,0.7f,0.7f,1.0f));
-    vparams->drawTool()->drawTriangles(points[5], sofa::defaulttype::Vec<4,float>(0.7f,0.1f,0.7f,1.0f));
+    vparams->drawTool()->drawTriangles(points[0], sofa::helper::types::RGBAColor(0.7f,0.7f,0.1f,1.0f));
+    vparams->drawTool()->drawTriangles(points[1], sofa::helper::types::RGBAColor(0.7f,0.0f,0.0f,1.0f));
+    vparams->drawTool()->drawTriangles(points[2], sofa::helper::types::RGBAColor(0.0f,0.7f,0.0f,1.0f));
+    vparams->drawTool()->drawTriangles(points[3], sofa::helper::types::RGBAColor(0.0f,0.0f,0.7f,1.0f));
+    vparams->drawTool()->drawTriangles(points[4], sofa::helper::types::RGBAColor(0.1f,0.7f,0.7f,1.0f));
+    vparams->drawTool()->drawTriangles(points[5], sofa::helper::types::RGBAColor(0.7f,0.1f,0.7f,1.0f));
 
 
     std::vector< sofa::defaulttype::Vector3 > ignored_points[6];
@@ -742,12 +742,12 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
         ignored_points[5].push_back(pf);
     }
 
-    vparams->drawTool()->drawTriangles(ignored_points[0], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[1], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[2], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[3], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[4], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[5], sofa::defaulttype::Vec<4,float>(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[0], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[1], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[2], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[3], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[4], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[5], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
 
 
     if (vparams->displayFlags().getShowWireFrame())
