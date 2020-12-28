@@ -1178,7 +1178,7 @@ static const unsigned long long kelly_colors_hex[] = {
 template <typename DataTypes>
 void FictitiousGrid<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
 {
-    using Color = sofa::defaulttype::Vec4f;
+    using Color = sofa::helper::types::RGBAColor;
     if (!p_grid)
         return;
 

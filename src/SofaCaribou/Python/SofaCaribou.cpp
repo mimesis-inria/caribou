@@ -8,8 +8,6 @@
 #include <SofaCaribou/Python/Forcefield/FictitiousGridHyperelasticForcefield.h>
 #include <SofaCaribou/Python/Solver/ConjugateGradientSolver.h>
 
-namespace py = pybind11;
-
 
 PYBIND11_MODULE(SofaCaribouPython, m) {
     m.doc() = "SofaCaribou module";

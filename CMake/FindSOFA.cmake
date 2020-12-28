@@ -35,7 +35,27 @@ if (SOFA_MODULE_DIR)
 endif()
 
 if (NOT SOFA_FIND_COMPONENTS)
-    set(SOFA_FIND_COMPONENTS SofaCommon SofaSimulation SofaComponentAll SofaBase SofaFramework SofaAdvanced SofaGui SofaMisc SofaGeneral)
+    set(SOFA_FIND_COMPONENTS
+            # SofaCommon
+            SofaSimpleFem SofaRigid SofaDeformable SofaObjectInteraction SofaMeshCollision SofaEngine SofaExplicitOdeSolver SofaImplicitOdeSolver SofaLoader
+
+            # SofaBase
+            SofaBaseLinearSolver SofaEigen2Solver SofaBaseTopology SofaBaseCollision SofaBaseMechanics SofaBaseVisual SofaBaseUtils
+
+            # SofaMisc
+            SofaMiscExtra SofaMiscEngine SofaMiscFem SofaMiscForceField SofaMiscMapping SofaMiscSolver SofaMiscTopology
+
+            # SofaAdvanced
+            SofaNonUniformFem
+
+            # SofaGeneral
+            SofaBoundaryCondition SofaGeneralMeshCollision SofaGeneralVisual SofaGraphComponent SofaGeneralAnimationLoop
+            SofaGeneralDeformable SofaGeneralEngine SofaGeneralExplicitOdeSolver SofaGeneralImplicitOdeSolver
+            SofaGeneralLinearSolver SofaGeneralRigid SofaGeneralObjectInteraction SofaGeneralSimpleFem SofaGeneralTopology
+            SofaTopologyMapping SofaUserInteraction SofaConstraint SofaGeneralLoader
+
+            # Not yet pluginized
+            SofaFramework SofaGui SofaSimulation)
 endif()
 
 set(_COMPONENT_FOUND )

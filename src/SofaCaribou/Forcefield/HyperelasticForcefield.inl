@@ -650,7 +650,7 @@ static const unsigned long long kelly_colors_hex[] =
 
 template <typename Element>
 void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParams *vparams) {
-    using Color = sofa::defaulttype::Vec4f;
+    using Color = sofa::helper::types::RGBAColor;
     using Face = typename caribou::geometry::traits<Element>::BoundaryElementType;
     constexpr static auto NumberOfFaces = caribou::geometry::traits<Element>::NumberOfBoundaryElementsAtCompileTime;
     constexpr static auto NumberOfNodesPerFaces = caribou::geometry::traits<Face>::NumberOfNodesAtCompileTime;

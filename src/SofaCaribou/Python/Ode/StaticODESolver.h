@@ -2,10 +2,8 @@
 
 #include <pybind11/pybind11.h>
 
-namespace py = pybind11;
-
 namespace SofaCaribou::ode::python {
 
-void addStaticODESolver(py::module &m);
+void addStaticODESolver(pybind11::module &m);
 
 }

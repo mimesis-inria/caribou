@@ -62,6 +62,7 @@ if (CARIBOU_BUILD_TESTS)
 endif()
 
 # Python 3 option
+set(CMAKE_CXX_STANDARD 17)
 set(PYBIND11_PYTHON_VERSION 3)
 find_package(pybind11 CONFIG QUIET)
 find_package(Python3 QUIET)

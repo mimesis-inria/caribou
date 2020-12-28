@@ -398,7 +398,7 @@ void TetrahedronElasticForce::draw(const sofa::core::visual::VisualParams* vpara
         points[3].push_back(pb);
     }
 
-    sofa::defaulttype::Vec<4, float> face_colors[4] = {
+    sofa::helper::types::RGBAColor face_colors[4] = {
             {1.0, 0.0, 0.0, 1.0},
             {1.0, 0.0, 0.5, 1.0},
             {1.0, 1.0, 0.0, 1.0},
