@@ -4,14 +4,16 @@ import sys, os
 import unittest
 import numpy as np
 import meshio
+from pathlib import Path
 
-sys.path.insert(0, "@CARIBOU_PYTHON_LIB_PATH@")
-
+current_dir = Path(__file__).parent
+site_packages_dir = (current_dir / '..' / '..' / 'lib' / 'python3' / 'site-packages').resolve()
+sys.path.insert(0, str(site_packages_dir))
+print(f'Adding {site_packages_dir} to sys.path')
 import Caribou
 from Caribou.Topology import Mesh
 from Caribou.Topology import Grid3D
 from Caribou.Geometry import Segment
-from Caribou.Geometry import Quad
 from Caribou.Geometry import Triangle
 from Caribou.Geometry import Tetrahedron
 from Caribou.Geometry import Hexahedron
@@ -290,7 +292,7 @@ class TestGrid(unittest.TestCase):
             self.assertEqual(i, g.node_index_at(g.node_coordinates_at(i)))
 
         # Edge queries
-        # First slice (2D grid) 
+        # First slice (2D grid)
         self.assertEqual(g.number_of_edges(), 3*12 + 2*9)
         self.assertMatrixEqual(g.edge(0), [0, 1])
         self.assertMatrixEqual(g.edge(0), [0, 1])

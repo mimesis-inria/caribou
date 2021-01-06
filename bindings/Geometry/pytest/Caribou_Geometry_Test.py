@@ -3,9 +3,12 @@
 import sys
 import unittest
 import numpy as np
+from pathlib import Path
 
-sys.path.insert(0, "@CARIBOU_PYTHON_LIB_PATH@")
-
+current_dir = Path(__file__).parent
+site_packages_dir = (current_dir / '..' / '..' / 'lib' / 'python3' / 'site-packages').resolve()
+sys.path.insert(0, str(site_packages_dir))
+print(f'Adding {site_packages_dir} to sys.path')
 import Caribou
 from Caribou.Geometry import Segment
 from Caribou.Geometry import Quad

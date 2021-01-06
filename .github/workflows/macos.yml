@@ -135,7 +135,7 @@ jobs:
         run: |
           export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3/site-packages
-          python caribou/bin/pytest/Caribou.Geometry.Test.py
+          python caribou/bin/pytest/Caribou_Geometry_Test.py
 
       - name: Caribou.Topology.Test
         if: ${{ always() }}
@@ -149,7 +149,7 @@ jobs:
         run: |
           export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3/site-packages
-          python caribou/bin/pytest/Caribou.Topology.Test.py
+          python caribou/bin/pytest/Caribou_Topology_Test.py
 
       - name: Caribou.Mechanics.Test
         if: ${{ always() }}

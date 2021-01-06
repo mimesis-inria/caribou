@@ -114,6 +114,10 @@ namespace caribou::topology {
         /*! Destructor */
         ~Domain() final = default;
 
+        BaseDomain * clone() const override {
+            return new Domain(*this); // Will call the copy constructor
+        }
+
         /*!
          * \copydoc caribou::topology::BaseDomain::canonical_dimension
          */

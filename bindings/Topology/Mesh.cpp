@@ -5,15 +5,7 @@
 
 #include <Caribou/constants.h>
 #include <Caribou/Topology/Mesh.h>
-#include <Caribou/Geometry/Hexahedron.h>
-#include <Caribou/Geometry/Quad.h>
-#include <Caribou/Geometry/Segment.h>
-#include <Caribou/Geometry/Triangle.h>
-#include <Caribou/Geometry/Tetrahedron.h>
-
-#include <Caribou/Bindings/Caribou.h>
 #include <Caribou/Bindings/Topology/Domain.h>
-
 
 namespace py = pybind11;
 
@@ -21,8 +13,8 @@ namespace caribou::topology::bindings {
 
 template <UNSIGNED_INTEGER_TYPE Dim, typename MatrixType>
 void declare_mesh(py::module & m) {
-    std::string name = "Mesh"+std::to_string(Dim)+"D"+typeid(MatrixType).name();
-    using M = Mesh<Dim, MatrixType>;
+    using M = Mesh<Dim, EigenNodesHolder<MatrixType>>;
+    std::string name = typeid(M).name();
     py::class_<M> c(m, name.c_str());
 
     c.def("dimension", &M::dimension);
@@ -53,7 +45,6 @@ void declare_mesh(py::module & m) {
 
 template <UNSIGNED_INTEGER_TYPE Dim>
 void declare_mesh(py::module &m) {
-//    todo(jnbrunet2000@gmail.com): Uncomment once we allow a no_copy options for the matrices (pass by ref of a np.array)
 //    declare_mesh<Dim, Eigen::Matrix<float, Eigen::Dynamic, Dim, (Dim>1?Eigen::RowMajor:Eigen::ColMajor)>>(m);
     declare_mesh<Dim, Eigen::Matrix<double, Eigen::Dynamic, Dim, (Dim>1?Eigen::RowMajor:Eigen::ColMajor)>>(m);
 }

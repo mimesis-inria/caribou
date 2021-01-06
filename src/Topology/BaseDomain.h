@@ -32,5 +32,12 @@ namespace caribou::topology {
          * Get the number of elements contained in the domain.
          */
         [[nodiscard]] virtual auto number_of_elements() const -> UNSIGNED_INTEGER_TYPE= 0;
+
+        /**
+         * Clone the domain into a new instance.
+         * @return A pointer to the newly created instance.
+         * @note The caller becomes owner of the pointer and is therefore responsible to release its memory.
+         */
+        [[nodiscard]] virtual BaseDomain * clone() const = 0;
     };
 }

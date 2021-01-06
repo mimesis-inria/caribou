@@ -10,28 +10,130 @@
 
 namespace caribou::topology {
 
+template<typename Derived>
+struct BaseEigenNodesHolder {
+    using Scalar = typename Eigen::MatrixBase<Derived>::Scalar ;
+    using MatrixType = Derived;
+
+    /*! Copy constructor */
+    BaseEigenNodesHolder(const BaseEigenNodesHolder & other)
+            : p_nodes(other.p_nodes)
+    {}
+
+    /*! Move constructor */
+    BaseEigenNodesHolder(BaseEigenNodesHolder && other) noexcept
+    : BaseEigenNodesHolder() {
+        this->p_nodes.template swap(other.p_nodes);
+    }
+
+    /*! copy-and-swap assigment (valid for both copy and move assigment) */
+    auto operator=(BaseEigenNodesHolder other) noexcept -> BaseEigenNodesHolder & {
+        this->p_nodes.template swap(other.p_nodes);
+        return *this;
+    }
+
+    template<typename Index>
+    auto node(Index && index) const -> auto {return this->p_nodes.row(index);}
+
+    template<typename Index>
+    auto node(Index && index) -> auto {return this->p_nodes.row(index);}
+
+    template<typename Size1>
+    auto resize(Size1 && n) -> auto {return this->p_nodes.resize(std::forward<Size1>(n), this->p_nodes.cols());}
+
+    auto size() const -> auto {return this->p_nodes.rows();}
+
+    BaseEigenNodesHolder()
+            : p_nodes()
+    {}
+
+protected:
+    MatrixType p_nodes;
+};
+
+template <typename T>
+struct EigenNodesHolder {};
+
+template<typename Scalar_t, int Rows, int Cols, int Options, int MaxRows, int MaxCols>
+struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, MaxCols>>
+: public BaseEigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, MaxCols>>
+{
+    using Base = BaseEigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, MaxCols>>;
+    using Scalar = typename Base::Scalar;
+    using MatrixType = typename Base::MatrixType;
+
+    using Base::Base;
+};
+
+// todo(jnbrunet2000@gmail.com): Implement a EigenNodesHolder<Eigen::Map<...>> container type to enable
+//                               references to external buffers.
+
+    /**
+     * The Mesh class represents a collection of polygonal domains (see caribou::topology::Domain) and
+     * holds the position of their vertices. Hence, the indices of the nodes of each domains are relative
+     * to the vector of positions contained in this Mesh. The mesh is therefore responsible to manage either
+     * an internal buffer containing all the nodes, or can be link to an external buffer allocated somewhere.
+     * It does this by allowing one to specify the node container type to be used for this buffer. Hence, to get
+     * a copy of the position vector, the template parameter ContainerType can be set to a standard dense
+     * Eigen::Matrix (the default when no template argument is specified). If, instead, one has already an
+     * allocated buffer somewhere, this template parameter can be set to a type that can handle external buffers.
+     *
+     * Example of a the construction of a 3D mesh where the position of the nodes are copied from an std::vector
+     * into the internal buffer of the mesh (i.e. a copy of all the positions is made).
+     * \code{.cpp}
+     * using Coordinates = Mesh<3>::WorldCoordinates;
+     * std::vector<Coordinates> positions = {{0,0,0}, {1,1,1}};
+     * Mesh<3> mesh (initial_positions);
+     * std::cout << "The mesh has " << mesh.number_of_nodes() << " nodes\n"; // The mesh has 2 nodes
+     * std::cout << "First node is " << mesh.position(0) << "\n"; // First node is [0,0,0]
+     * \endcode
+     *
+     * @tparam WorldDimension The dimension (1D, 2D or 3D) of the node positions.
+     * @tparam NodeContainerType  Holder type that contains the nodes of the mesh. Let A be a NodeContainerType,
+     * it must follow these requirements:
+     * - Must be default constructable
+     * <table>
+     * <caption id="mesh_node_container_inner_types">Inner types</caption>
+     * <tr><th>Type-id</th><th>Description</th><th>Requirements</th></tr>
+     * <tr><td>A::Scalar</td><td>Scalar type of a position coordinate</td><td></td></tr>
+     * </table>
+     *
+     * <table>
+     * <caption id="mesh_node_container_storage">Storage operations</caption>
+     * <tr><th>Expression</th><th>Return type</th><th>Description</th><th>Requirements</th></tr>
+     * <tr><td>a.resize(n)</td><td>(not used)</td><td>Resize the container 'a' to 'n' nodes.</td><td>If the container
+     * already had storage allocated for a number of nodes greater than 'n', the 'n'th nodes must still be accessible to their previous index before this call.</td></tr>
+     * <tr><td>a.node(i)</td><td>[const] NodeType [&]</td><td>Obtain a reference or a copy to the ith node</td><td>NodeType
+     * must implement the [](IntegerType j) operator which should return a reference or a copy to the jth scalar coordinates
+     * of the node</td></tr>
+     * <tr><td>a.size()</td><td>unsigned integer type</td><td>Get the number of nodes actually contained inside this container</td>
+     * <td></td></tr>
+     * </table>
+     */
+
     template <
-        UNSIGNED_INTEGER_TYPE WorldDimension,
-        typename MatrixType = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, WorldDimension, (WorldDimension>1?Eigen::RowMajor:Eigen::ColMajor)>>
+        unsigned int WorldDimension,
+        typename NodeContainerType = EigenNodesHolder<Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, WorldDimension, (WorldDimension>1?Eigen::RowMajor:Eigen::ColMajor)>>
+    >
     class Mesh : public BaseMesh {
     public:
-        using PositionsContainer = MatrixType;
-
-        static_assert(std::is_base_of_v<Eigen::MatrixBase<PositionsContainer>, PositionsContainer>, "The matrix type must inherit Eigen::MatrixBase");
-        static_assert(Eigen::MatrixBase<PositionsContainer>::ColsAtCompileTime == WorldDimension, "The matrix type must have  N columns at compile time for a mesh of dimension N.");
+        /**
+         * Holder type that contains the nodes of the mesh
+         */
+        using NodeContainer_t = std::decay_t<NodeContainerType>;
         static_assert(WorldDimension == 1 or WorldDimension == 2 or WorldDimension == 3, "The world dimension must be 1, 2 or 3.");
 
         static constexpr INTEGER_TYPE Dimension = WorldDimension;
-        using Real = typename PositionsContainer::Scalar;
+        using Real = typename NodeContainer_t::Scalar;
         using WorldCoordinates = Eigen::Matrix<Real, 1, Dimension>;
 
         template <typename Element, typename NodeIndex = UNSIGNED_INTEGER_TYPE>
-        using Domain = Domain<Mesh<Dimension, MatrixType>, Element, NodeIndex>;
+        using Domain = Domain<Mesh, Element, NodeIndex>;
 
         /*!
          * Default constructor for an empty mesh.
          */
-        Mesh() = default;
+        Mesh() : p_nodes {}, p_domains {} {}
 
         /*!
          * Virtual default destructor
@@ -40,37 +142,94 @@ namespace caribou::topology {
 
         /**
          * Construct the unstructured mesh with a set of point positions from a position vector.
-         * @param positions
-         * \note A copy of the full position vector is made.
+         * @param positions A reference to a std::vector containing the position of the nodes
+         *
+         * @note A copy is made of all nodes position vectors is made.
          */
-        explicit Mesh(const std::vector<WorldCoordinates> & positions) {
-            p_positions.resize(positions.size(), Dimension);
-            for (std::size_t i = 0; i < positions.size(); ++i) {
-                p_positions.row(static_cast<Eigen::Index>(i)) = positions[i];
+        explicit Mesh(const std::vector<WorldCoordinates> & positions)
+        {
+            const auto n = positions.size();
+            p_nodes.resize(n);
+            for (std::size_t i = 0; i < static_cast<std::size_t> (n); ++i) {
+                auto node = this->p_nodes.node(i);
+                for (std::size_t j = 0; j < static_cast<std::size_t>(Dimension); ++j) {
+                    node[j] = positions[i][j];
+                }
             }
         }
 
         /**
          * Construct the unstructured mesh with an Eigen matrix containing the position vector
          * (NxD with N nodes of D world dimension).
-         * \note A copy of the full position vector is made.
+         *
+         * @param positions A reference to a NxD matrix containing the position vector
          */
-        explicit Mesh(const MatrixType & positions) : p_positions(positions) {}
+        template <typename Derived>
+        explicit Mesh(const Eigen::MatrixBase<Derived> & positions)
+        {
+            static_assert(
+                Eigen::MatrixBase<Derived>::ColsAtCompileTime == Dimension or Eigen::MatrixBase<Derived>::ColsAtCompileTime == Eigen::Dynamic,
+                "The number of columns at compile time should match the Dimension of the mesh, or by dynamic (known at compile time)."
+            );
+
+            // The number of columns must equal the World dimension
+            caribou_assert(positions.cols() == Dimension);
+
+            // Do the copy
+            const auto n = positions.rows();
+            p_nodes.resize(n);
+            for (std::size_t i = 0; i < static_cast<std::size_t> (n); ++i) {
+                auto node = this->p_nodes.node(i);
+                for (std::size_t j = 0; j < static_cast<std::size_t>(Dimension); ++j) {
+                    node[j] = positions(i,j);
+                }
+            }
+        }
 
         /**
          * Construct the unstructured mesh with an Eigen matrix containing the position vector
-         * (NxD with N nodes of D world dimension)
-         * \note Reference to the position vector is stored, no copy made.
+         * (NxD with N nodes of D world dimension).
+         *
+         * @param positions A reference to a NxD matrix containing the position vector
+         * @param copy If true, a copy of the position is made into an internal buffer. If false,
+         *             no copy is made and the user must make sure that the external buffer specified
+         *             by the positions parameter will exists as long as this Mesh will.
+         *             Default to true, i.e. a copy will be made.
          */
-        template <typename EigenDerived>
-        explicit Mesh(const EigenDerived * positions) : p_positions(*positions) {}
+//        explicit Mesh(const MatrixType & positions, bool copy = true)
+//        : p_positions(nullptr, positions.rows(), positions.cols(), StrideType(positions.outerStride(), positions.innerStride()))
+//        {
+//            const auto number_of_nodes = positions.rows();
+//            if (copy) {
+//                p_buffer = positions;
+//                new (&p_positions) PositionsReference (
+//                    p_buffer.data(), number_of_nodes, Dimension,
+//                    StrideType(positions.outerStride(), positions.innerStride())
+//                );
+//            } else {
+//                new (&p_positions) PositionsReference (
+//                    positions.data(), number_of_nodes, Dimension,
+//                    StrideType(positions.outerStride(), positions.innerStride())
+//                );
+//            }
+//        }
 
         /*! Copy constructor */
         Mesh(const Mesh & other)
-            : p_positions(other.p_positions) {}
+        : p_nodes (other.p_nodes), p_domains {}
+        {
+            // Copy domains
+            p_domains.reserve(other.p_domains.size());
+            for (const auto & p : other.p_domains) {
+                const std::string & domain_name = p.first;
+                BaseDomain * cloned_domain_ptr  = p.second->clone();
+                p_domains.template emplace_back(domain_name, cloned_domain_ptr);
+            }
+        }
 
         /*! Move constructor */
-        Mesh(Mesh && other) noexcept {
+        Mesh(Mesh && other) noexcept
+        : Mesh() {
             swap(*this, other);
         }
 
@@ -101,7 +260,7 @@ namespace caribou::topology {
          * Get the number of nodes of the mesh.
          */
         [[nodiscard]]
-        inline auto number_of_nodes() const -> UNSIGNED_INTEGER_TYPE final {return p_positions.rows();};
+        inline auto number_of_nodes() const -> UNSIGNED_INTEGER_TYPE final {return p_nodes.size();};
 
         /*!
          * Get the list of domains of the mesh.
@@ -285,10 +444,10 @@ namespace caribou::topology {
         */
         [[nodiscard]]
         inline auto position(UNSIGNED_INTEGER_TYPE index) const {
-            caribou_assert(static_cast<Eigen::Index>(index) < p_positions.rows()
+            caribou_assert(static_cast<Eigen::Index>(index) < p_nodes.size()
                            && "Trying to access the position vector at a node index greater "
                               "than the number of nodes in the mesh.");
-            return p_positions.row(index);
+            return p_nodes.node(index);
         }
 
         /*!
@@ -309,7 +468,8 @@ namespace caribou::topology {
         inline auto positions(const IntegerType(&indices)[N]) const {
             Eigen::Matrix<Real, N, Dimension, (Dimension>1?Eigen::RowMajor:Eigen::ColMajor)> positions;
             for (std::size_t i = 0; i < N; ++i) {
-                positions.row(i) = p_positions.row(indices[i]);
+                caribou_assert(indices[i] < static_cast<IntegerType>(number_of_nodes()));
+                positions.row(i) = p_nodes.node(indices[i]);
             }
             return positions;
         }
@@ -355,7 +515,7 @@ namespace caribou::topology {
             Eigen::Matrix<Real, Eigen::Dynamic, Dimension, (Dimension == 1) ? Eigen::ColMajor : Eigen::RowMajor> positions;
             positions.resize(number_of_indices, Dimension);
             for (std::size_t i = 0; i < number_of_indices; ++i) {
-                positions.row(i) = p_positions.row(indices[i]);
+                positions.row(i) = p_nodes.node(indices[i]);
             }
             return positions;
         }
@@ -387,7 +547,7 @@ namespace caribou::topology {
                           (Dimension>1 ? Eigen::RowMajor : Eigen::ColMajor)> positions;
             positions.resize(number_of_indices, Dimension);
             for (Eigen::Index i = 0; i < number_of_indices; ++i) {
-                positions.row(i) = p_positions.row(indices.derived()[i]);
+                positions.row(i) = p_nodes.node(indices.derived()[i]);
             }
             return positions;
         }
@@ -397,26 +557,56 @@ namespace caribou::topology {
         {
             // enable ADL
             using std::swap;
-            swap(first.p_positions, second.p_positions);
+
+            swap(first.p_nodes, second.p_nodes);
+            swap(first.p_domains, second.p_domains);
         }
 
     private:
-        PositionsContainer p_positions;
+
+        /**
+         * Container of the mesh node positions
+         */
+        NodeContainer_t p_nodes;
+
+        /**
+         * The list of domains of the mesh.
+         */
         std::vector<std::pair<std::string, std::unique_ptr<BaseDomain>>> p_domains;
     };
 
-    // Template deduction guides
-    template <typename MatrixType>
-    Mesh(const MatrixType &) -> Mesh<MatrixType::ColsAtCompileTime, MatrixType>;
+    // -------------------------------------------------------------------------------------
+    //                                    IMPLEMENTATION
+    // -------------------------------------------------------------------------------------
+    // Implementation of methods that can be specialized later for an explicit container type
+    // -------------------------------------------------------------------------------------
 
-    template <typename MatrixType>
-    Mesh(const MatrixType *) ->
-    Mesh<
-        MatrixType::ColsAtCompileTime,
-        Eigen::Ref<
-            const std::decay_t<MatrixType>,
-            Eigen::internal::traits<MatrixType>::Alignment,
-            Eigen::Stride<MatrixType::OuterStrideAtCompileTime,MatrixType::InnerStrideAtCompileTime>
+    // None for now
+
+    // -------------------------------------------------------------------------------------
+    //                               TEMPLATE DEDUCTION GUIDES
+    // -------------------------------------------------------------------------------------
+    // Template deduction guides that can help the compiler to automatically determine the
+    // template parameters of the Mesh from the constructor used.
+    // -------------------------------------------------------------------------------------
+    template <int WorldDimension, typename Real>
+    Mesh(const std::vector<Eigen::Matrix<Real, 1, WorldDimension>> &) ->
+    Mesh <
+        WorldDimension,
+        EigenNodesHolder<Eigen::Matrix<Real, Eigen::Dynamic, WorldDimension, (WorldDimension>1?Eigen::RowMajor:Eigen::ColMajor)>>
+    >;
+
+    template <typename Derived>
+    Mesh(const Eigen::MatrixBase<Derived> &) ->
+    Mesh <
+        Eigen::MatrixBase<Derived>::ColsAtCompileTime,
+        EigenNodesHolder<
+            Eigen::Matrix<
+                typename Eigen::MatrixBase<Derived>::Scalar,
+                Eigen::MatrixBase<Derived>::RowsAtCompileTime,
+                Eigen::MatrixBase<Derived>::ColsAtCompileTime,
+                (Eigen::MatrixBase<Derived>::ColsAtCompileTime>1?Eigen::RowMajor:Eigen::ColMajor)
+            >
         >
     >;
 }

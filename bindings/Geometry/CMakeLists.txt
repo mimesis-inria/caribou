@@ -5,7 +5,7 @@ set(PYTHON_FILES
 )
 
 set(PYTHON_TEST_FILES
-    pytest/Caribou.Geometry.Test.py
+    pytest/Caribou_Geometry_Test.py
 )
 
 set(HEADER_FILES
