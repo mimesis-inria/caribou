@@ -11,15 +11,18 @@ set (CARIBOU_VERSION ${PROJECT_VERSION})
 
 ## Default build type
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
+## Change default install prefix
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
 endif()
 
 # Detect if Caribou is a subproject of SOFA
 if ("${CMAKE_PROJECT_NAME}" STREQUAL "Sofa")
     set(CARIBOU_COMPILED_AS_SOFA_SUBPROJECT 1)
     message(STATUS "${PROJECT_NAME} is compiled as a subproject to SOFA.")
-elseif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "install")
 endif ()
 
 # If the plugin is compiled within SOFA, add an option to deactivate it, in which case the remaining
@@ -150,11 +153,6 @@ find_package(VTK COMPONENTS ${CARIBOU_VTK_MODULES} QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_VTK "Compile the plugin with VTK support." ON "VTK_FOUND" OFF)
 if (CARIBOU_WITH_VTK)
     message(STATUS "Caribou with VTK support\n\tVersion: ${VTK_VERSION}")
-endif()
-
-## Change default install prefix
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
 endif()
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

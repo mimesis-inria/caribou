@@ -9,66 +9,57 @@
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Tetrahedron.h>
 
-TEST(Mesh, Mesh) {
-    using namespace caribou;
-    using namespace caribou::geometry;
-    using caribou::topology::Mesh;
+using namespace caribou;
+using namespace caribou::geometry;
+using caribou::topology::Mesh;
 
+TEST(Mesh, Constructor_std_copy) {
+    // Construct by copy (from std::vector)
+    std::vector<Mesh<3>::WorldCoordinates> initial_positions = {{0,0,0}, {1,1,1}};
+    Mesh mesh (initial_positions);
+    auto positions = mesh.positions({1, 0});
+    EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
+    EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
+    EXPECT_NE(initial_positions.data()->data(), mesh.position(0).data());
+    EXPECT_NE(initial_positions[1].data(), mesh.position(1).data());
+    EXPECT_NE(&initial_positions[1][2], &mesh.position(1).coeff(2));
+}
 
-    {
-        // Construct by copy (from std::vector)
-        std::vector<Mesh<3>::WorldCoordinates> initial_positions = {{0,0,0}, {1,1,1}};
-        Mesh<3> mesh (initial_positions);
-        auto positions = mesh.positions({1, 0});
-        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
-        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
-    }
+TEST(Mesh, Constructor_eigen_copy) {
+    // Construct by copy (from Eigen::Matrix)
+    Eigen::Matrix<FLOATING_POINT_TYPE, 2, 3> initial_positions;
+    initial_positions << 0, 0, 0,
+                         1, 1, 1;
+    Mesh mesh (initial_positions);
+    auto positions = mesh.positions({1, 0});
+    EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
+    EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
+    EXPECT_NE(initial_positions.data(), mesh.position(0).data());
+    EXPECT_NE(&initial_positions(1,0), mesh.position(1).data());
+    EXPECT_NE(&initial_positions(1,2), &mesh.position(1).coeff(2));
 
-    {
-        // Construct by copy (from Eigen::Matrix)
-        Eigen::Matrix<FLOATING_POINT_TYPE, 2, 3> initial_positions;
-        initial_positions << 0, 0, 0,
-                             1, 1, 1;
-        Mesh<3> mesh (initial_positions);
-        auto positions = mesh.positions({1, 0});
-        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
-        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
-    }
+    // Construct by copy (from Eigen::Ref)
+    Eigen::Ref<Eigen::Matrix<FLOATING_POINT_TYPE, 2, 3>> pos_ref(initial_positions);
+    Mesh mesh_ref (pos_ref);
+    positions = mesh_ref.positions({1, 0});
+    EXPECT_MATRIX_EQUAL(mesh_ref.position(0), initial_positions.row(0));
+    EXPECT_MATRIX_EQUAL(mesh_ref.position(1), initial_positions.row(1));
+    EXPECT_MATRIX_EQUAL(mesh_ref.position(1), positions.row(0));
+    EXPECT_MATRIX_EQUAL(mesh_ref.position(0), positions.row(1));
+    EXPECT_NE(initial_positions.data(), mesh_ref.position(0).data());
+    EXPECT_NE(&initial_positions(1,0), mesh_ref.position(1).data());
+    EXPECT_NE(&initial_positions(1,2), &mesh_ref.position(1).coeff(2));
 
-    {
-        // Construct by reference (from Eigen::Matrix)
-        Eigen::Matrix<FLOATING_POINT_TYPE, 2, 3> initial_positions;
-        initial_positions << 0, 0, 0,
-            1, 1, 1;
-        Mesh mesh (&initial_positions);
-        auto positions = mesh.positions({1, 0});
-        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
-        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
-        EXPECT_MATRIX_EQUAL(mesh.position(0), initial_positions.row(0));
-        EXPECT_MATRIX_EQUAL(mesh.position(1), initial_positions.row(1));
-        EXPECT_EQ(&(mesh.position(0).coeff(0)), &(initial_positions.row(0).coeff(0)));
-    }
-
-    {
-        // Construct by reference (from Eigen::Map)
-        std::vector<float> initial_positions = {
-            0, 1, 2, 3, 4, 5, 6,
-            7, 8, 9, // Ignored
-            10, 11, 12, 13, 14, 15, 16,
-            17, 18, 19, // Ignored
-            20, 21, 22, 23, 24, 25, 26
-        };
-        Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>, Eigen::Unaligned, Eigen::Stride<Eigen::Dynamic, 3>> map(initial_positions.data(), {10, 3});
-        Mesh mesh (map);
-        using WorldCoordinates = Eigen::Matrix<float, 3, 1>;
-        auto positions = mesh.positions({1, 0});
-        EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
-        EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));
-        EXPECT_MATRIX_EQUAL(mesh.position(0), WorldCoordinates(0, 3, 6).transpose());
-        EXPECT_MATRIX_EQUAL(mesh.position(1), WorldCoordinates(10, 13, 16).transpose());
-        EXPECT_MATRIX_EQUAL(mesh.position(2), WorldCoordinates(20, 23, 26).transpose());
-        EXPECT_EQ(&(mesh.position(0).coeff(0)), initial_positions.data());
-    }
+    // Copy constructor
+    auto mesh2 = mesh;
+    positions = mesh2.positions({1, 0});
+    EXPECT_MATRIX_EQUAL(mesh2.position(0), initial_positions.row(0));
+    EXPECT_MATRIX_EQUAL(mesh2.position(1), initial_positions.row(1));
+    EXPECT_MATRIX_EQUAL(mesh2.position(1), positions.row(0));
+    EXPECT_MATRIX_EQUAL(mesh2.position(0), positions.row(1));
+    EXPECT_NE(initial_positions.data(), mesh2.position(0).data());
+    EXPECT_NE(&initial_positions(1,0), mesh2.position(1).data());
+    EXPECT_NE(&initial_positions(1,2), &mesh2.position(1).coeff(2));
 }
 
 TEST(Mesh, Segment) {
