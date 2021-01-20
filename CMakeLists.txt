@@ -1,23 +1,38 @@
 cmake_minimum_required(VERSION 3.12)
-project(Caribou)
-
-# Manually define VERSION
-set(Caribou_VERSION_MAJOR 1)
-set(Caribou_VERSION_MINOR 0)
-set(Caribou_VERSION_PATCH 0)
-set(Caribou_VERSION ${Caribou_VERSION_MAJOR}.${Caribou_VERSION_MINOR}.${Caribou_VERSION_PATCH})
+project(Caribou VERSION 20.12.00)
 
 # Policies
 cmake_policy(SET CMP0072 NEW)
 cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0076 NEW)
+
+set (CARIBOU_VERSION ${PROJECT_VERSION})
 
 ## Default build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 endif()
 
+# Detect if Caribou is a subproject of SOFA
+if ("${CMAKE_PROJECT_NAME}" STREQUAL "Sofa")
+    set(CARIBOU_COMPILED_AS_SOFA_SUBPROJECT 1)
+    message(STATUS "${PROJECT_NAME} is compiled as a subproject to SOFA.")
+endif ()
+
+# If the plugin is compiled within SOFA, add an option to deactivate it, in which case the remaining
+# of this file won't run and therefore will not generate any error if the requirements (python, pybind11)
+# are not found.
+if (CARIBOU_COMPILED_AS_SOFA_SUBPROJECT)
+    option(PLUGIN_SOFACARIBOU "Build the caribou plugin." ON)
+    if (NOT PLUGIN_SOFACARIBOU)
+        return()
+    else()
+        message("Adding plugin caribou")
+    endif()
+endif()
+
 # Include CMake specific tools
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(CheckCXXCompilerFlag)
 include(CMakePackageConfigHelpers)
 include(CMakeDependentOption)
@@ -27,16 +42,15 @@ set(CMAKE_REQUIRED_QUIET 1)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 
 # OPTIONS
-option(CARIBOU_USE_DOUBLE "Use double precision for floating point values." ON)
+option(CARIBOU_USE_FLOAT "Use float precision for floating point values." OFF)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
 
 # SOFA option
-find_package(SOFA COMPONENTS SofaFramework QUIET)
+find_package(SOFA COMPONENTS SofaFramework QUIET REQUIRED)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
 if (CARIBOU_WITH_SOFA)
     list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
     list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
-    message(STATUS "${SOFA_MODULE_DIR}")
 endif()
 
 # Tests
@@ -52,36 +66,55 @@ if (CARIBOU_BUILD_TESTS)
         get_target_property(GTEST_INCLUDE_DIRS gtest INTERFACE_INCLUDE_DIRECTORIES)
         get_target_property(GTEST_BOTH_LIBRARIES gtest LOCATION)
     else()
-        add_library(gtest SHARED IMPORTED)
+        add_library(gtest SHARED IMPORTED src/Config/src/Caribou/version.h.in)
         set_target_properties(gtest PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}"
             IMPORTED_LOCATION "${GTEST_BOTH_LIBRARIES}"
         )
     endif ()
     message(STATUS "Caribou with unittests\n\tLibraries: ${GTEST_BOTH_LIBRARIES}\n\tInclude directories: ${GTEST_INCLUDE_DIRS}")
+elseif(NOT GTest_FOUND AND NOT GMock_FOUND)
+    message(STATUS "Caribou without unittests (missing GTest)")
 endif()
 
 # Python 3 option
 set(CMAKE_CXX_STANDARD 17)
+set(PYBIND11_FINDPYTHON ON)
 set(PYBIND11_PYTHON_VERSION 3)
+find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Interpreter Development QUIET)
 find_package(pybind11 CONFIG QUIET)
-find_package(Python3 QUIET)
-CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python3_FOUND;pybind11_FOUND" OFF)
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python_FOUND;pybind11_FOUND" OFF)
 if (CARIBOU_WITH_PYTHON_3)
-    message(STATUS "Caribou with Python support\n\tPython version: ${PYTHON_VERSION_STRING}\n\tPython executabe: ${PYTHON_EXECUTABLE}\n\tpybind11 version: ${pybind11_VERSION}\n\tpybind11 config: ${pybind11_CONFIG}")
+    message(STATUS "Caribou with Python support:
+    Version: ${Python_VERSION}
+    Executable: ${Python_EXECUTABLE}
+    Headers: ${Python_INCLUDE_DIRS}
+    Libraries: ${Python_LIBRARIES}
+    pybind11 version: ${pybind11_VERSION}
+    pybind11 config: ${pybind11_CONFIG}"
+)
 endif()
 
 # SOFA Python 3
 if (CARIBOU_WITH_SOFA)
     find_package(SofaPython3 QUIET)
+    get_filename_component(SOFA_ROOT_DIR "${SofaFramework_DIR}/../../.." ABSOLUTE)
+    message(STATUS
+            "Caribou with SOFA support\n"
+            "    SOFA version: ${SofaFramework_VERSION}\n"
+            "    SOFA location: ${SOFA_ROOT_DIR}"
+            )
     if (CARIBOU_WITH_PYTHON_3)
         if (SofaPython3_FOUND)
-            message(STATUS "Caribou with SOFA support\n\tSOFA: ${SOFA_ROOT}\n\tSofaPython3: ${SofaPython3_CONFIG}")
+            get_filename_component(SP3_ROOT_DIR "${SofaPython3_DIR}/../../.." ABSOLUTE)
+            message(STATUS
+                    "Caribou with SofaPython3 support\n"
+                    "    SP3 version: ${SofaPython3_VERSION}\n"
+                    "    SP3 location: ${SP3_ROOT_DIR}"
+            )
         else()
-            message(STATUS "Caribou with SOFA support\n\tSOFA root: ${SOFA_ROOT}\n\tSofaPython3: NOT FOUND")
+            message(STATUS "Caribou without SofaPython (not found)")
         endif()
-    else()
-        message(STATUS "Caribou with SOFA support\n\tSOFA root: ${SOFA_ROOT}")
     endif ()
 endif()
 
@@ -134,8 +167,31 @@ else()
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 
-add_subdirectory(src/Caribou)
+add_subdirectory(src/Algebra)
+add_subdirectory(src/Config)
+add_subdirectory(src/Geometry)
+add_subdirectory(src/Mechanics)
+add_subdirectory(src/Topology)
 
 if (CARIBOU_WITH_SOFA)
-    add_subdirectory(src/SofaCaribou)
+    add_subdirectory(src/Plugin)
 endif()
+
+caribou_create_package(Caribou ${CARIBOU_VERSION})
+
+if (CARIBOU_BUILD_TESTS)
+    add_subdirectory(unittest)
+endif()
+
+if (CARIBOU_WITH_PYTHON_3)
+    add_subdirectory(bindings)
+endif()
+
+install(
+    FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/caribouTools.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindSOFA.cmake"
+    DESTINATION lib/cmake/Caribou
+    COMPONENT headers
+)
+
