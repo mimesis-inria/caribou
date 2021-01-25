@@ -12,6 +12,7 @@
 #include <sofa/simulation/VectorOperations.h>
 #include <SofaEigen2Solver/EigenVectorWrapper.h>
 
+#include <cxxabi.h>
 
 namespace SofaCaribou::solver {
 
@@ -210,47 +211,43 @@ void EigenSparseSolver<EigenSolver>::solveSystem() {
 
 template<typename EigenSolver>
 std::string EigenSparseSolver<EigenSolver>::GetCustomTemplateName() {
-    return internal::solver_traits<EigenSolver>::BackendName();
+    int status;
+    char * name = abi::__cxa_demangle(typeid(EigenSolver).name(), 0, 0, &status);
+    std::string namestring;
+    std::string error;
+    switch (status) {
+        case 0: namestring = std::string(name); break;
+        case -1: error = "A memory allocation failure occurred."; break;
+        case -2: error = "The mangled name is not a valid name under the C++ ABI mangling rules."; break;
+        case -3: error = "One of the arguments passed to the demangling is invalid."; break;
+        default: error = "Unknown error."; break;
+    }
+    free(name);
+    if (!error.empty()) {
+        throw std::runtime_error("Demangling of '"+std::string(typeid(EigenSolver).name())+"' failed for the following reason: " + error);
+    }
+    return namestring;
 }
 
-template<typename EigenSolver>
-auto EigenSparseSolver<EigenSolver>::canCreate(EigenSparseSolver<EigenSolver>*, sofa::core::objectmodel::BaseContext*, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool {
-    std::string requested_template = arg->getAttribute( "template", "");
+template <class EigenSolver>
+template<typename Derived>
+auto EigenSparseSolver<EigenSolver>::canCreate(Derived*, sofa::core::objectmodel::BaseContext*, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool {
     std::string requested_backend = arg->getAttribute( "backend", "");
+    std::string current_backend = Derived::BackendName();
 
-    std::string current_template = GetCustomTemplateName();
-
-    // If the use has specified a template argument
-    if (not requested_template.empty()) {
-        if (requested_template == current_template) {
-            // The requested template matches the current template, let's check if the user has also specified a backend
-            if (requested_backend.empty() || requested_backend == internal::solver_traits<EigenSolver>::BackendName()) {
-                return true;
-            } else {
-                arg->logError("The requested template name '" + requested_template +
-                              "' isn't compatible with the requested backend '" + requested_backend + "'.");
-                return false;
-            }
-        } else {
-            arg->logError("The requested template name '" + requested_template +
-                          "' doesn't match the template '" + current_template + "'.");
-            return false;
-        }
-    }
-
-    // The user hasn't specified any template, let's check if he has specified a backend
+    // Let's check if the user has specified a backend
     if (not requested_backend.empty()) {
-        if (requested_backend == internal::solver_traits<EigenSolver>::BackendName()) {
+        if (requested_backend == current_backend) {
             return true;
         } else {
             arg->logError("The requested backend '" + requested_backend +
-                          "' isn't compatible with the template '" + current_template + "'.");
+                          "' isn't compatible with the following template parameters: '" + GetCustomTemplateName() + "'.");
             return false;
         }
     }
 
-    // No template requested and no backend specified
-    arg->setAttribute("backend", internal::solver_traits<EigenSolver>::BackendName());
+    // No backend specified
+    arg->setAttribute("backend", Derived::BackendName());
     return true;
 }
 

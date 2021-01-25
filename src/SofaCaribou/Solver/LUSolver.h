@@ -31,6 +31,9 @@ public:
      * @param mparams Mechanical parameters containing the m, b and k factors.
      */
     void assemble (const sofa::core::MechanicalParams* mparams) override;
+
+    // Get the backend name of the class derived from the EigenSolver template parameter
+    static std::string BackendName();
 private:
     ///< Solver backend used (Eigen or Pardiso)
     Data<sofa::helper::OptionsGroup> d_backend;

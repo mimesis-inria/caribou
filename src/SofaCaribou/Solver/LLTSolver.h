@@ -26,6 +26,8 @@ public:
 
     LLTSolver();
 
+    // Get the backend name of the class derived from the EigenSolver template parameter
+    static std::string BackendName();
 private:
     ///< Solver backend used (Eigen or Pardiso)
     Data<sofa::helper::OptionsGroup> d_backend;
