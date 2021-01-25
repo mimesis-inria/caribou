@@ -66,35 +66,54 @@ public:
      */
     void setSystemLHVector(sofa::core::MultiVecDerivId x_id) final;
 
-    /**
-     * Solves the system using the Eigen solver.
-     */
+    /** Solves the system using the Eigen solver. */
     void solveSystem() override;
 
     /**
      * States if the system matrix is symmetric. Note that this value isn't set automatically, the user must
      * explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
      */
-    inline virtual bool symmetric() const {return p_is_symmetric;}
+    inline virtual auto symmetric() const -> bool {return p_is_symmetric;}
 
-    /**
-     * Explicitly states if this matrix is symmetric.
-     */
+    /** Explicitly states if this matrix is symmetric. */
     inline virtual void set_symmetric(bool is_symmetric) { p_is_symmetric = is_symmetric; }
 
-    /**
-     * Get a readonly reference to the backend solver
-     */
-    const EigenSolver & solver() const { return p_solver; }
+    /** Get a readonly reference to the backend solver */
+    auto solver() const -> const EigenSolver & { return p_solver; }
+
+    /** Get a reference to the backend solver */
+    auto solver() -> EigenSolver & { return p_solver; }
+
+    /** Get a readonly reference to the mechanical parameters */
+    auto mechanical_params() const -> const sofa::core::MechanicalParams & { return p_mechanical_params; }
+
 
     /**
-     * Get a reference to the backend solver
+     * Get a readonly reference to the multi-matrix accessor. This accessor doesn't actually hold the system matrix, but
+     * will be the one responsible for accumulating it. It can also be use to compute the stiffness or the mass matrix
+     * of a given mechanical node or mapped node.
+     *
+     * Use the EigenSparseSolver::matrix() method to get a reference to the global system matrix.
      */
-    EigenSolver & solver() { return p_solver; }
+    auto matrix_accessor() const -> const sofa::component::linearsolver::DefaultMultiMatrixAccessor & { return p_accessor; }
+
+    /** Get a readonly reference to the global assembled system matrix. */
+    auto A() const -> const SparseMatrix & { return p_A; }
+
+    /** Get a readonly reference to the right-hand side vector identifier */
+    auto b_id() const -> const sofa::core::MultiVecDerivId & { return p_b_id; }
+
+    /** Get a readonly reference to the left-hand side unknown vector identifier */
+    auto x_id() const -> const sofa::core::MultiVecDerivId & { return p_x_id; }
+
+    /** True if the solver has successfully factorize the system matrix */
+    auto A_is_factorized() const -> bool { return p_A_is_factorized; }
 
     // SOFA overrides
-    static std::string GetCustomTemplateName();
-    static auto canCreate(EigenSparseSolver<EigenSolver>* o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
+    static auto GetCustomTemplateName() -> std::string;
+
+    template<class Derived>
+    static auto canCreate(Derived* o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
 
 private:
     /// Private members

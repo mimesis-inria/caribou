@@ -69,6 +69,11 @@ LDLTSolver<EigenSolver>::LDLTSolver()
     this->set_symmetric(true);
 }
 
+template<class EigenSolver>
+std::string LDLTSolver<EigenSolver>::BackendName() {
+    return internal::solver_traits<EigenSolver>::BackendName();
+}
+
 static int SparseLDLTSolverClass = sofa::core::RegisterObject("Caribou Sparse LDLT linear solver")
     .add< LDLTSolver<Eigen::SimplicialLDLT<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor, int>, Eigen::Lower, Eigen::AMDOrdering<int>>> >(true)
 #ifdef CARIBOU_WITH_MKL

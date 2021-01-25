@@ -77,6 +77,11 @@ LUSolver<EigenSolver>::LUSolver()
     }
 }
 
+template<class EigenSolver>
+std::string LUSolver<EigenSolver>::BackendName() {
+    return internal::solver_traits<EigenSolver>::BackendName();
+}
+
 static int SparseLUSolverClass = sofa::core::RegisterObject("Caribou Sparse LU linear solver")
     .add< LUSolver<Eigen::SparseLU<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor, int>, Eigen::AMDOrdering<int>>> >(true)
 #ifdef CARIBOU_WITH_MKL

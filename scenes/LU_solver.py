@@ -20,9 +20,9 @@ def createScene(root):
 
     i = 0
     tx = 20*i
-    meca = root.addChild("caribou_eigen_llt_solver")
+    meca = root.addChild("caribou_eigen_lu_solver")
     meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-    meca.addObject('SparseLLTSolver', backend="Eigen")
+    meca.addObject('LUSolver', backend="Eigen")
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
     meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
     meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
@@ -38,9 +38,9 @@ def createScene(root):
 
     i+=1
     tx = 20*i
-    meca = root.addChild("caribou_pardiso_llt_solver")
+    meca = root.addChild("caribou_pardiso_lu_solver")
     meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-    meca.addObject('SparseLLTSolver', backend="Pardiso")
+    meca.addObject('LUSolver', backend="Pardiso")
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
     meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
     meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
@@ -56,9 +56,9 @@ def createScene(root):
 
     i+=1
     tx = 20*i
-    meca = root.addChild("sofa_llt_solver")
+    meca = root.addChild("sofa_lu_solver")
     meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-    meca.addObject('SparseCholeskySolver')
+    meca.addObject('SparseLUSolver')
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
     meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
     meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
