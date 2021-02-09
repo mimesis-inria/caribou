@@ -115,8 +115,7 @@ the following configuration variables:
 +-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
 | Var                         | Value  | Default  | Description                                                                               |
 +=============================+========+==========+===========================================================================================+
-| CARIBOU_USE_DOUBLE          | ON/OFF | ON       | Specify if the floating point type should be double (ON) or float(OFF).                   |
-|                             |        |          | .                                                                                         |
+| CARIBOU_USE_FLOAT           | ON/OFF | OFF      | Specify if the floating point type should be float (OFF) or double(ON).                   |
 +-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
 | CARIBOU_BUILD_TESTS         | ON/OFF | OFF      | Whether or not the test suite of Caribou should be build.                                 |
 +-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
