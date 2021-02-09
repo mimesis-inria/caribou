@@ -27,3 +27,7 @@ caribou_add_python_module(Caribou
                           HEADER_PREFIX     Caribou/Bindings
                           PYTHON_FILES      ${PYTHON_FILES}
 )
+
+# Avoid an annoying warning since the bindings code are in "caribou/bindings/*" but the headers are installed into
+# "Caribou/Bindings/*" to be consistent with SOFA and the rest of caribou libraries.
+target_compile_options(${PROJECT_NAME} PRIVATE "-Wno-nonportable-include-path")

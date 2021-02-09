@@ -17,6 +17,8 @@ endif()
 if ("${CMAKE_PROJECT_NAME}" STREQUAL "Sofa")
     set(CARIBOU_COMPILED_AS_SOFA_SUBPROJECT 1)
     message(STATUS "${PROJECT_NAME} is compiled as a subproject to SOFA.")
+elseif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "install")
 endif ()
 
 # If the plugin is compiled within SOFA, add an option to deactivate it, in which case the remaining
@@ -46,7 +48,7 @@ option(CARIBOU_USE_FLOAT "Use float precision for floating point values." OFF)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
 
 # SOFA option
-find_package(SOFA COMPONENTS SofaFramework QUIET REQUIRED)
+find_package(SOFA COMPONENTS SofaFramework QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
 if (CARIBOU_WITH_SOFA)
     list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
