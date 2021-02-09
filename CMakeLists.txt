@@ -5,6 +5,7 @@ project(Caribou VERSION 20.12.00)
 cmake_policy(SET CMP0072 NEW)
 cmake_policy(SET CMP0074 NEW)
 cmake_policy(SET CMP0076 NEW)
+cmake_policy(SET CMP0094 NEW)
 
 set (CARIBOU_VERSION ${PROJECT_VERSION})
 
