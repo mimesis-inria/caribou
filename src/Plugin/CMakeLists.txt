@@ -31,7 +31,10 @@ set(TEMPLATE_FILES
     Forcefield/HyperelasticForcefield.inl
     Solver/EigenSparseSolver.inl
     Topology/FictitiousGrid.inl
-)
+    Solver/LDLTSolver.inl
+    Solver/LLTSolver.inl
+    Solver/LUSolver.inl
+    )
 
 set(SOURCE_FILES
     Forcefield/FictitiousGridElasticForce.cpp
