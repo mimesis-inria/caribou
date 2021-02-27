@@ -21,6 +21,14 @@ set(SOURCE_FILES
     Topology.cpp
 )
 
+if(CARIBOU_WITH_VTK)
+    find_package(VTK COMPONENTS ${CARIBOU_VTK_MODULES} REQUIRED)
+    if (VTK_VERSION VERSION_LESS "8.90.0")
+        # old system
+        include(${VTK_USE_FILE})
+    endif()
+endif()
+
 
 caribou_add_python_module(Topology
                           TARGET_NAME       ${PROJECT_NAME}

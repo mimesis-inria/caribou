@@ -39,6 +39,12 @@ target_link_libraries(${PROJECT_NAME} ${TARGET_VISIBILITY} $<$<AND:$<CXX_COMPILE
 if (CARIBOU_WITH_VTK)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${VTK_LIBRARIES})
 endif()
+if (VTK_VERSION VERSION_GREATER_EQUAL "8.90.0")
+    vtk_module_autoinit(
+        TARGETS ${PROJECT_NAME}
+        MODULES ${VTK_LIBRARIES}
+    )
+endif()
 
 # Add the target to the component of the same name. This will enable to do:
 # CMakeLists.txt
