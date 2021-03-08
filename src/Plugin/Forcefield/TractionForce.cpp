@@ -10,7 +10,7 @@
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION <= 201200)
+#if (defined(SOFA_VERSION) && SOFA_VERSION <= 201299)
 namespace sofa::helper::visual { using DrawTool = sofa::core::visual::DrawTool; }
 #endif
 

@@ -19,7 +19,7 @@
 #include <functional>
 #include <sstream>
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
 namespace sofa { using Index = unsigned int; }
 #endif
 
