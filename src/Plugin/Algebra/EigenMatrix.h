@@ -9,12 +9,14 @@
 namespace SofaCaribou::Algebra {
 
 /**
- * The EigenMatrixWrapper is a wrapper around any Eigen matrix. It
+ * This class can be use to represent any Eigen matrix within SOFA. It
  * implements (and overloads) the BaseMatrix class of Sofa. This class hence
- * allows to either map or copy an existng Eigen matrix; and use it in Sofa's
- * components or vistors.
+ * allows to either to create a new Eigen matrix or copy/map an existing one
+ * and use it in Sofa's components or visitors.
  *
- * \note The wrapper around Eigen sparse matrices has special restrictions.
+ * \note The wrapper around Eigen sparse matrices has the following exceptions:
+ *          1. Before the matrix is initialized using a series of triplets,
+ *             accessing an element of the matrix has undefined behavior.
  *
  * Example:
  * \code{.cpp}
@@ -45,7 +47,7 @@ namespace SofaCaribou::Algebra {
  * \endcode
  */
 template <typename Derived, typename Enable = void>
-class EigenMatrixWrapper : public sofa::defaulttype::BaseMatrix
+class EigenMatrix : public sofa::defaulttype::BaseMatrix
 {
     static_assert(
         std::is_base_of_v<Eigen::EigenBase<std::decay_t<Derived> >, std::decay_t<Derived> >,
@@ -58,7 +60,20 @@ public:
     using Index = Base::Index;
     using Real = SReal;
 
-    EigenMatrixWrapper(std::remove_reference_t<Derived> & eigen_matrix) : p_eigen_matrix(eigen_matrix) {}
+    /**
+     * Construct the class using another Eigen matrix. Depending on the template parameter used for the class,
+     * this constructor will either create a new Eigen matrix and copy its content from the parameter eigen_matrix,
+     * or it will simply store a reference to this external matrix.
+     * @param eigen_matrix The external matrix
+     */
+    explicit EigenMatrix(std::remove_reference_t<Derived> & eigen_matrix) : p_eigen_matrix(eigen_matrix) {}
+
+    /**
+     * Construct a new rows x cols Eigen matrix of type Derived.
+     * @param rows Number of rows.
+     * @param cols Number of columns.
+     */
+    EigenMatrix(Eigen::Index rows, Eigen::Index cols) : p_eigen_matrix(rows, cols) {}
 
     // Abstract methods overrides
     inline Index rowSize() const final { return p_eigen_matrix.rows(); }
@@ -107,6 +122,9 @@ public:
         p_eigen_matrix.middleCols(imin, (imax-imin)+1).setZero();
     }
 
+    /** Get a const reference to the underlying Eigen matrix  */
+    const EigenType & matrix() const {return p_eigen_matrix;}
+
 private:
 
     template <typename Scalar, unsigned int nrows, unsigned int ncols>
@@ -123,7 +141,7 @@ private:
 /// SparseMatrix specialization ///
 ///////////////////////////////////
 template <typename Derived>
-class EigenMatrixWrapper<Derived, CLASS_REQUIRES(std::is_base_of_v<Eigen::SparseMatrixBase<std::decay_t<Derived>>, std::decay_t<Derived>>)> : public sofa::defaulttype::BaseMatrix
+class EigenMatrix<Derived, CLASS_REQUIRES(std::is_base_of_v<Eigen::SparseMatrixBase<std::decay_t<Derived>>, std::decay_t<Derived>>)> : public sofa::defaulttype::BaseMatrix
 {
 
 public:
@@ -132,7 +150,20 @@ public:
     using Index = Base::Index;
     using Real = SReal;
 
-    EigenMatrixWrapper(std::remove_reference_t<Derived> & eigen_matrix) : p_eigen_matrix(eigen_matrix) {}
+    /**
+     * Construct the class using another Eigen matrix. Depending on the template parameter used for the class,
+     * this constructor will either create a new Eigen matrix and copy its content from the parameter eigen_matrix,
+     * or it will simply store a reference to this external matrix.
+     * @param eigen_matrix The external matrix
+     */
+    explicit EigenMatrix(std::remove_reference_t<Derived> & eigen_matrix) : p_eigen_matrix(eigen_matrix) {}
+
+    /**
+     * Construct a new rows x cols Eigen matrix of type Derived.
+     * @param rows Number of rows.
+     * @param cols Number of columns.
+     */
+    EigenMatrix(Eigen::Index rows, Eigen::Index cols) : p_eigen_matrix(rows, cols) {}
 
     // Abstract methods overrides
     inline Index rowSize() const final { return p_eigen_matrix.rows(); }
@@ -373,6 +404,8 @@ public:
         }
     }
 
+    /** Get a const reference to the underlying Eigen matrix  */
+    const Derived & matrix() const {return p_eigen_matrix;}
 private:
 
     /**

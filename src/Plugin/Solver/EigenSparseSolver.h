@@ -1,6 +1,10 @@
 #pragma once
 
 #include <Caribou/config.h>
+#include <SofaCaribou/Algebra/EigenMatrix.h>
+#include <SofaCaribou/Algebra/EigenVector.h>
+#include <SofaCaribou/Solver/LinearSolver.h>
+
 #include <sofa/core/behavior/LinearSolver.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <Eigen/Sparse>
@@ -19,13 +23,14 @@ struct solver_traits {};
  * This means that the mass, damping and forcefield components in the scene graph need to implement
  * the addMtoMatrix, addBtoMatrix and addMtoMatrix methods respectively.
  *
- * @tparam EigenSolver Eigen solver type (eg.: SimplicialLLT, SparseLU, PardisoLLT, etc.)
+ * @tparam EigenSolver_t Eigen solver type (eg.: SimplicialLLT, SparseLU, PardisoLLT, etc.)
  */
-template <class EigenSolver>
-class EigenSparseSolver : public sofa::core::behavior::LinearSolver {
+template <class EigenSolver_t>
+class EigenSparseSolver : public sofa::core::behavior::LinearSolver, public SofaCaribou::solver::LinearSolver {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(EigenSparseSolver, EigenSolver), LinearSolver);
-    using SparseMatrix = typename EigenSolver::MatrixType;
+    SOFA_CLASS(SOFA_TEMPLATE(EigenSparseSolver, EigenSolver_t), sofa::core::behavior::LinearSolver);
+    using EigenSolver = EigenSolver_t;
+    using SparseMatrix = std::remove_cv_t<typename EigenSolver::MatrixType>;
     using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
 
     /**
@@ -114,6 +119,32 @@ public:
 
     template<class Derived>
     static auto canCreate(Derived* o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
+
+private:
+    /**
+     * @see SofaCaribou::solver::LinearSolver::create_new_matrix
+     */
+    sofa::defaulttype::BaseMatrix * create_new_matrix(sofa::Size rows, sofa::Size cols) const override {
+        auto * matrix = new SofaCaribou::Algebra::EigenMatrix<SparseMatrix> (static_cast<Eigen::Index>(rows), static_cast<Eigen::Index>(cols));
+        if (symmetric()) {
+            matrix->set_symmetric(symmetric());
+        }
+        return matrix;
+    }
+
+    /**
+     * @see SofaCaribou::solver::LinearSolver::create_new_vector
+     */
+    sofa::defaulttype::BaseVector * create_new_vector(sofa::Size n) const override {
+        return new SofaCaribou::Algebra::EigenVector<Vector>(n);
+    }
+
+    /**
+     * @see SofaCaribou::solver::LinearSolver::solve
+     */
+    bool solve(const sofa::defaulttype::BaseMatrix * A,
+               const sofa::defaulttype::BaseVector * F,
+               sofa::defaulttype::BaseVector * X) const override;
 
 private:
     /// Private members

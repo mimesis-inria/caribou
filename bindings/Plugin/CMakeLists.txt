@@ -5,6 +5,7 @@ set(HEADER_FILES
     Forcefield/FictitiousGridHyperelasticForcefield.h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
+    Ode/LegacyStaticODESolver.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
     Topology/FictitiousGrid.h
@@ -16,6 +17,7 @@ set(SOURCE_FILES
     Forcefield/FictitiousGridHyperelasticForcefield.cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield.cpp
+    Ode/LegacyStaticODESolver.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
     Topology/FictitiousGrid.cpp

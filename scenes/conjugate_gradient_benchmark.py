@@ -31,6 +31,7 @@ cg_solvers = [
     {'name':'SSOR',  'solver':'PCGLinearSolver', 'arguments': {'tolerance':threshold*threshold, 'iterations':number_of_cg_iterations}, 'precond':'SSORPreconditioner'},
 ]
 
+
 def extract_newton_steps(record):
     if 'StaticODESolver::Solve' not in record:
         return []
@@ -101,6 +102,7 @@ def extract_newton_steps(record):
 
         newton_steps.append(data)
     return newton_steps
+
 
 def pretty_print_methods(methods, number_format='{:.3f}'):
     if len(methods) == 0:
@@ -186,7 +188,6 @@ class Controller(Sofa.Core.Controller):
             Timer.end("cg_timer")
 
 
-
 def createScene(root):
     root.addObject(Controller())
     root.addObject('APIVersion', level='17.06')
@@ -204,7 +205,7 @@ def createScene(root):
         arguments = s['arguments']
 
         meca = root.addChild(name)
-        meca.addObject('StaticODESolver', newton_iterations=number_of_newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=False)
+        meca.addObject('LegacyStaticODESolver', newton_iterations=number_of_newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=False)
 
         if 'precond' in s:
             meca.addObject(cg_solver, preconditioners='precond', **arguments)

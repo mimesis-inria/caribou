@@ -58,7 +58,7 @@ def createScene(root):
     i+=1
     tx = 20*i
     meca = root.addChild("sofa_ldlt_solver")
-    meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
+    meca.addObject('LegacyStaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
     meca.addObject('SparseLDLSolver')
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
     meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
