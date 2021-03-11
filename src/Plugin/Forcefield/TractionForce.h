@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <sofa/defaulttype/MatSym.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <SofaBaseTopology/TriangleSetTopologyContainer.h>
 #include <SofaBaseTopology/QuadSetTopologyContainer.h>

@@ -3,7 +3,7 @@
 #include <SofaCaribou/Solver/EigenSparseSolver.h>
 
 #include <SofaCaribou/Solver/EigenSparseSolver.h>
-#include<SofaCaribou/Algebra/EigenMatrixWrapper.h>
+#include<SofaCaribou/Algebra/EigenMatrix.h>
 #include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
 #include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 
@@ -32,24 +32,32 @@ void EigenSparseSolver<EigenSolver>::assemble (const sofa::core::MechanicalParam
     //         This stage go down on the sub-graph and gather the top-level mechanical objects (mechanical objects that
     //         aren't slaved of another mechanical object through a mechanical mapping). The matrix isn't built yet,
     //         we only keep a list of mechanical objects and mappings, and get the size of global system matrix that
-    //         will be built in the next stage.
+    //         will be built in the next stage. Note, however, that the mapping matrices are accumulated (calling
+    //         BaseMapping::getJ() on every mapping).
     Timer::stepBegin("PrepareMatrix");
 
     sofa::simulation::common::MechanicalOperations mops(mparams, this->getContext());
     p_accessor.clear();
 
+    // Step 1.1 Get dimension of each top level mechanical states using BaseMechanicalState::getMatrixSize(),
+    //          and accumulate mechanical objects and mapping matrices
     Timer::stepBegin("Dimension");
     mops.getMatrixDimension(nullptr, nullptr, &p_accessor);
     const auto n = static_cast<Eigen::Index>(p_accessor.getGlobalDimension());
     Timer::stepEnd("Dimension");
 
+    // Step 2.2 Does nothing more than to accumulate from the previous step a list of
+    //          "MatrixRef = <MechanicalState*, MatrixIndex>" where MatrixIndex is the
+    //          (i,i) position of the given top level MechanicalState* inside the global
+    //          system matrix. This global matrix hence contains one sub-matrix per top
+    //          level mechanical state.
     Timer::stepBegin("SetupMatrixIndices");
     p_accessor.setupMatrices();
     Timer::stepEnd("SetupMatrixIndices");
 
     Timer::stepBegin("Clear");
     p_A.resize(n, n);
-    Algebra::EigenMatrixWrapper<SparseMatrix &> wrapper (p_A);
+    Algebra::EigenMatrix<SparseMatrix &> wrapper (p_A);
     wrapper.set_symmetric(symmetric()); // Enables some optimization when the system matrix is symmetric
     p_accessor.setGlobalMatrix(&wrapper);
     Timer::stepEnd("Clear");
@@ -243,6 +251,54 @@ auto EigenSparseSolver<EigenSolver>::canCreate(Derived*, sofa::core::objectmodel
 
     // No backend specified
     arg->setAttribute("backend", Derived::BackendName());
+    return true;
+}
+
+template<class EigenSolver>
+bool
+EigenSparseSolver<EigenSolver>::solve(const sofa::defaulttype::BaseMatrix *A,
+                                      const sofa::defaulttype::BaseVector *F,
+                                      sofa::defaulttype::BaseVector *X) const
+{
+    using Timer = sofa::helper::AdvancedTimer;
+    using namespace SofaCaribou::Algebra;
+
+    auto eigen_A = dynamic_cast<const EigenMatrix<SparseMatrix> *>(A);
+    auto eigen_F = dynamic_cast<const EigenVector<Vector> *>(F);
+    auto eigen_X = dynamic_cast<EigenVector<Vector> *>(X);
+
+    // Step 1. Let the solver analyse the matrix
+    EigenSolver solver;
+    Timer::stepBegin("MatrixAnalysis");
+    solver.analyzePattern(eigen_A->matrix());
+    Timer::stepEnd("MatrixAnalysis");
+    if (solver.info() != Eigen::Success) {
+        msg_error() << "Failed to analyse the system matrix pattern (" +
+                       std::string((solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
+
+        return false;
+    }
+
+    // Step 2. Factorize the system matrix
+    Timer::stepBegin("MatrixFactorization");
+    solver.factorize(eigen_A->matrix());
+    if (solver.info() != Eigen::Success) {
+        msg_error() << "Failed to factorize the system matrix (" +
+                       std::string((solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
+        return false;
+    }
+    Timer::stepEnd("MatrixFactorization");
+
+    // Step3. Solve the system
+    Timer::stepBegin("Solve");
+    eigen_X->vector() = solver.solve(eigen_F->vector());
+    Timer::stepEnd("Solve");
+    if (solver.info() != Eigen::Success) {
+        msg_error() << "Failed to solve the system (" +
+                       std::string( (solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
+        return false;
+    }
+
     return true;
 }
 

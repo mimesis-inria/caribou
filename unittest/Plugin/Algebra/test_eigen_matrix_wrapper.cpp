@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <SofaCaribou/Algebra/EigenMatrixWrapper.h>
+#include <SofaCaribou/Algebra/EigenMatrix.h>
 
 #include <Caribou/config.h>
 #include <Eigen/Dense>
@@ -9,8 +9,8 @@ template<int nRows, int nColumns>
 using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns>;
 
 template <typename Derived>
-void test_core(SofaCaribou::Algebra::EigenMatrixWrapper<Derived> & mm) {
-    using Index = typename SofaCaribou::Algebra::EigenMatrixWrapper<Derived>::Index;
+void test_core(SofaCaribou::Algebra::EigenMatrix<Derived> & mm) {
+    using Index = typename SofaCaribou::Algebra::EigenMatrix<Derived>::Index;
     mm.compress();
     // Set-get
     mm.set(30, 30, 200);
@@ -101,8 +101,8 @@ TEST(Algebra, DenseMatrixByCopy) {
     using EigenDense = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
     EigenDense m(100,100);
 
-    using EigenMatrixWrapper = SofaCaribou::Algebra::EigenMatrixWrapper<EigenDense>;
-    EigenMatrixWrapper mm(m);
+    using EigenMatrix = SofaCaribou::Algebra::EigenMatrix<EigenDense>;
+    EigenMatrix mm(m);
     EXPECT_EQ(mm.rows(), 100);
     EXPECT_EQ(mm.cols(), 100);
 
@@ -118,10 +118,10 @@ TEST(Algebra, DenseMatrixByCopy) {
 
 TEST(Algebra, DenseMatrixByReference) {
     using EigenDense = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
-    using EigenWrapper = SofaCaribou::Algebra::EigenMatrixWrapper<EigenDense &>;
+    using EigenMatrix = SofaCaribou::Algebra::EigenMatrix<EigenDense &>;
     EigenDense m(100,100);
 
-    EigenWrapper mm(m);
+    EigenMatrix mm(m);
 
     EXPECT_EQ(mm.rows(), 100);
     EXPECT_EQ(mm.cols(), 100);
@@ -138,11 +138,11 @@ TEST(Algebra, DenseMatrixByReference) {
 
 TEST(Algebra, SparseMatrixByCopy) {
     using EigenSparse = Eigen::SparseMatrix<double>;
-    using EigenWrapper = SofaCaribou::Algebra::EigenMatrixWrapper<EigenSparse>;
+    using EigenMatrix = SofaCaribou::Algebra::EigenMatrix<EigenSparse>;
 
     const size_t N = 100;
     EigenSparse m(N, N);
-    EigenWrapper mm(m);
+    EigenMatrix mm(m);
     EXPECT_EQ(mm.rows(), N);
     EXPECT_EQ(mm.cols(), N);
 
@@ -161,11 +161,11 @@ TEST(Algebra, SparseMatrixByCopy) {
 
 TEST(Algebra, SparseMatrixByReference) {
     using EigenSparse = Eigen::SparseMatrix<double>;
-    using EigenWrapper = SofaCaribou::Algebra::EigenMatrixWrapper<EigenSparse &>;
+    using EigenMatrix = SofaCaribou::Algebra::EigenMatrix<EigenSparse &>;
 
     const size_t N = 100;
     EigenSparse m(N, N);
-    EigenWrapper mm(m);
+    EigenMatrix mm(m);
     EXPECT_EQ(mm.rows(), N);
     EXPECT_EQ(mm.cols(), N);
 

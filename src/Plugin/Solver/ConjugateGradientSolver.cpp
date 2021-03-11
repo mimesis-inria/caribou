@@ -1,5 +1,5 @@
 #include "ConjugateGradientSolver.h"
-#include<SofaCaribou/Algebra/EigenMatrixWrapper.h>
+#include<SofaCaribou/Algebra/EigenMatrix.h>
 #include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
 #include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 #include <Caribou/macros.h>
@@ -20,7 +20,7 @@ using Index = EIGEN_DEFAULT_DENSE_INDEX_TYPE;
 namespace SofaCaribou::solver {
 
 using Timer = sofa::helper::AdvancedTimer;
-using Algebra::EigenMatrixWrapper;
+using Algebra::EigenMatrix;
 
 ConjugateGradientSolver::ConjugateGradientSolver()
 : d_verbose(initData(&d_verbose,
@@ -119,7 +119,7 @@ void ConjugateGradientSolver::assemble (const sofa::core::MechanicalParams* mpar
 
     Timer::stepBegin("Clear");
     p_A.resize(n, n);
-    EigenMatrixWrapper<SparseMatrix &> wrapper (p_A);
+    EigenMatrix<SparseMatrix &> wrapper (p_A);
     p_accessor.setGlobalMatrix(&wrapper);
     Timer::stepEnd("Clear");
 

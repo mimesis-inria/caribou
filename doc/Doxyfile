@@ -1144,6 +1144,18 @@ HTML_OUTPUT            = html
 
 HTML_FILE_EXTENSION    = .html
 
+# If the HTML_FORMULA_FORMAT option is set to svg, doxygen will use the pdf2svg tool
+# (see https://github.com/dawbarton/pdf2svg) or inkscape (see https://inkscape.org) to
+# generate formulas as SVG images instead of PNGs for the HTML output. These images
+# will generally look nicer at scaled resolutions.
+#
+# Possible values are: png (the default) and svg (looks nicer but requires the pdf2svg or inkscape tool).
+#
+# The default value is: png.
+#
+# This tag requires that the tag GENERATE_HTML is set to YES
+HTML_FORMULA_FORMAT    = png
+
 # The HTML_HEADER tag can be used to specify a user-defined HTML header file for
 # each generated HTML page. If the tag is left blank doxygen will generate a
 # standard header.
@@ -1527,7 +1539,7 @@ EXT_LINKS_IN_WINDOW    = NO
 # Minimum value: 8, maximum value: 50, default value: 10.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-FORMULA_FONTSIZE       = 10
+FORMULA_FONTSIZE       = 15
 
 # Use the FORMULA_TRANSPARENT tag to determine whether or not the images
 # generated for formulas are transparent PNGs. Transparent PNGs are not
@@ -1540,6 +1552,10 @@ FORMULA_FONTSIZE       = 10
 
 FORMULA_TRANSPARENT    = YES
 
+# The FORMULA_MACROFILE can contain LaTeX \newcommand and \renewcommand
+# commands to create new LaTeX commands to be used in formulas as building blocks.
+FORMULA_MACROFILE      = macro.tex
+
 # Enable the USE_MATHJAX option to render LaTeX formulas using MathJax (see
 # https://www.mathjax.org) which uses client side Javascript for the rendering
 # instead of using pre-rendered bitmaps. Use this if you do not have LaTeX
@@ -1549,7 +1565,7 @@ FORMULA_TRANSPARENT    = YES
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-USE_MATHJAX            = YES
+USE_MATHJAX            = NO
 
 # When MathJax is enabled you can set the default output format to be used for
 # the MathJax output. See the MathJax site (see:

@@ -3,7 +3,7 @@
 .. role:: warning
 
 <CylinderIsoSurface />
-====================
+======================
 
 .. rst-class:: doxy-label
 .. rubric:: Doxygen:

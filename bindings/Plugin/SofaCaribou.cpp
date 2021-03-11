@@ -2,6 +2,7 @@
 
 #include <SofaCaribou/Python/Topology/FictitiousGrid.h>
 #include <SofaCaribou/Python/Forcefield/FictitiousGridElasticForce.h>
+#include <SofaCaribou/Python/Ode/LegacyStaticODESolver.h>
 #include <SofaCaribou/Python/Ode/StaticODESolver.h>
 #include <SofaCaribou/Python/Forcefield/HexahedronElasticForce.h>
 #include <SofaCaribou/Python/Forcefield/HyperelasticForcefield.h>
@@ -16,6 +17,7 @@ PYBIND11_MODULE(SofaCaribou, m) {
     SofaCaribou::topology::python::addFictitiousGrid(m);
 
     // ODE bindings
+    SofaCaribou::ode::python::addLegacyStaticODESolver(m);
     SofaCaribou::ode::python::addStaticODESolver(m);
 
     // Forcefield bindings

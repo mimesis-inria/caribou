@@ -1,16 +1,20 @@
- .. _static_ode_doc:
+ .. _legacy_static_ode_doc:
  .. role:: important
 
-<StaticODESolver />
-===================
+<LegacyStaticODESolver />
+=========================
 
 .. rst-class:: doxy-label
 .. rubric:: Doxygen:
-    :cpp:class:`SofaCaribou::ode::StaticODESolver`
+    :cpp:class:`SofaCaribou::ode::LegacyStaticODESolver`
 
 Implementation of a Newton-Raphson static ODE solver.
 
-The solver does a serie of Newton-Raphson iterations where at each iteration :math:`k`, the following linear system is solved:
+.. warning::
+    This component provides a compatibility layer for SOFA's linear solvers. When possible,
+    :ref:`static_ode_doc` should be use with one of Caribou's linear solvers since it provides better performance.
+
+The solver does a series of Newton-Raphson iterations where at each iteration :math:`k`, the following linear system is solved:
 
 .. math::
     \boldsymbol{K}(\boldsymbol{u}^k) \cdot \delta \boldsymbol{u}^{k+1} &= - \boldsymbol{R}(\boldsymbol{u}^k) \\
@@ -52,15 +56,16 @@ is accumulated by the `addForce` method of forcefields.
       - Convergence criterion: The newton iterations will stop when the relative norm of the residual
         :math:`\frac{|R_k|}{|R_0|} = \frac{|f_k - Ku_k|}{|f_0 - Ku_0|}` at iteration k is lower than this threshold.
         Use a negative value to disable this criterion.
-    * - linear_solver
-      - LinearSolver
-      - None
-      - Linear solver used for the resolution of the system. Will be automatically found in the current context node if
-        none is supplied.
-    * - converged
+    * - shoud_diverge_when_residual_is_growing
       - bool
-      - N/A
-      - Whether or not the last call to solve converged.
+      - false
+      - Divergence criterion: The newton iterations will stop when the residual is greater than the one from the
+        previous iteration.
+    * - warm_start
+      - bool
+      - false
+      - For iterative linear solvers, use the previous solution has a warm start. Note that for the first newton step,
+        the current position is used as the warm start.
 
 Quick example
 *************
@@ -72,8 +77,8 @@ Quick example
         .. code-block:: xml
 
             <Node>
-                <StaticODESolver newton_iterations="10" correction_tolerance_threshold="1e-8" residual_tolerance_threshold="1e-8" printLog="1" />
-                <LLTSolver backend="Pardiso" />
+                <LegacyStaticODESolver newton_iterations="10" correction_tolerance_threshold="1e-8" residual_tolerance_threshold="1e-8" printLog="1" />
+                <ConjugateGradientSolver maximum_number_of_iterations="2500" residual_tolerance_threshold="1e-12" preconditioning_method="Diagonal" printLog="0" />
             </Node>
 
     .. tab-container:: tab2
@@ -81,14 +86,14 @@ Quick example
 
         .. code-block:: python
 
-            node.addObject('StaticODESolver', newton_iterations=10, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-            node.addObject('LLTSolver', backend='Pardiso')
+            node.addObject('LegacyStaticODESolver', newton_iterations=10, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
+            node.addObject('ConjugateGradientSolver', maximum_number_of_iterations=2500, residual_tolerance_threshold=1e-12, preconditioning_method="Diagonal", printLog=False)
 
 
 Available python bindings
 *************************
 
-.. py:class:: StaticODESolver
+.. py:class:: LegacyStaticODESolver
 
     :var iteration_times: List of times (in nanoseconds) that each Newton-Raphson iteration took to compute in the last call to Solve().
     :vartype iteration_times: list [int]
@@ -99,3 +104,8 @@ Available python bindings
     :var squared_initial_residual: The initial squared residual (:math:`|r_0|^2`) of the last solve call.
     :vartype squared_initial_residual: :class:`numpy.double`
 
+    :var iterative_linear_solver_squared_residuals: The list of squared residual norms (:math:`|r|^2`) of every iterative linear solver iterations, for each newton iterations of the last solve call.
+    :vartype iterative_linear_solver_squared_residuals: list [ list [:class:`numpy.double`] ]
+
+    :var iterative_linear_solver_squared_rhs_norms: List of squared right-hand side norms (:math:`|b|^2`) of every newton iterations before the call to the solve method of the iterative linear solver.
+    :vartype iterative_linear_solver_squared_rhs_norms: list [:class:`numpy.double`]
