@@ -525,6 +525,31 @@
              y="61.268082"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;StaticODESolver /&gt;</tspan></text>
       </a>
+      <a
+         style="display:inline"
+         id="a3017-7-3"
+         xlink:href="https://caribou.readthedocs.io/en/latest/backward_euler_ode_doc.html"
+         xlink:title="StaticODESolver"
+         transform="translate(94.320042,-10.727782)"
+         target="_top">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.365001;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect3009-7-6"
+           width="43.709999"
+           height="8.1404362"
+           x="10.606322"
+           y="56.206482" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+           x="17.608837"
+           y="61.268082"
+           id="text3013-1-7"><tspan
+             id="tspan3011-4-5"
+             x="17.608837"
+             y="61.268082"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">&lt;BackwardEuler /&gt;</tspan></text>
+      </a>
     </g>
     <g
        id="g3460"
@@ -1065,7 +1090,6 @@
       </a>
       <a
          xlink:title="Tetrahedron"
-         xlink:type=""
          target="_top"
          xlink:href="https://caribou.jndb.ca/structcaribou_1_1geometry_1_1BaseTetrahedron.html"
          id="a3070">

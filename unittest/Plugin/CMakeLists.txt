@@ -6,6 +6,7 @@ set(SOURCE_FILES
         Algebra/test_eigen_matrix_wrapper.cpp
         Algebra/test_eigen_vector_wrapper.cpp
         Forcefield/test_tractionforce.cpp
+        ODE/test_backward_euler.cpp
         ODE/test_static.cpp
         Topology/test_fictitiousgrid.cpp
 )
