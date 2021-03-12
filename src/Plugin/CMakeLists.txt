@@ -13,6 +13,7 @@ set(HEADER_FILES
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
+    Ode/BackwardEulerODESolver.h
     Ode/LegacyStaticODESolver.h
     Ode/NewtonRaphsonSolver.h
     Ode/StaticODESolver.h
@@ -50,6 +51,7 @@ set(SOURCE_FILES
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForce.cpp
     Material/HyperelasticMaterial.cpp
+    Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp
     Ode/NewtonRaphsonSolver.cpp
     Ode/StaticODESolver.cpp

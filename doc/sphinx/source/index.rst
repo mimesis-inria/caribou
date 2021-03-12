@@ -49,6 +49,7 @@ The project is composed of two modules:
     :titlesonly:
     :hidden:
 
+    BackwardEuler <backward_euler_ode_doc.rst>
     StaticODESolver <static_ode_doc.rst>
     LegacyStaticODESolver <legacy_static_ode_doc.rst>
 
