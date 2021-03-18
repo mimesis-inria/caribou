@@ -1,7 +1,8 @@
 #pragma once
 
+#include <SofaCaribou/Algebra/EigenMatrix.h>
 #include <SofaCaribou/Solver/LDLTSolver.h>
-#include <SofaCaribou/Solver/EigenSparseSolver.inl>
+#include <SofaCaribou/Solver/EigenSolver.inl>
 
 #include<Eigen/SparseCholesky>
 
@@ -36,6 +37,40 @@ struct solver_traits <Eigen::PardisoLDLT< MatrixType, UpLo >> {
     static auto BackendName() -> std::string {return "Pardiso";}
 };
 #endif
+}
+
+template<class EigenSolver>
+bool LDLTSolver<EigenSolver>::analyze_pattern(const sofa::defaulttype::BaseMatrix * A) {
+    auto A_ = dynamic_cast<const SofaCaribou::Algebra::EigenMatrix<Matrix> *>(A);
+    if (not A_) {
+        throw std::runtime_error("Tried to analyze an incompatible matrix (not an Eigen matrix).");
+    }
+
+    p_solver.analyzePattern(A_->matrix());
+
+    return (p_solver.info() == Eigen::Success);
+}
+
+template<class EigenSolver_t>
+bool LDLTSolver<EigenSolver_t>::factorize(const sofa::defaulttype::BaseMatrix *A) {
+    auto A_ = dynamic_cast<const SofaCaribou::Algebra::EigenMatrix<Matrix> *>(A);
+    if (not A_) {
+        throw std::runtime_error("Tried to analyze an incompatible matrix (not an Eigen matrix).");
+    }
+
+    p_solver.factorize(A_->matrix());
+
+    return (p_solver.info() == Eigen::Success);
+}
+
+template<class EigenSolver_t>
+bool LDLTSolver<EigenSolver_t>::solve(const sofa::defaulttype::BaseVector * F,
+                                      sofa::defaulttype::BaseVector *X) const {
+    auto F_ = dynamic_cast<const SofaCaribou::Algebra::EigenVector<Vector> *>(F);
+    auto X_ = dynamic_cast<SofaCaribou::Algebra::EigenVector<Vector> *>(X);
+
+    X_->vector() = p_solver.solve(F_->vector());
+    return (p_solver.info() == Eigen::Success);
 }
 
 template<class EigenSolver>

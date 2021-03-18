@@ -52,6 +52,11 @@ public:
      */
     EigenVector(Eigen::Index n) : p_eigen_vector(n) {}
 
+    /**
+     * Default constructor for an empty vector.
+     */
+    EigenVector() = default;
+
     /** Number of elements in the vector */
     [[nodiscard]]
     Index size() const final {return static_cast<int>(p_eigen_vector.size());}

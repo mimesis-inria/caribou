@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SofaCaribou/Solver/LUSolver.h>
-#include <SofaCaribou/Solver/EigenSparseSolver.inl>
+#include <SofaCaribou/Solver/EigenSolver.inl>
 
 #include<Eigen/SparseCholesky>
 
@@ -41,6 +41,44 @@ struct solver_traits <Eigen::PardisoLU< MatrixType >> {
 #endif
 }
 
+template<class EigenSolver_t>
+bool LUSolver<EigenSolver_t>::analyze_pattern(const sofa::defaulttype::BaseMatrix * A) {
+    auto A_ = dynamic_cast<const SofaCaribou::Algebra::EigenMatrix<Matrix> *>(A);
+    if (not A_) {
+        throw std::runtime_error("Tried to analyze an incompatible matrix (not an Eigen matrix).");
+    }
+
+    if constexpr (solver_traits<EigenSolver_t>::is_eigen()) {
+        p_solver.isSymmetric(symmetric());
+    }
+
+    p_solver.analyzePattern(A_->matrix());
+
+    return (p_solver.info() == Eigen::Success);
+}
+
+template<class EigenSolver_t>
+bool LUSolver<EigenSolver_t>::factorize(const sofa::defaulttype::BaseMatrix *A) {
+    auto A_ = dynamic_cast<const SofaCaribou::Algebra::EigenMatrix<Matrix> *>(A);
+    if (not A_) {
+        throw std::runtime_error("Tried to analyze an incompatible matrix (not an Eigen matrix).");
+    }
+
+    p_solver.factorize(A_->matrix());
+
+    return (p_solver.info() == Eigen::Success);
+}
+
+template<class EigenSolver_t>
+bool LUSolver<EigenSolver_t>::solve(const sofa::defaulttype::BaseVector * F,
+                                     sofa::defaulttype::BaseVector *X) const {
+    auto F_ = dynamic_cast<const SofaCaribou::Algebra::EigenVector<Vector> *>(F);
+    auto X_ = dynamic_cast<SofaCaribou::Algebra::EigenVector<Vector> *>(X);
+
+    X_->vector() = p_solver.solve(F_->vector());
+    return (p_solver.info() == Eigen::Success);
+}
+
 template<class EigenSolver>
 std::string LUSolver<EigenSolver>::BackendName() {
     return solver_traits<EigenSolver>::BackendName();
@@ -58,8 +96,9 @@ LUSolver<EigenSolver>::LUSolver()
          Pardiso: Pardiso LU solver.
      )" , true /*displayed_in_GUI*/, true /*read_only_in_GUI*/))
 , d_is_symmetric(initData(&d_is_symmetric,
+    false,
     "symmetric",
-    "States if the system matrix is symmetric. This will enable some optimizations.",
+    "States if the system matrix is symmetric. This will enable some optimizations. Default to false.",
     true /*displayed_in_GUI*/, true /*read_only_in_GUI*/))
 {
     d_backend.setValue(sofa::helper::OptionsGroup(std::vector < std::string > {
@@ -78,15 +117,6 @@ LUSolver<EigenSolver>::LUSolver()
     } else {
         backend->setSelectedItem(static_cast<unsigned int>(0));
     }
-}
-
-template<typename EigenSolver>
-void LUSolver<EigenSolver>::assemble (const sofa::core::MechanicalParams* mparams) {
-    if constexpr (solver_traits<EigenSolver>::is_eigen()) {
-        this->solver().isSymmetric(symmetric());
-    }
-
-    EigenSparseSolver<EigenSolver>::assemble(mparams);
 }
 
 

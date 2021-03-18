@@ -1,25 +1,54 @@
 #pragma once
 
-#include <SofaCaribou/Solver/EigenSparseSolver.h>
+#include <SofaCaribou/Solver/EigenSolver.h>
 #include <sofa/helper/OptionsGroup.h>
 
 namespace SofaCaribou::solver {
 
-template <class EigenSolver>
-class LDLTSolver : public EigenSparseSolver<EigenSolver> {
+/**
+ * Implementation of a direct LDLT sparse linear solver.
+ *
+ * This class provides a LDL^T Cholesky factorizations of sparse matrices that are selfadjoint and positive definite.
+ * In order to reduce the fill-in, a symmetric permutation P is applied prior to the factorization such that the
+ * factorized matrix is P A P^-1.
+ *
+ * The component uses the Eigen SimplicialLDLT class as the solver backend.
+ *
+ * @tparam EigenSolver_t
+ */
+template <class EigenSolver_t>
+class LDLTSolver : public EigenSolver<typename EigenSolver_t::MatrixType> {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(LDLTSolver, EigenSolver), SOFA_TEMPLATE(EigenSparseSolver, EigenSolver));
+    SOFA_CLASS(SOFA_TEMPLATE(LDLTSolver, EigenSolver_t), SOFA_TEMPLATE(EigenSolver, typename EigenSolver_t::MatrixType));
 
     template <typename T>
     using Data = sofa::Data<T>;
 
+    using Base = EigenSolver<typename EigenSolver_t::MatrixType>;
+    using Matrix = typename Base::Matrix;
+    using Vector = typename Base::Vector;
+
     LDLTSolver();
+
+    /** @see LinearSolver::analyze_pattern */
+    bool analyze_pattern(const sofa::defaulttype::BaseMatrix * A) override;
+
+    /** @see LinearSolver::factorize */
+    bool factorize(const sofa::defaulttype::BaseMatrix * A) override;
+
+    /**
+     * @see SofaCaribou::solver::LinearSolver::solve
+     */
+    bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) const override;
 
     // Get the backend name of the class derived from the EigenSolver template parameter
     static std::string BackendName();
 private:
-    ///< Solver backend used (Eigen or Pardiso)
+    /// Solver backend used (Eigen or Pardiso)
     Data<sofa::helper::OptionsGroup> d_backend;
+
+    /// The actual Eigen solver used (its type is passed as a template parameter and must be derived from Eigen::SparseSolverBase)
+    EigenSolver_t p_solver;
 };
 
 } // namespace SofaCaribou::solver
