@@ -11,33 +11,33 @@
 
 namespace SofaCaribou::solver {
 
-namespace internal {
-template <typename T>
-struct solver_traits {};
-}
-
 /**
- * Base class for sparse direct solvers using Eigen as a backend solver.
+ * Base class for linear solvers using Eigen matrices.
  *
- * Note that the complete system matrix has to be assemble for any of the derivated solvers.
+ * Note that the complete system matrix has to be assemble for any of the derived solvers.
  * This means that the mass, damping and forcefield components in the scene graph need to implement
  * the addMtoMatrix, addBtoMatrix and addMtoMatrix methods respectively.
  *
- * @tparam EigenSolver_t Eigen solver type (eg.: SimplicialLLT, SparseLU, PardisoLLT, etc.)
+ * @tparam EigenMatrix_t Eigen matrix type (eg.: SparseMatrix, Matrix, DiagonalMatrix, etc.)
  */
-template <class EigenSolver_t>
-class EigenSparseSolver : public sofa::core::behavior::LinearSolver, public SofaCaribou::solver::LinearSolver {
+template <class EigenMatrix_t>
+class EigenSolver : public sofa::core::behavior::LinearSolver, public SofaCaribou::solver::LinearSolver {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(EigenSparseSolver, EigenSolver_t), sofa::core::behavior::LinearSolver);
-    using EigenSolver = EigenSolver_t;
-    using SparseMatrix = std::remove_cv_t<typename EigenSolver::MatrixType>;
-    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
+    SOFA_CLASS(SOFA_TEMPLATE(EigenSolver, EigenMatrix_t), sofa::core::behavior::LinearSolver);
+    using Scalar = typename Eigen::MatrixBase<EigenMatrix_t>::Scalar;
+    using Matrix = EigenMatrix_t;
+    using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+
+    EigenSolver() = default;
 
     /**
-     * Assemble the system matrix A = (mM + bB + kK) inside the SparseMatrix p_A.
+     * Assemble the system matrix A = (mM + bB + kK) inside the matrix A.
+     *
      * @param mparams Mechanical parameters containing the m, b and k factors.
+     * @return The matrix accessor containing the lists of top level mechanical objects, a pointer for
+     * their matrix and a vector of mappings for mapped mechanical objects.
      */
-    virtual void assemble (const sofa::core::MechanicalParams* mparams);
+    auto assemble (const sofa::core::MechanicalParams* mparams, SofaCaribou::Algebra::EigenMatrix<Matrix> & A) const -> sofa::component::linearsolver::DefaultMultiMatrixAccessor;
 
     /**
      * Reset the complete system (A, x and b are cleared).
@@ -83,12 +83,6 @@ public:
     /** Explicitly states if this matrix is symmetric. */
     inline virtual void set_symmetric(bool is_symmetric) { p_is_symmetric = is_symmetric; }
 
-    /** Get a readonly reference to the backend solver */
-    auto solver() const -> const EigenSolver & { return p_solver; }
-
-    /** Get a reference to the backend solver */
-    auto solver() -> EigenSolver & { return p_solver; }
-
     /** Get a readonly reference to the mechanical parameters */
     auto mechanical_params() const -> const sofa::core::MechanicalParams & { return p_mechanical_params; }
 
@@ -103,7 +97,7 @@ public:
     auto matrix_accessor() const -> const sofa::component::linearsolver::DefaultMultiMatrixAccessor & { return p_accessor; }
 
     /** Get a readonly reference to the global assembled system matrix. */
-    auto A() const -> const SparseMatrix & { return p_A; }
+    auto A() const -> const Matrix & { return p_A.matrix(); }
 
     /** Get a readonly reference to the right-hand side vector identifier */
     auto b_id() const -> const sofa::core::MultiVecDerivId & { return p_b_id; }
@@ -125,7 +119,7 @@ private:
      * @see SofaCaribou::solver::LinearSolver::create_new_matrix
      */
     sofa::defaulttype::BaseMatrix * create_new_matrix(sofa::Size rows, sofa::Size cols) const override {
-        auto * matrix = new SofaCaribou::Algebra::EigenMatrix<SparseMatrix> (static_cast<Eigen::Index>(rows), static_cast<Eigen::Index>(cols));
+        auto * matrix = new SofaCaribou::Algebra::EigenMatrix<Matrix> (static_cast<Eigen::Index>(rows), static_cast<Eigen::Index>(cols));
         if (symmetric()) {
             matrix->set_symmetric(symmetric());
         }
@@ -139,45 +133,35 @@ private:
         return new SofaCaribou::Algebra::EigenVector<Vector>(n);
     }
 
-    /**
-     * @see SofaCaribou::solver::LinearSolver::solve
-     */
-    bool solve(const sofa::defaulttype::BaseMatrix * A,
-               const sofa::defaulttype::BaseVector * F,
-               sofa::defaulttype::BaseVector * X) const override;
-
 private:
     /// Private members
 
-    ///< The Eigen solver used (its type is passed as a template parameter and must be derived from Eigen::SparseSolverBase)
-    EigenSolver p_solver;
-
-    ///< The mechanical parameters containing the m, b and k coefficients.
+    /// The mechanical parameters containing the m, b and k coefficients.
     sofa::core::MechanicalParams p_mechanical_params;
 
-    ///< Accessor used to determine the index of each mechanical object matrix and vector in the global system.
+    /// Accessor used to determine the index of each mechanical object matrix and vector in the global system.
     sofa::component::linearsolver::DefaultMultiMatrixAccessor p_accessor;
 
-    ///< The identifier of the b vector
+    /// The identifier of the b vector
     sofa::core::MultiVecDerivId p_b_id;
 
-    ///< The identifier of the x vector
+    /// The identifier of the x vector
     sofa::core::MultiVecDerivId p_x_id;
 
-    ///< Global system matrix
-    SparseMatrix p_A;
+    /// Global system matrix
+    SofaCaribou::Algebra::EigenMatrix<Matrix> p_A;
 
-    ///< Global system solution vector (usually filled with an initial guess or the previous solution)
-    Vector p_x;
+    /// Global system solution vector (usually filled with an initial guess or the previous solution)
+    SofaCaribou::Algebra::EigenVector<Vector> p_x;
 
-    ///< Global system right-hand side vector
-    Vector p_b;
+    /// Global system right-hand side vector
+    SofaCaribou::Algebra::EigenVector<Vector> p_b;
 
-    ///< True if the solver has successfully factorize the system matrix
-    bool p_A_is_factorized;
+    /// True if the solver has successfully factorize the system matrix
+    bool p_A_is_factorized {};
 
-    ///< States if the system matrix is symmetric. Note that this value isn't set automatically, the user must
-    ///< explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
+    /// States if the system matrix is symmetric. Note that this value isn't set automatically, the user must
+    /// explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
     bool p_is_symmetric = false;
 };
 

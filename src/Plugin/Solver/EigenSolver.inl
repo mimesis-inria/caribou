@@ -1,8 +1,8 @@
 #pragma once
 
-#include <SofaCaribou/Solver/EigenSparseSolver.h>
+#include <SofaCaribou/Solver/EigenSolver.h>
 
-#include <SofaCaribou/Solver/EigenSparseSolver.h>
+#include <SofaCaribou/Solver/EigenSolver.h>
 #include<SofaCaribou/Algebra/EigenMatrix.h>
 #include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
 #include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
@@ -16,17 +16,19 @@
 
 namespace SofaCaribou::solver {
 
-template <class EigenSolver>
-void EigenSparseSolver<EigenSolver>::resetSystem() {
+template <class EigenMatrix_t>
+void EigenSolver<EigenMatrix_t>::resetSystem() {
     p_A.resize(0, 0);
     p_x.resize(0);
     p_b.resize(0);
     p_accessor.clear();
 }
 
-template <class EigenSolver>
-void EigenSparseSolver<EigenSolver>::assemble (const sofa::core::MechanicalParams* mparams) {
+template <class EigenMatrix_t>
+auto EigenSolver<EigenMatrix_t>::assemble (const sofa::core::MechanicalParams* mparams, SofaCaribou::Algebra::EigenMatrix<Matrix> & A) const -> sofa::component::linearsolver::DefaultMultiMatrixAccessor
+{
     using Timer = sofa::helper::AdvancedTimer;
+    sofa::component::linearsolver::DefaultMultiMatrixAccessor accessor;
 
     // Step 1. Preparation stage
     //         This stage go down on the sub-graph and gather the top-level mechanical objects (mechanical objects that
@@ -36,14 +38,14 @@ void EigenSparseSolver<EigenSolver>::assemble (const sofa::core::MechanicalParam
     //         BaseMapping::getJ() on every mapping).
     Timer::stepBegin("PrepareMatrix");
 
-    sofa::simulation::common::MechanicalOperations mops(mparams, this->getContext());
-    p_accessor.clear();
+    auto context = const_cast<sofa::core::objectmodel::BaseContext *> (this->getContext());
+    sofa::simulation::common::MechanicalOperations mops(mparams, context);
 
     // Step 1.1 Get dimension of each top level mechanical states using BaseMechanicalState::getMatrixSize(),
     //          and accumulate mechanical objects and mapping matrices
     Timer::stepBegin("Dimension");
-    mops.getMatrixDimension(nullptr, nullptr, &p_accessor);
-    const auto n = static_cast<Eigen::Index>(p_accessor.getGlobalDimension());
+    mops.getMatrixDimension(nullptr, nullptr, &accessor);
+    const auto n = static_cast<Eigen::Index>(accessor.getGlobalDimension());
     Timer::stepEnd("Dimension");
 
     // Step 2.2 Does nothing more than to accumulate from the previous step a list of
@@ -52,14 +54,13 @@ void EigenSparseSolver<EigenSolver>::assemble (const sofa::core::MechanicalParam
     //          system matrix. This global matrix hence contains one sub-matrix per top
     //          level mechanical state.
     Timer::stepBegin("SetupMatrixIndices");
-    p_accessor.setupMatrices();
+    accessor.setupMatrices();
     Timer::stepEnd("SetupMatrixIndices");
 
     Timer::stepBegin("Clear");
-    p_A.resize(n, n);
-    Algebra::EigenMatrix<SparseMatrix &> wrapper (p_A);
-    wrapper.set_symmetric(symmetric()); // Enables some optimization when the system matrix is symmetric
-    p_accessor.setGlobalMatrix(&wrapper);
+    A.resize(n, n);
+    A.set_symmetric(symmetric()); // Enables some optimization when the system matrix is symmetric
+    accessor.setGlobalMatrix(&A);
     Timer::stepEnd("Clear");
 
     Timer::stepEnd("PrepareMatrix");
@@ -75,11 +76,11 @@ void EigenSparseSolver<EigenSolver>::assemble (const sofa::core::MechanicalParam
 
     sofa::simulation::common::VisitorExecuteFunc execute(*mops.ctx);
     Timer::stepBegin("AssembleGlobalMatrix");
-    execute(visitor::AssembleGlobalMatrix(mparams, &p_accessor));
+    execute(visitor::AssembleGlobalMatrix(mparams, &accessor));
     Timer::stepEnd("AssembleGlobalMatrix");
 
     Timer::stepBegin("ConstrainGlobalMatrix");
-    execute(visitor::ConstrainGlobalMatrix(mparams, &p_accessor));
+    execute(visitor::ConstrainGlobalMatrix(mparams, &accessor));
     Timer::stepEnd("ConstrainGlobalMatrix");
 
     // Step 3. Mechanical mappings
@@ -89,23 +90,22 @@ void EigenSparseSolver<EigenSolver>::assemble (const sofa::core::MechanicalParam
     //         where A is the master mechanical object's matrix, A' is the slave mechanical object matrix and J=m.getJ()
     //         is the mapping relation between the slave and its master.
     Timer::stepBegin("MappedMatrices");
-    p_accessor.computeGlobalMatrix();
+    accessor.computeGlobalMatrix();
     Timer::stepEnd("MappedMatrices");
 
     // Step 4. Convert the system matrix to a compressed sparse matrix
     Timer::stepBegin("ConvertToSparse");
-    wrapper.compress();
+    A.compress();
     Timer::stepEnd("ConvertToSparse");
     Timer::stepEnd("BuildMatrix");
 
-    // Remove the global matrix from the accessor since the wrapper was temporary
-    p_accessor.setGlobalMatrix(nullptr);
+    return accessor;
 }
 
-template <class EigenSolver>
-void EigenSparseSolver<EigenSolver>::setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) {
+template <class EigenMatrix_t>
+void EigenSolver<EigenMatrix_t>::setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) {
     using Timer = sofa::helper::AdvancedTimer;
-    Timer::stepBegin("EigenSparseSolver::AssembleGlobalMatrix");
+    Timer::stepBegin("EigenSolver::AssembleGlobalMatrix");
 
     // This will be set back to true once the system matrix has been successfully factorized
     // It is used to avoid trying to solve the system when something went wrong in this stage.
@@ -116,40 +116,36 @@ void EigenSparseSolver<EigenSolver>::setSystemMBKMatrix(const sofa::core::Mechan
     p_mechanical_params = *mparams;
 
     // Step 1. Assemble the system matrix
-    auto previous_dimension = p_A.rows();
-    assemble(mparams);
-    auto current_dimension = p_A.rows();
+    auto previous_dimension = p_A.rowSize();
+    p_accessor = assemble(mparams, p_A);
+    auto current_dimension = p_A.rowSize();
 
     // Step 2. Let the solver analyse the matrix
     bool matrix_shape_has_changed = previous_dimension != current_dimension;
     if (matrix_shape_has_changed) {
         Timer::stepBegin("MatrixAnalysis");
-        p_solver.analyzePattern(p_A);
-        Timer::stepEnd("MatrixAnalysis");
-        if (p_solver.info() != Eigen::Success) {
-            msg_error() << "Failed to analyse the system matrix pattern (" +
-            std::string((p_solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
+        if (not this->analyze_pattern(&p_A)) {
+            msg_error() << "Failed to analyse the system matrix pattern";
         }
+        Timer::stepEnd("MatrixAnalysis");
+
     }
 
     // Step 5. Factorize the system matrix
     Timer::stepBegin("MatrixFactorization");
-    p_solver.factorize(p_A);
-    if (p_solver.info() != Eigen::Success) {
-        msg_error() << "Failed to factorize the system matrix (" +
-                       std::string((p_solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
-    } else {
-        p_A_is_factorized = true;
+    p_A_is_factorized = this->factorize(&p_A);
+    if (not p_A_is_factorized) {
+        msg_error() << "Failed to factorize the system matrix";
     }
     Timer::stepEnd("MatrixFactorization");
 
-    Timer::stepEnd("EigenSparseSolver::AssembleGlobalMatrix");
+    Timer::stepEnd("EigenSolver::AssembleGlobalMatrix");
 }
 
-template <class EigenSolver>
-void EigenSparseSolver<EigenSolver>::setSystemRHVector(sofa::core::MultiVecDerivId b_id) {
+template <class EigenMatrix_t>
+void EigenSolver<EigenMatrix_t>::setSystemRHVector(sofa::core::MultiVecDerivId b_id) {
     using Timer = sofa::helper::AdvancedTimer;
-    Timer::stepBegin("EigenSparseSolver::AssembleResidualVector");
+    Timer::stepBegin("EigenSolver::AssembleResidualVector");
 
     // Register the RHS to the mechanical parameters
     p_mechanical_params.setDf(b_id);
@@ -158,17 +154,16 @@ void EigenSparseSolver<EigenSolver>::setSystemRHVector(sofa::core::MultiVecDeriv
     p_b_id = b_id;
 
     // Copy the vectors of the mechanical objects into a global eigen vector.
-    p_b.resize(p_A.rows());
-    sofa::component::linearsolver::EigenVectorWrapper<FLOATING_POINT_TYPE> b(p_b);
-    mop.multiVector2BaseVector(p_b_id, &b, &p_accessor);
+    p_b.resize(p_A.rowSize());
+    mop.multiVector2BaseVector(p_b_id, &p_b, &p_accessor);
 
-    Timer::stepEnd("EigenSparseSolver::AssembleResidualVector");
+    Timer::stepEnd("EigenSolver::AssembleResidualVector");
 }
 
-template <class EigenSolver>
-void EigenSparseSolver<EigenSolver>::setSystemLHVector(sofa::core::MultiVecDerivId x_id) {
+template <class EigenMatrix_t>
+void EigenSolver<EigenMatrix_t>::setSystemLHVector(sofa::core::MultiVecDerivId x_id) {
     using Timer = sofa::helper::AdvancedTimer;
-    Timer::stepBegin("EigenSparseSolver::AssembleSolutionVector");
+    Timer::stepBegin("EigenSolver::AssembleSolutionVector");
 
     // Register the dx vector to the mechanical parameters
     p_mechanical_params.setDx(x_id);
@@ -178,42 +173,32 @@ void EigenSparseSolver<EigenSolver>::setSystemLHVector(sofa::core::MultiVecDeriv
 
 
     // Copy the vectors of the mechanical objects into a global eigen vector.
-    p_x.resize(p_A.rows());
-    sofa::component::linearsolver::EigenVectorWrapper<FLOATING_POINT_TYPE> x(p_x);
-    mop.multiVector2BaseVector(p_x_id, &x, &p_accessor);
+    p_x.resize(p_A.rowSize());
+    mop.multiVector2BaseVector(p_x_id, &p_x, &p_accessor);
 
-    Timer::stepEnd("EigenSparseSolver::AssembleSolutionVector");
+    Timer::stepEnd("EigenSolver::AssembleSolutionVector");
 }
 
-template <class EigenSolver>
-void EigenSparseSolver<EigenSolver>::solveSystem() {
+template <class EigenMatrix_t>
+void EigenSolver<EigenMatrix_t>::solveSystem() {
     using Timer = sofa::helper::AdvancedTimer;
     using namespace sofa::component::linearsolver;
     using namespace sofa::core::behavior;
 
     sofa::simulation::common::MechanicalOperations mop( &p_mechanical_params, this->getContext() );
 
-    Timer::stepBegin("EigenSparseSolver::solve");
-
-    if (p_A_is_factorized) {
-        // Solve the system
-        p_x = p_solver.solve(p_b);
-        if (p_solver.info() != Eigen::Success) {
-            msg_error() << "Failed to solve the system (" +
-                           std::string(
-                               (p_solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
-        }
-
+    Timer::stepBegin("EigenSolver::solve");
+    bool success = this->solve(&p_b, &p_x);
+    if (success) {
         // Copy the solution into the mechanical objects of the current context sub-graph.
-        EigenVectorWrapper<FLOATING_POINT_TYPE> x_wrapper(p_x);
-        mop.baseVector2MultiVector(&x_wrapper, p_x_id, &p_accessor);
+        mop.baseVector2MultiVector(&p_x, p_x_id, &p_accessor);
     }
 
-    Timer::stepEnd("EigenSparseSolver::solve");
+    Timer::stepEnd("EigenSolver::solve");
 }
 
-template<typename EigenSolver>
-std::string EigenSparseSolver<EigenSolver>::GetCustomTemplateName() {
+template<typename EigenMatrix_t>
+std::string EigenSolver<EigenMatrix_t>::GetCustomTemplateName() {
     int status;
     char * name = abi::__cxa_demangle(typeid(EigenSolver).name(), 0, 0, &status);
     std::string namestring;
@@ -227,14 +212,14 @@ std::string EigenSparseSolver<EigenSolver>::GetCustomTemplateName() {
     }
     free(name);
     if (!error.empty()) {
-        throw std::runtime_error("Demangling of '"+std::string(typeid(EigenSolver).name())+"' failed for the following reason: " + error);
+        throw std::runtime_error("Demangling of '"+std::string(typeid(EigenMatrix_t).name())+"' failed for the following reason: " + error);
     }
     return namestring;
 }
 
-template <class EigenSolver>
+template <class EigenMatrix_t>
 template<typename Derived>
-auto EigenSparseSolver<EigenSolver>::canCreate(Derived*, sofa::core::objectmodel::BaseContext*, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool {
+auto EigenSolver<EigenMatrix_t>::canCreate(Derived*, sofa::core::objectmodel::BaseContext*, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool {
     std::string requested_backend = arg->getAttribute( "backend", "");
     std::string current_backend = Derived::BackendName();
 
@@ -251,54 +236,6 @@ auto EigenSparseSolver<EigenSolver>::canCreate(Derived*, sofa::core::objectmodel
 
     // No backend specified
     arg->setAttribute("backend", Derived::BackendName());
-    return true;
-}
-
-template<class EigenSolver>
-bool
-EigenSparseSolver<EigenSolver>::solve(const sofa::defaulttype::BaseMatrix *A,
-                                      const sofa::defaulttype::BaseVector *F,
-                                      sofa::defaulttype::BaseVector *X) const
-{
-    using Timer = sofa::helper::AdvancedTimer;
-    using namespace SofaCaribou::Algebra;
-
-    auto eigen_A = dynamic_cast<const EigenMatrix<SparseMatrix> *>(A);
-    auto eigen_F = dynamic_cast<const EigenVector<Vector> *>(F);
-    auto eigen_X = dynamic_cast<EigenVector<Vector> *>(X);
-
-    // Step 1. Let the solver analyse the matrix
-    EigenSolver solver;
-    Timer::stepBegin("MatrixAnalysis");
-    solver.analyzePattern(eigen_A->matrix());
-    Timer::stepEnd("MatrixAnalysis");
-    if (solver.info() != Eigen::Success) {
-        msg_error() << "Failed to analyse the system matrix pattern (" +
-                       std::string((solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
-
-        return false;
-    }
-
-    // Step 2. Factorize the system matrix
-    Timer::stepBegin("MatrixFactorization");
-    solver.factorize(eigen_A->matrix());
-    if (solver.info() != Eigen::Success) {
-        msg_error() << "Failed to factorize the system matrix (" +
-                       std::string((solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
-        return false;
-    }
-    Timer::stepEnd("MatrixFactorization");
-
-    // Step3. Solve the system
-    Timer::stepBegin("Solve");
-    eigen_X->vector() = solver.solve(eigen_F->vector());
-    Timer::stepEnd("Solve");
-    if (solver.info() != Eigen::Success) {
-        msg_error() << "Failed to solve the system (" +
-                       std::string( (solver.info() == Eigen::NumericalIssue) ? "numerical issues" : "invalid input") + ")";
-        return false;
-    }
-
     return true;
 }
 

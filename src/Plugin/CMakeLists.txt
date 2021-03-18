@@ -17,7 +17,7 @@ set(HEADER_FILES
     Ode/NewtonRaphsonSolver.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
-    Solver/EigenSparseSolver.h
+    Solver/EigenSolver.h
     Solver/LDLTSolver.h
     Solver/LinearSolver.h
     Solver/LLTSolver.h
@@ -34,7 +34,7 @@ set(HEADER_FILES
 
 set(TEMPLATE_FILES
     Forcefield/HyperelasticForcefield.inl
-    Solver/EigenSparseSolver.inl
+    Solver/EigenSolver.inl
     Topology/FictitiousGrid.inl
     Solver/LDLTSolver.inl
     Solver/LLTSolver.inl

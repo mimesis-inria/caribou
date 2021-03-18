@@ -209,41 +209,64 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
         sofa::helper::ScopedAdvancedTimer step_timer ("NewtonStep");
         t = steady_clock::now();
 
-        // Part 1. Assemble the system matrix
-        sofa::helper::AdvancedTimer::stepBegin("MBKBuild");
-        p_A->clear();
-        this->assemble_system_matrix(mechanical_parameters, accessor, p_A.get());
-        sofa::helper::AdvancedTimer::stepEnd("MBKBuild");
-
-        // Part 2. Solve the position increment
-        sofa::helper::AdvancedTimer::stepBegin("MBKSolve");
-        bool solved = linear_solver->solve(p_A.get(), p_F.get(), p_DX.get());
-        sofa::helper::AdvancedTimer::stepEnd("MBKSolve");
-        if (not solved) {
-            diverged = true;
-            break;
+        // Part 1. Assemble the system matrix.
+        {
+            sofa::helper::ScopedAdvancedTimer _t_("MBKBuild");
+            p_A->clear();
+            this->assemble_system_matrix(mechanical_parameters, accessor, p_A.get());
         }
 
-        // Part 3. Propagating the solution increment and update geometry
-        sofa::helper::AdvancedTimer::stepBegin("PropagateDx");
-        this->propagate_solution_increment(mechanical_parameters, accessor, p_DX.get(), x_id, v_id, dx_id);
-        sofa::helper::AdvancedTimer::stepEnd("PropagateDx");
+        // Part 2. Analyze the pattern of the matrix in order to compute a permutation matrix.
+        {
+            sofa::helper::ScopedAdvancedTimer _t_("MBKAnalyze");
+            if (not linear_solver->analyze_pattern(p_A.get())) {
+                info << "[DIVERGED] Failed to analyze the pattern of the system matrix.";
+                diverged = true;
+                break;
+            }
+        }
+
+        // Part 3. Factorize the matrix.
+        {
+            sofa::helper::ScopedAdvancedTimer _t_("MBKFactorize");
+            if (not linear_solver->factorize(p_A.get())) {
+                info << "[DIVERGED] Failed to factorize the system matrix.";
+                diverged = true;
+                break;
+            }
+        }
+
+        // Part 4. Solve the unknown increment.
+        {
+            sofa::helper::ScopedAdvancedTimer _t_("MBKSolve");
+            if (not linear_solver->solve(p_F.get(), p_DX.get())) {
+                info << "[DIVERGED] Failed to solve the unknown increment.";
+                diverged = true;
+                break;
+            }
+        }
+
+        // Part 5. Propagating the solution increment and update geometry.
+        {
+            sofa::helper::ScopedAdvancedTimer _t_("PropagateDx");
+            this->propagate_solution_increment(mechanical_parameters, accessor, p_DX.get(), x_id, v_id, dx_id);
+        }
 
         // The next two parts are only necessary when doing more than one Newton iteration
         if (newton_iterations > 1) {
-            // Part 4. Update the force vector
+            // Part 6. Update the force vector.
             sofa::helper::AdvancedTimer::stepBegin("UpdateForce");
-            p_F.get()->clear();
+            p_F->clear();
             this->assemble_rhs_vector(mechanical_parameters, accessor, f_id, p_F.get());
             sofa::helper::AdvancedTimer::stepEnd("UpdateForce");
 
-            // Part 5. Compute the updated force residual
+            // Part 7. Compute the updated force residual.
             sofa::helper::AdvancedTimer::stepBegin("UpdateResidual");
             R_squared_norm = SofaCaribou::Algebra::dot(p_F.get(), p_F.get());
             sofa::helper::AdvancedTimer::stepEnd("UpdateResidual");
         }
 
-        // Part 6. Compute the updated displacement residual
+        // Part 8. Compute the updated displacement residual.
         sofa::helper::AdvancedTimer::stepBegin("UpdateU");
         vop.v_peq(p_U_id, dx_id); // U += dx
         vop.v_dot(dx_id, dx_id);  // dx.dot(dx)
@@ -253,7 +276,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
         du_squared_norm = vop.finish();
         sofa::helper::AdvancedTimer::stepEnd("UpdateU");
 
-        // Part 7. Stop timers and print step information
+        // Part 9. Stop timers and print step information.
         auto iteration_time = duration_cast<nanoseconds>(steady_clock::now() - t).count();
         p_times.emplace_back(static_cast<UNSIGNED_INTEGER_TYPE>(iteration_time));
 
@@ -290,7 +313,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
             break;
         }
 
-        // Part 8. Check for convergence
+        // Part 10. Check for convergence.
         if (correction_tolerance_threshold > 0 and dx_squared_norm < squared_correction_threshold*du_squared_norm) {
             converged = true;
             if (print_log) {

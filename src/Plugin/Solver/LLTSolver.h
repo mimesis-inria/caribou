@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SofaCaribou/Solver/EigenSparseSolver.h>
+#include <SofaCaribou/Solver/EigenSolver.h>
 #include <sofa/helper/OptionsGroup.h>
 
 namespace SofaCaribou::solver {
@@ -14,23 +14,41 @@ namespace SofaCaribou::solver {
  *
  * The component uses the Eigen SimplicialLLT class as the solver backend.
  *
- * @tparam EigenSolver Eigen direct solver type
+ * @tparam EigenSolver_t Eigen direct solver type
  */
-template <class EigenSolver>
-class LLTSolver : public EigenSparseSolver<EigenSolver> {
+template <class EigenSolver_t>
+class LLTSolver : public EigenSolver<typename EigenSolver_t::MatrixType> {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(LLTSolver, EigenSolver), SOFA_TEMPLATE(EigenSparseSolver, EigenSolver));
+    SOFA_CLASS(SOFA_TEMPLATE(LLTSolver, EigenSolver_t), SOFA_TEMPLATE(EigenSolver, typename EigenSolver_t::MatrixType));
 
     template <typename T>
     using Data = sofa::Data<T>;
 
+    using Base = EigenSolver<typename EigenSolver_t::MatrixType>;
+    using Matrix = typename Base::Matrix;
+    using Vector = typename Base::Vector;
+
     LLTSolver();
 
-    // Get the backend name of the class derived from the EigenSolver template parameter
+    /** @see LinearSolver::analyze_pattern */
+    bool analyze_pattern(const sofa::defaulttype::BaseMatrix * A) override;
+
+    /** @see LinearSolver::factorize */
+    bool factorize(const sofa::defaulttype::BaseMatrix * A) override;
+
+    /**
+     * @see SofaCaribou::solver::LinearSolver::solve
+     */
+    bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) const override;
+
+    /// Get the backend name of the class derived from the EigenSolver_t template parameter
     static std::string BackendName();
 private:
-    ///< Solver backend used (Eigen or Pardiso)
+    /// Solver backend used (Eigen or Pardiso)
     Data<sofa::helper::OptionsGroup> d_backend;
+
+    /// The actual Eigen solver used (its type is passed as a template parameter and must be derived from Eigen::SparseSolverBase)
+    EigenSolver_t p_solver;
 };
 
 } // namespace SofaCaribou::solver

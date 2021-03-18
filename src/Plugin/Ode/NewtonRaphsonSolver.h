@@ -145,30 +145,30 @@ private:
     Link<sofa::core::behavior::LinearSolver> l_linear_solver;
 
     /// OUTPUTS
-    ///< Whether or not the last call to solve converged
+    /// Whether or not the last call to solve converged
     Data<bool> d_converged;
 
     /// Private members
 
-    ///< Global system matrix A = mM + bB + kK
+    /// Global system matrix A = mM + bB + kK
     std::unique_ptr<sofa::defaulttype::BaseMatrix> p_A;
 
-    ///< Global system LHS vector (the solution)
+    /// Global system LHS vector (the solution)
     std::unique_ptr<sofa::defaulttype::BaseVector> p_DX;
 
-    ///< Global system RHS vector (the forces)
+    /// Global system RHS vector (the forces)
     std::unique_ptr<sofa::defaulttype::BaseVector> p_F;
 
     /// Total displacement since the beginning of the step
     sofa::core::MultiVecDerivId p_U_id;
 
-    ///< List of times (in nanoseconds) took to compute each Newton-Raphson iteration
+    /// List of times (in nanoseconds) took to compute each Newton-Raphson iteration
     std::vector<UNSIGNED_INTEGER_TYPE> p_times;
 
-    ///< List of squared residual norms (||r||^2) of every newton iterations of the last solve call.
+    /// List of squared residual norms (||r||^2) of every newton iterations of the last solve call.
     std::vector<FLOATING_POINT_TYPE> p_squared_residuals;
 
-    ///< Initial squared residual (||r0||^2) of the last solve call.
-    FLOATING_POINT_TYPE p_squared_initial_residual;
+    /// Initial squared residual (||r0||^2) of the last solve call.
+    FLOATING_POINT_TYPE p_squared_initial_residual {};
 };
 }

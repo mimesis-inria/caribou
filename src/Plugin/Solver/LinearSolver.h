@@ -50,19 +50,38 @@ public:
     /**
      * Solve the linear system A [X] = F
      *
-     * @param A The assembled system matrix.
      * @param F The right-hand side (RHS) vector.
      * @param X The left-hand side (LHS) solution vector.
      *
      * @return True when the system has been successfully solved, false otherwise.
      *
-     * @note The system matrix and vectors are guaranteed to be of the same virtual type as the one returned by
-     *       create_new_matrix() and create_new_vector, respectively, since it is these methods that created them
-     *       in the first place.
+     * @note The vectors must be of the virtual type SofaCaribou::Algebra::EigenVector<Vector>
+     * @note LinearSolver::factorize must have been called before this method.
      */
-    virtual bool solve(const sofa::defaulttype::BaseMatrix * A,
-                       const sofa::defaulttype::BaseVector * F,
+    virtual bool solve(const sofa::defaulttype::BaseVector * F,
                        sofa::defaulttype::BaseVector * X) const = 0;
+
+    /**
+     * Analyze the pattern of the given matrix.
+     *
+     * This is usually done just before factorizing the matrix and will often produce a permutation
+     * matrix. If the pattern of the matrix doesn't change much between factorizations, it can be
+     * beneficial to not call this method too often.
+     *
+     * @param A The matrix to analyze.
+     * @return True if the matrix pattern was successfully analyzed, false otherwise.
+     */
+    virtual bool analyze_pattern(const sofa::defaulttype::BaseMatrix * A) = 0;
+
+    /**
+     * Factorize the given matrix.
+     *
+     * This should be done before a call to solve.
+     *
+     * @param A The matrix to factorize.
+     * @return True if the matrix was successfully factorized, false otherwise.
+     */
+    virtual bool factorize(const sofa::defaulttype::BaseMatrix * A) = 0;
 
 };
 

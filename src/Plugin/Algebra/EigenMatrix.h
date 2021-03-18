@@ -75,6 +75,11 @@ public:
      */
     EigenMatrix(Eigen::Index rows, Eigen::Index cols) : p_eigen_matrix(rows, cols) {}
 
+    /**
+     * Default constructor for an empty matrix.
+     */
+    EigenMatrix() = default;
+
     // Abstract methods overrides
     inline Index rowSize() const final { return p_eigen_matrix.rows(); }
     inline Index colSize() const final { return p_eigen_matrix.cols(); }
@@ -164,6 +169,11 @@ public:
      * @param cols Number of columns.
      */
     EigenMatrix(Eigen::Index rows, Eigen::Index cols) : p_eigen_matrix(rows, cols) {}
+
+    /**
+     * Default constructor for an empty matrix.
+     */
+    EigenMatrix() = default;
 
     // Abstract methods overrides
     inline Index rowSize() const final { return p_eigen_matrix.rows(); }
