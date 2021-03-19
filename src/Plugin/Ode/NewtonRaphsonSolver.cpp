@@ -32,6 +32,13 @@ NewtonRaphsonSolver::NewtonRaphsonSolver()
     "Convergence criterion: The newton iterations will stop when the ratio between norm of the residual "
     "R_k = |f_k - K(u_k)| at iteration k over R_0 is lower than this threshold. Use a negative value to "
     "disable this criterion."))
+, d_pattern_analysis_strategy(initData(&d_pattern_analysis_strategy,
+    "pattern_analysis_strategy",
+    "Define when the pattern of the system matrix should be analyzed to extract a permutation matrix. If the sparsity and"
+    "location of the coefficients of the system matrix doesn't change much during the simulation, then this analysis can"
+    "be avoided altogether, or computed only one time at the beginning of the simulation. Else, it can be done at the "
+    "beginning of the time step, or even at each reformation of the system matrix if necessary. The default is to "
+    "analyze the pattern at each time step."))
 , l_linear_solver(initLink(
     "linear_solver",
     "Linear solver used for the resolution of the system."))
@@ -41,7 +48,14 @@ NewtonRaphsonSolver::NewtonRaphsonSolver()
     "Whether or not the last call to solve converged",
     true /*is_displayed_in_gui*/,
     true /*is_read_only*/))
-{}
+{
+    d_pattern_analysis_strategy.setValue(sofa::helper::OptionsGroup(std::vector < std::string > {
+        "NEVER", "BEGINNING_OF_THE_SIMULATION", "BEGINNING_OF_THE_TIME_STEP", "ALWAYS"
+    }));
+
+    // Select the default value
+    set_pattern_analysis_strategy(PatternAnalysisStrategy::BEGINNING_OF_THE_TIME_STEP);
+}
 
 void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoordId x_id, MultiVecDerivId v_id) {
     using namespace sofa::helper::logging;
@@ -88,11 +102,17 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     mop->setImplicit(true);
 
     // Options for the Newton-Raphson
+    const auto   pattern_strategy = pattern_analysis_strategy();
     const auto & correction_tolerance_threshold = d_correction_tolerance_threshold.getValue();
     const auto & residual_tolerance_threshold = d_residual_tolerance_threshold.getValue();
     const auto & newton_iterations = d_newton_iterations.getValue();
     const auto & print_log = f_printLog.getValue();
     auto info = MessageDispatcher::info(Message::Runtime, ComponentInfo::SPtr(new ComponentInfo(this->getClassName())), SOFA_FILE_INFO);
+
+    // We are (normally) at the beginning of the time step, let's specify that we haven't analyze the pattern of the system matrix yet
+    if (pattern_strategy == PatternAnalysisStrategy::BEGINNING_OF_THE_TIME_STEP) {
+        p_has_already_analyzed_the_pattern = false; // This will allow the matrix to be analyzed after the next assembly
+    }
 
     // Right hand side term (internal + external forces)
     auto f_id = sofa::core::MultiVecDerivId(sofa::core::VecDerivId::force());
@@ -218,11 +238,26 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
 
         // Part 2. Analyze the pattern of the matrix in order to compute a permutation matrix.
         {
-            sofa::helper::ScopedAdvancedTimer _t_("MBKAnalyze");
-            if (not linear_solver->analyze_pattern(p_A.get())) {
-                info << "[DIVERGED] Failed to analyze the pattern of the system matrix.";
-                diverged = true;
-                break;
+            // Let's see if we should (re)-analyze the pattern of the system matrix
+            if (
+                    pattern_strategy != PatternAnalysisStrategy::NEVER and (
+                        pattern_strategy == PatternAnalysisStrategy::ALWAYS or
+                        (
+                            (pattern_strategy == PatternAnalysisStrategy::BEGINNING_OF_THE_TIME_STEP or pattern_strategy == PatternAnalysisStrategy::BEGINNING_OF_THE_SIMULATION)
+                            and not p_has_already_analyzed_the_pattern
+                        )
+                   )
+                ) {
+
+                sofa::helper::ScopedAdvancedTimer _t_("MBKAnalyze");
+
+                if (not linear_solver->analyze_pattern(p_A.get())) {
+                    info << "[DIVERGED] Failed to analyze the pattern of the system matrix.";
+                    diverged = true;
+                    break;
+                }
+
+                p_has_already_analyzed_the_pattern = true;
             }
         }
 
@@ -349,6 +384,8 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
 }
 
 void NewtonRaphsonSolver::init() {
+    p_has_already_analyzed_the_pattern = false;
+
     if (not has_valid_linear_solver()) {
         // No linear solver specified, let's try to find one in the current node
         auto solvers = this->getContext()->template getObjects<sofa::core::behavior::LinearSolver>(sofa::core::objectmodel::BaseContext::Local);
@@ -399,11 +436,33 @@ void NewtonRaphsonSolver::init() {
     }
 }
 
+void NewtonRaphsonSolver::reset() {
+    p_has_already_analyzed_the_pattern = false;
+}
+
 bool NewtonRaphsonSolver::has_valid_linear_solver() const {
     return (
         l_linear_solver.get() != nullptr and
         dynamic_cast<SofaCaribou::solver::LinearSolver *> (l_linear_solver.get()) != nullptr
     );
+}
+
+auto NewtonRaphsonSolver::pattern_analysis_strategy() const -> NewtonRaphsonSolver::PatternAnalysisStrategy {
+    const auto v = static_cast<PatternAnalysisStrategy>(d_pattern_analysis_strategy.getValue().getSelectedId());
+    switch (v) {
+        case PatternAnalysisStrategy::ALWAYS:
+        case PatternAnalysisStrategy::BEGINNING_OF_THE_SIMULATION:
+        case PatternAnalysisStrategy::BEGINNING_OF_THE_TIME_STEP:
+        case PatternAnalysisStrategy::NEVER:
+            return v;
+    }
+
+    // Default value
+    return NewtonRaphsonSolver::PatternAnalysisStrategy::BEGINNING_OF_THE_TIME_STEP;
+}
+
+void NewtonRaphsonSolver::set_pattern_analysis_strategy(const NewtonRaphsonSolver::PatternAnalysisStrategy & strategy) {
+    sofa::helper::write(d_pattern_analysis_strategy)->setSelectedItem(static_cast<unsigned int> (strategy));
 }
 
 } // namespace SofaCaribou::ode

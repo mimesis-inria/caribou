@@ -7,6 +7,7 @@
 #include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/defaulttype/BaseVector.h>
 #include <sofa/core/objectmodel/Link.h>
+#include <sofa/helper/OptionsGroup.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <memory>
 
@@ -47,9 +48,22 @@ public:
     template <typename T>
     using Link = sofa::core::objectmodel::SingleLink<NewtonRaphsonSolver, T, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
+    /**
+     * Different strategies to determine when the pattern of the system matrix should be analyzed in order to,
+     * for example, compute a permutation matrix before factorizing it.
+     */
+    enum class PatternAnalysisStrategy : unsigned int {
+        NEVER = 0,
+        BEGINNING_OF_THE_SIMULATION,
+        BEGINNING_OF_THE_TIME_STEP,
+        ALWAYS
+    };
+
     NewtonRaphsonSolver();
 
     void init() override;
+
+    void reset() override;
 
     void solve (const sofa::core::ExecParams* params, SReal dt, sofa::core::MultiVecCoordId x_id, sofa::core::MultiVecDerivId v_id) override;
 
@@ -61,6 +75,12 @@ public:
 
     /** The initial squared residual (||r0||^2) of the last solve call. */
     auto squared_initial_residual() const -> const FLOATING_POINT_TYPE & { return p_squared_initial_residual; }
+
+    /** Get the current strategy that determine when the pattern of the system matrix should be analyzed. */
+    auto pattern_analysis_strategy() const -> PatternAnalysisStrategy;
+
+    /** Set the current strategy that determine when the pattern of the system matrix should be analyzed. */
+    void set_pattern_analysis_strategy(const PatternAnalysisStrategy & strategy);
 
 private:
 
@@ -141,6 +161,7 @@ private:
     Data<unsigned> d_newton_iterations;
     Data<double> d_correction_tolerance_threshold;
     Data<double> d_residual_tolerance_threshold;
+    Data<sofa::helper::OptionsGroup> d_pattern_analysis_strategy;
 
     Link<sofa::core::behavior::LinearSolver> l_linear_solver;
 
@@ -170,5 +191,8 @@ private:
 
     /// Initial squared residual (||r0||^2) of the last solve call.
     FLOATING_POINT_TYPE p_squared_initial_residual {};
+
+    /// Either or not the pattern of the system matrix was analyzed at the beginning of the simulation
+    bool p_has_already_analyzed_the_pattern = false;
 };
 }
