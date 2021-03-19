@@ -52,6 +52,20 @@ is accumulated by the `addForce` method of forcefields.
       - Convergence criterion: The newton iterations will stop when the relative norm of the residual
         :math:`\frac{|R_k|}{|R_0|} = \frac{|f_k - Ku_k|}{|f_0 - Ku_0|}` at iteration k is lower than this threshold.
         Use a negative value to disable this criterion.
+    * - pattern_analysis_strategy
+      - option
+      - BEGINNING_OF_THE_TIME_STEP
+      - Define when the pattern of the system matrix should be analyzed to extract a permutation matrix. If the sparsity and
+        location of the coefficients of the system matrix doesn't change much during the simulation, then this analysis can
+        be avoided altogether, or computed only one time at the beginning of the simulation. Else, it can be done at the
+        beginning of the time step, or even at each reformation of the system matrix if necessary. The default is to
+        analyze the pattern at each time step.
+
+        **Options:**
+            * NEVER
+            * BEGINNING_OF_THE_SIMULATION
+            * BEGINNING_OF_THE_TIME_STEP **(default)**
+            * ALWAYS
     * - linear_solver
       - LinearSolver
       - None
