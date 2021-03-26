@@ -25,12 +25,18 @@ NewtonRaphsonSolver::NewtonRaphsonSolver()
 , d_correction_tolerance_threshold(initData(&d_correction_tolerance_threshold,
     (double) 1e-5,
     "correction_tolerance_threshold",
-    "Convergence criterion: The newton iterations will stop when the norm of correction |du| reach this threshold."))
+    "Relative convergence criterion: The newton iterations will stop when the norm of correction |du| reach this threshold."))
 , d_residual_tolerance_threshold( initData(&d_residual_tolerance_threshold,
     (double) 1e-5,
     "residual_tolerance_threshold",
-    "Convergence criterion: The newton iterations will stop when the ratio between norm of the residual "
+    "Relative convergence criterion: The newton iterations will stop when the ratio between norm of the residual "
     "R_k = |f_k - K(u_k)| at iteration k over R_0 is lower than this threshold. Use a negative value to "
+    "disable this criterion."))
+, d_absolute_residual_tolerance_threshold( initData(&d_absolute_residual_tolerance_threshold,
+    (double) 1e-15,
+    "absolute_residual_tolerance_threshold",
+    "Absolute convergence criterion: The newton iterations will stop when the norm of the residual "
+    "R_k = |f_k - K(u_k)| at iteration k is lower than this threshold. Use a negative value to "
     "disable this criterion."))
 , d_pattern_analysis_strategy(initData(&d_pattern_analysis_strategy,
     "pattern_analysis_strategy",
@@ -105,6 +111,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     const auto   pattern_strategy = pattern_analysis_strategy();
     const auto & correction_tolerance_threshold = d_correction_tolerance_threshold.getValue();
     const auto & residual_tolerance_threshold = d_residual_tolerance_threshold.getValue();
+    const auto & absolute_residual_tolerance_threshold = d_absolute_residual_tolerance_threshold.getValue();
     const auto & newton_iterations = d_newton_iterations.getValue();
     const auto & print_log = f_printLog.getValue();
     auto info = MessageDispatcher::info(Message::Runtime, ComponentInfo::SPtr(new ComponentInfo(this->getClassName())), SOFA_FILE_INFO);
@@ -132,12 +139,13 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
 
     if (print_log) {
         info << "======= Starting static ODE solver =======\n";
-        info << "Time step             : " << this->getTime() << "\n";
-        info << "Context               : " << dynamic_cast<const sofa::simulation::Node *>(context)->getPathName() << "\n";
-        info << "Max iterations        : " << newton_iterations << "\n";
-        info << "Residual tolerance    : " << residual_tolerance_threshold << "\n";
-        info << "Correction tolerance  : " << correction_tolerance_threshold << "\n";
-        info << "Linear solver         : " << l_linear_solver->getPathName() << "\n\n";
+        info << "Time step                : " << this->getTime() << "\n";
+        info << "Context                  : " << dynamic_cast<const sofa::simulation::Node *>(context)->getPathName() << "\n";
+        info << "Max iterations           : " << newton_iterations << "\n";
+        info << "Residual tolerance (abs) : " << absolute_residual_tolerance_threshold << "\n";
+        info << "Residual tolerance (rel) : " << residual_tolerance_threshold << "\n";
+        info << "Correction tolerance     : " << correction_tolerance_threshold << "\n";
+        info << "Linear solver            : " << l_linear_solver->getPathName() << "\n\n";
     }
 
     // Local variables used for the iterations
@@ -145,6 +153,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     double dx_squared_norm, du_squared_norm, R_squared_norm = 0;
     const auto squared_residual_threshold = residual_tolerance_threshold*residual_tolerance_threshold;
     const auto squared_correction_threshold = correction_tolerance_threshold*correction_tolerance_threshold;
+    const auto squared_absolute_residual_tolerance_threshold = absolute_residual_tolerance_threshold*absolute_residual_tolerance_threshold;
     bool converged = false, diverged = false;
     steady_clock::time_point t;
 
@@ -214,10 +223,14 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     R_squared_norm = SofaCaribou::Algebra::dot(p_F.get(), p_F.get());
     p_squared_initial_residual = R_squared_norm;
 
-    if (residual_tolerance_threshold > 0 && R_squared_norm <= residual_tolerance_threshold) {
+    if (absolute_residual_tolerance_threshold > 0 && R_squared_norm <= squared_absolute_residual_tolerance_threshold) {
         converged = true;
         if (print_log) {
-            info << "The ODE has already reached an equilibrium state" << "\n";
+            info << "The ODE has already reached an equilibrium state."
+                 << std::scientific
+                 << "The residual's ratio |R| is " << std::setw(12) << sqrt(R_squared_norm)
+                 << " (criterion is " << std::setw(12) << absolute_residual_tolerance_threshold << ") \n"
+                 << std::defaultfloat;
         }
     }
 
@@ -323,6 +336,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
         if( print_log ) {
             info << "Newton iteration #" << std::left << std::setw(5)  << n_it
                  << std::scientific
+                 << "  |R| = "   << std::setw(12) << sqrt(R_squared_norm)
                  << "  |R|/|R0| = "   << std::setw(12) << sqrt(R_squared_norm  / p_squared_residuals[0])
                  << "  |du| / |U| = " << std::setw(12) << sqrt(dx_squared_norm / du_squared_norm)
                  << std::defaultfloat;
@@ -361,6 +375,14 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
             converged = true;
             if (print_log) {
                 info << "[CONVERGED] The residual's ratio |R|/|R0| = " << sqrt(R_squared_norm/p_squared_residuals[0]) << " is smaller than the threshold of " << residual_tolerance_threshold << ".\n";
+            }
+            break;
+        }
+
+        if (absolute_residual_tolerance_threshold > 0 and R_squared_norm < squared_absolute_residual_tolerance_threshold) {
+            converged = true;
+            if (print_log) {
+                info << "[CONVERGED] The residual's ratio |R| = " << sqrt(R_squared_norm) << " is smaller than the threshold of " << absolute_residual_tolerance_threshold << ".\n";
             }
             break;
         }

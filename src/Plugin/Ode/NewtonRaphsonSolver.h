@@ -161,6 +161,7 @@ private:
     Data<unsigned> d_newton_iterations;
     Data<double> d_correction_tolerance_threshold;
     Data<double> d_residual_tolerance_threshold;
+    Data<double> d_absolute_residual_tolerance_threshold;
     Data<sofa::helper::OptionsGroup> d_pattern_analysis_strategy;
 
     Link<sofa::core::behavior::LinearSolver> l_linear_solver;
