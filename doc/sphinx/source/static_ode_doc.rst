@@ -45,12 +45,20 @@ is accumulated by the `addForce` method of forcefields.
     * - correction_tolerance_threshold
       - float
       - 1e-5
-      - Convergence criterion: The newton iterations will stop when the norm of correction \|du| reach this threshold.
+      - Relative convergence criterion: The newton iterations will stop when the norm of correction
+        :math:`\frac{|\delta \boldsymbol{u}^{k}|}{\sum_{i=0}^k|\delta \boldsymbol{u}^{i}|}` reaches this threshold.
     * - residual_tolerance_threshold
       - float
       - 1e-5
-      - Convergence criterion: The newton iterations will stop when the relative norm of the residual
-        :math:`\frac{|R_k|}{|R_0|} = \frac{|f_k - Ku_k|}{|f_0 - Ku_0|}` at iteration k is lower than this threshold.
+      - Relative convergence criterion: The newton iterations will stop when the relative norm of the residual
+        :math:`\frac{|\boldsymbol{R}_k|}{|\boldsymbol{R}_0|}` at iteration k is lower than this threshold.
+        Use a negative value to disable this criterion.
+    * - absolute_residual_tolerance_threshold
+      - float
+      - 1e-15
+      - Absolute convergence criterion: The newton iterations will stop when the absolute norm of the residual
+        :math:`|\boldsymbol{R}_k|` at iteration k is lower than this threshold. This criterion is also used to
+        detect the absence of external forces and skip useless Newton iterations.
         Use a negative value to disable this criterion.
     * - pattern_analysis_strategy
       - option
