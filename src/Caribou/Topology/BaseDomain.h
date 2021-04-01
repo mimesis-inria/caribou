@@ -4,6 +4,8 @@
 
 namespace caribou::topology {
 
+    struct BaseMesh;
+
     /**
      * A domain is subspace of a mesh containing a set of points and the topological relation between them.
      *
@@ -32,6 +34,11 @@ namespace caribou::topology {
          * Get the number of elements contained in the domain.
          */
         [[nodiscard]] virtual auto number_of_elements() const -> UNSIGNED_INTEGER_TYPE= 0;
+
+        /**
+         * Get the Mesh instance containing this Domain
+         */
+        [[nodiscard]] virtual auto mesh() const -> const BaseMesh * = 0;
 
         /**
          * Clone the domain into a new instance.

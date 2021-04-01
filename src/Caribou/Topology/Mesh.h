@@ -123,12 +123,22 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
         using NodeContainer_t = std::decay_t<NodeContainerType>;
         static_assert(WorldDimension == 1 or WorldDimension == 2 or WorldDimension == 3, "The world dimension must be 1, 2 or 3.");
 
+        using Self = Mesh<WorldDimension, NodeContainer_t>;
         static constexpr INTEGER_TYPE Dimension = WorldDimension;
         using Real = typename NodeContainer_t::Scalar;
         using WorldCoordinates = Eigen::Matrix<Real, 1, Dimension>;
 
+        /**
+         * Implementation of a Domain<Element, NodeIndex> that can construct a geometrical element
+         * using the position of the nodes of this Mesh.
+         *
+         * @sa class caribou::topology::Domain
+         */
         template <typename Element, typename NodeIndex = UNSIGNED_INTEGER_TYPE>
-        using Domain = Domain<Mesh, Element, NodeIndex>;
+        class MeshDomain;
+
+        template <typename Element, typename NodeIndex = UNSIGNED_INTEGER_TYPE>
+        using Domain = MeshDomain<Element, NodeIndex>;
 
         /*!
          * Default constructor for an empty mesh.
@@ -311,7 +321,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          */
         template<typename Element, typename NodeIndex, typename... Args>
         inline
-        typename std::enable_if_t<std::is_integral_v<NodeIndex>, Domain<Element, NodeIndex> *>
+        typename std::enable_if_t<std::is_integral_v<NodeIndex>, MeshDomain<Element, NodeIndex> *>
         add_domain(const std::string & name, Args ...args) {
             static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
             for (const auto & d : p_domains) {
@@ -320,13 +330,13 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
                 }
             }
 
-            auto domain_ptr = new Domain<Element, NodeIndex>(this, std::forward<Args>(args)...);
+            auto domain_ptr = new MeshDomain<Element, NodeIndex>(this, std::forward<Args>(args)...);
             auto res = p_domains.emplace(p_domains.end(), name, std::unique_ptr<BaseDomain>(static_cast<BaseDomain *>(domain_ptr)));
             if (res->second) {
                 return domain_ptr;
             } else {
                 delete domain_ptr;
-                return static_cast<Domain<Element, NodeIndex>*> (nullptr);
+                return static_cast<MeshDomain<Element, NodeIndex>*> (nullptr);
             }
         }
 
@@ -340,11 +350,11 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          */
         template<typename Element, typename NodeIndex, typename... Args>
         inline
-        typename std::enable_if_t<std::is_integral_v<NodeIndex>, Domain<Element, NodeIndex> *>
+        typename std::enable_if_t<std::is_integral_v<NodeIndex>, MeshDomain<Element, NodeIndex> *>
         add_domain(Args ...args) {
             static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
 
-            auto domain_ptr = new Domain<Element, NodeIndex>(this, std::forward<Args>(args)...);
+            auto domain_ptr = new MeshDomain<Element, NodeIndex>(this, std::forward<Args>(args)...);
 
             std::ostringstream ss;
             ss << "domain_" << domain_ptr;
@@ -354,7 +364,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
                 return domain_ptr;
             } else {
                 delete domain_ptr;
-                return static_cast<Domain<Element, NodeIndex>*> (nullptr);
+                return static_cast<MeshDomain<Element, NodeIndex>*> (nullptr);
             }
         }
 
@@ -367,7 +377,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          * \note The domain is managed by this mesh instance, and will be freed upon the deletion of the mesh.
          */
         template<typename Element, typename... Args>
-        inline auto add_domain(const std::string & name, Args ...args) -> Domain<Element> * {
+        inline auto add_domain(const std::string & name, Args ...args) -> MeshDomain<Element> * {
             static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
             return add_domain<Element, UNSIGNED_INTEGER_TYPE, Args...>(name, std::forward<Args>(args)...);
         }
@@ -381,7 +391,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          * \note The domain is managed by this mesh instance, and will be freed upon the deletion of the mesh.
          */
         template<typename Element, typename... Args>
-        inline auto add_domain(const char * name, Args ...args) -> Domain<Element> * {
+        inline auto add_domain(const char * name, Args ...args) -> MeshDomain<Element> * {
             return add_domain<Element, Args...>(std::string(name), std::forward<Args>(args)...);
         }
 
@@ -393,9 +403,9 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          * \note The domain is managed by this mesh instance, and will be freed upon the deletion of the mesh.
          */
         template<typename Element, typename... Args>
-        inline auto add_domain(Args ...args) -> Domain<Element> * {
+        inline auto add_domain(Args ...args) -> MeshDomain<Element> * {
             static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
-            auto domain_ptr = new Domain<Element>(this, std::forward<Args>(args)...);
+            auto domain_ptr = new MeshDomain<Element>(this, std::forward<Args>(args)...);
 
             std::ostringstream ss;
             ss << "domain_" << domain_ptr;
@@ -405,7 +415,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
                 return domain_ptr;
             } else {
                 delete domain_ptr;
-                return static_cast<Domain<Element>*> (nullptr);
+                return static_cast<MeshDomain<Element>*> (nullptr);
             }
         }
 
@@ -574,14 +584,17 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          */
         std::vector<std::pair<std::string, std::unique_ptr<BaseDomain>>> p_domains;
     };
+} // namespace caribou::topology
 
+#include <Caribou/Topology/MeshDomain.h>
+
+namespace caribou::topology {
     // -------------------------------------------------------------------------------------
     //                                    IMPLEMENTATION
     // -------------------------------------------------------------------------------------
     // Implementation of methods that can be specialized later for an explicit container type
     // -------------------------------------------------------------------------------------
 
-    // None for now
 
     // -------------------------------------------------------------------------------------
     //                               TEMPLATE DEDUCTION GUIDES
@@ -609,4 +622,4 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             >
         >
     >;
-}
+} // namespace caribou::topology

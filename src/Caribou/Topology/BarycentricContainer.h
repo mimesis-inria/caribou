@@ -27,7 +27,6 @@ namespace caribou::topology {
  template <typename Domain>
 class BarycentricContainer {
 public:
-    using Mesh = typename Domain::MeshType;
     using ContainerElement = typename Domain::ElementType;
 
     static constexpr INTEGER_TYPE Dimension = ContainerElement::Dimension;
@@ -177,11 +176,11 @@ public:
                            Eigen::MatrixBase<Derived2> & embedded_field_values) const {
 
         // Make sure we have one field value per node of the container domain's mesh.
-        if (static_cast<unsigned>(container_field_values.rows()) != p_container_domain->mesh().number_of_nodes()) {
+        if (static_cast<unsigned>(container_field_values.rows()) != p_container_domain->mesh()->number_of_nodes()) {
             std::stringstream ss;
             ss << "The number of rows of the input matrix must be the same as the number of nodes in the container domain. ";
             ss << "The number of rows is " << container_field_values.rows() << " and the number of nodes is ";
-            ss << p_container_domain->mesh().number_of_nodes();
+            ss << p_container_domain->mesh()->number_of_nodes();
             throw std::runtime_error(ss.str());
         }
 
@@ -206,7 +205,7 @@ public:
             }
 
             const auto & element_node_indices = p_container_domain->element_indices(element_index);
-            const auto element = ContainerElement(p_container_domain->mesh().positions(element_node_indices));
+            const auto element = p_container_domain->element(element_index);
 
             // Get the field values at the nodes of the containing element
             Eigen::Matrix<typename Eigen::MatrixBase<Derived2>::Scalar,

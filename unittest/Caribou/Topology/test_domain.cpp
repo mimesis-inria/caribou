@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include "topology_test.h"
 #include <Caribou/Topology/Mesh.h>
-#include <Caribou/Topology/Domain.h>
 #include <Caribou/Geometry/Segment.h>
 
 TEST(Domain, Segment) {
@@ -64,7 +63,7 @@ TEST(Domain, Segment) {
         using Segment = Segment<_3D, Linear>;
         using Domain = Mesh::Domain<Segment>;
 
-        // Two unused between columns, three unused betwen rows
+        // Two unused between columns, three unused between rows
         UNSIGNED_INTEGER_TYPE indices[25] = {1, 0, 0, 2, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 3, 0, 0, 4, 0, 0, 0, 5, 0, 0, 6};
         Mesh mesh;
         Domain * domain = mesh.add_domain<Segment>(indices, 4, 2, 7, 3);
