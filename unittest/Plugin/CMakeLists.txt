@@ -28,6 +28,10 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
 
+if (SOFA_VERSION VERSION_GREATER_EQUAL "20.12.99")
+    target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Testing)
+endif()
+
 list(APPEND target_rpath
     "$ORIGIN/../lib"
     "@executable_path/../lib"

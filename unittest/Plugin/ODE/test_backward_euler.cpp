@@ -1,5 +1,6 @@
 #include <array>
 
+#include <sofa/version.h>
 #include <sofa/helper/testing/BaseTest.h>
 #include <sofa/simulation/Node.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
@@ -11,6 +12,10 @@
 using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace sofa::helper::logging;
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201299)
+using namespace sofa::testing;
+#endif
 
 /** Make sure residual norms at each newton steps remains the same */
 TEST(BackwardEulerODESolver, Beam) {

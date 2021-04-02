@@ -37,31 +37,32 @@ template <typename DataTypes>
 void internal_copy_id(TVecId<V_ALL, V_WRITE> a, TVecId<V_ALL, V_READ> b, State<DataTypes> * state) {
     using namespace sofa::helper;
     using namespace sofa::core;
+    using namespace sofa::core::objectmodel;
+    using DataVecCoord = Data< typename DataTypes::VecCoord>;
+    using DataVecDeriv = Data< typename DataTypes::VecDeriv>;
 
     if (state == nullptr) {
         throw std::runtime_error("Could not copy b to a.");
     }
     if (a.type == V_COORD) {
+        auto a_vector = WriteOnlyAccessor<DataVecCoord>(*state->write(VecCoordId(a)));
         if (b.type == V_COORD) {
-            auto a_vector = writeOnly(*state->write(VecCoordId(a)));
-            const auto b_vector = read(*state->read(ConstVecCoordId(b)));
+            const auto b_vector = ReadAccessor<DataVecCoord>(*state->read(ConstVecCoordId(b)));
             internal_copy(a_vector, b_vector);
         } else {
             // b.type = V_DERIV
-            auto a_vector = writeOnly(*state->write(VecCoordId(a)));
-            const auto b_vector = read(*state->read(ConstVecDerivId(b)));
+            const auto b_vector = ReadAccessor<DataVecDeriv>(*state->read(ConstVecDerivId(b)));
             internal_copy(a_vector, b_vector);
         }
     } else {
         // a.type = V_DERIV
+        auto a_vector = WriteOnlyAccessor<DataVecDeriv>(*state->write(VecDerivId(a)));
         if (b.type == V_COORD) {
-            auto a_vector = writeOnly(*state->write(VecDerivId(a)));
-            const auto b_vector = read(*state->read(ConstVecCoordId(b)));
+            const auto b_vector = ReadAccessor<DataVecCoord>(*state->read(ConstVecCoordId(b)));
             internal_copy(a_vector, b_vector);
         } else {
             // b.type = V_DERIV
-            auto a_vector = writeOnly(*state->write(VecDerivId(a)));
-            const auto b_vector = read(*state->read(ConstVecDerivId(b)));
+            const auto b_vector = ReadAccessor<DataVecDeriv>(*state->read(ConstVecDerivId(b)));
             internal_copy(a_vector, b_vector);
         }
     }

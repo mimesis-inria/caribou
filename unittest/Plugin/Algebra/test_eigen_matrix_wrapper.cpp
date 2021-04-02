@@ -1,5 +1,20 @@
 #include <gtest/gtest.h>
+#include <sofa/version.h>
 #include <SofaCaribou/Algebra/EigenMatrix.h>
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
+#include <sofa/defaulttype/Mat.h>
+using Mat2x2f = sofa::defaulttype::Mat2x2f;
+using Mat2x2d = sofa::defaulttype::Mat2x2d;
+using Mat3x3f = sofa::defaulttype::Mat3x3f;
+using Mat3x3d = sofa::defaulttype::Mat3x3d;
+#else
+#include <sofa/type/Mat.h>
+using Mat2x2f = sofa::type::Mat2x2f;
+using Mat2x2d = sofa::type::Mat2x2d;
+using Mat3x3f = sofa::type::Mat3x3f;
+using Mat3x3d = sofa::type::Mat3x3d;
+#endif
 
 #include <Caribou/config.h>
 #include <Eigen/Dense>
@@ -36,7 +51,7 @@ void test_core(SofaCaribou::Algebra::EigenMatrix<Derived> & mm) {
 
     // add blocks
     // 3x3 doubles
-    mm.add(0, 0, sofa::defaulttype::Mat3x3d(5));
+    mm.add(0, 0, Mat3x3d(5));
     mm.compress();
     nb_not_equal = 0;
     for (Index i=0;i<3;++i) for (Index j=0;j<3;++j)
@@ -44,21 +59,21 @@ void test_core(SofaCaribou::Algebra::EigenMatrix<Derived> & mm) {
     EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to 5 (and they should).";
 
     // 3x3 floats
-    mm.add(0, 0, sofa::defaulttype::Mat3x3f(5));
+    mm.add(0, 0, Mat3x3f(5));
     nb_not_equal = 0;
     for (Index i=0;i<3;++i) for (Index j=0;j<3;++j)
             if (mm(i,j) != 10) nb_not_equal++;
     EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to 10 (and they should).";
 
     // 2x2 doubles
-    mm.add(0, 0, sofa::defaulttype::Mat2x2d(5));
+    mm.add(0, 0, Mat2x2d(5));
     nb_not_equal = 0;
     for (Index i=0;i<2;++i) for (Index j=0;j<2;++j)
             if (mm(i,j) !=15) nb_not_equal++;
     EXPECT_EQ(nb_not_equal, 0) << "There are " << nb_not_equal << " values that are not equal to 15 (and they should).";
 
     // 2x2 floats
-    mm.add(0, 0, sofa::defaulttype::Mat2x2f(5));
+    mm.add(0, 0, Mat2x2f(5));
     nb_not_equal = 0;
     for (Index i=0;i<2;++i) for (Index j=0;j<2;++j)
             if (mm(i,j) !=20) nb_not_equal++;

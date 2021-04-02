@@ -6,6 +6,7 @@
 #include <SofaCaribou/Solver/ConjugateGradientSolver.h>
 
 #include <sofa/core/ObjectFactory.h>
+#include <sofa/core/behavior/MultiMatrix.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
