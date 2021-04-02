@@ -4,6 +4,7 @@
 #include <Caribou/macros.h>
 #include <Caribou/traits.h>
 #include <sofa/defaulttype/BaseMatrix.h>
+#include <sofa/defaulttype/BaseVector.h>
 
 #include <Eigen/Dense>
 

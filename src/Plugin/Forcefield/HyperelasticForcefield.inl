@@ -3,6 +3,7 @@
 #include "HyperelasticForcefield.h"
 #include <sofa/helper/AdvancedTimer.h>
 #include <Caribou/Mechanics/Elasticity/Strain.h>
+#include <sofa/core/MechanicalParams.h>
 #include <sofa/core/visual/VisualParams.h>
 #ifdef CARIBOU_WITH_OPENMP
 #include <omp.h>

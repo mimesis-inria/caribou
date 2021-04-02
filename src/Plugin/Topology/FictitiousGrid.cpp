@@ -9,7 +9,7 @@
 #include "FictitiousGrid.inl"
 
 #include <Caribou/Geometry/Triangle.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION <= 201299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
 #include <sofa/helper/polygon_cube_intersection/polygon_cube_intersection.h>
 #else
 #include <SofaBaseTopology/polygon_cube_intersection/polygon_cube_intersection.h>

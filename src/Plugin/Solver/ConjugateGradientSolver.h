@@ -3,6 +3,7 @@
 #include <Caribou/config.h>
 #include <sofa/core/behavior/LinearSolver.h>
 #include <sofa/core/behavior/MultiVec.h>
+#include <sofa/core/MechanicalParams.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <Eigen/Core>

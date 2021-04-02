@@ -5,6 +5,7 @@
 #include <SofaCaribou/Algebra/EigenVector.h>
 #include <SofaCaribou/Solver/LinearSolver.h>
 
+#include <sofa/core/MechanicalParams.h>
 #include <sofa/core/behavior/LinearSolver.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <Eigen/Sparse>
