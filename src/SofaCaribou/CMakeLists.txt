@@ -46,7 +46,7 @@ set(TEMPLATE_FILES
 set(SOURCE_FILES
     Algebra/BaseVectorOperations.cpp
     Forcefield/FictitiousGridElasticForce.cpp
-    Forcefield/FictitiousGridHyperelasticForce.cpp
+#    Forcefield/FictitiousGridHyperelasticForce.cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield.cpp
     Forcefield/TetrahedronElasticForce.cpp

@@ -14,11 +14,21 @@ namespace SofaCaribou::forcefield {
 // Tetrahedron
 // ------------
 template <>
-auto HyperelasticForcefield<Tetrahedron<Linear>>::number_of_elements() const -> std::size_t {
-    if (not d_topology_container.empty()) {
-        return d_topology_container->getNbTetras();
+void HyperelasticForcefield<Tetrahedron<Linear>>::create_domain_from(sofa::core::topology::BaseMeshTopology * topology) {
+    // A mesh is required in order to create the domain
+    if (not p_mesh) {
+        return;
     }
-    return 0;
+
+    // Get a reference to the list of tetrahedrons
+    const auto & tetrahedrons = topology->getTetrahedra();
+    const auto * data = tetrahedrons.data()->data();
+
+    // Create the Domain instance
+    using PointID = sofa::core::topology::Topology::PointID;
+    p_domain = p_mesh->add_domain<Tetrahedron<Linear>, PointID> (
+        data, tetrahedrons.size(), Tetrahedron<Linear>::NumberOfNodesAtCompileTime
+    );
 }
 
 template <>
@@ -26,11 +36,6 @@ auto HyperelasticForcefield<Tetrahedron<Linear>>::mesh_is_compatible(const sofa:
     return (
         dynamic_cast<const TetrahedronSetTopologyContainer*>(topology) != nullptr
     );
-}
-
-template <>
-auto HyperelasticForcefield<Tetrahedron<Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const sofa::Index * {
-    return &(d_topology_container->getTetras()[element_id][0]);
 }
 
 template <>
@@ -42,11 +47,21 @@ auto HyperelasticForcefield<Tetrahedron<Linear>>::templateName(const Hyperelasti
 // Hexahedron
 // ------------
 template <>
-auto HyperelasticForcefield<Hexahedron<Linear>>::number_of_elements() const -> std::size_t {
-    if (not d_topology_container.empty()) {
-        return d_topology_container->getNbHexas();
+void HyperelasticForcefield<Hexahedron<Linear>>::create_domain_from(sofa::core::topology::BaseMeshTopology * topology) {
+    // A mesh is required in order to create the domain
+    if (not p_mesh) {
+        return;
     }
-    return 0;
+
+    // Get a reference to the list of hexahedrons
+    const auto & hexahedrons = topology->getHexahedra();
+    const auto * data = hexahedrons.data()->data();
+
+    // Create the Domain instance
+    using PointID = sofa::core::topology::Topology::PointID;
+    p_domain = p_mesh->add_domain<Hexahedron<Linear>, PointID> (
+            data, hexahedrons.size(), Hexahedron<Linear>::NumberOfNodesAtCompileTime
+    );
 }
 
 template <>
@@ -54,11 +69,6 @@ auto HyperelasticForcefield<Hexahedron<Linear>>::mesh_is_compatible(const sofa::
     return (
         dynamic_cast<const HexahedronSetTopologyContainer*>(topology) != nullptr
     );
-}
-
-template <>
-auto HyperelasticForcefield<Hexahedron<Linear>>::get_element_nodes_indices(const std::size_t & element_id) const -> const sofa::Index * {
-    return &(d_topology_container->getHexas()[element_id][0]);
 }
 
 template <>
