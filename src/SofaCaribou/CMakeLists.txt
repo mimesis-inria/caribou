@@ -24,6 +24,11 @@ set(HEADER_FILES
     Solver/LinearSolver.h
     Solver/LLTSolver.h
     Solver/LUSolver.h
+    Topology/CaribouTopology.h
+    Topology/CaribouTopology[Hexahedron].h
+    Topology/CaribouTopology[Quad].h
+    Topology/CaribouTopology[Tetrahedron].h
+    Topology/CaribouTopology[Triangle].h
     Topology/CircleIsoSurface.h
     Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
@@ -37,6 +42,7 @@ set(HEADER_FILES
 set(TEMPLATE_FILES
     Forcefield/HyperelasticForcefield.inl
     Solver/EigenSolver.inl
+    Topology/CaribouTopology.inl
     Topology/FictitiousGrid.inl
     Solver/LDLTSolver.inl
     Solver/LLTSolver.inl
@@ -60,6 +66,10 @@ set(SOURCE_FILES
     Solver/LDLTSolver.cpp
     Solver/LLTSolver.cpp
     Solver/LUSolver.cpp
+    Topology/CaribouTopology[Hexahedron].cpp
+    Topology/CaribouTopology[Quad].cpp
+    Topology/CaribouTopology[Tetrahedron].cpp
+    Topology/CaribouTopology[Triangle].cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
     Visitor/AssembleGlobalMatrix.cpp

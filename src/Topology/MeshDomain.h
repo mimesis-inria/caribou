@@ -19,6 +19,9 @@ public:
     using Base = ::caribou::topology::Domain <Element, NodeIndex>;
     using ElementsIndices = typename Base::ElementsIndices;
 
+    /* Copy constructor */
+    MeshDomain(const MeshDomain & other) : Base(other) {}
+
     /*! copy-and-swap assigment (valid for both copy and move assigment) */
     auto operator=(MeshDomain other) noexcept -> MeshDomain & {
         this->swap(*this, other);

@@ -26,8 +26,8 @@ namespace caribou::topology::io {
 template<UNSIGNED_INTEGER_TYPE Dimension>
 auto extract_axes_from_3D_vectors(vtkPoints * input_points, const vtkIdType & number_of_points) -> std::array<UNSIGNED_INTEGER_TYPE, Dimension>;
 
-template<UNSIGNED_INTEGER_TYPE Dimension>
-VTKReader<Dimension>::VTKReader(std::string filepath, vtkSmartPointer<vtkUnstructuredGridReader> reader, std::array<UNSIGNED_INTEGER_TYPE, Dimension> axes)
+template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
+VTKReader<Dimension, NodeIndex>::VTKReader(std::string filepath, vtkSmartPointer<vtkUnstructuredGridReader> reader, std::array<UNSIGNED_INTEGER_TYPE, Dimension> axes)
 : p_filepath(std::move(filepath)), p_reader(std::move(reader)), p_axes(axes)
 {
     // Segments
@@ -66,13 +66,13 @@ VTKReader<Dimension>::VTKReader(std::string filepath, vtkSmartPointer<vtkUnstruc
             reordered_indices.col(17) = indices.col(16);
             reordered_indices.col(18) = indices.col(19);
             reordered_indices.col(19) = indices.col(17);
-            return m.template add_domain<geometry::Hexahedron<Quadratic>>("domain_"+std::to_string(m.number_of_domains()+1), reordered_indices);
+            return m.template add_domain<geometry::Hexahedron<Quadratic>, NodeIndex>("domain_"+std::to_string(m.number_of_domains()+1), reordered_indices);
         });
     }
 }
 
-template<UNSIGNED_INTEGER_TYPE Dimension>
-auto VTKReader<Dimension>::Read(const std::string &filepath) -> VTKReader<Dimension> {
+template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
+auto VTKReader<Dimension, NodeIndex>::Read(const std::string &filepath) -> VTKReader<Dimension, NodeIndex> {
     // Make sure filepath is a valid path
     if (not fs::exists(filepath)) {
         throw std::invalid_argument("File '" + filepath + "' does not exists or cannot be read.");
@@ -88,11 +88,11 @@ auto VTKReader<Dimension>::Read(const std::string &filepath) -> VTKReader<Dimens
     const auto axes = extract_axes_from_3D_vectors<Dimension>(output->GetPoints(), output->GetNumberOfPoints());
 
 
-    return VTKReader<Dimension>(filepath, reader, axes);
+    return VTKReader<Dimension, NodeIndex>(filepath, reader, axes);
 }
 
-template<UNSIGNED_INTEGER_TYPE Dimension>
-auto VTKReader<Dimension>::mesh () const -> Mesh<Dimension> {
+template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
+auto VTKReader<Dimension, NodeIndex>::mesh () const -> Mesh<Dimension> {
     using WorldCoordinates = typename Mesh<Dimension>::WorldCoordinates;
 
     Mesh<Dimension> m;
@@ -135,15 +135,15 @@ auto VTKReader<Dimension>::mesh () const -> Mesh<Dimension> {
 
         const auto number_of_nodes_per_element = p_reader->GetOutput()->GetCell(cells->GetValue(0))->GetNumberOfPoints();
 
-        Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> indices;
+        Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> indices;
         indices.resize(number_of_elements, number_of_nodes_per_element);
 
         for (vtkIdType j = 0; j < number_of_elements; ++j) {
             vtkIdType cell_id = cells->GetValue(j);
             vtkCell* cell = p_reader->GetOutput()->GetCell(cell_id);
-            std::vector<UNSIGNED_INTEGER_TYPE> node_indices (cell->GetNumberOfPoints());
+            std::vector<NodeIndex> node_indices (cell->GetNumberOfPoints());
             for (vtkIdType k = 0; k < cell->GetNumberOfPoints(); ++k) {
-                indices(j,k) = static_cast<UNSIGNED_INTEGER_TYPE>(cell->GetPointId(k));
+                indices(j,k) = static_cast<NodeIndex>(cell->GetPointId(k));
             }
         }
 
@@ -155,8 +155,8 @@ auto VTKReader<Dimension>::mesh () const -> Mesh<Dimension> {
 }
 
 
-template<UNSIGNED_INTEGER_TYPE Dimension>
-void VTKReader<Dimension>::print (std::ostream & out) const {
+template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex>
+void VTKReader<Dimension, NodeIndex>::print (std::ostream & out) const {
     vtkUnstructuredGrid * output = p_reader->GetOutput();
 
     out << "input has " << output->GetNumberOfPoints() << " points.\n";
@@ -262,7 +262,15 @@ auto extract_axes_from_3D_vectors(vtkPoints * input_points, const vtkIdType & nu
     return axes;
 }
 
-template class VTKReader<1>;
-template class VTKReader<2>;
-template class VTKReader<3>;
+template class VTKReader<1, unsigned long long int>;
+template class VTKReader<1, unsigned long int>;
+template class VTKReader<1, unsigned int>
+;
+template class VTKReader<2, unsigned long long int>;
+template class VTKReader<2, unsigned long int>;
+template class VTKReader<2, unsigned int>;
+
+template class VTKReader<3, unsigned long long int>;
+template class VTKReader<3, unsigned long int>;
+template class VTKReader<3, unsigned int>;
 }

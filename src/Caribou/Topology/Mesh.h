@@ -273,6 +273,23 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
         inline auto number_of_nodes() const -> UNSIGNED_INTEGER_TYPE final {return p_nodes.size();};
 
         /*!
+         * \copydoc caribou::topology::BaseMesh::node
+         */
+        [[nodiscard]]
+        inline auto node(const UNSIGNED_INTEGER_TYPE & node_id) const -> Eigen::Vector3d {
+            const auto p = position(node_id);
+            Eigen::Vector3d n;
+            n[0] = p[0];
+            if constexpr (Dimension > 1) {
+                n[1] = p[1];
+            }
+            if constexpr (Dimension > 2) {
+                n[2] = p[2];
+            }
+            return n;
+        }
+
+        /*!
          * Get the list of domains of the mesh.
          */
         [[nodiscard]]
