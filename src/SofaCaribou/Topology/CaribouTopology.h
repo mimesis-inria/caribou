@@ -8,11 +8,7 @@
 #include <sofa/core/State.h>
 #include <sofa/core/topology/Topology.h>
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
 #include <sofa/defaulttype/VecTypes.h>
-#else
-#include <sofa/type/VecTypes.h>
-#endif
 
 namespace SofaCaribou::topology {
 // Traits to get the Sofa vector type from the dimension

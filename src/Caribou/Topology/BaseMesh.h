@@ -39,5 +39,22 @@ namespace caribou::topology {
          *       Mesh::node() method of the derived Mesh class.
          */
         [[nodiscard]] virtual inline auto node(const UNSIGNED_INTEGER_TYPE & node_id) const -> Eigen::Vector3d  = 0;
+
+        /*!
+         * Adds (attaches) an already existing domain to this mesh.
+         *
+         * @param domain An orphan domain (without any attached mesh).
+         * @return The domain that is now linked to this mesh.
+         */
+        virtual inline auto add_domain(BaseDomain * domain) -> BaseDomain * = 0;
+
+        /*!
+         * Adds (attaches) an already existing domain to this mesh.
+         *
+         * @param domain An orphan domain (without any attached mesh).
+         * @param name   The name of the domain.
+         * @return The domain that is now linked to this mesh.
+         */
+        virtual inline auto add_domain(BaseDomain * domain, const std::string & name) -> BaseDomain * = 0;
     };
 }

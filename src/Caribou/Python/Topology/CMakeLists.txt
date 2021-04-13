@@ -11,10 +11,10 @@ set(PYTHON_TEST_FILES
 set(HEADER_FILES
     BarycentricContainer.h
     Domain.h
-    Mesh.h
 )
 
 set(SOURCE_FILES
+    Domain.cpp
     Grid.cpp
     HashGrid.cpp
     Mesh.cpp

@@ -46,5 +46,10 @@ namespace caribou::topology {
          * @note The caller becomes owner of the pointer and is therefore responsible to release its memory.
          */
         [[nodiscard]] virtual BaseDomain * clone() const = 0;
+
+        /*!
+         * Attach this Domain to the given Mesh.
+         */
+        virtual inline void attach_to(const BaseMesh * mesh) = 0;
     };
 }

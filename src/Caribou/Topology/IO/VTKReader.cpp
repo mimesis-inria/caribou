@@ -264,8 +264,8 @@ auto extract_axes_from_3D_vectors(vtkPoints * input_points, const vtkIdType & nu
 
 template class VTKReader<1, unsigned long long int>;
 template class VTKReader<1, unsigned long int>;
-template class VTKReader<1, unsigned int>
-;
+template class VTKReader<1, unsigned int>;
+
 template class VTKReader<2, unsigned long long int>;
 template class VTKReader<2, unsigned long int>;
 template class VTKReader<2, unsigned int>;

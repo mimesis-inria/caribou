@@ -3,6 +3,7 @@
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
+#include <sofa/simulation/Node.h>
 
 #include <SofaCaribou/Topology/CaribouTopology[Quad].h>
 #include <SofaCaribou/Topology/CaribouTopology[Tetrahedron].h>

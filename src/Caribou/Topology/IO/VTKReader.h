@@ -97,8 +97,8 @@ private:
 
 extern template class VTKReader<1, unsigned long long int>;
 extern template class VTKReader<1, unsigned long int>;
-extern template class VTKReader<1, unsigned int>
-        ;
+extern template class VTKReader<1, unsigned int>;
+
 extern template class VTKReader<2, unsigned long long int>;
 extern template class VTKReader<2, unsigned long int>;
 extern template class VTKReader<2, unsigned int>;

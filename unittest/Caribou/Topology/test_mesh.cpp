@@ -175,4 +175,24 @@ TEST(Mesh, Tetrahedron) {
     EXPECT_EQ(mesh.number_of_domains(), 0);
 }
 
+TEST(Mesh, AttachDomain) {
+    using namespace caribou;
+    using namespace caribou::topology;
+    using namespace caribou::geometry;
+    using Mesh = Mesh<_3D>;
+    using Domain = Domain<Segment<_3D>>;
+
+    Mesh mesh({{0, 0, 0}, {1, 1, 1}});
+
+    Domain::ElementsIndices domain_indices(1, 2); // One element of two nodes
+    domain_indices << 0, 1;
+    auto domain = new Domain(nullptr, domain_indices);
+
+    EXPECT_NE(mesh.add_domain(domain), nullptr);
+    EXPECT_NO_THROW(mesh.add_domain(domain)); // Adding the same domain a second time should not actually increases the number of domains
+    EXPECT_EQ(mesh.number_of_domains(), 1);
+    EXPECT_ANY_THROW(mesh.add_domain(domain, "test"));
+    EXPECT_EQ(mesh.domain(0), domain);
+}
+
 #endif //CARIBOU_TOPOLOGY_TEST_MESH_H

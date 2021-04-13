@@ -7,6 +7,7 @@
 #include <Caribou/Topology/BarycentricContainer.h>
 #include <Caribou/Geometry/Element.h>
 
+#include <Eigen/Core>
 #include <vector>
 #include <array>
 
@@ -99,13 +100,19 @@ namespace caribou::topology {
         : DomainStorage<Element>(other), p_buffer(other.p_buffer), p_elements(other.p_elements) {}
 
         /*! Move constructor */
-        Domain(Domain && other) noexcept {
+        Domain(Domain && other) noexcept : p_elements {nullptr, 0, 0} {
             swap(*this, other);
         }
 
         /*! Destructor */
         ~Domain() override = default;
 
+        /*!
+         * \copydoc caribou::topology::BaseDomain::clone
+         */
+        BaseDomain * clone() const override {
+            return new Domain(*this); // Will call the copy constructor
+        }
 
         /*!
          * \copydoc caribou::topology::BaseDomain::canonical_dimension
@@ -128,6 +135,11 @@ namespace caribou::topology {
         auto number_of_elements() const -> UNSIGNED_INTEGER_TYPE final;
 
         /*!
+         * \copydoc caribou::topology::BaseDomain::mesh
+         */
+        inline auto mesh() const -> const BaseMesh * override { return p_mesh; }
+
+        /*!
          * Construct an element of the domain
          * @param element_id The id of the element in this domain.
          * @param positions An eigen matrix containing all the positions of the mesh. The matrix should have N rows
@@ -142,7 +154,7 @@ namespace caribou::topology {
         * @param element_id The id of the element in this domain.
         * @return A new Element instance from the domain
         */
-        virtual inline auto element(const UNSIGNED_INTEGER_TYPE & element_id) const -> Element = 0;
+        virtual inline auto element(const UNSIGNED_INTEGER_TYPE & element_id) const -> Element;
 
         /*!
          * Get the indices of an element in the domain.
@@ -164,31 +176,21 @@ namespace caribou::topology {
             return {this, points};
         }
 
-    protected:
-
-        friend void swap(Domain & first, Domain& second) noexcept
-        {
-            // enable ADL
-            using std::swap;
-            swap(first.p_buffer, second.p_buffer);
-            swap(first.p_elements, second.p_elements);
-        }
+        /*!
+         * Construct the domain from an array of indices.
+         *
+         * \note The indices are copied.
+         */
+        Domain(const BaseMesh * mesh, const ElementsIndices & elements)
+            : p_mesh(mesh), p_buffer(elements), p_elements(p_buffer.data(), p_buffer.rows(), p_buffer.cols(), {p_buffer.cols(), 1}) {}
 
         /*!
          * Construct the domain from an array of indices.
          *
          * \note The indices are copied.
          */
-        Domain(const ElementsIndices & elements)
-            : p_buffer(elements), p_elements(p_buffer.data(), p_buffer.rows(), p_buffer.cols(), {p_buffer.cols(), 1}) {}
-
-        /*!
-         * Construct the domain from an array of indices.
-         *
-         * \note The indices are copied.
-         */
-        Domain(ElementsIndices & elements)
-            : p_buffer(elements), p_elements(p_buffer.data(), p_buffer.rows(), p_buffer.cols(), {p_buffer.cols(), 1}) {}
+        Domain(const BaseMesh * mesh, ElementsIndices & elements)
+            : p_mesh(mesh), p_buffer(elements), p_elements(p_buffer.data(), p_buffer.rows(), p_buffer.cols(), {p_buffer.cols(), 1}) {}
 
         /*!
          * Construct the domain from a reference to an external array of indices.
@@ -196,8 +198,8 @@ namespace caribou::topology {
          * \note The indices are NOT copied. If the external array of indices is deleted, or changes, the behavior
          *       of the domain is undefined.
          */
-        Domain(const ElementsIndices * elements)
-            : p_buffer(), p_elements(elements->data(), elements->rows(), elements->cols(), {elements->cols(), 1}) {}
+        Domain(const BaseMesh * mesh, const ElementsIndices * elements)
+            : p_mesh(mesh), p_buffer(), p_elements(elements->data(), elements->rows(), elements->cols(), {elements->cols(), 1}) {}
 
         /*!
          * Construct the domain from a reference to an external array of indices.
@@ -205,8 +207,8 @@ namespace caribou::topology {
          * \note The indices are NOT copied. If the external array of indices is deleted, or changes, the behavior
          *       of the domain is undefined.
          */
-        Domain(const NodeIndex * data, const Eigen::Index & number_of_elements, const Eigen::Index & number_of_nodes_per_elements)
-            : p_buffer(), p_elements(data, number_of_elements, number_of_nodes_per_elements, {number_of_nodes_per_elements, 1}) {}
+        Domain(const BaseMesh * mesh, const NodeIndex * data, const Eigen::Index & number_of_elements, const Eigen::Index & number_of_nodes_per_elements)
+            : p_mesh(mesh), p_buffer(), p_elements(data, number_of_elements, number_of_nodes_per_elements, {number_of_nodes_per_elements, 1}) {}
 
         /*!
          * Construct the domain from a reference to an array of indices.
@@ -214,8 +216,45 @@ namespace caribou::topology {
          * \note The indices are NOT copied. If the external array of indices is deleted, or changes, the behavior
          *       of the domain is undefined.
          */
-        Domain(const NodeIndex * data, const Eigen::Index & number_of_elements, const Eigen::Index & number_of_nodes_per_elements, Eigen::Index outer_stride, Eigen::Index inner_stride)
-            : p_buffer(), p_elements(data, number_of_elements, number_of_nodes_per_elements, {outer_stride, inner_stride}) {}
+        Domain(const BaseMesh * mesh, const NodeIndex * data, const Eigen::Index & number_of_elements, const Eigen::Index & number_of_nodes_per_elements, Eigen::Index outer_stride, Eigen::Index inner_stride)
+            : p_mesh(mesh), p_buffer(), p_elements(data, number_of_elements, number_of_nodes_per_elements, {outer_stride, inner_stride}) {}
+
+        /*!
+         * Attach this Domain to the given Mesh.
+         */
+        inline void attach_to(const BaseMesh * mesh) override {
+            // Trying to attach the same mesh as the one which is already attached to this domain
+            if (mesh == p_mesh) {
+                return;
+            }
+
+            // There is already a Mesh instance attached to this Domain, and this domain can still be found in the
+            // list of domains of the mesh, let's throw an exception
+            if (p_mesh != nullptr)  {
+                throw std::logic_error("Trying to add a domain that is already attached to another Mesh instance.");
+            }
+
+            p_mesh = mesh;
+        }
+
+    protected:
+
+        friend void swap(Domain & first, Domain& second) noexcept
+        {
+            // enable ADL
+            using std::swap;
+            swap(first.p_buffer, second.p_buffer);
+
+            // Map isn't swappable, we need to do it manually using placement new operators
+            using MapType = decltype(p_elements);
+            MapType temp (first.p_elements.data(), first.p_elements.rows(), first.p_elements.cols(), {first.p_elements.outerStride(), first.p_elements.innerStride()});
+            new (&first.p_elements) MapType (second.p_elements.data(), second.p_elements.rows(), second.p_elements.cols(), {second.p_elements.outerStride(), second.p_elements.innerStride()});
+            new (&second.p_elements) MapType (temp.data(), temp.rows(), temp.cols(), {temp.outerStride(), temp.innerStride()});
+        }
+
+        /// Pointer to the associated Mesh. This Domain instance should be part of one Mesh, where the latter could
+        /// contains many Domain instances of different or same element types.
+        const BaseMesh * p_mesh;
 
         /// Buffer containing the element indices. This buffer is used when the domain is constructed by copying
         /// an array of element indices. If the domain is constructed from a mapped buffer (ie, the indices are
@@ -269,6 +308,32 @@ namespace caribou::topology {
         const auto node_indices = element_indices(element_id);
         for (std::size_t i = 0; i < node_indices.size(); ++i) {
             node_positions.row(i) = positions.row(node_indices[i]);
+        }
+
+        return Element(node_positions);
+    }
+
+    template <typename Element, typename NodeIndex>
+    inline auto Domain<Element, NodeIndex>::element(const UNSIGNED_INTEGER_TYPE & element_id) const -> Element {
+        caribou_assert(element_id < number_of_elements());
+
+        using NodeMatrix = typename geometry::Element<Element>::template Matrix<geometry::traits<Element>::NumberOfNodesAtCompileTime, Dimension>;
+        NodeMatrix node_positions;
+        if constexpr (geometry::traits<Element>::NumberOfNodesAtCompileTime == caribou::Dynamic) {
+            node_positions.resize(number_of_nodes_per_elements(), Dimension);
+        }
+
+        const auto node_indices = element_indices(element_id);
+        for (std::size_t i = 0; i < static_cast<std::size_t>(node_indices.size()); ++i) {
+            auto p1 = node_positions.row(i);
+            auto p2 = this->mesh()->node(node_indices[i]);
+            p1[0] = p2[0];
+            if constexpr (Dimension > 1) {
+                p1[1] = p2[1];
+            }
+            if constexpr(Dimension > 2) {
+                p1[2] = p2[2];
+            }
         }
 
         return Element(node_positions);

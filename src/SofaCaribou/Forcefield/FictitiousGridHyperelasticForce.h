@@ -149,15 +149,6 @@ public:
 private:
     // These private methods are implemented but can be overridden
 
-    /** Get the element nodes indices relative to the state vector */
-    auto get_element_nodes_indices(const std::size_t & element_id) const -> const Index * override {
-        if (not d_grid.get() or d_grid->number_of_cells() == 0) {
-            return nullptr;
-        }
-
-        return &(d_grid->get_node_indices_of(element_id)[0]);
-    }
-
     /**
      * Return true if the mesh topology is compatible with the type Element.
      *
