@@ -19,7 +19,9 @@ set(HEADER_FILES
 )
 
 
-find_package(Eigen3 QUIET REQUIRED)
+if(NOT ${Eigen3_FOUND})
+    find_package(Eigen3 QUIET REQUIRED NO_MODULE)
+endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(Caribou::${PROJECT_NAME} ALIAS ${PROJECT_NAME})

@@ -73,10 +73,19 @@ if (NOT TARGET Caribou::Algebra)
 endif()
 
 # Sofa's packages
-find_package(SOFA COMPONENTS SofaFramework SofaBaseLinearSolver SofaBaseTopology SofaEigen2Solver QUIET REQUIRED)
+if (CARIBOU_COMPILED_AS_SOFA_SUBPROJECT)
+    sofa_find_package(SofaFramework QUIET REQUIRED)
+    sofa_find_package(SofaBaseTopology QUIET REQUIRED)
+    sofa_find_package(SofaBaseLinearSolver QUIET REQUIRED)
+    sofa_find_package(SofaEigen2Solver QUIET REQUIRED)
+else()
+    find_package(SOFA COMPONENTS SofaFramework SofaBaseLinearSolver SofaBaseTopology SofaEigen2Solver QUIET REQUIRED)
+endif()
 
 # Optional packages
-find_package(Eigen3 REQUIRED NO_MODULE QUIET)
+if(NOT ${Eigen3_FOUND})
+    find_package(Eigen3 REQUIRED NO_MODULE QUIET)
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
 add_library(Caribou::Plugin ALIAS ${PROJECT_NAME})
