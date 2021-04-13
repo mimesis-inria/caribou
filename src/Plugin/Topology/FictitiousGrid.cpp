@@ -171,7 +171,7 @@ FictitiousGrid<Vec2Types>::subdivide_intersected_cells()
 
     TICK;
 #pragma omp parallel for
-    for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
+    for (int cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
 
         // Initialize the stack with the current full cell
@@ -263,7 +263,7 @@ FictitiousGrid<Vec3Types>::subdivide_intersected_cells()
 
     TICK;
 #pragma omp parallel for
-    for (UNSIGNED_INTEGER_TYPE cell_index = 0; cell_index < number_of_cells; ++cell_index) {
+    for (int cell_index = 0; cell_index < number_of_cells; ++cell_index) {
         const auto & triangles = p_triangles_of_cell[cell_index];
         std::queue<std::tuple<CellElement, Cell *, Weight, Level>> stack;
 

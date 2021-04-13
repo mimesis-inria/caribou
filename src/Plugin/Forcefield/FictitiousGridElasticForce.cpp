@@ -251,7 +251,7 @@ void FictitiousGridElasticForce::addForce(
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addForce");
 #pragma omp parallel for
-        for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+        for (int hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
             Hexahedron hexa = hexahedron(hexa_id, x);
 
             const Mat33 & R0 = initial_rotation[hexa_id];
@@ -312,7 +312,7 @@ void FictitiousGridElasticForce::addForce(
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
 #pragma omp parallel for
-        for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+        for (int hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
             const auto &hexa = grid->get_node_indices_of(hexa_id);
 
             Matrix<8, 3, Eigen::RowMajor> U;
