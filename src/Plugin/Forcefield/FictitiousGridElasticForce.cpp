@@ -393,7 +393,7 @@ void FictitiousGridElasticForce::addDForce(
 
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addDForce");
 #pragma omp parallel for
-    for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+    for (int hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
         const Mat33 & R  = current_rotation[hexa_id];
         const Mat33   Rt = R.transpose();
 
