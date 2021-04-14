@@ -28,9 +28,7 @@ if (CARIBOU_WITH_VTK)
     endif()
 endif()
 
-if(NOT ${Eigen3_FOUND})
-    find_package(Eigen3 QUIET REQUIRED NO_MODULE)
-endif()
+find_package(Eigen3 QUIET REQUIRED NO_MODULE)
 
 add_library(${PROJECT_NAME} ${TARGET_TYPE} ${SOURCE_FILES})
 add_library(Caribou::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
