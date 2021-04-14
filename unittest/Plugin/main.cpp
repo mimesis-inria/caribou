@@ -19,7 +19,8 @@ int main(int argc, char **argv) {
 #ifdef LEGACY_CXX
     executable_directory_path = fs::canonical(fs::path(argv[0])).parent_path();
 #else
-    executable_directory_path = weakly_canonical(fs::path(argv[0])).parent_path();
+    std::filesystem::path tmp_fs_path = weakly_canonical(fs::path(argv[0])).parent_path();
+    executable_directory_path = tmp_fs_path.u8string();
 #endif
     testing::InitGoogleTest(&argc, argv);
     sofa::simulation::graph::init();
