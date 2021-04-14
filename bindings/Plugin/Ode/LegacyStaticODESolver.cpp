@@ -24,9 +24,6 @@ void addLegacyStaticODESolver(py::module &m) {
     c.def_property_readonly("iterative_linear_solver_squared_residuals", &LegacyStaticODESolver::iterative_linear_solver_squared_residuals);
     c.def_property_readonly("iterative_linear_solver_squared_rhs_norms", &LegacyStaticODESolver::iterative_linear_solver_squared_rhs_norms);
 
-    py::bind_vector<std::vector<FLOATING_POINT_TYPE>>(m, "VectorFloat");
-    py::bind_vector<std::vector<std::vector<FLOATING_POINT_TYPE>>>(m, "VectorVectorFloat");
-
     sofapython3::PythonFactory::registerType<LegacyStaticODESolver>([](sofa::core::objectmodel::Base* o) {
         return py::cast(dynamic_cast<LegacyStaticODESolver*>(o));
     });
