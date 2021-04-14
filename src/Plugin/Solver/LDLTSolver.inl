@@ -39,8 +39,8 @@ struct solver_traits <Eigen::PardisoLDLT< MatrixType, UpLo >> {
 #endif
 }
 
-template<class EigenSolver>
-bool LDLTSolver<EigenSolver>::analyze_pattern(const sofa::defaulttype::BaseMatrix * A) {
+template<class EigenSolver_t>
+bool LDLTSolver<EigenSolver_t>::analyze_pattern(const sofa::defaulttype::BaseMatrix * A) {
     auto A_ = dynamic_cast<const SofaCaribou::Algebra::EigenMatrix<Matrix> *>(A);
     if (not A_) {
         throw std::runtime_error("Tried to analyze an incompatible matrix (not an Eigen matrix).");
@@ -73,13 +73,13 @@ bool LDLTSolver<EigenSolver_t>::solve(const sofa::defaulttype::BaseVector * F,
     return (p_solver.info() == Eigen::Success);
 }
 
-template<class EigenSolver>
-std::string LDLTSolver<EigenSolver>::BackendName() {
-    return solver_traits<EigenSolver>::BackendName();
+template<class EigenSolver_t>
+std::string LDLTSolver<EigenSolver_t>::BackendName() {
+    return solver_traits<EigenSolver_t>::BackendName();
 }
 
-template<typename EigenSolver>
-LDLTSolver<EigenSolver>::LDLTSolver()
+template<typename EigenSolver_t>
+LDLTSolver<EigenSolver_t>::LDLTSolver()
 : d_backend(initData(&d_backend
 , "backend"
 , R"(
@@ -96,7 +96,7 @@ LDLTSolver<EigenSolver>::LDLTSolver()
 
 
     // Put the backend name in lower case
-    std::string backend_str = solver_traits<EigenSolver>::BackendName();
+    std::string backend_str = solver_traits<EigenSolver_t>::BackendName();
     std::transform(backend_str.begin(), backend_str.end(), backend_str.begin(),
                    [](unsigned char c) { return std::tolower(c); });
 

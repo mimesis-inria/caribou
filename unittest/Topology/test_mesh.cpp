@@ -16,7 +16,7 @@ using caribou::topology::Mesh;
 TEST(Mesh, Constructor_std_copy) {
     // Construct by copy (from std::vector)
     std::vector<Mesh<3>::WorldCoordinates> initial_positions = {{0,0,0}, {1,1,1}};
-    Mesh mesh (initial_positions);
+    Mesh<3> mesh (initial_positions);
     auto positions = mesh.positions({1, 0});
     EXPECT_MATRIX_EQUAL(mesh.position(1), positions.row(0));
     EXPECT_MATRIX_EQUAL(mesh.position(0), positions.row(1));

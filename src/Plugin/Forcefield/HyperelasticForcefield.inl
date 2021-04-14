@@ -712,20 +712,22 @@ void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParam
         }
     }
 
-    for (std::size_t face_id = 0; face_id < NumberOfFaces; ++face_id) {
-        const auto &hex_color = kelly_colors_hex[face_id % 20];
-        const Color face_color(
-            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(16))) / 255.),
-            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(8) )) / 255.),
-            static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(0) )) / 255.),
-            static_cast<float> (1));
+    if constexpr (Dimension == 3) {
+        for (std::size_t face_id = 0; face_id < NumberOfFaces; ++face_id) {
+            const auto &hex_color = kelly_colors_hex[face_id % 20];
+            const Color face_color(
+                    static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(16))) / 255.),
+                    static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(8))) / 255.),
+                    static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(0))) / 255.),
+                    static_cast<float> (1));
 
-        if (NumberOfNodesPerFaces == 3) {
-            vparams->drawTool()->drawTriangles(faces_points[face_id], face_color);
-        } else if (NumberOfNodesPerFaces == 4) {
-            vparams->drawTool()->drawQuads(faces_points[face_id], face_color);
-        } else {
-            throw std::runtime_error("Drawing an unsupported face type");
+            if (NumberOfNodesPerFaces == 3) {
+                vparams->drawTool()->drawTriangles(faces_points[face_id], face_color);
+            } else if (NumberOfNodesPerFaces == 4) {
+                vparams->drawTool()->drawQuads(faces_points[face_id], face_color);
+            } else {
+                throw std::runtime_error("Drawing an unsupported face type");
+            }
         }
     }
 

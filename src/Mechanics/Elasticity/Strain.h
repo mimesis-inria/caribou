@@ -10,7 +10,7 @@ namespace caribou::mechanics::elasticity::strain {
 using Float = FLOATING_POINT_TYPE;
 
 template<int nRows, int nColumns, int Options=0>
-using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
+using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options, nRows, nColumns>;
 
 /**
  * Deformation gradient tensor F.
@@ -42,7 +42,7 @@ using Matrix = Eigen::Matrix<FLOATING_POINT_TYPE, nRows, nColumns, Options>;
  *
  * @return  DxD deformation gradient tensor F where D is the dimension of the world coordinates.
  */
-template <int NumberOfNodes, int Dimension, int Options>
+template <int NumberOfNodes, int Dimension, int Options=0>
 static inline
 Matrix<Dimension, Dimension>
 F (const Matrix<NumberOfNodes, Dimension, Options> & dN_dx, const Matrix<NumberOfNodes, Dimension, Options> & U)

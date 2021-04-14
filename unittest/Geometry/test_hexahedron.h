@@ -50,7 +50,7 @@ TEST(Hexahedron, Linear) {
                   p1(h.node(4)), p1(h.node(5)), p1(h.node(6)), p1(h.node(7));
         for (const auto & gauss_node : h.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(h.interpolate(x, values), p1(h.world_coordinates(x)));
+            EXPECT_NEAR(h.interpolate(x, values), p1(h.world_coordinates(x)), 1e-10);
         }
 
         // Inverse transformation
@@ -144,7 +144,7 @@ TEST(Hexahedron, Linear) {
             }
         }
 
-        EXPECT_FLOAT_EQ(numerical_solution_hexa, numerical_solution_tetras);
+        EXPECT_DOUBLE_EQ(numerical_solution_hexa, numerical_solution_tetras);
     }
 }
 
@@ -186,7 +186,7 @@ TEST(Hexahedron, Quadratic) {
                   p2(h.node(10)), p2(h.node(11)), p2(h.node(12)), p2(h.node(13)), p2(h.node(14)), p2(h.node(15)), p2(h.node(16)), p2(h.node(17)), p2(h.node(18)), p2(h.node(19));
         for (const auto & gauss_node : h.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(h.interpolate(x, values), p2(h.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(h.interpolate(x, values), p2(h.world_coordinates(x)));
         }
 
         // Inverse transformation
@@ -282,7 +282,7 @@ TEST(Hexahedron, Quadratic) {
             }
         }
 
-        EXPECT_FLOAT_EQ(numerical_solution_hexa, numerical_solution_tetras);
+        EXPECT_DOUBLE_EQ(numerical_solution_hexa, numerical_solution_tetras);
     }
 }
 

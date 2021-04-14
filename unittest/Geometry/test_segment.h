@@ -29,7 +29,7 @@ TEST(Segment, Linear) {
         EXPECT_EQ(segment.node(1), WorldCoordinates(1.1));
 
         // Center
-        EXPECT_FLOAT_EQ(segment.center()[0], -2.2);
+        EXPECT_DOUBLE_EQ(segment.center()[0], -2.2);
 
         // Inverse transformation
         for (const auto & gauss_node : segment.gauss_nodes()) {
@@ -73,7 +73,7 @@ TEST(Segment, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> values (p1(segment.node(0)), p1(segment.node(1)));
         for (const auto & gauss_node : segment.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(segment.interpolate(x, values), p1(segment.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(segment.interpolate(x, values), p1(segment.world_coordinates(x)));
         }
 
         // Integration
@@ -85,7 +85,7 @@ TEST(Segment, Linear) {
             numerical_solution += p1(segment.world_coordinates(x)) * w * detJ;
         }
         FLOATING_POINT_TYPE analytic_solution = (5*1.1 + (1.1*1.1)) - (-5.5*5 + (-5.5)*(-5.5));
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_NEAR(numerical_solution, analytic_solution, 1e-10);
     }
 
 // 2D
@@ -100,14 +100,14 @@ TEST(Segment, Linear) {
 
         // Center
         WorldCoordinates center_node = node_0 + (node_1 - node_0).normalized()*(node_1-node_0).norm()/2.;
-        EXPECT_FLOAT_EQ(segment.center()[0], center_node[0]);
-        EXPECT_FLOAT_EQ(segment.center()[1], center_node[1]);
+        EXPECT_DOUBLE_EQ(segment.center()[0], center_node[0]);
+        EXPECT_DOUBLE_EQ(segment.center()[1], center_node[1]);
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> values (p1(segment.node(0)), p1(segment.node(1)));
         for (const auto & gauss_node : segment.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(segment.interpolate(x, values), p1(segment.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(segment.interpolate(x, values), p1(segment.world_coordinates(x)));
         }
 
         // Integration
@@ -126,7 +126,7 @@ TEST(Segment, Linear) {
         const auto y1 = node_1[1];
         const auto d = (node_1 - node_0).norm();
         FLOATING_POINT_TYPE analytic_solution = d * (x0 + x1 + 3*y0/2. + 3*y1/2. + 5);
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
     }
 
 // 3D
@@ -141,15 +141,15 @@ TEST(Segment, Linear) {
 
         // Center
         WorldCoordinates center_node = node_0 + (node_1 - node_0).normalized()*(node_1-node_0).norm()/2.;
-        EXPECT_FLOAT_EQ(segment.center()[0], center_node[0]);
-        EXPECT_FLOAT_EQ(segment.center()[1], center_node[1]);
-        EXPECT_FLOAT_EQ(segment.center()[2], center_node[2]);
+        EXPECT_DOUBLE_EQ(segment.center()[0], center_node[0]);
+        EXPECT_DOUBLE_EQ(segment.center()[1], center_node[1]);
+        EXPECT_DOUBLE_EQ(segment.center()[2], center_node[2]);
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> values (p1(segment.node(0)), p1(segment.node(1)));
         for (const auto & gauss_node : segment.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(segment.interpolate(x, values), p1(segment.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(segment.interpolate(x, values), p1(segment.world_coordinates(x)));
         }
 
         // Integration
@@ -170,7 +170,7 @@ TEST(Segment, Linear) {
         const auto z1 = node_1[2];
         const auto d = (node_1 - node_0).norm();
         FLOATING_POINT_TYPE analytic_solution = d * (x0 + x1 + 3*y0/2. + 3*y1/2. + 2*z0 + 2*z1 + 5);
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
     }
 }
 
@@ -200,13 +200,13 @@ TEST(Segment, Quadratic) {
         Segment segment(WorldCoordinates(-5.5), WorldCoordinates(1.1), WorldCoordinates(-2.2));
 
         // Center
-        EXPECT_FLOAT_EQ(segment.center()[0], -2.2);
+        EXPECT_DOUBLE_EQ(segment.center()[0], -2.2);
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p2(segment.node(0)), p2(segment.node(1)), p2(segment.node(2)));
         for (const auto & gauss_node : segment.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(segment.interpolate(x, values), p2(segment.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(segment.interpolate(x, values), p2(segment.world_coordinates(x)));
         }
 
         // Integration
@@ -220,7 +220,7 @@ TEST(Segment, Quadratic) {
         FLOATING_POINT_TYPE x0 = segment.node(0)[0];
         FLOATING_POINT_TYPE x1 = segment.node(1)[0];
         auto analytic_solution = static_cast<FLOATING_POINT_TYPE>((2 * x1*x1*x1 / 3. + 5*x1) - (2 * x0*x0*x0 / 3. + 5*x0)) ;
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
     }
 
 // 2D
@@ -236,14 +236,14 @@ TEST(Segment, Quadratic) {
 
         // Center
         WorldCoordinates center_node = node_0 + (node_1 - node_0).normalized()*(node_1-node_0).norm()/2.;
-        EXPECT_FLOAT_EQ(segment.center()[0], center_node[0]);
-        EXPECT_FLOAT_EQ(segment.center()[1], center_node[1]);
+        EXPECT_DOUBLE_EQ(segment.center()[0], center_node[0]);
+        EXPECT_DOUBLE_EQ(segment.center()[1], center_node[1]);
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p2(node_0), p2(node_1), p2(node_2));
         for (const auto & gauss_node : segment.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(segment.interpolate(x, values), p2(segment.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(segment.interpolate(x, values), p2(segment.world_coordinates(x)));
         }
 
         FLOATING_POINT_TYPE numerical_solution = 0;
@@ -262,7 +262,7 @@ TEST(Segment, Quadratic) {
         const auto y1 = node_1[1]; // d
         const auto d = (node_1 - node_0).norm();
         FLOATING_POINT_TYPE analytic_solution = d * (1/3.*x0*(2*y0+y1) + 1/3.*x1*(2*y1+y0) + y0*y0 + y0*y1 + y1*y1 + 5);
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
     }
 
 // 3D
@@ -277,15 +277,15 @@ TEST(Segment, Quadratic) {
         // Center
         Segment segment(node_0, node_1, node_2);
         WorldCoordinates center_node = node_0 + (node_1 - node_0).normalized()*(node_1-node_0).norm()/2.;
-        EXPECT_FLOAT_EQ(segment.center()[0], center_node[0]);
-        EXPECT_FLOAT_EQ(segment.center()[1], center_node[1]);
-        EXPECT_FLOAT_EQ(segment.center()[2], center_node[2]);
+        EXPECT_DOUBLE_EQ(segment.center()[0], center_node[0]);
+        EXPECT_DOUBLE_EQ(segment.center()[1], center_node[1]);
+        EXPECT_DOUBLE_EQ(segment.center()[2], center_node[2]);
 
         // Interpolation
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p2(node_0), p2(node_1), p2(node_2));
         for (const auto & gauss_node : segment.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(segment.interpolate(x, values), p2(segment.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(segment.interpolate(x, values), p2(segment.world_coordinates(x)));
         }
 
         // Integration
@@ -306,6 +306,6 @@ TEST(Segment, Quadratic) {
         const auto f = node_1[2]; // z1
         const auto n = (node_1 - node_0).norm();
         FLOATING_POINT_TYPE analytic_solution = n * ((30 + 2*a*(2*c + d) + 2*b*(c + 2*d) + 6*c*e + 3*d*e + 8*e*e + 3*c*f + 6*d*f + 8*e*f + 8*f*f)/6);
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
     }
 }

@@ -223,7 +223,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             for (const auto & p : other.p_domains) {
                 const std::string & domain_name = p.first;
                 BaseDomain * cloned_domain_ptr  = p.second->clone();
-                p_domains.template emplace_back(domain_name, cloned_domain_ptr);
+                p_domains.emplace_back(domain_name, cloned_domain_ptr);
             }
         }
 

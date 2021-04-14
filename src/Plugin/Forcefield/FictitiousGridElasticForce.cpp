@@ -450,7 +450,7 @@ void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * ma
 
     const auto number_of_elements = grid->number_of_cells();
 #pragma omp parallel for
-    for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
+    for (int hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = grid->get_node_indices_of(hexa_id);
         sofa::defaulttype::Mat3x3 R;
         for (size_t m = 0; m < 3; ++m) {
@@ -532,7 +532,7 @@ void FictitiousGridElasticForce::compute_K()
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::compute_k");
 
 #pragma omp parallel for
-    for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+    for (int hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
         auto & K = p_stiffness_matrices[hexa_id];
         K.fill(0.);
 

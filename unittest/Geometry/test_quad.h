@@ -33,8 +33,8 @@ TEST(Quad, Linear) {
         EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
         // Center
-        EXPECT_FLOAT_EQ(q.center()[0], 0);
-        EXPECT_FLOAT_EQ(q.center()[1], 0);
+        EXPECT_DOUBLE_EQ(q.center()[0], 0);
+        EXPECT_DOUBLE_EQ(q.center()[1], 0);
 
         // Contains point
         {
@@ -74,7 +74,7 @@ TEST(Quad, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 1> values (p1(q.node(0)), p1(q.node(1)), p1(q.node(2)), p1(q.node(3)));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(q.interpolate(x, values), p1(q.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(q.interpolate(x, values), p1(q.world_coordinates(x)));
         }
 
         // Inverse transformation
@@ -105,7 +105,7 @@ TEST(Quad, Linear) {
             }
         }
 
-        EXPECT_FLOAT_EQ(numerical_solution_quad, numerical_solution_triangles);
+        EXPECT_DOUBLE_EQ(numerical_solution_quad, numerical_solution_triangles);
 
         // Frame extraction
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 2> nodes;
@@ -155,9 +155,9 @@ TEST(Quad, Linear) {
         EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
         // Center
-        EXPECT_FLOAT_EQ(q.center()[0], 0);
-        EXPECT_FLOAT_EQ(q.center()[1], 0);
-        EXPECT_FLOAT_EQ(q.center()[2], 0);
+        EXPECT_DOUBLE_EQ(q.center()[0], 0);
+        EXPECT_DOUBLE_EQ(q.center()[1], 0);
+        EXPECT_DOUBLE_EQ(q.center()[2], 0);
 
         // Contains point
         {
@@ -197,7 +197,7 @@ TEST(Quad, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 1> values (p1(q.node(0)), p1(q.node(1)), p1(q.node(2)), p1(q.node(3)));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(q.interpolate(x, values), p1(q.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(q.interpolate(x, values), p1(q.world_coordinates(x)));
         }
 
         // Inverse transformation
@@ -230,7 +230,7 @@ TEST(Quad, Linear) {
             }
         }
 
-        EXPECT_FLOAT_EQ(numerical_solution_quad, numerical_solution_triangles);
+        EXPECT_DOUBLE_EQ(numerical_solution_quad, numerical_solution_triangles);
 
         // Frame extraction
         Eigen::Matrix<FLOATING_POINT_TYPE, 4, 3> nodes;
@@ -292,8 +292,8 @@ TEST(Quad, Quadratic) {
         EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
         // Center
-        EXPECT_FLOAT_EQ(q.center()[0], 0);
-        EXPECT_FLOAT_EQ(q.center()[1], 0);
+        EXPECT_DOUBLE_EQ(q.center()[0], 0);
+        EXPECT_DOUBLE_EQ(q.center()[1], 0);
 
         // Inverse transformation
         for (const auto & gauss_node : q.gauss_nodes()) {
@@ -343,7 +343,7 @@ TEST(Quad, Quadratic) {
                   p2(q.node(4)), p2(q.node(5)), p2(q.node(6)), p2(q.node(7));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(q.interpolate(x, values), p2(q.world_coordinates(x)));
+            EXPECT_NEAR(q.interpolate(x, values), p2(q.world_coordinates(x)), 1e-10);
         }
 
         // Integration
@@ -369,7 +369,7 @@ TEST(Quad, Quadratic) {
             }
         }
 
-        EXPECT_FLOAT_EQ(numerical_solution_quad, numerical_solution_triangles);
+        EXPECT_DOUBLE_EQ(numerical_solution_quad, numerical_solution_triangles);
 
         // Frame extraction
         Quad initial_quad (WorldCoordinates(-25, -25), WorldCoordinates( 25, -25), WorldCoordinates(25, 25), WorldCoordinates(-25, 25));
@@ -417,9 +417,9 @@ TEST(Quad, Quadratic) {
         EXPECT_EQ(q.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(4));
 
         // Center
-        EXPECT_FLOAT_EQ(q.center()[0], 0);
-        EXPECT_FLOAT_EQ(q.center()[1], 0);
-        EXPECT_FLOAT_EQ(q.center()[2], 0);
+        EXPECT_DOUBLE_EQ(q.center()[0], 0);
+        EXPECT_DOUBLE_EQ(q.center()[1], 0);
+        EXPECT_DOUBLE_EQ(q.center()[2], 0);
 
         // Inverse transformation
         for (const auto & gauss_node : q.gauss_nodes()) {
@@ -469,7 +469,7 @@ TEST(Quad, Quadratic) {
                   p2(q.node(4)), p2(q.node(5)), p2(q.node(6)), p2(q.node(7));
         for (const auto & gauss_node : q.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(q.interpolate(x, values), p2(q.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(q.interpolate(x, values), p2(q.world_coordinates(x)));
         }
 
         // Integration
@@ -497,7 +497,7 @@ TEST(Quad, Quadratic) {
             }
         }
 
-        EXPECT_FLOAT_EQ(numerical_solution_quad, numerical_solution_triangles);
+        EXPECT_DOUBLE_EQ(numerical_solution_quad, numerical_solution_triangles);
     }
 }
 
