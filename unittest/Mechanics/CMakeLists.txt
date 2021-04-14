@@ -1,4 +1,4 @@
-project(Caribou.Mechanics.Test)
+project(Caribou.unittests.Mechanics)
 
 set(SOURCE_FILES
         main.cpp)
@@ -17,7 +17,7 @@ list(APPEND target_rpath
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${target_rpath}" )
 
 install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT Caribou
+    TARGETS ${PROJECT_NAME}
+    EXPORT Caribou
 )
 

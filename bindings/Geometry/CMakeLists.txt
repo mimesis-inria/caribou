@@ -1,4 +1,4 @@
-project(Bindings.Geometry)
+project(Caribou.Bindings.Geometry)
 
 set(PYTHON_FILES
     __init__.py
@@ -24,7 +24,7 @@ set(SOURCE_FILES
 
 caribou_add_python_module(Geometry
                           TARGET_NAME       ${PROJECT_NAME}
-                          TARGET_ALIAS      Caribou::${PROJECT_NAME}
+                          TARGET_ALIAS      Caribou::Bindings.Geometry
                           TARGET_DEPENDS    Caribou::Geometry Caribou::Bindings.Config
                           COMPONENT_NAME    Bindings
                           PACKAGE_NAME      Caribou

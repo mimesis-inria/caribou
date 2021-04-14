@@ -1,4 +1,4 @@
-project(Bindings.Config)
+project(Caribou.Bindings.Config)
 
 set(PYTHON_FILES
     __init__.py
@@ -17,7 +17,7 @@ set(SOURCE_FILES
 
 caribou_add_python_module(Caribou
                           TARGET_NAME       ${PROJECT_NAME}
-                          TARGET_ALIAS      Caribou::${PROJECT_NAME}
+                          TARGET_ALIAS      Caribou::Bindings.Config
                           TARGET_DEPENDS    Caribou::Config
                           COMPONENT_NAME    Bindings
                           PACKAGE_NAME      Caribou

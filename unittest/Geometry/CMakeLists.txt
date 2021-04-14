@@ -1,4 +1,4 @@
-project(Caribou.Geometry.Test)
+project(Caribou.unittests.Geometry)
 
 set(SOURCE_FILES
     main.cpp
