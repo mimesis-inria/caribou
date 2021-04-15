@@ -23,12 +23,12 @@ struct BaseEigenNodesHolder {
     /*! Move constructor */
     BaseEigenNodesHolder(BaseEigenNodesHolder && other) noexcept
     : BaseEigenNodesHolder() {
-        this->p_nodes.template swap(other.p_nodes);
+        this->p_nodes.swap(other.p_nodes);
     }
 
     /*! copy-and-swap assigment (valid for both copy and move assigment) */
     auto operator=(BaseEigenNodesHolder other) noexcept -> BaseEigenNodesHolder & {
-        this->p_nodes.template swap(other.p_nodes);
+        this->p_nodes.swap(other.p_nodes);
         return *this;
     }
 

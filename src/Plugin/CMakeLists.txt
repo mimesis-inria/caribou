@@ -1,6 +1,7 @@
 project(SofaCaribou VERSION 20.12.00)
 
 set(HEADER_FILES
+    config.h.in
     Algebra/BaseVectorOperations.h
     Algebra/EigenMatrix.h
     Algebra/EigenVector.h

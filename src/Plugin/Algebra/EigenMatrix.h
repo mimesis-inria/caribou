@@ -1,4 +1,5 @@
 #pragma once
+#include <SofaCaribou/config.h>
 #include <Caribou/config.h>
 #include <Caribou/macros.h>
 #include <Caribou/traits.h>

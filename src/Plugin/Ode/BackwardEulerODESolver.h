@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Ode/NewtonRaphsonSolver.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <sofa/core/objectmodel/Data.h>
@@ -90,7 +91,7 @@ namespace SofaCaribou::ode {
  *
  *
  */
-class BackwardEulerODESolver : public NewtonRaphsonSolver {
+class CARIBOU_API BackwardEulerODESolver : public NewtonRaphsonSolver {
 public:
     SOFA_CLASS(BackwardEulerODESolver, NewtonRaphsonSolver);
 

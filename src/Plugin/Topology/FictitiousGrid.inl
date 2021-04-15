@@ -748,8 +748,8 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
 }
 
 template <typename DataTypes>
-std::array<typename FictitiousGrid<DataTypes>::CellElement, (unsigned) 1 << FictitiousGrid<DataTypes>::Dimension>
-FictitiousGrid<DataTypes>::get_subcells_elements(const CellElement & e) const
+auto
+FictitiousGrid<DataTypes>::get_subcells_elements(const CellElement & e) const -> std::array<CellElement, (unsigned) 1 << Dimension>
 {
     const Dimensions h = e.size() /  2;
     if constexpr (Dimension == 2) {

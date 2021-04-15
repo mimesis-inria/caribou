@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
+
 // Various utilities to perform numerical operations on SOFA's BaseVector.
 // These utilities are responsible to automatically find the type of vector
 // and perform the optimal operations on them.
@@ -19,6 +21,6 @@ namespace SofaCaribou::Algebra {
  *                                  simply reuse this callback. Hence we avoid the need to do multiple virtual checks
  *                                  each time this function is called
  */
-double dot(const sofa::defaulttype::BaseVector * v1, const sofa::defaulttype::BaseVector * v2);
+CARIBOU_API double dot(const sofa::defaulttype::BaseVector * v1, const sofa::defaulttype::BaseVector * v2);
 
 } // namespace SofaCaribou::Algebra

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
 #include <Caribou/config.h>
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
@@ -9,7 +10,7 @@ namespace SofaCaribou::ode {
 
 using sofa::core::objectmodel::Data;
 
-class LegacyStaticODESolver : public sofa::core::behavior::OdeSolver
+class CARIBOU_API LegacyStaticODESolver : public sofa::core::behavior::OdeSolver
 {
 public:
     SOFA_CLASS(LegacyStaticODESolver, sofa::core::behavior::OdeSolver);

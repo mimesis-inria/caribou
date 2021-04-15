@@ -2,6 +2,7 @@
 
 #include <sofa/helper/OptionsGroup.h>
 
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.inl>
 #include <SofaCaribou/Topology/FictitiousGrid.h>
 
@@ -52,7 +53,7 @@ namespace SofaCaribou::forcefield {
  * @tparam Element Can be either SubdividedGaussHexahedron or SubdividedVolumeHexahedron
  */
 template <typename Element>
-class FictitiousGridHyperelasticForcefield : public HyperelasticForcefield<Element> {
+class CARIBOU_API FictitiousGridHyperelasticForcefield : public HyperelasticForcefield<Element> {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(FictitiousGridHyperelasticForcefield, Element), SOFA_TEMPLATE(HyperelasticForcefield, Element));
 

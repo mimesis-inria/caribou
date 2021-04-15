@@ -1,4 +1,5 @@
 #include <Caribou/config.h>
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Algebra/BaseVectorOperations.h>
 #include <sofa/defaulttype/BaseVector.h>
 #include <SofaBaseLinearSolver/FullVector.h>
@@ -37,7 +38,7 @@ ReturnValue dot(const sofa::component::linearsolver::FullVector<Real1> * v1, con
 }
 
 /** Compute the dot product between two BaseVector, i.e. scalar = v1.dot(v2) */
-double dot(const sofa::defaulttype::BaseVector * v1, const sofa::defaulttype::BaseVector * v2) {
+CARIBOU_API double dot(const sofa::defaulttype::BaseVector * v1, const sofa::defaulttype::BaseVector * v2) {
     caribou_assert(v1.size() == v2->size());
 
     // todo(jnbrunet2000@gmail.com): This function is awful. I'm sure there is a much much cleaner and faster way

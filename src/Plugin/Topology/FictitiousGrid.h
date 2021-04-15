@@ -11,6 +11,7 @@
 #include <Caribou/Topology/Grid/Grid.h>
 #include <Caribou/config.h>
 
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Topology/IsoSurface.h>
 
 #include <memory>
@@ -27,11 +28,8 @@ namespace SofaCaribou::topology {
 
 using namespace sofa::core::objectmodel;
 
-using sofa::defaulttype::Vec2Types;
-using sofa::defaulttype::Vec3Types;
-
 template <typename DataTypes>
-class FictitiousGrid : public virtual BaseObject
+class CARIBOU_API FictitiousGrid : public virtual BaseObject
 {
 public:
 
@@ -367,16 +365,16 @@ private:
 
 };
 
-template<> const FictitiousGrid<Vec2Types>::GridCoordinates FictitiousGrid<Vec2Types>::subcell_coordinates[4];
-template<>  const FictitiousGrid<Vec3Types>::GridCoordinates FictitiousGrid<Vec3Types>::subcell_coordinates[8];
+//template<> const FictitiousGrid<sofa::defaulttype::Vec2Types>::GridCoordinates FictitiousGrid<sofa::defaulttype::Vec2Types>::subcell_coordinates[4];
+//template<> const FictitiousGrid<sofa::defaulttype::Vec3Types>::GridCoordinates FictitiousGrid<sofa::defaulttype::Vec3Types>::subcell_coordinates[8];
 
-template<> void FictitiousGrid<Vec2Types>::tag_intersected_cells ();
-template<> void FictitiousGrid<Vec3Types>::tag_intersected_cells ();
+template<> void FictitiousGrid<sofa::defaulttype::Vec2Types>::tag_intersected_cells ();
+template<> void FictitiousGrid<sofa::defaulttype::Vec3Types>::tag_intersected_cells ();
 
-template<> void FictitiousGrid<Vec2Types>::subdivide_intersected_cells ();
-template<> void FictitiousGrid<Vec3Types>::subdivide_intersected_cells ();
+template<> void FictitiousGrid<sofa::defaulttype::Vec2Types>::subdivide_intersected_cells ();
+template<> void FictitiousGrid<sofa::defaulttype::Vec3Types>::subdivide_intersected_cells ();
 
-extern template class FictitiousGrid<Vec2Types>;
-extern template class FictitiousGrid<Vec3Types>;
+extern template class FictitiousGrid<sofa::defaulttype::Vec2Types>;
+extern template class FictitiousGrid<sofa::defaulttype::Vec3Types>;
 
 } // namespace SofaCaribou::topology

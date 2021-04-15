@@ -5,6 +5,7 @@
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/ForceField.h>
 
+#include <SofaCaribou/config.h>
 #include <Caribou/Geometry/Tetrahedron.h>
 
 namespace SofaCaribou::forcefield {

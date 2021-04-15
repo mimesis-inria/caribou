@@ -17,7 +17,7 @@
 
 namespace SofaCaribou::topology {
 
-//using sofa::defaulttype::Vec2Types;
+using sofa::defaulttype::Vec2Types;
 using sofa::defaulttype::Vec3Types;
 
 template<>
