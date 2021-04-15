@@ -1,0 +1,10 @@
+#pragma once
+
+#include <sofa/config.h>
+
+#ifdef CARIBOU_BUILD_SOFACARIBOU
+#  define CARIBOU_TARGET SofaCaribou
+#  define CARIBOU_API SOFA_EXPORT_DYNAMIC_LIBRARY
+#else
+#  define CARIBOU_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#endif

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
 #include <sofa/simulation/MechanicalVisitor.h>
 
 namespace SofaCaribou::visitor {
@@ -19,7 +20,7 @@ namespace SofaCaribou::visitor {
  *      `BaseProjectiveConstraintSet::applyConstraint(mparams, matrix)` on every
  *      projective constraint sets found in the context node of the mapped mechanical object.
  */
-class ConstrainGlobalMatrix : public sofa::simulation::MechanicalVisitor {
+class CARIBOU_API ConstrainGlobalMatrix : public sofa::simulation::MechanicalVisitor {
     using Base = sofa::simulation::MechanicalVisitor;
     using MechanicalParams = sofa::core::MechanicalParams;
     using MultiMatrixAccessor = sofa::core::behavior::MultiMatrixAccessor;

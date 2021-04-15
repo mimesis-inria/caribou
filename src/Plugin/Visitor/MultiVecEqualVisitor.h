@@ -1,3 +1,4 @@
+#include <SofaCaribou/config.h>
 #include <sofa/simulation/MechanicalVisitor.h>
 
 namespace SofaCaribou::visitor {
@@ -6,7 +7,7 @@ namespace SofaCaribou::visitor {
  * The difference between this visitor and the sofa::simulation::MechanicalVOpVisitor is that here,
  * the assignment from a MutliVecCoord to a MultiVecDeriv is allowed.
  */
-class MultiVecEqualVisitor : public sofa::simulation::BaseMechanicalVisitor {
+class CARIBOU_API MultiVecEqualVisitor : public sofa::simulation::BaseMechanicalVisitor {
 public:
 
     /**

@@ -138,12 +138,12 @@ jobs:
           name: caribou-${{ matrix.os }}
           path: caribou
 
-      - name: Caribou.Geometry.Test
+      - name: Caribou.unittests.Geometry
         if: ${{ always() }}
         run: 
           export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
-          chmod +x caribou/bin/Caribou.Geometry.Test &&
-          ./caribou/bin/Caribou.Geometry.Test
+          chmod +x caribou/bin/Caribou.unittests.Geometry &&
+          ./caribou/bin/Caribou.unittests.Geometry
 
       - name: Caribou.Geometry.PyTest
         if: ${{ always() }}
@@ -152,12 +152,12 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3/site-packages
           python3 caribou/bin/pytest/Caribou_Geometry_Test.py
 
-      - name: Caribou.Topology.Test
+      - name: Caribou.unittests.Topology
         if: ${{ always() }}
         run:
           export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
-          chmod +x caribou/bin/Caribou.Topology.Test &&
-          ./caribou/bin/Caribou.Topology.Test
+          chmod +x caribou/bin/Caribou.unittests.Topology &&
+          ./caribou/bin/Caribou.unittests.Topology
 
       - name: Caribou.Topology.PyTest
         if: ${{ always() }}
@@ -166,16 +166,16 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3/site-packages
           python3 caribou/bin/pytest/Caribou_Topology_Test.py
 
-      - name: Caribou.Mechanics.Test
+      - name: Caribou.unittests.Mechanics
         if: ${{ always() }}
         run:
           export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
-          chmod +x caribou/bin/Caribou.Mechanics.Test &&
-          ./caribou/bin/Caribou.Mechanics.Test
+          chmod +x caribou/bin/Caribou.unittests.Mechanics &&
+          ./caribou/bin/Caribou.unittests.Mechanics
 
-      - name: SofaCaribouTest
+      - name: Caribou.unittests.SofaCaribou
         if: ${{ always() }}
         run:
           export LD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
-          chmod +x caribou/bin/SofaCaribouTest &&
-          ./caribou/bin/SofaCaribouTest
+          chmod +x caribou/bin/Caribou.unittests.SofaCaribou &&
+          ./caribou/bin/Caribou.unittests.SofaCaribou

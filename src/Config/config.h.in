@@ -2,6 +2,7 @@
 #define CARIBOU_CONFIG_H
 
 #include <cstdint>
+#include <iso646.h>
 
 #cmakedefine CARIBOU_USE_FLOAT
 

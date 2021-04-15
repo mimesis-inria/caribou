@@ -4,6 +4,7 @@
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/helper/OptionsGroup.h>
 
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Topology/FictitiousGrid.h>
 
 #include <Eigen/Sparse>
@@ -19,7 +20,7 @@ using namespace sofa::core::behavior;
 using namespace sofa::core::topology;
 using sofa::defaulttype::Vec3Types;
 
-class FictitiousGridElasticForce : public ForceField<Vec3Types>
+class CARIBOU_API FictitiousGridElasticForce : public ForceField<Vec3Types>
 {
 public:
     SOFA_CLASS(FictitiousGridElasticForce, SOFA_TEMPLATE(ForceField, Vec3Types));

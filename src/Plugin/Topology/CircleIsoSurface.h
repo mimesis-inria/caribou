@@ -1,11 +1,13 @@
 #pragma once
 
 #include <sofa/defaulttype/VecTypes.h>
+
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Topology/IsoSurface.h>
 
 namespace SofaCaribou::topology {
 
-class CircleIsoSurface : public IsoSurface<sofa::defaulttype::Vec2Types> {
+class CARIBOU_API CircleIsoSurface : public IsoSurface<sofa::defaulttype::Vec2Types> {
     template < class T = void* >
     using Data = sofa::core::objectmodel::Data<T>;
     using Base = IsoSurface<sofa::defaulttype::Vec2Types>;

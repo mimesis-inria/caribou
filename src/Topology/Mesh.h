@@ -23,12 +23,12 @@ struct BaseEigenNodesHolder {
     /*! Move constructor */
     BaseEigenNodesHolder(BaseEigenNodesHolder && other) noexcept
     : BaseEigenNodesHolder() {
-        this->p_nodes.template swap(other.p_nodes);
+        this->p_nodes.swap(other.p_nodes);
     }
 
     /*! copy-and-swap assigment (valid for both copy and move assigment) */
     auto operator=(BaseEigenNodesHolder other) noexcept -> BaseEigenNodesHolder & {
-        this->p_nodes.template swap(other.p_nodes);
+        this->p_nodes.swap(other.p_nodes);
         return *this;
     }
 
@@ -223,7 +223,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             for (const auto & p : other.p_domains) {
                 const std::string & domain_name = p.first;
                 BaseDomain * cloned_domain_ptr  = p.second->clone();
-                p_domains.template emplace_back(domain_name, cloned_domain_ptr);
+                p_domains.emplace_back(domain_name, cloned_domain_ptr);
             }
         }
 

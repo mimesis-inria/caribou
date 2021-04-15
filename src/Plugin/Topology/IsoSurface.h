@@ -1,12 +1,13 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <Eigen/Dense>
 
 namespace SofaCaribou::topology {
 
 template<class DataTypes>
-class IsoSurface : public sofa::core::objectmodel::BaseObject {
+class CARIBOU_API IsoSurface : public sofa::core::objectmodel::BaseObject {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(IsoSurface, DataTypes), sofa::core::objectmodel::BaseObject);
     static constexpr unsigned char Dimension = DataTypes::spatial_dimensions;

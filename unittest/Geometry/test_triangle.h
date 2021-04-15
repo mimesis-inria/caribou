@@ -23,13 +23,13 @@ TEST(Triangle, Linear) {
         EXPECT_EQ(t.number_of_boundary_elements(), static_cast<UNSIGNED_INTEGER_TYPE>(3));
 
         auto J = t.jacobian(LocalCoordinates {1/3., 1/3.} );
-        EXPECT_FLOAT_EQ(J.determinant()*0.5, 25);
+        EXPECT_DOUBLE_EQ(J.determinant()*0.5, 25);
 
         // Center
         WordCoordinates center = (t.node(0) + t.node(1) + t.node(2)) / 3.;
 
-        EXPECT_FLOAT_EQ(t.center()[0], center[0]);
-        EXPECT_FLOAT_EQ(t.center()[1], center[1]);
+        EXPECT_DOUBLE_EQ(t.center()[0], center[0]);
+        EXPECT_DOUBLE_EQ(t.center()[1], center[1]);
 
         // Contains point
         {
@@ -66,7 +66,7 @@ TEST(Triangle, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p1(t.node(0)), p1(t.node(1)), p1(t.node(2)));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
         }
 
         // Inverse transformation
@@ -91,7 +91,7 @@ TEST(Triangle, Linear) {
         auto analytic_solution = static_cast<FLOATING_POINT_TYPE>(
             ((a - c)*(d - f)*(2*a + 4*c + 3*(5 + 2*d + f)))/6 -
             ((b - c)*(6*(5 + b + c)*d + 9*d*d - 3*f*f - e*(15 + 4*b + 2*c + 3*e) - f*(15 + 2*b + 4*c + 3*e)))/6);
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
     }
 
     // 3D
@@ -110,9 +110,9 @@ TEST(Triangle, Linear) {
         // Center
         WordCoordinates center = (t.node(0) + t.node(1) + t.node(2)) / 3.;
 
-        EXPECT_FLOAT_EQ(t.center()[0], center[0]);
-        EXPECT_FLOAT_EQ(t.center()[1], center[1]);
-        EXPECT_FLOAT_EQ(t.center()[2], center[2]);
+        EXPECT_DOUBLE_EQ(t.center()[0], center[0]);
+        EXPECT_DOUBLE_EQ(t.center()[1], center[1]);
+        EXPECT_DOUBLE_EQ(t.center()[2], center[2]);
 
         // Contains point
         {
@@ -149,7 +149,7 @@ TEST(Triangle, Linear) {
         Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> values (p1(t.node(0)), p1(t.node(1)), p1(t.node(2)));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
         }
 
         // Inverse transformation
@@ -175,7 +175,7 @@ TEST(Triangle, Linear) {
         auto analytic_solution = static_cast<FLOATING_POINT_TYPE>(
             ((a - c)*(d - f)*(2*a + 4*c + 3*(5 + 2*d + f)))/6 -
             ((b - c)*(6*(5 + b + c)*d + 9*d*d - 3*f*f - e*(15 + 4*b + 2*c + 3*e) - f*(15 + 2*b + 4*c + 3*e)))/6);
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_DOUBLE_EQ(numerical_solution, analytic_solution);
     }
 }
 
@@ -202,8 +202,8 @@ TEST(Triangle, Quadratic) {
         // Center
         WordCoordinates center = (t.node(0) + t.node(1) + t.node(2)) / 3.;
 
-        EXPECT_FLOAT_EQ(t.center()[0], center[0]);
-        EXPECT_FLOAT_EQ(t.center()[1], center[1]);
+        EXPECT_DOUBLE_EQ(t.center()[0], center[0]);
+        EXPECT_DOUBLE_EQ(t.center()[1], center[1]);
 
         // Contains point
         {
@@ -245,7 +245,7 @@ TEST(Triangle, Quadratic) {
                   p2(t.node(3)), p2(t.node(4)), p2(t.node(5));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_FLOAT_EQ(t.interpolate(x, values), p2(t.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(t.interpolate(x, values), p2(t.world_coordinates(x)));
         }
 
         // Inverse transformation
@@ -270,6 +270,6 @@ TEST(Triangle, Quadratic) {
         auto analytic_solution = static_cast<FLOATING_POINT_TYPE>(
             ((a - c)*(d - f)*(2*a + 4*c + 3*(5 + 2*d + f)))/6 +
            -((b - c)*(6*(5 + b + c)*d + 9*d*d - 3*f*f - e*(15 + 4*b + 2*c + 3*e) - f*(15 + 2*b + 4*c + 3*e)))/6);
-        EXPECT_FLOAT_EQ(numerical_solution, analytic_solution);
+        EXPECT_NEAR(numerical_solution, analytic_solution, 1e-10);
     }
 }

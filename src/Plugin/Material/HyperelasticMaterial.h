@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
 #include <Caribou/config.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MechanicalState.h>
@@ -8,7 +9,7 @@
 namespace SofaCaribou::material {
 
 template<class DataTypes>
-class HyperelasticMaterial : public sofa::core::objectmodel::BaseObject {
+class CARIBOU_API HyperelasticMaterial : public sofa::core::objectmodel::BaseObject {
     static constexpr auto Dimension = DataTypes::spatial_dimensions;
     using Coord = typename DataTypes::Coord;
     using Real  = typename Coord::value_type;

@@ -3,7 +3,8 @@ project(Mechanics)
 set(HEADER_FILES
     Elasticity/Strain.h)
 
-find_package(Eigen3 QUIET REQUIRED NO_MODULE)
+#Eigen3
+find_package(Eigen3 QUIET REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(Caribou::${PROJECT_NAME} ALIAS ${PROJECT_NAME})

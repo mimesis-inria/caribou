@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
 #include <Caribou/config.h>
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/core/behavior/LinearSolver.h>
@@ -38,7 +39,7 @@ namespace SofaCaribou::ode {
  *
  *
  */
-class NewtonRaphsonSolver : public sofa::core::behavior::OdeSolver {
+class CARIBOU_API NewtonRaphsonSolver : public sofa::core::behavior::OdeSolver {
 public:
     SOFA_CLASS(NewtonRaphsonSolver, sofa::core::behavior::OdeSolver);
 

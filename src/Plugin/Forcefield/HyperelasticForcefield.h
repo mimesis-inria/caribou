@@ -15,6 +15,7 @@
 #include <Caribou/Geometry/Tetrahedron.h>
 #include <Caribou/Geometry/Hexahedron.h>
 
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Material/HyperelasticMaterial.h>
 
 #include <Eigen/Sparse>
@@ -47,7 +48,7 @@ struct GaussContainer<GaussNode, caribou::Dynamic> {
 };
 
 template <typename Element>
-class HyperelasticForcefield : public ForceField<typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type> {
+class CARIBOU_API HyperelasticForcefield : public ForceField<typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type> {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(HyperelasticForcefield, Element), SOFA_TEMPLATE(ForceField, typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type));
 

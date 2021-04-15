@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
+
 namespace sofa::defaulttype {
 class BaseMatrix;
 class BaseVector;
@@ -11,7 +13,7 @@ namespace SofaCaribou::solver {
  * Base interface for linear solvers. This interface define the generic API that linear solvers in Caribou must
  * provide.
  */
-class LinearSolver {
+class CARIBOU_API LinearSolver {
 public:
     /**
      * Creates a new BaseMatrix of size rows x cols.

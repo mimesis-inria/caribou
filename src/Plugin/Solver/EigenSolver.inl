@@ -12,7 +12,10 @@
 #include <sofa/simulation/VectorOperations.h>
 #include <SofaEigen2Solver/EigenVectorWrapper.h>
 
+#ifndef _WIN32
 #include <cxxabi.h>
+#define CARIBOU_HAS_CXXABI_H
+#endif
 
 namespace SofaCaribou::solver {
 
@@ -199,9 +202,11 @@ void EigenSolver<EigenMatrix_t>::solveSystem() {
 
 template<typename EigenMatrix_t>
 std::string EigenSolver<EigenMatrix_t>::GetCustomTemplateName() {
-    int status;
-    char * name = abi::__cxa_demangle(typeid(EigenSolver).name(), 0, 0, &status);
     std::string namestring;
+
+#if defined( CARIBOU_HAS_CXXABI_H )
+    int status;
+    char* name = abi::__cxa_demangle(typeid(EigenSolver).name(), 0, 0, &status);
     std::string error;
     switch (status) {
         case 0: namestring = std::string(name); break;
@@ -214,6 +219,10 @@ std::string EigenSolver<EigenMatrix_t>::GetCustomTemplateName() {
     if (!error.empty()) {
         throw std::runtime_error("Demangling of '"+std::string(typeid(EigenMatrix_t).name())+"' failed for the following reason: " + error);
     }
+#else
+    const char* name = typeid(EigenSolver).name();
+#endif
+
     return namestring;
 }
 

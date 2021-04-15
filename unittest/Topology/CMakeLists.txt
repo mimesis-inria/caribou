@@ -1,4 +1,4 @@
-project(Caribou.Topology.Test)
+project(Caribou.unittests.Topology)
 
 set(HEADER_FILES
     Grid/Grid_1D.h
@@ -43,7 +43,12 @@ enable_testing()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Topology)
-target_link_libraries(${PROJECT_NAME} PUBLIC gtest pthread)
+target_link_libraries(${PROJECT_NAME} PUBLIC gtest)
+
+if (NOT WIN32)
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
+endif()
+
 
 list(APPEND target_rpath
     "$ORIGIN/../lib"

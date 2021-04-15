@@ -381,6 +381,12 @@ macro(caribou_add_target_to_component)
         set(VISIBILITY INTERFACE)
     endif()
 
+    # Set the preprocessor token CARIBOU_BUILD_{TARGET_NAME}
+    if (NOT TARGET_INTERFACE)
+        string(TOUPPER "${ARG_TARGET_NAME}" TARGET_NAME_UPPER)
+        string(REPLACE "." "_" TARGET_NAME_UPPER "${TARGET_NAME_UPPER}")
+        target_compile_definitions(${ARG_TARGET_NAME} PRIVATE "-DCARIBOU_BUILD_${TARGET_NAME_UPPER}")
+    endif()
 
     # Target properties
     if (NOT TARGET_INTERFACE)

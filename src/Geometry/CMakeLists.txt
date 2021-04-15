@@ -18,7 +18,6 @@ set(HEADER_FILES
     Triangle.h
 )
 
-
 find_package(Eigen3 QUIET REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)

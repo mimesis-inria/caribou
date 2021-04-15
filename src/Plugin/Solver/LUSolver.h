@@ -1,12 +1,13 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Solver/EigenSolver.h>
 #include <sofa/helper/OptionsGroup.h>
 
 namespace SofaCaribou::solver {
 
 template <class EigenSolver_t>
-class LUSolver : public EigenSolver<typename EigenSolver_t::MatrixType> {
+class CARIBOU_API LUSolver : public EigenSolver<typename EigenSolver_t::MatrixType> {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(LUSolver, EigenSolver_t), SOFA_TEMPLATE(EigenSolver, typename EigenSolver_t::MatrixType));
 

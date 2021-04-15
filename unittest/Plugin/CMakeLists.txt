@@ -1,4 +1,4 @@
-project(SofaCaribouTest)
+project(Caribou.unittests.SofaCaribou)
 
 set(SOURCE_FILES
         main.cpp
@@ -16,7 +16,12 @@ enable_testing()
 find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver QUIET REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC gtest pthread)
+
+if (NOT WIN32)
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
+endif()
+
+target_link_libraries(${PROJECT_NAME} PUBLIC gtest)
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCaribou)
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaSimulationCommon SofaBaseLinearSolver)
 target_link_libraries(${PROJECT_NAME} PUBLIC

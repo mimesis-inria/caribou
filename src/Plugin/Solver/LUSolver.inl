@@ -79,13 +79,13 @@ bool LUSolver<EigenSolver_t>::solve(const sofa::defaulttype::BaseVector * F,
     return (p_solver.info() == Eigen::Success);
 }
 
-template<class EigenSolver>
-std::string LUSolver<EigenSolver>::BackendName() {
-    return solver_traits<EigenSolver>::BackendName();
+template<class EigenSolver_t>
+std::string LUSolver<EigenSolver_t>::BackendName() {
+    return solver_traits<EigenSolver_t>::BackendName();
 }
 
-template<typename EigenSolver>
-LUSolver<EigenSolver>::LUSolver()
+template<typename EigenSolver_t>
+LUSolver<EigenSolver_t>::LUSolver()
 : d_backend(initData(&d_backend
 , "backend"
 ,    R"(
@@ -107,7 +107,7 @@ LUSolver<EigenSolver>::LUSolver()
 
 
     // Put the backend name in lower case
-    std::string backend_str = solver_traits<EigenSolver>::BackendName();
+    std::string backend_str = solver_traits<EigenSolver_t>::BackendName();
     std::transform(backend_str.begin(), backend_str.end(), backend_str.begin(),
                    [](unsigned char c) { return std::tolower(c); });
 

@@ -1,6 +1,7 @@
-project(Plugin VERSION 20.12.00)
+project(SofaCaribou VERSION 20.12.00)
 
 set(HEADER_FILES
+    config.h.in
     Algebra/BaseVectorOperations.h
     Algebra/EigenMatrix.h
     Algebra/EigenVector.h
@@ -76,13 +77,10 @@ endif()
 find_package(SOFA COMPONENTS SofaFramework SofaBaseLinearSolver SofaBaseTopology SofaEigen2Solver QUIET REQUIRED)
 
 # Optional packages
-find_package(Eigen3 REQUIRED NO_MODULE QUIET)
+find_package(Eigen3 QUIET REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
 add_library(Caribou::Plugin ALIAS ${PROJECT_NAME})
-add_library(SofaCaribou ALIAS ${PROJECT_NAME})
-
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME SofaCaribou)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaBaseTopology SofaBaseLinearSolver SofaEigen2Solver)
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry Caribou::Topology Caribou::Mechanics)
@@ -120,12 +118,12 @@ endif()
 
 # Add the target to the component of the same name. This will enable to do:
 # CMakeLists.txt
-#    find_package(Caribou COMPONENTS Plugin)
+#    find_package(Caribou COMPONENTS SofaCaribou)
 #    add_library(my_cool_library SHARED)
-#    target_link_libraries(my_cool_library PRIVATE Caribou::Plugin)
+#    target_link_libraries(my_cool_library PRIVATE Caribou::SofaCaribou)
 caribou_add_target_to_component (
     TARGET_NAME    ${PROJECT_NAME}
-    COMPONENT_NAME Plugin
+    COMPONENT_NAME SofaCaribou
     PACKAGE_NAME   Caribou
     PUBLIC_HEADERS "${TEMPLATE_FILES};${HEADER_FILES}"
     HEADER_PREFIX  SofaCaribou
@@ -133,7 +131,7 @@ caribou_add_target_to_component (
 
 # This is required to be able to do "find_package(Caribou COMPONENTS Plugin)"
 caribou_add_component_to_package (
-    COMPONENT_NAME Plugin
+    COMPONENT_NAME SofaCaribou
     PACKAGE_NAME   Caribou
 )
 
