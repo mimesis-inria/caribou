@@ -464,7 +464,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::update_stiffness");
     #pragma omp parallel for if (enable_multithreading)
-    for (int element_id = 0; element_id < nb_elements; ++element_id) {
+    for (int element_id = 0; element_id < static_cast<int>(nb_elements); ++element_id) {
         // Fetch the node indices of the element
         const sofa::Index * node_indices = get_element_nodes_indices(element_id);
 

@@ -46,7 +46,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Topology)
 target_link_libraries(${PROJECT_NAME} PUBLIC gtest)
 
 if (NOT WIN32)
-    target_link_libraries(${PROJECT_NAME} pthread)
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
 endif()
 
 

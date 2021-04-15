@@ -18,7 +18,7 @@ find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 if (NOT WIN32)
-    target_link_libraries(${PROJECT_NAME} pthread)
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC gtest)

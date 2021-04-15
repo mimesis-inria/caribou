@@ -202,15 +202,11 @@ void EigenSolver<EigenMatrix_t>::solveSystem() {
 
 template<typename EigenMatrix_t>
 std::string EigenSolver<EigenMatrix_t>::GetCustomTemplateName() {
-    int status;
+    std::string namestring;
 
 #if defined( CARIBOU_HAS_CXXABI_H )
+    int status;
     char* name = abi::__cxa_demangle(typeid(EigenSolver).name(), 0, 0, &status);
-#else
-    const char* name = typeid(EigenSolver).name();
-#endif
-
-    std::string namestring;
     std::string error;
     switch (status) {
         case 0: namestring = std::string(name); break;
@@ -219,13 +215,14 @@ std::string EigenSolver<EigenMatrix_t>::GetCustomTemplateName() {
         case -3: error = "One of the arguments passed to the demangling is invalid."; break;
         default: error = "Unknown error."; break;
     }
-
-#if defined( CARIBOU_HAS_CXXABI_H )
     free(name);
-#endif
     if (!error.empty()) {
         throw std::runtime_error("Demangling of '"+std::string(typeid(EigenMatrix_t).name())+"' failed for the following reason: " + error);
     }
+#else
+    const char* name = typeid(EigenSolver).name();
+#endif
+
     return namestring;
 }
 

@@ -251,7 +251,7 @@ void FictitiousGridElasticForce::addForce(
         // Small (linear) strain
         sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addForce");
 #pragma omp parallel for
-        for (int hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+        for (int hexa_id = 0; hexa_id < static_cast<int>(grid->number_of_cells()); ++hexa_id) {
             Hexahedron hexa = hexahedron(hexa_id, x);
 
             const Mat33 & R0 = initial_rotation[hexa_id];
@@ -312,7 +312,7 @@ void FictitiousGridElasticForce::addForce(
         const Real m = youngModulus / (2 * (1 + poissonRatio));
 
 #pragma omp parallel for
-        for (int hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+        for (int hexa_id = 0; hexa_id < static_cast<int>(grid->number_of_cells()); ++hexa_id) {
             const auto &hexa = grid->get_node_indices_of(hexa_id);
 
             Matrix<8, 3, Eigen::RowMajor> U;
@@ -393,7 +393,7 @@ void FictitiousGridElasticForce::addDForce(
 
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::addDForce");
 #pragma omp parallel for
-    for (int hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+    for (int hexa_id = 0; hexa_id < static_cast<int>(grid->number_of_cells()); ++hexa_id) {
         const Mat33 & R  = current_rotation[hexa_id];
         const Mat33   Rt = R.transpose();
 
@@ -450,7 +450,7 @@ void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * ma
 
     const auto number_of_elements = grid->number_of_cells();
 #pragma omp parallel for
-    for (int hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
+    for (int hexa_id = 0; hexa_id < static_cast<int>(number_of_elements); ++hexa_id) {
         const auto & node_indices = grid->get_node_indices_of(hexa_id);
         sofa::defaulttype::Mat3x3 R;
         for (size_t m = 0; m < 3; ++m) {
@@ -532,7 +532,7 @@ void FictitiousGridElasticForce::compute_K()
     sofa::helper::AdvancedTimer::stepBegin("FictitiousGridElasticForce::compute_k");
 
 #pragma omp parallel for
-    for (int hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
+    for (int hexa_id = 0; hexa_id < static_cast<int>(grid->number_of_cells()); ++hexa_id) {
         auto & K = p_stiffness_matrices[hexa_id];
         K.fill(0.);
 
