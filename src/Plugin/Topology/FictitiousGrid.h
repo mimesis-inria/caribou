@@ -365,8 +365,10 @@ private:
 
 };
 
-//template<> const FictitiousGrid<sofa::defaulttype::Vec2Types>::GridCoordinates FictitiousGrid<sofa::defaulttype::Vec2Types>::subcell_coordinates[4];
-//template<> const FictitiousGrid<sofa::defaulttype::Vec3Types>::GridCoordinates FictitiousGrid<sofa::defaulttype::Vec3Types>::subcell_coordinates[8];
+#ifndef WIN32
+template<> const FictitiousGrid<sofa::defaulttype::Vec2Types>::GridCoordinates FictitiousGrid<sofa::defaulttype::Vec2Types>::subcell_coordinates[4];
+template<> const FictitiousGrid<sofa::defaulttype::Vec3Types>::GridCoordinates FictitiousGrid<sofa::defaulttype::Vec3Types>::subcell_coordinates[8];
+#endif
 
 template<> void FictitiousGrid<sofa::defaulttype::Vec2Types>::tag_intersected_cells ();
 template<> void FictitiousGrid<sofa::defaulttype::Vec3Types>::tag_intersected_cells ();
