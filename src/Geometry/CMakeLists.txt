@@ -18,10 +18,7 @@ set(HEADER_FILES
     Triangle.h
 )
 
-
-if(NOT ${Eigen3_FOUND})
-    find_package(Eigen3 QUIET REQUIRED NO_MODULE)
-endif()
+find_package(Eigen3 QUIET REQUIRED)
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(Caribou::${PROJECT_NAME} ALIAS ${PROJECT_NAME})

@@ -11,7 +11,7 @@
 #  EIGEN3_VERSION - eigen version
 #
 # This module reads hints about search locations from 
-# the following enviroment variables:
+# the following variables (CMake or env):
 #
 # EIGEN3_ROOT
 # EIGEN3_ROOT_DIR
@@ -20,6 +20,8 @@
 # Copyright (c) 2008, 2009 Gael Guennebaud, <g.gael@free.fr>
 # Copyright (c) 2009 Benoit Jacob <jacob.benoit.1@gmail.com>
 # Redistribution and use is allowed according to the terms of the 2-clause BSD license.
+
+include_guard()
 
 if(NOT Eigen3_FIND_VERSION)
   if(NOT Eigen3_FIND_VERSION_MAJOR)
@@ -80,6 +82,9 @@ endif(NOT EIGEN3_INCLUDE_DIR)
 if(NOT EIGEN3_INCLUDE_DIR)
   find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
       HINTS
+          ${EIGEN3_ROOT}
+          ${EIGEN3_ROOT_DIR}
+      ENV EIGEN3_ROOT
       ENV EIGEN3_ROOT_DIR
       PATHS
       ${CMAKE_INSTALL_PREFIX}/include

@@ -77,9 +77,7 @@ endif()
 find_package(SOFA COMPONENTS SofaFramework SofaBaseLinearSolver SofaBaseTopology SofaEigen2Solver QUIET REQUIRED)
 
 # Optional packages
-if(NOT ${Eigen3_FOUND})
-    find_package(Eigen3 REQUIRED NO_MODULE QUIET)
-endif()
+find_package(Eigen3 QUIET REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
 add_library(Caribou::Plugin ALIAS ${PROJECT_NAME})
