@@ -1,13 +1,16 @@
 #pragma once
 
-#include <Caribou/config.h>
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Algebra/EigenMatrix.h>
 #include <SofaCaribou/Algebra/EigenVector.h>
 #include <SofaCaribou/Solver/LinearSolver.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/behavior/LinearSolver.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+DISABLE_ALL_WARNINGS_END
+
 #include <Eigen/Sparse>
 
 namespace SofaCaribou::solver {

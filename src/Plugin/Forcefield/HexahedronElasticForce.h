@@ -1,14 +1,17 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/helper/OptionsGroup.h>
+DISABLE_ALL_WARNINGS_END
+
+#include <Caribou/Geometry/Hexahedron.h>
 
 #include <Eigen/Sparse>
-
-#include <SofaCaribou/config.h>
-#include <Caribou/Geometry/Hexahedron.h>
 
 namespace SofaCaribou::forcefield {
 
@@ -18,7 +21,7 @@ using namespace sofa::core::behavior;
 using namespace sofa::core::topology;
 using sofa::defaulttype::Vec3Types;
 
-class CARIBOU_API HexahedronElasticForce : public ForceField<Vec3Types>
+class HexahedronElasticForce : public ForceField<Vec3Types>
 {
 public:
     SOFA_CLASS(HexahedronElasticForce, SOFA_TEMPLATE(ForceField, Vec3Types));
@@ -77,22 +80,29 @@ public:
 
     // Public methods
 
+    CARIBOU_API
     HexahedronElasticForce();
 
+    CARIBOU_API
     void init() override;
+
+    CARIBOU_API
     void reinit() override;
 
+    CARIBOU_API
     void addForce(
             const MechanicalParams* mparams,
             Data<VecDeriv>& d_f,
             const Data<VecCoord>& d_x,
             const Data<VecDeriv>& d_v) override;
 
+    CARIBOU_API
     void addDForce(
             const MechanicalParams* /*mparams*/,
             Data<VecDeriv>& /*d_df*/,
             const Data<VecDeriv>& /*d_dx*/) override;
 
+    CARIBOU_API
     void draw(const sofa::core::visual::VisualParams* vparams) override;
 
     SReal getPotentialEnergy(
@@ -100,8 +110,10 @@ public:
             const Data<VecCoord>& /* d_x */) const override
     {return 0;}
 
+    CARIBOU_API
     void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
+    CARIBOU_API
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;
 
     template <typename T>
@@ -109,10 +121,10 @@ public:
     Hexahedron hexahedron(std::size_t hexa_id, const T & x) const
     {
         auto * topology = d_topology_container.get();
-        const auto &node_indices = topology->getHexahedron(hexa_id);
+        const auto &node_indices = topology->getHexahedron(static_cast<sofa::Index>(hexa_id));
 
         Matrix<8, 3> m;
-        for (std::size_t j = 0; j < 8; ++j) {
+        for (sofa::Index j = 0; j < 8; ++j) {
             const auto &node_id = node_indices[j];
             m.row(j) = MapVector<3>(&x[node_id][0]);
         }
@@ -153,12 +165,15 @@ public:
     }
 
     /** Get the complete tangent stiffness matrix */
+    CARIBOU_API
     const Eigen::SparseMatrix<Real> & K();
 
     /** Get the eigen values of the tangent stiffness matrix */
+    CARIBOU_API
     const Vector<Eigen::Dynamic> & eigenvalues();
 
     /** Get the condition number of the tangent stiffness matrix */
+    CARIBOU_API
     Real cond();
 
 private:

@@ -1,11 +1,14 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/ForceField.h>
+DISABLE_ALL_WARNINGS_END
 
-#include <SofaCaribou/config.h>
 #include <Caribou/Geometry/Tetrahedron.h>
 
 namespace SofaCaribou::forcefield {
@@ -102,11 +105,11 @@ private:
     Tetrahedron tetrahedron(std::size_t tetrahedron_id, const T & x) const
     {
         auto * topology = d_topology_container.get();
-        const auto &node_indices = topology->getTetrahedron(tetrahedron_id);
+        const auto &node_indices = topology->getTetrahedron(static_cast<sofa::Index>(tetrahedron_id));
 
         Matrix<NumberOfNodes, 3> m;
-        for (std::size_t j = 0; j < NumberOfNodes; ++j) {
-            const auto &node_id = node_indices[j];
+        for (Eigen::Index j = 0; j < NumberOfNodes; ++j) {
+            const auto &node_id = node_indices[static_cast<sofa::Index>(j)];
             m.row(j) = MapVector<3>(&x[node_id][0]);
         }
 

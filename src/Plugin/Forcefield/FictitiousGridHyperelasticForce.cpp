@@ -1,4 +1,8 @@
+#include <SofaCaribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
+DISABLE_ALL_WARNINGS_END
 
 #include <SofaCaribou/Forcefield/FictitiousGridHyperelasticForce.h>
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.inl>

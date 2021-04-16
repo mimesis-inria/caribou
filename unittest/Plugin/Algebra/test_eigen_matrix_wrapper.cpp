@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
-#include <sofa/version.h>
+#include <SofaCaribou/config.h>
+
 #include <SofaCaribou/Algebra/EigenMatrix.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
 #include <sofa/defaulttype/Mat.h>
 using Mat2x2f = sofa::defaulttype::Mat2x2f;
@@ -15,8 +18,8 @@ using Mat2x2d = sofa::type::Mat2x2d;
 using Mat3x3f = sofa::type::Mat3x3f;
 using Mat3x3d = sofa::type::Mat3x3d;
 #endif
+DISABLE_ALL_WARNINGS_END
 
-#include <Caribou/config.h>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 

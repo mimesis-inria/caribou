@@ -2,8 +2,11 @@
 
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Ode/NewtonRaphsonSolver.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <sofa/core/objectmodel/Data.h>
+DISABLE_ALL_WARNINGS_BEGIN
 
 namespace SofaCaribou::ode {
 
@@ -34,7 +37,7 @@ namespace SofaCaribou::ode {
  * \f}
  *
  */
-class CARIBOU_API StaticODESolver : public NewtonRaphsonSolver {
+class StaticODESolver : public NewtonRaphsonSolver {
 public:
     SOFA_CLASS(StaticODESolver, NewtonRaphsonSolver);
 

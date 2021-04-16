@@ -1,22 +1,27 @@
 #pragma once
 
 #include <SofaCaribou/config.h>
-#include <Caribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
 #include <sofa/core/behavior/MultiVec.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::ode {
 
 using sofa::core::objectmodel::Data;
 
-class CARIBOU_API LegacyStaticODESolver : public sofa::core::behavior::OdeSolver
+class LegacyStaticODESolver : public sofa::core::behavior::OdeSolver
 {
 public:
     SOFA_CLASS(LegacyStaticODESolver, sofa::core::behavior::OdeSolver);
+
+    CARIBOU_API
     LegacyStaticODESolver();
 
 public:
+    CARIBOU_API
     void solve (const sofa::core::ExecParams* params /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
 
     /**

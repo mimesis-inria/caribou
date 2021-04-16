@@ -13,7 +13,7 @@ namespace SofaCaribou::solver {
  * Base interface for linear solvers. This interface define the generic API that linear solvers in Caribou must
  * provide.
  */
-class CARIBOU_API LinearSolver {
+class LinearSolver {
 public:
     /**
      * Creates a new BaseMatrix of size rows x cols.

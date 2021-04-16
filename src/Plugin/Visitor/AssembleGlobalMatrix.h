@@ -1,7 +1,10 @@
 #pragma once
 
 #include <SofaCaribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/simulation/MechanicalVisitor.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::visitor {
 
@@ -20,7 +23,7 @@ namespace SofaCaribou::visitor {
  *      `BaseForceField::addMBKToMatrix(mparams, matrix)` on every
  *      forcefields found in the context node of the mapped mechanical object.
  */
-class CARIBOU_API AssembleGlobalMatrix : public sofa::simulation::MechanicalVisitor {
+class AssembleGlobalMatrix : public sofa::simulation::MechanicalVisitor {
     using Base = sofa::simulation::MechanicalVisitor;
     using MechanicalParams = sofa::core::MechanicalParams;
     using MultiMatrixAccessor = sofa::core::behavior::MultiMatrixAccessor;
@@ -29,8 +32,10 @@ public:
     AssembleGlobalMatrix(const MechanicalParams* mparams, const MultiMatrixAccessor* matrix )
     : Base(mparams), p_multi_matrix(matrix) {}
 
+    CARIBOU_API
     Result fwdForceField(sofa::simulation::Node* node, sofa::core::behavior::BaseForceField* ff) override;
 
+    CARIBOU_API
     bool stopAtMechanicalMapping(sofa::simulation::Node* node, sofa::core::BaseMapping* map) override;
 
     const char* getClassName() const override { return "AssembleGlobalMatrix"; }

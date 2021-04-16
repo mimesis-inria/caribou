@@ -1,11 +1,13 @@
 #pragma once
 
 #include <SofaCaribou/config.h>
-#include <Caribou/config.h>
 #include <Caribou/macros.h>
 #include <Caribou/traits.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/defaulttype/BaseVector.h>
+DISABLE_ALL_WARNINGS_END
 
 #include <Eigen/Dense>
 

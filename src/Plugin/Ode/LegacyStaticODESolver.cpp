@@ -1,16 +1,18 @@
-#include "LegacyStaticODESolver.h"
+#include <SofaCaribou/Ode/LegacyStaticODESolver.h>
 
 #include <iomanip>
 #include <chrono>
 
 #include <SofaCaribou/Solver/ConjugateGradientSolver.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/MultiMatrix.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/simulation/Node.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::ode {
 

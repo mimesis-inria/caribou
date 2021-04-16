@@ -3,9 +3,14 @@
 #include <functional>
 #include <array>
 
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Material/HyperelasticMaterial.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
+DISABLE_ALL_WARNINGS_BEGIN
 
 #include <Caribou/config.h>
 #include <Caribou/constants.h>
@@ -15,8 +20,7 @@
 #include <Caribou/Geometry/Tetrahedron.h>
 #include <Caribou/Geometry/Hexahedron.h>
 
-#include <SofaCaribou/config.h>
-#include <SofaCaribou/Material/HyperelasticMaterial.h>
+
 
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
@@ -48,7 +52,7 @@ struct GaussContainer<GaussNode, caribou::Dynamic> {
 };
 
 template <typename Element>
-class CARIBOU_API HyperelasticForcefield : public ForceField<typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type> {
+class HyperelasticForcefield : public ForceField<typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type> {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(HyperelasticForcefield, Element), SOFA_TEMPLATE(ForceField, typename SofaVecType<caribou::geometry::traits<Element>::Dimension>::Type));
 
@@ -102,6 +106,7 @@ public:
 
     // Public methods
 
+    CARIBOU_API
     HyperelasticForcefield();
 
     [[nodiscard]] auto
@@ -112,29 +117,38 @@ public:
     static auto templateName(const HyperelasticForcefield<Element>* = nullptr) -> std::string {
         return "Unknown";
     }
+
+    CARIBOU_API
     static auto canCreate(HyperelasticForcefield<Element>* o, BaseContext* context, BaseObjectDescription* arg) -> bool;
 
+    CARIBOU_API
     void init() override;
 
+    CARIBOU_API
     void addForce(
         const MechanicalParams* mparams,
         Data<VecDeriv>& d_f,
         const Data<VecCoord>& d_x,
         const Data<VecDeriv>& d_v) override;
 
+    CARIBOU_API
     void addDForce(
         const MechanicalParams* /*mparams*/,
         Data<VecDeriv>& /*d_df*/,
         const Data<VecDeriv>& /*d_dx*/) override;
 
+    CARIBOU_API
     SReal getPotentialEnergy(
         const MechanicalParams* /* mparams */,
         const Data<VecCoord>& /* d_x */) const override;
 
+    CARIBOU_API
     void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
+    CARIBOU_API
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;
 
+    CARIBOU_API
     void draw(const sofa::core::visual::VisualParams* vparams) override;
 
     /** Get the number of elements contained in this field **/
@@ -150,6 +164,7 @@ public:
 
     /** Get the complete tangent stiffness matrix as a compressed sparse matrix */
     auto K() -> Eigen::SparseMatrix<Real> {
+        using StorageIndex = typename Eigen::SparseMatrix<Real>::StorageIndex;
 
         // K is symmetric, so we only stored "one side" of the matrix.
         // But to accelerate the computation, coefficients were not
@@ -162,10 +177,10 @@ public:
 
         std::vector<Eigen::Triplet<Real>> triplets;
         triplets.reserve(p_K.size()*2);
-        for (int k = 0; k < p_K.outerSize(); ++k) {
+        for (StorageIndex k = 0; k < p_K.outerSize(); ++k) {
             for (typename Eigen::SparseMatrix<Real>::InnerIterator it(p_K, k); it; ++it) {
-                const auto i = it.row();
-                const auto j = it.col();
+                const auto i = static_cast<StorageIndex>(it.row());
+                const auto j = static_cast<StorageIndex>(it.col());
                 const auto v = it.value();
                 if (i != j) {
                     triplets.emplace_back(i, j, v);
@@ -184,9 +199,11 @@ public:
     }
 
     /** Get the eigen values of the tangent stiffness matrix */
+    CARIBOU_API
     auto eigenvalues() -> const Vector<Eigen::Dynamic> &;
 
     /** Get the condition number of the tangent stiffness matrix */
+    CARIBOU_API
     auto cond() -> Real;
 
 protected:

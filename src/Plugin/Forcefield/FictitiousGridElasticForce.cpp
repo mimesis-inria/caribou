@@ -7,11 +7,13 @@
 
 #include "FictitiousGridElasticForce.h"
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
+DISABLE_ALL_WARNINGS_END
 
 #include <Eigen/Sparse>
 
@@ -125,7 +127,7 @@ void FictitiousGridElasticForce::reinit()
     // Make sure every node of the hexahedrons have its coordinates inside the mechanical state vector
     for (std::size_t hexa_id = 0; hexa_id < grid->number_of_cells(); ++hexa_id) {
         const auto & node_indices = grid->get_node_indices_of(hexa_id);
-        for (std::size_t j = 0; j < 8; ++j) {
+        for (sofa::Index j = 0; j < 8; ++j) {
             const auto & node_id = node_indices[j];
             if (node_id > X.size()-1) {
                 msg_error() << "Some hexahedrons have node indices outside of the state's position vector. Make sure "
@@ -317,7 +319,7 @@ void FictitiousGridElasticForce::addForce(
 
             Matrix<8, 3, Eigen::RowMajor> U;
 
-            for (size_t i = 0; i < 8; ++i) {
+            for (sofa::Index i = 0; i < 8; ++i) {
                 const auto u = x[hexa[i]] - x0[hexa[i]];
                 U(i, 0) = u[0];
                 U(i, 1) = u[1];
@@ -345,7 +347,7 @@ void FictitiousGridElasticForce::addForce(
                 const Mat33 S = 2.*m*E + (l * E.trace() * Id);
 
                 // Elastic forces w.r.t the gauss node applied on each nodes
-                for (size_t i = 0; i < 8; ++i) {
+                for (Eigen::Index i = 0; i < 8; ++i) {
                     const Vec3 dx = dN_dx.row(i).transpose();
                     const Vec3 f_ = w * (F*S) * dx;
                     forces(i, 0) += f_[0];
@@ -354,15 +356,15 @@ void FictitiousGridElasticForce::addForce(
                 }
             }
 
-            for (size_t i = 0; i < 8; ++i) {
+            for (Eigen::Index i = 0; i < 8; ++i) {
 #pragma omp atomic
-                f[hexa[i]][0] -= forces.row(i)[0];
+                f[hexa[static_cast<sofa::Index>(i)]][0] -= forces.row(i)[0];
 
 #pragma omp atomic
-                f[hexa[i]][1] -= forces.row(i)[1];
+                f[hexa[static_cast<sofa::Index>(i)]][1] -= forces.row(i)[1];
 
 #pragma omp atomic
-                f[hexa[i]][2] -= forces.row(i)[2];
+                f[hexa[static_cast<sofa::Index>(i)]][2] -= forces.row(i)[2];
             }
         }
         sofa::helper::AdvancedTimer::stepEnd("FictitiousGridElasticForce::addForce");
@@ -453,8 +455,8 @@ void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * ma
     for (int hexa_id = 0; hexa_id < static_cast<int>(number_of_elements); ++hexa_id) {
         const auto & node_indices = grid->get_node_indices_of(hexa_id);
         sofa::defaulttype::Mat3x3 R;
-        for (size_t m = 0; m < 3; ++m) {
-            for (size_t n = 0; n < 3; ++n) {
+        for (unsigned int m = 0; m < 3; ++m) {
+            for (unsigned int n = 0; n < 3; ++n) {
                 R(m, n) = current_rotation[hexa_id](m, n);
             }
         }
@@ -465,11 +467,11 @@ void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * ma
         const auto & K = p_stiffness_matrices[hexa_id];
 
         // Blocks on the diagonal
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            const auto x = (i*3);
+        for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+            const auto x = static_cast<unsigned int>(i*3);
             sofa::defaulttype::Mat<3, 3, Real> Kii;
-            for (size_t m = 0; m < 3; ++m) {
-                for (size_t n = 0; n < 3; ++n) {
+            for (unsigned int m = 0; m < 3; ++m) {
+                for (unsigned int n = 0; n < 3; ++n) {
                     Kii(m, n) = K(x+m, x+n);
                 }
             }
@@ -480,14 +482,14 @@ void FictitiousGridElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * ma
         }
 
         // Blocks on the upper triangle
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            for (size_t j = i+1; j < NumberOfNodes; ++j) {
-                const auto x = (i*3);
-                const auto y = (j*3);
+        for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+            for (sofa::Index j = i+1; j < NumberOfNodes; ++j) {
+                const auto x = static_cast<unsigned int>(i*3);
+                const auto y = static_cast<unsigned int>(j*3);
 
                 sofa::defaulttype::Mat<3, 3, Real> Kij;
-                for (size_t m = 0; m < 3; ++m) {
-                    for (size_t n = 0; n < 3; ++n) {
+                for (unsigned int m = 0; m < 3; ++m) {
+                    for (unsigned int n = 0; n < 3; ++n) {
                         Kij(m, n) = K(x+m, y+n);
                     }
                 }
@@ -620,27 +622,27 @@ const Eigen::SparseMatrix<FictitiousGridElasticForce::Real> & FictitiousGridElas
 
 
                 // Blocks on the diagonal
-                for (size_t i = 0; i < NumberOfNodes; ++i) {
-                    const auto x = (node_indices[i]*3);
+                for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+                    const auto x = static_cast<int>(node_indices[i]*3);
                     const Mat33 Kii = -1 * R * Ke.block<3,3>(i,i) * Rt;
-                    for (size_t m = 0; m < 3; ++m) {
-                        for (size_t n = 0; n < 3; ++n) {
+                    for (int m = 0; m < 3; ++m) {
+                        for (int n = 0; n < 3; ++n) {
                             triplets.emplace_back(x+m, x+n, Kii(m,n));
                         }
                     }
                 }
 
                 // Blocks on the upper triangle
-                for (size_t i = 0; i < NumberOfNodes; ++i) {
-                    for (size_t j = i+1; j < NumberOfNodes; ++j) {
-                        const auto x = (node_indices[i]*3);
-                        const auto y = (node_indices[j]*3);
+                for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+                    for (sofa::Index j = i+1; j < NumberOfNodes; ++j) {
+                        const auto x = static_cast<int>(node_indices[i]*3);
+                        const auto y = static_cast<int>(node_indices[j]*3);
 
                         const Mat33 Kij = -1 * R * Ke.block<3,3>(i,j) * Rt;
                         const Mat33 Kji = Kij.transpose();
 
-                        for (size_t m = 0; m < 3; ++m) {
-                            for (size_t n = 0; n < 3; ++n) {
+                        for (int m = 0; m < 3; ++m) {
+                            for (int n = 0; n < 3; ++n) {
                                 triplets.emplace_back(x+m, y+n, Kij(m,n));
                                 triplets.emplace_back(y+m, x+n, Kji(m,n));
                             }

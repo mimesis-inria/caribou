@@ -1,13 +1,16 @@
 #include <array>
 
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Ode/StaticODESolver.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/helper/testing/BaseTest.h>
 #include <sofa/simulation/Node.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
 #include <SofaBaseMechanics/MechanicalObject.h>
-
-#include <SofaCaribou/Ode/StaticODESolver.h>
+DISABLE_ALL_WARNINGS_END
 
 using namespace sofa::simulation;
 using namespace sofa::simpleapi;

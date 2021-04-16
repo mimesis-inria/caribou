@@ -1,4 +1,4 @@
-#include "ConstrainGlobalMatrix.h"
+#include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 
 namespace SofaCaribou::visitor {
 using namespace sofa::core;

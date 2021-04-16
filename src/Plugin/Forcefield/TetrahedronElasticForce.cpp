@@ -1,13 +1,16 @@
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Forcefield/TetrahedronElasticForce.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
+DISABLE_ALL_WARNINGS_END
 
 #include <Caribou/Geometry/Tetrahedron.h>
 #include <Caribou/Mechanics/Elasticity/Strain.h>
-
-#include "TetrahedronElasticForce.h"
 
 namespace SofaCaribou::forcefield {
 using namespace caribou::mechanics;
@@ -76,9 +79,9 @@ void TetrahedronElasticForce::reinit()
     p_quadrature_nodes.resize(0);
 
     // Make sure every node of the tetrahedron have its coordinates inside the mechanical state vector
-    for (std::size_t tetrahedron_id = 0; tetrahedron_id < topology->getNbTetrahedra(); ++tetrahedron_id) {
+    for (sofa::Index tetrahedron_id = 0; tetrahedron_id < topology->getNbTetrahedra(); ++tetrahedron_id) {
         const auto & node_indices = topology->getTetrahedron(tetrahedron_id);
-        for (std::size_t j = 0; j < NumberOfNodes; ++j) {
+        for (sofa::Index j = 0; j < NumberOfNodes; ++j) {
             const auto & node_id = node_indices[j];
             if (node_id > X.size()-1) {
                 msg_error() << "Some tetrahedrons have node indices outside of the state's position vector. Make sure "
@@ -171,7 +174,7 @@ void TetrahedronElasticForce::addForce(
         // Gather the displacement vector
         Vector<12> U;
         size_t i = 0;
-        for (const auto &node_id : topology->getTetrahedron(element_id)) {
+        for (const auto &node_id : topology->getTetrahedron(static_cast<sofa::Index>(element_id))) {
             const Vec3 r0{x0[node_id][0], x0[node_id][1], x0[node_id][2]};
             const Vec3 r  {x[node_id][0],  x[node_id][1],  x[node_id][2]};
 
@@ -188,7 +191,7 @@ void TetrahedronElasticForce::addForce(
 
         // Write the forces into the output vector
         i = 0;
-        for (const auto &node_id : topology->getTetrahedron(element_id)) {
+        for (const auto &node_id : topology->getTetrahedron(static_cast<sofa::Index>(element_id))) {
             Vec3 force{F[i * 3 + 0], F[i * 3 + 1], F[i * 3 + 2]};
             force = (R * force).eval();
 
@@ -230,7 +233,7 @@ void TetrahedronElasticForce::addDForce(
         // Gather the displacement vector
         Vector<NumberOfNodes*3> U;
         size_t i = 0;
-        for (const auto & node_id : topology->getTetrahedron(element_id)) {
+        for (const auto & node_id : topology->getTetrahedron(static_cast<sofa::Index>(element_id))) {
             const Vec3 v = {dx[node_id][0], dx[node_id][1], dx[node_id][2]};
             const Vec3 u = Rt*v;
 
@@ -245,7 +248,7 @@ void TetrahedronElasticForce::addDForce(
 
         // Write the forces into the output vector
         i = 0;
-        for (const auto & node_id : topology->getTetrahedron(element_id)) {
+        for (const auto & node_id : topology->getTetrahedron(static_cast<sofa::Index>(element_id))) {
             Vec3 force {F[i*3+0], F[i*3+1], F[i*3+2]};
             force = R*force;
 
@@ -275,10 +278,10 @@ void TetrahedronElasticForce::addKToMatrix(
 
     const auto number_of_elements = topology->getNbTetrahedra();
     for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
-        const auto & node_indices = topology->getTetrahedron(element_id);
+        const auto & node_indices = topology->getTetrahedron(static_cast<sofa::Index>(element_id));
         sofa::defaulttype::Mat3x3 R;
-        for (size_t m = 0; m < 3; ++m) {
-            for (size_t n = 0; n < 3; ++n) {
+        for (unsigned int m = 0; m < 3; ++m) {
+            for (unsigned int n = 0; n < 3; ++n) {
                 R(m, n) = current_rotation[element_id](m, n);
             }
         }
@@ -289,12 +292,12 @@ void TetrahedronElasticForce::addKToMatrix(
         const auto & K = p_stiffness_matrices[element_id];
 
         // Blocks on the diagonal
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            const auto x = (i*Dimension);
+        for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+            const auto x = static_cast<Eigen::Index>(i*Dimension);
             sofa::defaulttype::Mat<Dimension, Dimension, Real> k;
-            for (size_t m = 0; m < Dimension; ++m) {
-                for (size_t n = 0; n < Dimension; ++n) {
-                    k(m, n) = K(x+m, x+n);
+            for (Eigen::Index m = 0; m < Dimension; ++m) {
+                for (Eigen::Index n = 0; n < Dimension; ++n) {
+                    k(static_cast<unsigned int>(m), static_cast<unsigned int>(n)) = K(x+m, x+n);
                 }
             }
 
@@ -304,15 +307,15 @@ void TetrahedronElasticForce::addKToMatrix(
         }
 
         // Blocks on the upper triangle
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            for (size_t j = i+1; j < NumberOfNodes; ++j) {
-                const auto x = (i*Dimension);
-                const auto y = (j*Dimension);
+        for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+            for (sofa::Index j = i+1; j < NumberOfNodes; ++j) {
+                const auto x = static_cast<Eigen::Index>(i*Dimension);
+                const auto y = static_cast<Eigen::Index>(j*Dimension);
 
                 sofa::defaulttype::Mat<Dimension, Dimension, Real> k;
-                for (size_t m = 0; m < Dimension; ++m) {
-                    for (size_t n = 0; n < Dimension; ++n) {
-                        k(m, n) = K(x+m, y+n);
+                for (Eigen::Index m = 0; m < Dimension; ++m) {
+                    for (Eigen::Index n = 0; n < Dimension; ++n) {
+                        k(static_cast<unsigned int>(m), static_cast<unsigned int>(n)) = K(x+m, y+n);
                     }
                 }
 

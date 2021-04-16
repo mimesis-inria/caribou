@@ -1,8 +1,10 @@
-#include <Caribou/config.h>
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Algebra/BaseVectorOperations.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/defaulttype/BaseVector.h>
 #include <SofaBaseLinearSolver/FullVector.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::Algebra {
 

@@ -1,4 +1,4 @@
-#include "MultiVecEqualVisitor.h"
+#include <SofaCaribou/Visitor/MultiVecEqualVisitor.h>
 
 namespace SofaCaribou::visitor {
 using namespace sofa::core;

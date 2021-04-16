@@ -1,12 +1,14 @@
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Forcefield/TractionForce.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
 #include <sofa/helper/AdvancedTimer.h>
+DISABLE_ALL_WARNINGS_END
 
-#include <Caribou/config.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Caribou/Geometry/Quad.h>
 
@@ -208,7 +210,7 @@ void TractionForce::increment_load(Deriv traction_increment_per_unit_area)
             // Shape values at each nodes evaluated at the gauss point position
             const auto S = triangle.L(g);
 
-            for (size_t j = 0; j < triangle.number_of_nodes(); ++j) {
+            for (sofa::Index j = 0; j < triangle.number_of_nodes(); ++j) {
                 nodal_forces[triangle_node_indices[j]] += F*S[j];
                 load += F*S[j];;
             }
@@ -238,7 +240,7 @@ void TractionForce::increment_load(Deriv traction_increment_per_unit_area)
             // Shape values at each nodes evaluated at the gauss point position
             const auto S = quad.L(g);
 
-            for (size_t j = 0; j < quad.number_of_nodes(); ++j) {
+            for (sofa::Index j = 0; j < quad.number_of_nodes(); ++j) {
                 nodal_forces[quad_node_indices[j]] += F*S[j];
                 load += F*S[j];;
             }

@@ -2,13 +2,16 @@
 #include <queue>
 #include <array>
 
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Forcefield/HexahedronElasticForce.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
-
-#include "HexahedronElasticForce.h"
+DISABLE_ALL_WARNINGS_END
 
 #include <Eigen/Sparse>
 
@@ -107,9 +110,9 @@ void HexahedronElasticForce::reinit()
     const sofa::helper::ReadAccessor<Data<VecCoord>> X = state->readRestPositions();
 
     // Make sure every node of the hexahedrons have its coordinates inside the mechanical state vector
-    for (std::size_t hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
+    for (sofa::Index hexa_id = 0; hexa_id < topology->getNbHexahedra(); ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(hexa_id);
-        for (std::size_t j = 0; j < 8; ++j) {
+        for (sofa::Index j = 0; j < 8; ++j) {
             const auto & node_id = node_indices[j];
             if (node_id > X.size()-1) {
                 msg_error() << "Some hexahedrons have node indices outside of the state's position vector. Make sure "
@@ -337,8 +340,8 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id));
         sofa::defaulttype::Mat3x3 R;
-        for (size_t m = 0; m < 3; ++m) {
-            for (size_t n = 0; n < 3; ++n) {
+        for (unsigned int m = 0; m < 3; ++m) {
+            for (unsigned int n = 0; n < 3; ++n) {
                 R(m, n) = current_rotation[hexa_id](m, n);
             }
         }
@@ -349,12 +352,12 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
         const auto & K = p_stiffness_matrices[hexa_id];
 
         // Blocks on the diagonal
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            const auto x = (i*3);
+        for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+            const auto x = static_cast<Eigen::Index>(i*3);
             sofa::defaulttype::Mat<3, 3, Real> Kii;
-            for (size_t m = 0; m < 3; ++m) {
-                for (size_t n = 0; n < 3; ++n) {
-                    Kii(m, n) = K(x+m, x+n);
+            for (Eigen::Index m = 0; m < 3; ++m) {
+                for (Eigen::Index n = 0; n < 3; ++n) {
+                    Kii(static_cast<sofa::Index>(m), static_cast<sofa::Index>(n)) = K(x+m, x+n);
                 }
             }
 
@@ -364,15 +367,15 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
         }
 
         // Blocks on the upper triangle
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
-            for (size_t j = i+1; j < NumberOfNodes; ++j) {
-                const auto x = (i*3);
-                const auto y = (j*3);
+        for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+            for (sofa::Index j = i+1; j < NumberOfNodes; ++j) {
+                const auto x = static_cast<Eigen::Index>(i*3);
+                const auto y = static_cast<Eigen::Index>(j*3);
 
                 sofa::defaulttype::Mat<3, 3, Real> Kij;
                 for (size_t m = 0; m < 3; ++m) {
                     for (size_t n = 0; n < 3; ++n) {
-                        Kij(m, n) = K(x+m, y+n);
+                        Kij(static_cast<sofa::Index>(m), static_cast<sofa::Index>(n)) = K(x+m, y+n);
                     }
                 }
 
@@ -482,7 +485,7 @@ const Eigen::SparseMatrix<HexahedronElasticForce::Real> & HexahedronElasticForce
 
             const auto number_of_elements = topology->getNbHexahedra();
             for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
-                const auto &node_indices = topology->getHexahedron(hexa_id);
+                const auto &node_indices = topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id));
                 const Rotation &R = current_rotation[hexa_id];
                 const Rotation Rt = R.transpose();
 
@@ -491,26 +494,26 @@ const Eigen::SparseMatrix<HexahedronElasticForce::Real> & HexahedronElasticForce
                 const auto &Ke = p_stiffness_matrices[hexa_id];
 
                 // Blocks on the diagonal
-                for (size_t i = 0; i < NumberOfNodes; ++i) {
-                    const auto x = (node_indices[i]*3);
+                for (Eigen::Index i = 0; i < NumberOfNodes; ++i) {
+                    const auto x = static_cast<int>(node_indices[static_cast<sofa::Index>(i)]*3);
                     const Mat33 Kii = -1 * R * Ke.block<3,3>(i,i) * Rt;
-                    for (size_t m = 0; m < 3; ++m) {
-                        for (size_t n = 0; n < 3; ++n) {
+                    for (int m = 0; m < 3; ++m) {
+                        for (int n = 0; n < 3; ++n) {
                             triplets.emplace_back(x+m, x+n, Kii(m,n));
                         }
                     }
                 }
 
                 // Blocks on the upper triangle
-                for (size_t i = 0; i < NumberOfNodes; ++i) {
-                    for (size_t j = i+1; j < NumberOfNodes; ++j) {
-                        const auto x = (node_indices[i]*3);
-                        const auto y = (node_indices[j]*3);
+                for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
+                    for (sofa::Index j = i+1; j < NumberOfNodes; ++j) {
+                        const auto x = static_cast<int>(node_indices[i]*3);
+                        const auto y = static_cast<int>(node_indices[j]*3);
 
                         const Mat33 Kij = -1 * R * Ke.block<3,3>(i,j) * Rt;
 
-                        for (size_t m = 0; m < 3; ++m) {
-                            for (size_t n = 0; n < 3; ++n) {
+                        for (int m = 0; m < 3; ++m) {
+                            for (int n = 0; n < 3; ++n) {
                                 triplets.emplace_back(x+m, y+n, Kij(m,n));
                             }
                         }
@@ -597,7 +600,7 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
     std::vector< sofa::defaulttype::Vector3 > points[6];
     const auto number_of_elements = topology->getNbHexahedra();
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
-        const auto & node_indices = topology->getHexahedron(hexa_id);
+        const auto & node_indices = topology->getHexahedron(static_cast<sofa::Index>(hexa_id));
 
         auto a = node_indices[0];
         auto b = node_indices[1];
@@ -675,7 +678,7 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
 
     std::vector< sofa::defaulttype::Vector3 > ignored_points[6];
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
-        const auto & node_indices = topology->getHexahedron(hexa_id);
+        const auto & node_indices = topology->getHexahedron(static_cast<sofa::Index>(hexa_id));
 
         auto a = node_indices[0];
         auto b = node_indices[1];

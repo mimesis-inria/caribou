@@ -28,7 +28,7 @@ TEST(Topology_Grid_3D, Grid3D) {
 
     // Cell numbering test
     EXPECT_EQ((CellIndex) 5, grid.cell_index_at({1, 0, 1}));
-    EXPECT_EQ(GridCoordinates(1, 0, 1), grid.cell_coordinates_at((CellIndex) 5));
+    EXPECT_MATRIX_EQUAL(GridCoordinates(1, 0, 1), grid.cell_coordinates_at((CellIndex) 5));
 
     // Cell positioning
     EXPECT_FALSE(grid.contains(WorldCoordinates{ 0.24,    0.50,   0.75}));
@@ -42,51 +42,52 @@ TEST(Topology_Grid_3D, Grid3D) {
     EXPECT_FALSE(grid.contains(WorldCoordinates{100.25, 100.50, 100.76}));
 
     // Cells queries
-    EXPECT_TRUE(list_are_equals({0, 2, 4, 6}, grid.cells_enclosing(
+    EXPECT_LIST_EQUAL((std::list{0, 2, 4, 6}), grid.cells_enclosing(
         WorldCoordinates({-50, 50, 50}),
         WorldCoordinates({25, 25, 25}),
         WorldCoordinates({25, 75, 75})
-    )));
+    ));
 
-    EXPECT_TRUE(list_are_equals({0}, grid.cells_enclosing(
+    EXPECT_LIST_EQUAL((std::list{0}), grid.cells_enclosing(
         WorldCoordinates({0.25, 0.5, 0.75}),
         WorldCoordinates({25, 25, 25}),
         WorldCoordinates({50.24, 50.49, 50.74})
-    )));
-    EXPECT_TRUE(list_are_equals({0, 1, 2, 3, 4, 5, 6, 7}, grid.cells_enclosing(
+    ));
+    EXPECT_LIST_EQUAL((std::list{0, 1, 2, 3, 4, 5, 6, 7}), grid.cells_enclosing(
         WorldCoordinates({50.25, 50.5, 50.75}),
         WorldCoordinates({75, 75, 75}),
         WorldCoordinates({100.24, 100.49, 100.74})
-    )));
-    EXPECT_TRUE(list_are_equals({0, 1, 2, 3, 4, 5, 6, 7}, grid.cells_enclosing(
+    ));
+    EXPECT_LIST_EQUAL((std::list{0, 1, 2, 3, 4, 5, 6, 7}), grid.cells_enclosing(
         WorldCoordinates({0.25, 0.5, 0.75}),
         WorldCoordinates({100.24, 100.49, 100.74})
-    )));
+    ));
 
     // Cells around nodes
-    EXPECT_TRUE(list_are_equals({}, grid.cells_around(WorldCoordinates(-50, -50, -50))));
-    EXPECT_TRUE(list_are_equals({0},    grid.cells_around(WorldCoordinates(  0.25, 0.50, 0.75))));
-    EXPECT_TRUE(list_are_equals({0, 1}, grid.cells_around(WorldCoordinates( 50.25, 0.50, 0.75))));
-    EXPECT_TRUE(list_are_equals({1},    grid.cells_around(WorldCoordinates(100.25, 0.50, 0.75))));
-    EXPECT_TRUE(list_are_equals({0, 4, 2, 6, 1, 5, 3, 7}, grid.cells_around(WorldCoordinates(50.25, 50.50, 50.75))));
+    EXPECT_LIST_EQUAL((std::list<int>{}), grid.cells_around(WorldCoordinates(-50, -50, -50)));
+    EXPECT_LIST_EQUAL((std::list{0}),    grid.cells_around(WorldCoordinates(  0.25, 0.50, 0.75)));
+    EXPECT_LIST_EQUAL((std::list{0, 1}), grid.cells_around(WorldCoordinates( 50.25, 0.50, 0.75)));
+    EXPECT_LIST_EQUAL((std::list{1}),    grid.cells_around(WorldCoordinates(100.25, 0.50, 0.75)));
+    EXPECT_LIST_EQUAL((std::list{0, 4, 2, 6, 1, 5, 3, 7}), grid.cells_around(WorldCoordinates(50.25, 50.50, 50.75)));
 
     // Cells around faces
-    EXPECT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(0.25, 25.50, 25.75))));
-    EXPECT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(25.25, 25.50, 0.75))));
-    EXPECT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(25.25, 0.50, 25.75))));
-    EXPECT_TRUE(list_are_equals({0, 1}, grid.cells_around(WorldCoordinates(50.25, 25.50, 25.75))));
-    EXPECT_TRUE(list_are_equals({0, 2}, grid.cells_around(WorldCoordinates(25.25, 50.50, 25.75))));
-    EXPECT_TRUE(list_are_equals({0, 4}, grid.cells_around(WorldCoordinates(25.25, 25.50, 50.75))));
-    EXPECT_TRUE(list_are_equals({7}, grid.cells_around(WorldCoordinates(75.25, 100.50, 75.75))));
-    EXPECT_TRUE(list_are_equals({7}, grid.cells_around(WorldCoordinates(75.25, 75.50, 100.75))));
-    EXPECT_TRUE(list_are_equals({7}, grid.cells_around(WorldCoordinates(100.25, 75.50, 75.75))));
+    auto eps = std::numeric_limits<WorldCoordinates::Scalar>::min();
+    EXPECT_LIST_EQUAL((std::list{0}), grid.cells_around(WorldCoordinates(0.25-eps, 25.50, 25.75)));
+    EXPECT_LIST_EQUAL((std::list{0}), grid.cells_around(WorldCoordinates(25.25, 25.50, 0.75)));
+    EXPECT_LIST_EQUAL((std::list{0}), grid.cells_around(WorldCoordinates(25.25, 0.50, 25.75)));
+    EXPECT_LIST_EQUAL((std::list{0, 1}), grid.cells_around(WorldCoordinates(50.25, 25.50, 25.75)));
+    EXPECT_LIST_EQUAL((std::list{0, 2}), grid.cells_around(WorldCoordinates(25.25, 50.50, 25.75)));
+    EXPECT_LIST_EQUAL((std::list{0, 4}), grid.cells_around(WorldCoordinates(25.25, 25.50, 50.75)));
+    EXPECT_LIST_EQUAL((std::list{7}), grid.cells_around(WorldCoordinates(75.25, 100.50, 75.75)));
+    EXPECT_LIST_EQUAL((std::list{7}), grid.cells_around(WorldCoordinates(75.25, 75.50, 100.75)));
+    EXPECT_LIST_EQUAL((std::list{7}), grid.cells_around(WorldCoordinates(100.25, 75.50, 75.75)));
 
     // Cells around edges
-    EXPECT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(25.25, 0.50, 0.75))));
-    EXPECT_TRUE(list_are_equals({7}, grid.cells_around(WorldCoordinates(75.25, 100.50, 100.75))));
-    EXPECT_TRUE(list_are_equals({0, 4, 2, 6}, grid.cells_around(WorldCoordinates(25.25, 50.50, 50.75))));
-    EXPECT_TRUE(list_are_equals({2, 6, 3, 7}, grid.cells_around(WorldCoordinates(50.25, 75.50, 50.75))));
-    EXPECT_TRUE(list_are_equals({0, 2, 1, 3}, grid.cells_around(WorldCoordinates(50.25, 50.50, 25.75))));
+    EXPECT_LIST_EQUAL((std::list{0}), grid.cells_around(WorldCoordinates(25.25, 0.50, 0.75)));
+    EXPECT_LIST_EQUAL((std::list{7}), grid.cells_around(WorldCoordinates(75.25, 100.50, 100.75)));
+    EXPECT_LIST_EQUAL((std::list{0, 4, 2, 6}), grid.cells_around(WorldCoordinates(25.25, 50.50, 50.75)));
+    EXPECT_LIST_EQUAL((std::list{2, 6, 3, 7}), grid.cells_around(WorldCoordinates(50.25, 75.50, 50.75)));
+    EXPECT_LIST_EQUAL((std::list{0, 2, 1, 3}), grid.cells_around(WorldCoordinates(50.25, 50.50, 25.75)));
 
     // Node position queries
     EXPECT_MATRIX_NEAR(grid.node(0), WorldCoordinates({  0.25,   0.5, 0.75}), 1e-15);

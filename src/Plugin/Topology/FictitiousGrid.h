@@ -1,18 +1,19 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Topology/IsoSurface.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/defaulttype/Vec.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
+DISABLE_ALL_WARNINGS_END
 
 #include <Caribou/Geometry/RectangularQuad.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
 #include <Caribou/Topology/Grid/Grid.h>
-#include <Caribou/config.h>
-
-#include <SofaCaribou/config.h>
-#include <SofaCaribou/Topology/IsoSurface.h>
 
 #include <memory>
 #include <exception>
@@ -29,7 +30,7 @@ namespace SofaCaribou::topology {
 using namespace sofa::core::objectmodel;
 
 template <typename DataTypes>
-class CARIBOU_API FictitiousGrid : public virtual BaseObject
+class FictitiousGrid : public virtual BaseObject
 {
 public:
 
@@ -120,9 +121,11 @@ public:
     // ----------------
     // Public functions
     // ----------------
+    CARIBOU_API
     FictitiousGrid();
 
     /** Initialization of the grid. This must be called before anything else. */
+    CARIBOU_API
     virtual void
     create_grid();
 
@@ -148,6 +151,7 @@ public:
      * Get neighbors cells around a given cell. A cell is neighbor to another one if they both have a face in common,
      * or if a face contains one of the face of the other. Neighbors outside of the surface boundary are excluded.
      */
+    CARIBOU_API
     std::vector<Cell *>
     get_neighbors(const Cell * cell) const;
 
@@ -156,6 +160,7 @@ public:
      * to get the neighbors cells that are on the top of the given cell (in the y direction), axis would be 1 and
      * direction would be 1. Neighbors outside of the surface boundary are excluded.
      */
+    CARIBOU_API
     std::vector<Cell *>
     get_neighbors(const Cell * cell, UNSIGNED_INTEGER_TYPE axis, INTEGER_TYPE direction) const;
 
@@ -166,6 +171,7 @@ public:
      *
      * * @param sparse_cell_index The index of the cell in the sparse grid
      */
+    CARIBOU_API
     std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>>
     get_gauss_nodes_of_cell(const CellIndex & sparse_cell_index) const;
 
@@ -180,6 +186,7 @@ public:
      *
      * @param sparse_cell_index The index of the cell in the sparse grid
      */
+    CARIBOU_API
     std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>>
     get_gauss_nodes_of_cell(const CellIndex & sparse_cell_index, const UNSIGNED_INTEGER_TYPE level) const;
 
@@ -203,6 +210,7 @@ public:
     /**
      * Get the type (inside, outside, boundary or undefined) of a given point in space.
      */
+    CARIBOU_API
     inline Type
     get_type_at(const WorldCoordinates & p) const;
 
@@ -224,14 +232,17 @@ public:
      *         the cell, and the value is a vector containing the ids of all
      *         cells having this volume percentage.
      */
+    CARIBOU_API
     inline std::map<FLOATING_POINT_TYPE, std::vector<CellIndex>>
     cell_volume_ratio_distribution(UNSIGNED_INTEGER_TYPE number_of_decimals=0) const;
 
     // ---------------------
     // SOFA METHOD OVERRIDES
     // ---------------------
-
+    CARIBOU_API
     void init() override;
+
+    CARIBOU_API
     void draw(const sofa::core::visual::VisualParams* vparams) override;
 
     void computeBBox(const sofa::core::ExecParams*, bool onlyVisible) override {
@@ -310,7 +321,6 @@ private:
 
     ///< List of hexahedrons contained in the sparse grid (ex: [h1p1 h1p2 h1p3 h1p4 h1p5 ... hnp6 hnp7]).
     Data < sofa::helper::vector<SofaHexahedron> > d_hexahedrons;
-
 
     // ---------------
     // Private members

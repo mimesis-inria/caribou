@@ -1,12 +1,14 @@
 #pragma once
 
-#include <sofa/helper/OptionsGroup.h>
-
 #include <SofaCaribou/config.h>
+
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.inl>
 #include <SofaCaribou/Topology/FictitiousGrid.h>
 
-#include <Caribou/config.h>
+DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/helper/OptionsGroup.h>
+DISABLE_ALL_WARNINGS_END
+
 #include <Caribou/Geometry/Hexahedron.h>
 
 namespace caribou::geometry {
@@ -53,7 +55,7 @@ namespace SofaCaribou::forcefield {
  * @tparam Element Can be either SubdividedGaussHexahedron or SubdividedVolumeHexahedron
  */
 template <typename Element>
-class CARIBOU_API FictitiousGridHyperelasticForcefield : public HyperelasticForcefield<Element> {
+class FictitiousGridHyperelasticForcefield : public HyperelasticForcefield<Element> {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(FictitiousGridHyperelasticForcefield, Element), SOFA_TEMPLATE(HyperelasticForcefield, Element));
 
@@ -129,8 +131,10 @@ public:
         Base::init();
     }
 
+    CARIBOU_API
     static auto templateName(const FictitiousGridHyperelasticForcefield<Element>* = nullptr) -> std::string;
 
+    CARIBOU_API
     static auto canCreate(FictitiousGridHyperelasticForcefield<Element>*, BaseContext*, BaseObjectDescription* arg) -> bool;
 
     /** Get the number of elements contained in this field **/

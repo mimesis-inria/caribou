@@ -1,7 +1,10 @@
-#include <sofa/core/ObjectFactory.h>
 #include <SofaCaribou/Topology/CircleIsoSurface.h>
 #include <SofaCaribou/Topology/SphereIsoSurface.h>
 #include <SofaCaribou/Topology/CylinderIsoSurface.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/core/ObjectFactory.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::topology {
 using namespace sofa::core;

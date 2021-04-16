@@ -1,4 +1,4 @@
-#include "AssembleGlobalMatrix.h"
+#include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
 
 namespace SofaCaribou::visitor {
 using namespace sofa::core;

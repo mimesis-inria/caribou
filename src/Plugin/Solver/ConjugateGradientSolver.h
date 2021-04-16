@@ -1,14 +1,16 @@
 #pragma once
 
 #include <SofaCaribou/config.h>
-#include <Caribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/behavior/LinearSolver.h>
 #include <sofa/core/behavior/MultiVec.h>
 #include <sofa/core/MechanicalParams.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <Eigen/Core>
+DISABLE_ALL_WARNINGS_END
 
+#include <Eigen/Core>
 #include <Eigen/IterativeLinearSolvers>
 
 namespace SofaCaribou::solver {
@@ -32,7 +34,7 @@ using namespace sofa::core::behavior;
  * accumulated from the mechanical objects of the current scene context graph. Once the dense
  * vector x is found, it is propagated back to the mechanical object's vectors.
  */
-class CARIBOU_API ConjugateGradientSolver : public LinearSolver {
+class ConjugateGradientSolver : public LinearSolver {
 
 public:
     SOFA_CLASS(ConjugateGradientSolver, LinearSolver);
@@ -67,6 +69,7 @@ public:
      *
      * This method is called by the MultiMatrix::clear() and MultiMatrix::reset() methods.
      */
+    CARIBOU_API
     void resetSystem() final;
 
     /**
@@ -81,6 +84,7 @@ public:
      *
      * @param mparams Contains the coefficients m, b and k of the matrices M, B and K
      */
+    CARIBOU_API
     void setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) final;
 
     /**
@@ -88,6 +92,7 @@ public:
      * in the mechanical objects of the system.When using a preconditioner (other than None), the complete
      * dense vector is accumulated from the mechanical objects found in the graph subtree of the current context.
      */
+    CARIBOU_API
     void setSystemRHVector(sofa::core::MultiVecDerivId b_id) final;
 
     /**
@@ -95,12 +100,14 @@ public:
      * in the mechanical objects of the system. When using a preconditioner (other than None), the complete
      * dense vector is accumulated from the mechanical objects found in the graph subtree of the current context.
      */
+    CARIBOU_API
     void setSystemLHVector(sofa::core::MultiVecDerivId x_id) final;
 
     /**
      * Solves the system by the conjugate gradient method using the coefficients m, b and k; and
      * the vectors x and b.
      */
+    CARIBOU_API
     void solveSystem() final;
 
     /**
@@ -128,6 +135,7 @@ public:
      * Assemble the system matrix A = (mM + bB + kK).
      * @param mparams Mechanical parameters containing the m, b and k factors.
      */
+    CARIBOU_API
     void assemble (const sofa::core::MechanicalParams* mparams);
 
 protected:
