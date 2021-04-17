@@ -1,9 +1,14 @@
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Topology/FictitiousGrid.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/testing/BaseTest.h>
 #include <sofa/simulation/Node.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
-#include <SofaCaribou/Topology/FictitiousGrid.h>
+DISABLE_ALL_WARNINGS_END
+
 #include "../sofacaribou_test.h"
 
 using sofa::helper::system::PluginManager ;

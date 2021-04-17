@@ -1,7 +1,8 @@
 #pragma once
 
 #include <SofaCaribou/config.h>
-#include <Caribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/core/behavior/LinearSolver.h>
 #include <sofa/core/objectmodel/Data.h>
@@ -10,6 +11,8 @@
 #include <sofa/core/objectmodel/Link.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+DISABLE_ALL_WARNINGS_END
+
 #include <memory>
 
 namespace SofaCaribou::ode {
@@ -39,7 +42,7 @@ namespace SofaCaribou::ode {
  *
  *
  */
-class CARIBOU_API NewtonRaphsonSolver : public sofa::core::behavior::OdeSolver {
+class NewtonRaphsonSolver : public sofa::core::behavior::OdeSolver {
 public:
     SOFA_CLASS(NewtonRaphsonSolver, sofa::core::behavior::OdeSolver);
 
@@ -60,12 +63,16 @@ public:
         ALWAYS
     };
 
+    CARIBOU_API
     NewtonRaphsonSolver();
 
+    CARIBOU_API
     void init() override;
 
+    CARIBOU_API
     void reset() override;
 
+    CARIBOU_API
     void solve (const sofa::core::ExecParams* params, SReal dt, sofa::core::MultiVecCoordId x_id, sofa::core::MultiVecDerivId v_id) override;
 
     /** List of times (in nanoseconds) that each Newton-Raphson iteration took to compute in the last call to Solve(). */
@@ -78,9 +85,11 @@ public:
     auto squared_initial_residual() const -> const FLOATING_POINT_TYPE & { return p_squared_initial_residual; }
 
     /** Get the current strategy that determine when the pattern of the system matrix should be analyzed. */
+    CARIBOU_API
     auto pattern_analysis_strategy() const -> PatternAnalysisStrategy;
 
     /** Set the current strategy that determine when the pattern of the system matrix should be analyzed. */
+    CARIBOU_API
     void set_pattern_analysis_strategy(const PatternAnalysisStrategy & strategy);
 
 private:
@@ -156,6 +165,7 @@ private:
                                               sofa::core::MultiVecDerivId & dx_id) = 0;
 
     /** Check that the linked linear solver is not null and that it implements the SofaCaribou::solver::LinearSolver interface */
+    CARIBOU_API
     bool has_valid_linear_solver () const;
 
     /// INPUTS

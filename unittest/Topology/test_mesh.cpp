@@ -80,7 +80,7 @@ TEST(Mesh, Segment) {
 
     {
         const auto &indices = domain->element_indices(0);
-        EXPECT_EQ(indices, Domain::ElementIndices ({0, 1}));
+        EXPECT_MATRIX_EQUAL(indices, Domain::ElementIndices ({0, 1}));
     }
 
     EXPECT_ANY_THROW(mesh.add_domain<Segment<3>>("segments", domain_indices));

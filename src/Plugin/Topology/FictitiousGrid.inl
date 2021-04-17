@@ -1,11 +1,13 @@
 #pragma once
 
+#include <SofaCaribou/Topology/FictitiousGrid.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/visual/VisualParams.h>
 #include <SofaBaseTopology/MeshTopology.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/core/behavior/MechanicalState.h>
-
-#include <SofaCaribou/Topology/FictitiousGrid.h>
+DISABLE_ALL_WARNINGS_END
 
 #include <stack>
 #include <queue>
@@ -295,7 +297,7 @@ void FictitiousGrid<DataTypes>::create_grid()
 
     WorldCoordinates anchor_position;
     Dimensions grid_size;
-    for (UNSIGNED_INTEGER_TYPE axis = 0; axis < caribou::geometry::traits<CellElement>::Dimension; ++axis) {
+    for (sofa::Index axis = 0; axis < caribou::geometry::traits<CellElement>::Dimension; ++axis) {
         anchor_position[axis] = std::min(first_corner[axis], second_corner[axis]);
         grid_size[axis] = std::abs(first_corner[axis] - second_corner[axis]);
     }
@@ -433,7 +435,7 @@ FictitiousGrid<DataTypes>::create_regions_from_same_type_cells()
 
         // Create a new region
         p_regions.push_back(Region {c->data->type, std::vector<Cell*> ()});
-        std::size_t current_region_index = p_regions.size() - 1;
+        int current_region_index = static_cast<int>(p_regions.size() - 1);
 
         // Tag the current cell
         c->data->region_id = current_region_index;
@@ -701,22 +703,22 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
         const auto node_indices = p_grid->node_indices_of(cell_id);
         if (Dimension == 2) {
             quads.wref().emplace_back(
-                p_node_index_in_sparse_grid[node_indices[0]],
-                p_node_index_in_sparse_grid[node_indices[1]],
-                p_node_index_in_sparse_grid[node_indices[2]],
-                p_node_index_in_sparse_grid[node_indices[3]]
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[0]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[1]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[2]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[3]])
             );
             p_cell_index_in_sparse_grid[cell_id] = (signed) quads.size() - 1;
         } else {
             hexahedrons.wref().emplace_back(
-                p_node_index_in_sparse_grid[node_indices[0]],
-                p_node_index_in_sparse_grid[node_indices[1]],
-                p_node_index_in_sparse_grid[node_indices[2]],
-                p_node_index_in_sparse_grid[node_indices[3]],
-                p_node_index_in_sparse_grid[node_indices[4]],
-                p_node_index_in_sparse_grid[node_indices[5]],
-                p_node_index_in_sparse_grid[node_indices[6]],
-                p_node_index_in_sparse_grid[node_indices[7]]
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[0]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[1]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[2]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[3]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[4]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[5]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[6]]),
+                static_cast<sofa::Index>(p_node_index_in_sparse_grid[node_indices[7]])
             );
             p_cell_index_in_sparse_grid[cell_id] = (signed) hexahedrons.size() - 1;
         }
@@ -781,7 +783,7 @@ FictitiousGrid<DataTypes>::get_leaf_cells(const Cell * cell) const
     std::vector<typename FictitiousGrid<DataTypes>::Cell *> leafs;
 
     // Reserve the space for a maximum of 2^(nbSudiv*2) leafs in 2D, 2^(nbSudiv*3)  leafs in 3D
-    leafs.reserve((unsigned) 1 << (number_of_subdivision*Dimension));
+    leafs.reserve(static_cast<UNSIGNED_INTEGER_TYPE>(1) << (number_of_subdivision*Dimension));
 
     std::queue<const Cell *> cells;
     cells.emplace(cell);
@@ -855,8 +857,8 @@ FictitiousGrid<DataTypes>::get_neighbors(const Cell * cell, UNSIGNED_INTEGER_TYP
     // axis-direction within the grid
     if (not found_suitable_parent) {
         const GridCoordinates coordinates = p_grid->cell_coordinates_at(index);
-        const int new_coordinate = coordinates[axis] + direction;
-        const int upper_limit = upper_grid_boundary[axis]-1;
+        const int new_coordinate = static_cast<int>(coordinates[axis] + direction);
+        const int upper_limit    = static_cast<int>(upper_grid_boundary[axis] - 1);
         if (0 <= new_coordinate and new_coordinate <= upper_limit) {
             // We got a neighbor cell within the grid's limit
             auto new_coordinates = coordinates;
@@ -951,7 +953,7 @@ FictitiousGrid<DataTypes>::get_gauss_nodes_of_cell(const CellIndex & sparse_cell
         auto get_gauss_cells_impl = [this, maximum_level] (const CellElement & e, const Cell & c, const Level l, auto & ref) -> std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> {
             std::vector<std::pair<LocalCoordinates, FLOATING_POINT_TYPE>> gauss_nodes;
             // Reserve the space for a maximum of 2^(level*2) nodes in 2D, 2^(level*3) nodes in 3D
-            gauss_nodes.reserve((unsigned) 1 << (((maximum_level-l)+1)*Dimension));
+            gauss_nodes.reserve((UNSIGNED_INTEGER_TYPE) 1 << (((maximum_level-l)+1)*Dimension));
 
             if (c.is_leaf()) {
                 for (const auto & gauss_node : e.gauss_nodes() ) {

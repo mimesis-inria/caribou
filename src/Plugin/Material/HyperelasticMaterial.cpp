@@ -1,8 +1,10 @@
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Material/SaintVenantKirchhoffMaterial.h>
 #include <SofaCaribou/Material/NeoHookeanMaterial.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <sofa/defaulttype/VecTypes.h>
+DISABLE_ALL_WARNINGS_END
 
 using namespace sofa::core;
 

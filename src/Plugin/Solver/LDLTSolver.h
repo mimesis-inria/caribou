@@ -2,7 +2,10 @@
 
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Solver/EigenSolver.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/OptionsGroup.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::solver {
 
@@ -18,7 +21,7 @@ namespace SofaCaribou::solver {
  * @tparam EigenSolver_t
  */
 template <class EigenSolver_t>
-class CARIBOU_API LDLTSolver : public EigenSolver<typename EigenSolver_t::MatrixType> {
+class LDLTSolver : public EigenSolver<typename EigenSolver_t::MatrixType> {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(LDLTSolver, EigenSolver_t), SOFA_TEMPLATE(EigenSolver, typename EigenSolver_t::MatrixType));
 
@@ -29,20 +32,25 @@ public:
     using Matrix = typename Base::Matrix;
     using Vector = typename Base::Vector;
 
+    CARIBOU_API
     LDLTSolver();
 
     /** @see LinearSolver::analyze_pattern */
+    CARIBOU_API
     bool analyze_pattern(const sofa::defaulttype::BaseMatrix * A) override;
 
     /** @see LinearSolver::factorize */
+    CARIBOU_API
     bool factorize(const sofa::defaulttype::BaseMatrix * A) override;
 
     /**
      * @see SofaCaribou::solver::LinearSolver::solve
      */
+    CARIBOU_API
     bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) const override;
 
     // Get the backend name of the class derived from the EigenSolver template parameter
+    CARIBOU_API
     static std::string BackendName();
 private:
     /// Solver backend used (Eigen or Pardiso)

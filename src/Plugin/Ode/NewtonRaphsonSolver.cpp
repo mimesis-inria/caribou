@@ -1,12 +1,14 @@
-#include "NewtonRaphsonSolver.h"
+#include <SofaCaribou/Ode/NewtonRaphsonSolver.h>
 
 #include <iomanip>
 #include <chrono>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/simulation/VectorOperations.h>
+DISABLE_ALL_WARNINGS_BEGIN
 
 #include <SofaCaribou/Solver/LinearSolver.h>
 #include <SofaCaribou/Algebra/BaseVectorOperations.h>
@@ -484,7 +486,9 @@ auto NewtonRaphsonSolver::pattern_analysis_strategy() const -> NewtonRaphsonSolv
 }
 
 void NewtonRaphsonSolver::set_pattern_analysis_strategy(const NewtonRaphsonSolver::PatternAnalysisStrategy & strategy) {
-    sofa::helper::write(d_pattern_analysis_strategy)->setSelectedItem(static_cast<unsigned int> (strategy));
+    using namespace sofa::helper;
+    auto pattern_analysis_strategy = WriteOnlyAccessor<Data<OptionsGroup>>(d_pattern_analysis_strategy);
+    pattern_analysis_strategy->setSelectedItem(static_cast<unsigned int> (strategy));
 }
 
 } // namespace SofaCaribou::ode

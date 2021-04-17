@@ -1,10 +1,15 @@
 #pragma once
 
-#include "HyperelasticForcefield.h"
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Forcefield/HyperelasticForcefield.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
-#include <Caribou/Mechanics/Elasticity/Strain.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/visual/VisualParams.h>
+DISABLE_ALL_WARNINGS_END
+
+#include <Caribou/Mechanics/Elasticity/Strain.h>
 #ifdef CARIBOU_WITH_OPENMP
 #include <omp.h>
 #endif
@@ -540,18 +545,18 @@ void HyperelasticForcefield<Element>::update_stiffness()
         #pragma omp critical
         for (std::size_t i = 0; i < NumberOfNodes; ++i) {
             // Node index of the ith node in the global stiffness matrix
-            const auto x = (node_indices[i]*Dimension);
-            for (std::size_t m = 0; m < Dimension; ++m) {
-                for (size_t n = m; n < Dimension; ++n) {
+            const auto x = static_cast<int>(node_indices[i]*Dimension);
+            for (int m = 0; m < Dimension; ++m) {
+                for (int n = m; n < Dimension; ++n) {
                     triplets.emplace_back(x+m, x+n, Ke(i*Dimension+m,i*Dimension+n));
                 }
             }
 
             for (std::size_t j = i+1; j < NumberOfNodes; ++j) {
                 // Node index of the jth node in the global stiffness matrix
-                const auto y = (node_indices[j]*Dimension);
-                for (std::size_t m = 0; m < Dimension; ++m) {
-                    for (size_t n = 0; n < Dimension; ++n) {
+                const auto y = static_cast<int>(node_indices[j]*Dimension);
+                for (int m = 0; m < Dimension; ++m) {
+                    for (int n = 0; n < Dimension; ++n) {
                         triplets.emplace_back(x+m, y+n, Ke(i*Dimension+m,j*Dimension+n));
                     }
                 }

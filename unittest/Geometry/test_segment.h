@@ -25,8 +25,8 @@ TEST(Segment, Linear) {
         using WorldCoordinates  = Segment::WorldCoordinates;
 
         Segment segment(WorldCoordinates(-5.5), WorldCoordinates(1.1));
-        EXPECT_EQ(segment.node(0), WorldCoordinates(-5.5));
-        EXPECT_EQ(segment.node(1), WorldCoordinates(1.1));
+        EXPECT_MATRIX_NEAR(segment.node(0), WorldCoordinates(-5.5), 1e-5);
+        EXPECT_MATRIX_NEAR(segment.node(1), WorldCoordinates(1.1), 1e-5);
 
         // Center
         EXPECT_DOUBLE_EQ(segment.center()[0], -2.2);

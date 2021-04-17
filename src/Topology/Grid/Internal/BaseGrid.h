@@ -155,14 +155,22 @@ struct BaseGrid
 
         const CellIndex ncells = number_of_cells();
         const VecFloat h = H();
+
+        /// Absolute grid coordinates of the point, for example absolute(p) = [3.25, 3.25, 3.25]
+        /// means that p is at the cell [3, 3, 3] at 1/4 of the cell's diagonal.
         const VecFloat absolute = ((coordinates - m_anchor_position).array() / h.array()).matrix();
+
+        /// Actual grid coordinates of the cell that contains the point, for example rounded(p) = [3, 3, 3]
         const VecFloat rounded = absolute.unaryExpr(CwiseRound());
+
+        /// Relative distance between the corner of the cell that contains the point, and the point itself within the cell.
+        /// For example, if absolute(p) = [3.25, 3.25, 3.25], than rounded(p) = [3, 3, 3] and distance = [0.25, 0.25, 0.25]
         const VecFloat distance = absolute - rounded;
 
         auto close_to_axis = std::bitset<Dimension>();
 
         // Let's find the axis for which our coordinate is very close to
-        for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
+        for (std::size_t axis = 0; axis < Dimension; ++axis) {
             if (distance[axis]*distance[axis] < EPSILON*EPSILON )
                 close_to_axis[axis] = true;
         }
@@ -170,31 +178,35 @@ struct BaseGrid
         if (close_to_axis.none()) {
             // We are not near any axis, which means we are well inside a cell's boundaries
             const auto cell_index = Self().cell_index_at(absolute.unaryExpr(CwiseFloor()). template cast<Int>());
-            if (IN_CLOSED_INTERVAL(0, cell_index, ncells-1)) {
+            if (0 <= cell_index and cell_index <= ncells-1) { // Within the boundary of the grid
                 cells.emplace_back(cell_index);
             }
         } else {
             const VecFloat d = VecFloat::Constant(0.5);
             const auto & n = N();
 
-            std::array<std::vector<UNSIGNED_INTEGER_TYPE>, Dimension> axis_indices;
+            std::array<std::vector<std::size_t>, Dimension> axis_indices;
             for (auto & indices  : axis_indices) {
                 indices.reserve(Dimension);
             }
 
-            for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
+            for (std::size_t axis = 0; axis < Dimension; ++axis) {
                 if (close_to_axis[axis]) {
-                    auto index = floor(rounded[axis]-d[axis]);
-                    if (index >= 0) {
-                        axis_indices[axis].emplace_back(index);
+                    {
+                        auto index = static_cast<INTEGER_TYPE>(floor(rounded[axis] - d[axis]));
+                        if (index >= 0) { // Within the boundary of the grid
+                            axis_indices[axis].emplace_back(index);
+                        }
                     }
-                    index = floor(rounded[axis]+d[axis]);
-                    if (index <= n[axis]-1) {
-                        axis_indices[axis].emplace_back(index);
+                    {
+                        auto index = static_cast<std::size_t>(floor(rounded[axis] + d[axis]));
+                        if (index <= n[axis] - 1) { // Within the boundary of the grid
+                            axis_indices[axis].emplace_back(index);
+                        }
                     }
                 } else {
-                    auto index = floor(absolute[axis]);
-                    if (IN_CLOSED_INTERVAL(0, index, n[axis]-1)) {
+                    auto index = static_cast<std::size_t>(floor(absolute[axis]));
+                    if (0 <= index and index <= n[axis]-1) { // Within the boundary of the grid
                         axis_indices[axis].emplace_back(index);
                     }
                 }
@@ -377,10 +389,10 @@ struct BaseGrid
 
         // 2. Append all cells within the bounding-box
         CellSet enclosing_cells;
-        if CONSTEXPR_IF (Dimension ==1) {
+        if constexpr (Dimension ==1) {
             for (CellIndex i = lower_cell[0]; i <= upper_cell[0]; ++i)
                 enclosing_cells.emplace_back(Self().cell_index_at(GridCoordinates(i)));
-        } else if CONSTEXPR_IF (Dimension == 2) {
+        } else if constexpr (Dimension == 2) {
             for (CellIndex j = lower_cell[1]; j <= upper_cell[1]; ++j)
                 for (CellIndex i = lower_cell[0]; i <= upper_cell[0]; ++i)
                     enclosing_cells.emplace_back(Self().cell_index_at({i, j}));

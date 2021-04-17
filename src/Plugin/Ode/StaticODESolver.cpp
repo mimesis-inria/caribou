@@ -1,13 +1,15 @@
-#include "StaticODESolver.h"
+#include <SofaCaribou/Ode/StaticODESolver.h>
 
 #include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
 #include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/ConstraintSolver.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalVisitor.h>
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::ode {
 

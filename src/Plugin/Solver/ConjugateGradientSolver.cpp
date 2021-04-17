@@ -1,14 +1,18 @@
-#include "ConjugateGradientSolver.h"
+#include <SofaCaribou/Solver/ConjugateGradientSolver.h>
 #include<SofaCaribou/Algebra/EigenMatrix.h>
 #include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
 #include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 #include <Caribou/macros.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
 #include <SofaBaseLinearSolver/FullMatrix.h>
 #include <SofaEigen2Solver/EigenVectorWrapper.h>
+DISABLE_ALL_WARNINGS_END
+
 #include <iomanip>
 
 #if !EIGEN_VERSION_AT_LEAST(3,3,0)

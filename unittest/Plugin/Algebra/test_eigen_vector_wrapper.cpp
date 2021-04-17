@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
+
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Algebra/EigenVector.h>
 
-#include <Caribou/config.h>
 #include <Eigen/Dense>
 
 template<int nRows, int nColumns>

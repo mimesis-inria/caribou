@@ -1,6 +1,7 @@
 #ifndef CARIBOU_TOPOLOGY_TEST_GRID_2D_H
 #define CARIBOU_TOPOLOGY_TEST_GRID_2D_H
 
+#include "../topology_test.h"
 #include <Caribou/Topology/Grid/Grid.h>
 #include <Caribou/Geometry/Quad.h>
 
@@ -22,7 +23,7 @@ TEST(Topology_Grid_2D, Grid2D) {
 
 // Cell numbering test
     EXPECT_EQ((CellIndex) 3, grid.cell_index_at({1, 1}));
-    EXPECT_EQ(GridCoordinates(1, 1), grid.cell_coordinates_at((CellIndex) 3));
+    EXPECT_MATRIX_EQUAL(GridCoordinates(1, 1), grid.cell_coordinates_at((CellIndex) 3));
 
 // Cell positioning
     EXPECT_FALSE(grid.contains(WorldCoordinates{0.24, 0.5}));
@@ -34,36 +35,36 @@ TEST(Topology_Grid_2D, Grid2D) {
     EXPECT_FALSE(grid.contains(WorldCoordinates{100.26, 100.5}));
 
 // Cells queries
-    EXPECT_TRUE(list_are_equals({0, 2}, grid.cells_enclosing(
+    EXPECT_LIST_EQUAL((std::list({0, 2})), grid.cells_enclosing(
         WorldCoordinates({-50, 50}),
         WorldCoordinates({25, 25}),
         WorldCoordinates({25, 75})
-    )));
-    EXPECT_TRUE(list_are_equals({0}, grid.cells_enclosing(
+    ));
+    EXPECT_LIST_EQUAL((std::list({0})), grid.cells_enclosing(
         WorldCoordinates({0.25, 0.5}),
         WorldCoordinates({25, 25}),
         WorldCoordinates({50.24, 50.49})
-    )));
-    EXPECT_TRUE(list_are_equals({0, 1}, grid.cells_enclosing(
+    ));
+    EXPECT_LIST_EQUAL((std::list{0, 1}), grid.cells_enclosing(
         WorldCoordinates({50.25, 0.5}),
         WorldCoordinates({75, 25}),
         WorldCoordinates({100.24, 50.49})
-    )));
-    EXPECT_TRUE(list_are_equals({0, 1, 2, 3}, grid.cells_enclosing(
+    ));
+    EXPECT_LIST_EQUAL((std::list{0, 1, 2, 3}), grid.cells_enclosing(
         WorldCoordinates({0.25, 0.5}),
         WorldCoordinates({75.25, 75.50})
-    )));
+    ));
 
-    EXPECT_TRUE(list_are_equals({}, grid.cells_around(WorldCoordinates(-50, -50))));
-    EXPECT_TRUE(list_are_equals({0}, grid.cells_around(WorldCoordinates(0.25, 0.50))));
-    EXPECT_TRUE(list_are_equals({0, 1}, grid.cells_around(WorldCoordinates(50.25, 0.50))));
-    EXPECT_TRUE(list_are_equals({1}, grid.cells_around(WorldCoordinates(100.25, 0.50))));
-    EXPECT_TRUE(list_are_equals({0, 2}, grid.cells_around(WorldCoordinates(0.25, 50.50))));
-    EXPECT_TRUE(list_are_equals({0, 2, 1, 3}, grid.cells_around(WorldCoordinates(50.25, 50.50))));
-    EXPECT_TRUE(list_are_equals({1, 3}, grid.cells_around(WorldCoordinates(100.25, 50.50))));
-    EXPECT_TRUE(list_are_equals({2}, grid.cells_around(WorldCoordinates(0.25, 100.50))));
-    EXPECT_TRUE(list_are_equals({2, 3}, grid.cells_around(WorldCoordinates(50.25, 100.50))));
-    EXPECT_TRUE(list_are_equals({3}, grid.cells_around(WorldCoordinates(100.25, 100.50))));
+    EXPECT_LIST_EQUAL((std::list<int>{}),           grid.cells_around(WorldCoordinates(-50, -50)));
+    EXPECT_LIST_EQUAL((std::list<int>{0}),          grid.cells_around(WorldCoordinates(0.25, 0.50)));
+    EXPECT_LIST_EQUAL((std::list<int>{0, 1}),       grid.cells_around(WorldCoordinates(50.25, 0.50)));
+    EXPECT_LIST_EQUAL((std::list<int>{1}),          grid.cells_around(WorldCoordinates(100.25, 0.50)));
+    EXPECT_LIST_EQUAL((std::list<int>{0, 2}),       grid.cells_around(WorldCoordinates(0.25, 50.50)));
+    EXPECT_LIST_EQUAL((std::list<int>{0, 2, 1, 3}), grid.cells_around(WorldCoordinates(50.25, 50.50)));
+    EXPECT_LIST_EQUAL((std::list<int>{1, 3}),       grid.cells_around(WorldCoordinates(100.25, 50.50)));
+    EXPECT_LIST_EQUAL((std::list<int>{2}),          grid.cells_around(WorldCoordinates(0.25, 100.50)));
+    EXPECT_LIST_EQUAL((std::list<int>{2, 3}),       grid.cells_around(WorldCoordinates(50.25, 100.50)));
+    EXPECT_LIST_EQUAL((std::list<int>{3}),          grid.cells_around(WorldCoordinates(100.25, 100.50)));
 
 // Node position queries
     EXPECT_MATRIX_NEAR(grid.node(0), WorldCoordinates({0.25, 0.5}), 1e-15);

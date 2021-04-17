@@ -88,15 +88,17 @@ public:
         }
 
         // Get the mean size of the elements
+        using Scalar = typename WorldCoordinates::Scalar;
         WorldCoordinates H_mean = WorldCoordinates::Zero();
-        for (UNSIGNED_INTEGER_TYPE element_id = 0; element_id < container_domain->number_of_elements(); ++element_id) {
+        const auto number_of_elements = container_domain->number_of_elements();
+        for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
             const ContainerElement element = container_domain->element(element_id);
             const auto element_nodes = element.nodes();
             const auto min = element_nodes.colwise().minCoeff();
             const auto max = element_nodes.colwise().maxCoeff();
             H_mean += (max - min);
         }
-        H_mean /= container_domain->number_of_elements();
+        H_mean /= static_cast<Scalar>(container_domain->number_of_elements());
 
         // Create the Hash grid
         p_hash_grid = std::make_unique<HashGridT>(H_mean.maxCoeff(), container_domain->number_of_elements());
@@ -265,7 +267,7 @@ private:
         }
 
         p_outside_nodes.resize(0);
-        p_outside_nodes.reserve(std::floor(embedded_points.rows() / 10.)); // Reserve 10% of the mesh size for outside nodes
+        p_outside_nodes.reserve(static_cast<std::size_t>(std::floor(embedded_points.rows() / 10.))); // Reserve 10% of the mesh size for outside nodes
 
         p_barycentric_points.resize(0);
         p_barycentric_points.reserve(embedded_points.rows());

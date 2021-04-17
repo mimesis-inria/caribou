@@ -1,5 +1,8 @@
 #include <SofaCaribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/simulation/MechanicalVisitor.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::visitor {
 /**
@@ -7,7 +10,7 @@ namespace SofaCaribou::visitor {
  * The difference between this visitor and the sofa::simulation::MechanicalVOpVisitor is that here,
  * the assignment from a MutliVecCoord to a MultiVecDeriv is allowed.
  */
-class CARIBOU_API MultiVecEqualVisitor : public sofa::simulation::BaseMechanicalVisitor {
+class MultiVecEqualVisitor : public sofa::simulation::BaseMechanicalVisitor {
 public:
 
     /**
@@ -35,14 +38,18 @@ public:
             return !map->areForcesMapped();
     }
 
+    CARIBOU_API
     Result fwdMechanicalState(VisitorContext *ctx, sofa::core::behavior::BaseMechanicalState *mm) override;
 
+    CARIBOU_API
     Result fwdMappedMechanicalState(VisitorContext *ctx, sofa::core::behavior::BaseMechanicalState *mm) override;
 
+    CARIBOU_API
     void copy(sofa::core::behavior::BaseMechanicalState * state) const ;
 
     const char *getClassName() const override { return "MultiVecEqualVisitor"; }
 
+    CARIBOU_API
     std::string getInfos() const override;
 
 private:

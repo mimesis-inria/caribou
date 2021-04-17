@@ -1,9 +1,13 @@
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Forcefield/TractionForce.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/testing/BaseTest.h>
 #include <sofa/simulation/Node.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
-#include <SofaCaribou/Forcefield/TractionForce.h>
+DISABLE_ALL_WARNINGS_END
 
 using sofa::helper::system::PluginManager ;
 using namespace sofa::simulation;
@@ -35,7 +39,7 @@ TEST_F(TractionForce, Triangle) {
     auto total_load = dynamic_cast<sofa::core::objectmodel::Data<double> *>(traction->findData("total_load"));
     for (unsigned int step = 1; step <= 5; ++step) {
         getSimulation()->animate(root.get(), 1);
-        EXPECT_FLOAT_EQ(total_load->getValue(), 4*step) << "Total load at time step " << step << " is incorrect.";
+        EXPECT_DOUBLE_EQ(total_load->getValue(), 4*step) << "Total load at time step " << step << " is incorrect.";
     }
 }
 
@@ -49,6 +53,6 @@ TEST_F(TractionForce, Quad) {
     auto total_load = dynamic_cast<sofa::core::objectmodel::Data<double> *>(traction->findData("total_load"));
     for (unsigned int step = 1; step <= 5; ++step) {
         getSimulation()->animate(root.get(), 1);
-        EXPECT_FLOAT_EQ(total_load->getValue(), 4*step) << "Total load at time step " << step << " is incorrect.";
+        EXPECT_DOUBLE_EQ(total_load->getValue(), 4*step) << "Total load at time step " << step << " is incorrect.";
     }
 }

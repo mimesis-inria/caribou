@@ -1,6 +1,8 @@
 #include <SofaCaribou/Solver/LUSolver.inl>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::solver {
 

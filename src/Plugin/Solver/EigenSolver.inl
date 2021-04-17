@@ -1,16 +1,16 @@
 #pragma once
 
 #include <SofaCaribou/Solver/EigenSolver.h>
-
-#include <SofaCaribou/Solver/EigenSolver.h>
-#include<SofaCaribou/Algebra/EigenMatrix.h>
+#include <SofaCaribou/Algebra/EigenMatrix.h>
 #include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
 #include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
 #include <SofaEigen2Solver/EigenVectorWrapper.h>
+DISABLE_ALL_WARNINGS_END
 
 #ifndef _WIN32
 #include <cxxabi.h>
@@ -48,7 +48,7 @@ auto EigenSolver<EigenMatrix_t>::assemble (const sofa::core::MechanicalParams* m
     //          and accumulate mechanical objects and mapping matrices
     Timer::stepBegin("Dimension");
     mops.getMatrixDimension(nullptr, nullptr, &accessor);
-    const auto n = static_cast<Eigen::Index>(accessor.getGlobalDimension());
+    const auto n = static_cast<sofa::Index>(accessor.getGlobalDimension());
     Timer::stepEnd("Dimension");
 
     // Step 2.2 Does nothing more than to accumulate from the previous step a list of

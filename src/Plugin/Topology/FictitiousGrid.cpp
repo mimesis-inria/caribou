@@ -1,4 +1,14 @@
+#include <SofaCaribou/config.h>
+#include <SofaCaribou/Topology/FictitiousGrid.inl>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
+#include <sofa/helper/polygon_cube_intersection/polygon_cube_intersection.h>
+#else
+#include <SofaBaseTopology/polygon_cube_intersection/polygon_cube_intersection.h>
+#endif
+DISABLE_ALL_WARNINGS_END
 
 #ifdef CARIBOU_WITH_OPENMP
 #include <omp.h>
@@ -6,14 +16,7 @@
 
 #include <numeric>
 
-#include "FictitiousGrid.inl"
-
 #include <Caribou/Geometry/Triangle.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
-#include <sofa/helper/polygon_cube_intersection/polygon_cube_intersection.h>
-#else
-#include <SofaBaseTopology/polygon_cube_intersection/polygon_cube_intersection.h>
-#endif
 
 namespace SofaCaribou::topology {
 

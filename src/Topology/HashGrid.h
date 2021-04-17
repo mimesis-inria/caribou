@@ -44,15 +44,15 @@ public:
         const auto min = (e.nodes().colwise().minCoeff() * 1/p_cell_size).unaryExpr(CwiseFloor()).eval();
         const auto max = (e.nodes().colwise().maxCoeff() * 1/p_cell_size).unaryExpr(CwiseFloor()).eval();
 
-        for (INTEGER_TYPE i = min[0]; i <= max[0]; ++i) {
+        for (INTEGER_TYPE i = static_cast<INTEGER_TYPE>(min[0]); i <= static_cast<INTEGER_TYPE>(max[0]); ++i) {
             if constexpr (Dimension == 1) {
                 p_hash_table[GridCoordinates {i}].emplace_back(id);
             } else {
-                for (INTEGER_TYPE j = min[1]; j <= max[1]; ++j) {
+                for (INTEGER_TYPE j = static_cast<INTEGER_TYPE>(min[1]); j <= static_cast<INTEGER_TYPE>(max[1]); ++j) {
                     if constexpr (Dimension == 2) {
                         p_hash_table[GridCoordinates {i, j}].emplace_back(id);
                     } else {
-                        for (INTEGER_TYPE k = min[2]; k <= max[2]; ++k) {
+                        for (INTEGER_TYPE k = static_cast<INTEGER_TYPE>(min[2]); k <= static_cast<INTEGER_TYPE>(max[2]); ++k) {
                             p_hash_table[GridCoordinates {i, j, k}].emplace_back(id);
                         }
                     }
@@ -96,10 +96,10 @@ public:
 
             for (UNSIGNED_INTEGER_TYPE axis = 0; axis < Dimension; ++axis) {
                 if (close_to_axis[axis]) {
-                    axis_indices[axis].emplace_back(floor(rounded[axis]-d[axis]));
-                    axis_indices[axis].emplace_back(floor(rounded[axis]+d[axis]));
+                    axis_indices[axis].emplace_back(static_cast<INTEGER_TYPE>(floor(rounded[axis]-d[axis])));
+                    axis_indices[axis].emplace_back(static_cast<INTEGER_TYPE>(floor(rounded[axis]+d[axis])));
                 } else {
-                    axis_indices[axis].emplace_back(floor(absolute[axis]));
+                    axis_indices[axis].emplace_back(static_cast<INTEGER_TYPE>(floor(absolute[axis])));
                 }
             }
 

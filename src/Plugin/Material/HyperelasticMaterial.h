@@ -1,15 +1,18 @@
 #pragma once
 
 #include <SofaCaribou/config.h>
-#include <Caribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MechanicalState.h>
+DISABLE_ALL_WARNINGS_END
+
 #include <Eigen/Eigen>
 
 namespace SofaCaribou::material {
 
 template<class DataTypes>
-class CARIBOU_API HyperelasticMaterial : public sofa::core::objectmodel::BaseObject {
+class HyperelasticMaterial : public sofa::core::objectmodel::BaseObject {
     static constexpr auto Dimension = DataTypes::spatial_dimensions;
     using Coord = typename DataTypes::Coord;
     using Real  = typename Coord::value_type;

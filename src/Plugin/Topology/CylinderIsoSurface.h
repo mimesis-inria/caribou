@@ -1,13 +1,15 @@
 #pragma once
 
-#include <sofa/defaulttype/VecTypes.h>
-
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Topology/IsoSurface.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/defaulttype/VecTypes.h>
+DISABLE_ALL_WARNINGS_END
+
 namespace SofaCaribou::topology {
 
-class CARIBOU_API CylinderIsoSurface : public IsoSurface<sofa::defaulttype::Vec3Types> {
+class CylinderIsoSurface : public IsoSurface<sofa::defaulttype::Vec3Types> {
     template < class T = void* >
     using Data = sofa::core::objectmodel::Data<T>;
     using Base = IsoSurface<sofa::defaulttype::Vec3Types>;

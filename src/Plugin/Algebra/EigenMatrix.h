@@ -1,9 +1,12 @@
 #pragma once
 #include <SofaCaribou/config.h>
-#include <Caribou/config.h>
 #include <Caribou/macros.h>
 #include <Caribou/traits.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/defaulttype/BaseMatrix.h>
+DISABLE_ALL_WARNINGS_END
+
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
@@ -60,6 +63,7 @@ public:
     using Base = sofa::defaulttype::BaseMatrix;
     using Index = Base::Index;
     using Real = SReal;
+    using Scalar = typename EigenType::Scalar;
 
     /**
      * Construct the class using another Eigen matrix. Depending on the template parameter used for the class,
@@ -82,9 +86,9 @@ public:
     EigenMatrix() = default;
 
     // Abstract methods overrides
-    inline Index rowSize() const final { return p_eigen_matrix.rows(); }
-    inline Index colSize() const final { return p_eigen_matrix.cols(); }
-    inline Real  element(Index i, Index j) const final { return p_eigen_matrix(i,j); }
+    inline Index rowSize() const final { return static_cast<Index>(p_eigen_matrix.rows()); }
+    inline Index colSize() const final { return static_cast<Index>(p_eigen_matrix.cols()); }
+    inline Real  element(Index i, Index j) const final { return static_cast<Real>(p_eigen_matrix(i,j)); }
 
     /** Resize the matrix to nbRow x nbCol dimensions. This method resets to zero all entries. */
     inline void  resize(Index nbRow, Index nbCol) final { p_eigen_matrix.setConstant(nbRow, nbCol, 0); }
@@ -94,12 +98,12 @@ public:
 
     /** Set this value of the matrix entry (i, j) to the value of v. */
     inline void  set(Index i, Index j, double v) final {
-        p_eigen_matrix(i, j) = v;
+        p_eigen_matrix(i, j) = static_cast<Scalar>(v);
     }
 
     /** Adds v to the value of the matrix entry (i, j). */
     inline void  add(Index i, Index j, double v) final {
-        p_eigen_matrix(i, j) += v;
+        p_eigen_matrix(i, j) += static_cast<Scalar>(v);
     }
 
     // Block operations on 3x3 and 2x2 sub-matrices
@@ -155,6 +159,7 @@ public:
     using Base = sofa::defaulttype::BaseMatrix;
     using Index = Base::Index;
     using Real = SReal;
+    using Scalar = typename EigenType::Scalar;
 
     /**
      * Construct the class using another Eigen matrix. Depending on the template parameter used for the class,
@@ -177,8 +182,8 @@ public:
     EigenMatrix() = default;
 
     // Abstract methods overrides
-    inline Index rowSize() const final { return p_eigen_matrix.rows(); }
-    inline Index colSize() const final { return p_eigen_matrix.cols(); }
+    inline Index rowSize() const final { return static_cast<Index>(p_eigen_matrix.rows()); }
+    inline Index colSize() const final { return static_cast<Index>(p_eigen_matrix.cols()); }
 
     /** States if the matrix is symmetric. Note that this value isn't set automatically, the user must
      * explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
@@ -227,7 +232,7 @@ public:
             initialize();
         }
 
-        this->p_eigen_matrix.coeffRef(i, j) = v;
+        this->p_eigen_matrix.coeffRef(i, j) = static_cast<Scalar>(v);
     }
 
     /**
@@ -241,9 +246,9 @@ public:
         //       because of branch predictions (the conditional branch will be same for the next
         //       X calls to add until compress is called).
         if (not p_initialized) {
-            p_triplets.emplace_back(i, j, v);
+            p_triplets.emplace_back(i, j, static_cast<Scalar>(v));
         } else {
-            p_eigen_matrix.coeffRef(i, j) += v;
+            p_eigen_matrix.coeffRef(i, j) += static_cast<Scalar>(v);
         }
     }
 
@@ -274,12 +279,11 @@ public:
         }
 
         using StorageIndex = typename EigenType::StorageIndex;
-        using Scalar = typename EigenType::Scalar;
 
         if constexpr (EigenType::IsRowMajor) {
             const auto & start = p_eigen_matrix.outerIndexPtr()[row_id];
             const auto & end   = p_eigen_matrix.outerIndexPtr()[row_id+1];
-            memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+            std::memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<int>(0), (end-start)*sizeof(Scalar));
         } else {
             for (int col_id=0; col_id<p_eigen_matrix.outerSize(); ++col_id) {
                 const auto & start = p_eigen_matrix.outerIndexPtr()[col_id];
@@ -299,12 +303,11 @@ public:
         }
 
         using StorageIndex = typename EigenType::StorageIndex;
-        using Scalar = typename EigenType::Scalar;
 
         if constexpr (EigenType::IsRowMajor) {
             const auto & start = p_eigen_matrix.outerIndexPtr()[imin];
             const auto & end   = p_eigen_matrix.outerIndexPtr()[imax+1];
-            memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+            std::memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<int>(0), (end-start)*sizeof(Scalar));
         } else {
             for (int col_id=0; col_id<p_eigen_matrix.outerSize(); ++col_id) {
                 const auto & start = p_eigen_matrix.outerIndexPtr()[col_id];
@@ -328,12 +331,11 @@ public:
         }
 
         using StorageIndex = typename EigenType::StorageIndex;
-        using Scalar = typename EigenType::Scalar;
 
         if constexpr (not EigenType::IsRowMajor) {
             const auto & start = p_eigen_matrix.outerIndexPtr()[col_id];
             const auto & end   = p_eigen_matrix.outerIndexPtr()[col_id+1];
-            memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+            std::memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<int>(0), (end-start)*sizeof(Scalar));
         } else {
             for (int row_id=0; row_id<p_eigen_matrix.outerSize(); ++row_id) {
                 const auto & start = p_eigen_matrix.outerIndexPtr()[row_id];
@@ -353,12 +355,11 @@ public:
         }
 
         using StorageIndex = typename EigenType::StorageIndex;
-        using Scalar = typename EigenType::Scalar;
 
         if constexpr (not EigenType::IsRowMajor) {
             const auto & start = p_eigen_matrix.outerIndexPtr()[imin];
             const auto & end   = p_eigen_matrix.outerIndexPtr()[imax+1];
-            memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+            std::memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<int>(0), (end-start)*sizeof(Scalar));
         } else {
             for (int row_id=0; row_id<p_eigen_matrix.outerSize(); ++row_id) {
                 const auto & start = p_eigen_matrix.outerIndexPtr()[row_id];
@@ -382,12 +383,11 @@ public:
         }
 
         using StorageIndex = typename EigenType::StorageIndex;
-        using Scalar = typename EigenType::Scalar;
 
         // Clear the complete inner vector i (the row i or column i if it is in row major or column major respectively)
         const auto & start = p_eigen_matrix.outerIndexPtr()[i];
         const auto & end   = p_eigen_matrix.outerIndexPtr()[i+1];
-        memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<const Scalar &>(0), (end-start)*sizeof(Scalar));
+        std::memset(&(p_eigen_matrix.data().valuePtr()[start]), static_cast<int>(0), (end-start)*sizeof(Scalar));
 
         // Next, to clear the ith inner coefficients of each row in row-major (each column in column-major)
         if (symmetric() and p_eigen_matrix.rows() == p_eigen_matrix.cols()) {
@@ -424,11 +424,12 @@ private:
      */
     template <typename Scalar, unsigned int N, unsigned int C>
     void add_block(Index i, Index j, const sofa::defaulttype::Mat<N, C, Scalar> & m) {
-        for (size_t k=0;k<N;++k) {
-            for (size_t l=0;l<C;++l) {
+        using StorageIndex = typename Eigen::SparseMatrix<typename EigenType::Scalar>::StorageIndex;
+        for (unsigned int k=0;k<N;++k) {
+            for (unsigned int l=0;l<C;++l) {
                 const auto value = static_cast<typename EigenType::Scalar>(m[k][l]);
                 if (not p_initialized) {
-                    p_triplets.emplace_back(i+k, j+l, value);
+                    p_triplets.emplace_back(static_cast<StorageIndex>(i+k), static_cast<StorageIndex>(j+l), value);
                 } else {
                     p_eigen_matrix.coeffRef(i+k, j+l) += value;
                 }
