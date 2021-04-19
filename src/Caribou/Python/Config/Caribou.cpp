@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 namespace py = pybind11;
 
-#include <Caribou/Bindings/Caribou.h>
+#include <Caribou/Python/Caribou.h>
 
 PYBIND11_MODULE(Caribou, m) {
     m.doc() = "Caribou module";

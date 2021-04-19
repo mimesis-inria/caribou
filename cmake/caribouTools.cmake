@@ -35,7 +35,12 @@ endfunction()
 #                             SOURCE_FILES         [<file1, ...>]
 #                             PUBLIC_HEADERS       [<file1, ...>]
 #                             PRIVATE_HEADERS      [<file1, ...>]
-#                             HEADER_PREFIX        [<relative_path>]    # default to "${PACKAGE_NAME}/${COMPONENT_NAME}"
+#                             HEADER_SRC_PREFIX     <[relative_path]>   # Path from where the relative path to the header files will be
+#                                                                       # computed. Default to "${CMAKE_CURRENT_SOURCE_DIR}/../..".
+#                             HEADER_BUILD_PREFIX   <[relative_path]>   # Path where the header file will be configured. Default to "${CMAKE_BINARY_DIR}/include/__P__"
+#                                                                       # where __P__ is the relative path between ${HEADER_SRC_PREFIX} and the header file path.
+#                             HEADER_INSTALL_PREFIX <[relative_path]>   # Path where the header file will be installed. Default to "include/__P__".
+#                                                                       # where __P__ is the relative path between ${HEADER_SRC_PREFIX} and the header file path.
 #                             PYTHON_FILES         [<file1, ...>]
 #                             PYTHON_TEST_FILES    [<file1, ...>]
 #                             LIBRARY_DESTINATION  [<folder_path>]      # default to "lib/${PREFIX}/${DESTINATION}"
@@ -44,7 +49,7 @@ endfunction()
 #
 # Creates a python modules from ${SOURCE_FILES} and deploy the resulting binary named "${NAME}.so" into
 # the folder ${LIBRARY_DESTINATION}. The ${PUBLIC_HEADERS} can be used to specify which header files
-# should be installed into ${HEADER_PREFIX}. Both ${PUBLIC_HEADERS} and ${PRIVATE_HEADERS} will be
+# should be installed. Both ${PUBLIC_HEADERS} and ${PRIVATE_HEADERS} will be
 # added to the compilation header search path. In addition, ${PYTHON_FILES} will be configured (if
 # suffixed by .in) or linked into the compilation directory ${CMAKE_BINARY_DIR}/${LIBRARY_DESTINATION}
 # and then installed in ${CMAKE_INSTALL_PREFIX}/${LIBRARY_DESTINATION}. Finally, ${PYTHON_TEST_FILES} will
@@ -52,7 +57,7 @@ endfunction()
 # and then installed in ${CMAKE_INSTALL_PREFIX}/${RUNTIME_DESTINATION}.
 function(caribou_add_python_module NAME)
     set(options QUIET)
-    set(oneValueArgs TARGET_NAME TARGET_ALIAS TARGET_VERSION COMPONENT_NAME PACKAGE_NAME DESTINATION PREFIX HEADER_PREFIX LIBRARY_DESTINATION RUNTIME_DESTINATION)
+    set(oneValueArgs TARGET_NAME TARGET_ALIAS TARGET_VERSION COMPONENT_NAME PACKAGE_NAME DESTINATION PREFIX HEADER_SRC_PREFIX HEADER_BUILD_PREFIX HEADER_INSTALL_PREFIX LIBRARY_DESTINATION RUNTIME_DESTINATION)
     set(multiValueArgs SOURCE_FILES PUBLIC_HEADERS PRIVATE_HEADERS PYTHON_FILES PYTHON_TEST_FILES TARGET_DEPENDS)
 
     cmake_parse_arguments(A "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -73,7 +78,9 @@ function(caribou_add_python_module NAME)
     set(SOURCE_FILES      "${A_SOURCE_FILES}")
     set(PUBLIC_HEADERS    "${A_PUBLIC_HEADERS}")
     set(PRIVATE_HEADERS   "${A_PRIVATE_HEADERS}")
-    set(HEADER_PREFIX     "${A_HEADER_PREFIX}")
+    set(HEADER_SRC_PREFIX     "${A_HEADER_SRC_PREFIX}")
+    set(HEADER_BUILD_PREFIX   "${A_HEADER_BUILD_PREFIX}")
+    set(HEADER_INSTALL_PREFIX "${A_HEADER_INSTALL_PREFIX}")
     set(PYTHON_FILES      "${A_PYTHON_FILES}")
     set(PYTHON_TEST_FILES "${A_PYTHON_TEST_FILES}")
     set(LIBRARY_DESTINATION ${A_LIBRARY_DESTINATION})
@@ -112,7 +119,7 @@ function(caribou_add_python_module NAME)
         endif ()
 
         if ("${pybind11_VERSION}" VERSION_GREATER_EQUAL "2.6.0")
-            target_link_libraries(${TARGET_NAME} PRIVATE pybind11::headers)
+            target_link_libraries(${TARGET_NAME} PUBLIC pybind11::headers)
             target_link_libraries(${TARGET_NAME} PRIVATE pybind11::embed)
             target_link_libraries(${TARGET_NAME} PRIVATE pybind11::lto)
             if(MSVC)
@@ -122,7 +129,7 @@ function(caribou_add_python_module NAME)
             pybind11_extension(${TARGET_NAME})
             pybind11_strip(${TARGET_NAME})
         else()
-            target_link_libraries(${TARGET_NAME} PRIVATE pybind11::module)
+            target_link_libraries(${TARGET_NAME} PUBLIC pybind11::module)
 
             # Equivalent to pybind11_extension(${TARGET_NAME}) which doesn't exists on pybind11 versions < 5
             set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "" SUFFIX "${PYTHON_MODULE_EXTENSION}")
@@ -160,15 +167,17 @@ function(caribou_add_python_module NAME)
         message(STATUS "${TARGET_NAME}: ${CMAKE_BINARY_DIR}/${LIBRARY_DESTINATION}")
 
         caribou_add_target_to_component(
-            TARGET_NAME          ${TARGET_NAME}
-            COMPONENT_NAME       ${COMPONENT_NAME}
-            PACKAGE_NAME         ${PACKAGE_NAME}
-            TARGET_VERSION       ${TARGET_VERSION}
-            PUBLIC_HEADERS       ${PUBLIC_HEADERS}
-            PRIVATE_HEADERS      ${PRIVATE_HEADERS}
-            HEADER_PREFIX        ${HEADER_PREFIX}
-            LIBRARY_DESTINATION  ${LIBRARY_DESTINATION}
-            RUNTIME_DESTINATION  ${RUNTIME_DESTINATION}
+            TARGET_NAME            ${TARGET_NAME}
+            COMPONENT_NAME         ${COMPONENT_NAME}
+            PACKAGE_NAME           ${PACKAGE_NAME}
+            TARGET_VERSION         ${TARGET_VERSION}
+            PUBLIC_HEADERS         ${PUBLIC_HEADERS}
+            PRIVATE_HEADERS        ${PRIVATE_HEADERS}
+            HEADER_SRC_PREFIX      ${HEADER_SRC_PREFIX}
+            HEADER_BUILD_PREFIX    ${HEADER_BUILD_PREFIX}
+            HEADER_INSTALL_PREFIX  ${HEADER_INSTALL_PREFIX}
+            LIBRARY_DESTINATION    ${LIBRARY_DESTINATION}
+            RUNTIME_DESTINATION    ${RUNTIME_DESTINATION}
         )
 
         # This will get the relative path from the current binding library to the plugin's "lib" directory.

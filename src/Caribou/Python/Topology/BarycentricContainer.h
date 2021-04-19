@@ -3,7 +3,7 @@
 #include <pybind11/stl.h>
 
 #include <Caribou/Topology/BarycentricContainer.h>
-#include <Caribou/Bindings/Caribou.h>
+#include <Caribou/Python/Caribou.h>
 
 namespace py = pybind11;
 

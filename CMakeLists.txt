@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(Caribou VERSION 20.12.00)
+project(Caribou VERSION 20.12.99)
 
 # Policies
 cmake_policy(SET CMP0072 NEW)
@@ -180,9 +180,9 @@ if (CARIBOU_BUILD_TESTS)
     add_subdirectory(unittest)
 endif()
 
-#if (CARIBOU_WITH_PYTHON_3)
-#    add_subdirectory(bindings)
-#endif()
+if (CARIBOU_WITH_PYTHON_3)
+    add_subdirectory(bindings)
+endif()
 
 install(
     FILES

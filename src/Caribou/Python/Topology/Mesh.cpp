@@ -5,7 +5,7 @@
 
 #include <Caribou/constants.h>
 #include <Caribou/Topology/Mesh.h>
-#include <Caribou/Bindings/Topology/Domain.h>
+#include <Caribou/Python/Topology/Domain.h>
 
 namespace py = pybind11;
 

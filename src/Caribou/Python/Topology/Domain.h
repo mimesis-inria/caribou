@@ -11,8 +11,8 @@
 #include <Caribou/Topology/Mesh.h>
 #include <Caribou/Topology/Domain.h>
 
-#include <Caribou/Bindings/Caribou.h>
-#include <Caribou/Bindings/Topology/BarycentricContainer.h>
+#include <Caribou/Python/Caribou.h>
+#include <Caribou/Python/Topology/BarycentricContainer.h>
 
 namespace py = pybind11;
 
