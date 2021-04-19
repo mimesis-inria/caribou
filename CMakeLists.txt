@@ -170,21 +170,15 @@ if(NOT WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
 endif()
 
-add_subdirectory(src/Caribou/Algebra)
-add_subdirectory(src/Caribou/Config)
-add_subdirectory(src/Caribou/Geometry)
-add_subdirectory(src/Caribou/Mechanics)
-add_subdirectory(src/Caribou/Topology)
+add_subdirectory(src/Caribou)
 
-#if (CARIBOU_WITH_SOFA)
-#    add_subdirectory(src/SofaCaribou)
-#endif()
+if (CARIBOU_WITH_SOFA)
+    add_subdirectory(src/SofaCaribou)
+endif()
 
-caribou_create_package(Caribou ${CARIBOU_VERSION})
-
-#if (CARIBOU_BUILD_TESTS)
-#    add_subdirectory(unittest)
-#endif()
+if (CARIBOU_BUILD_TESTS)
+    add_subdirectory(unittest)
+endif()
 
 #if (CARIBOU_WITH_PYTHON_3)
 #    add_subdirectory(bindings)
