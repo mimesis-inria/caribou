@@ -180,10 +180,6 @@ if (CARIBOU_BUILD_TESTS)
     add_subdirectory(unittest)
 endif()
 
-if (CARIBOU_WITH_PYTHON_3)
-    add_subdirectory(bindings)
-endif()
-
 install(
     FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/caribouTools.cmake"
