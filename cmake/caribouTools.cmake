@@ -35,7 +35,12 @@ endfunction()
 #                             SOURCE_FILES         [<file1, ...>]
 #                             PUBLIC_HEADERS       [<file1, ...>]
 #                             PRIVATE_HEADERS      [<file1, ...>]
-#                             HEADER_PREFIX        [<relative_path>]    # default to "${PACKAGE_NAME}/${COMPONENT_NAME}"
+#                             HEADER_SRC_PREFIX     <[relative_path]>   # Path from where the relative path to the header files will be
+#                                                                       # computed. Default to "${CMAKE_CURRENT_SOURCE_DIR}/../..".
+#                             HEADER_BUILD_PREFIX   <[relative_path]>   # Path where the header file will be configured. Default to "${CMAKE_BINARY_DIR}/include/__P__"
+#                                                                       # where __P__ is the relative path between ${HEADER_SRC_PREFIX} and the header file path.
+#                             HEADER_INSTALL_PREFIX <[relative_path]>   # Path where the header file will be installed. Default to "include/__P__".
+#                                                                       # where __P__ is the relative path between ${HEADER_SRC_PREFIX} and the header file path.
 #                             PYTHON_FILES         [<file1, ...>]
 #                             PYTHON_TEST_FILES    [<file1, ...>]
 #                             LIBRARY_DESTINATION  [<folder_path>]      # default to "lib/${PREFIX}/${DESTINATION}"
@@ -44,7 +49,7 @@ endfunction()
 #
 # Creates a python modules from ${SOURCE_FILES} and deploy the resulting binary named "${NAME}.so" into
 # the folder ${LIBRARY_DESTINATION}. The ${PUBLIC_HEADERS} can be used to specify which header files
-# should be installed into ${HEADER_PREFIX}. Both ${PUBLIC_HEADERS} and ${PRIVATE_HEADERS} will be
+# should be installed. Both ${PUBLIC_HEADERS} and ${PRIVATE_HEADERS} will be
 # added to the compilation header search path. In addition, ${PYTHON_FILES} will be configured (if
 # suffixed by .in) or linked into the compilation directory ${CMAKE_BINARY_DIR}/${LIBRARY_DESTINATION}
 # and then installed in ${CMAKE_INSTALL_PREFIX}/${LIBRARY_DESTINATION}. Finally, ${PYTHON_TEST_FILES} will
@@ -52,7 +57,7 @@ endfunction()
 # and then installed in ${CMAKE_INSTALL_PREFIX}/${RUNTIME_DESTINATION}.
 function(caribou_add_python_module NAME)
     set(options QUIET)
-    set(oneValueArgs TARGET_NAME TARGET_ALIAS TARGET_VERSION COMPONENT_NAME PACKAGE_NAME DESTINATION PREFIX HEADER_PREFIX LIBRARY_DESTINATION RUNTIME_DESTINATION)
+    set(oneValueArgs TARGET_NAME TARGET_ALIAS TARGET_VERSION COMPONENT_NAME PACKAGE_NAME DESTINATION PREFIX HEADER_SRC_PREFIX HEADER_BUILD_PREFIX HEADER_INSTALL_PREFIX LIBRARY_DESTINATION RUNTIME_DESTINATION)
     set(multiValueArgs SOURCE_FILES PUBLIC_HEADERS PRIVATE_HEADERS PYTHON_FILES PYTHON_TEST_FILES TARGET_DEPENDS)
 
     cmake_parse_arguments(A "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -73,7 +78,9 @@ function(caribou_add_python_module NAME)
     set(SOURCE_FILES      "${A_SOURCE_FILES}")
     set(PUBLIC_HEADERS    "${A_PUBLIC_HEADERS}")
     set(PRIVATE_HEADERS   "${A_PRIVATE_HEADERS}")
-    set(HEADER_PREFIX     "${A_HEADER_PREFIX}")
+    set(HEADER_SRC_PREFIX     "${A_HEADER_SRC_PREFIX}")
+    set(HEADER_BUILD_PREFIX   "${A_HEADER_BUILD_PREFIX}")
+    set(HEADER_INSTALL_PREFIX "${A_HEADER_INSTALL_PREFIX}")
     set(PYTHON_FILES      "${A_PYTHON_FILES}")
     set(PYTHON_TEST_FILES "${A_PYTHON_TEST_FILES}")
     set(LIBRARY_DESTINATION ${A_LIBRARY_DESTINATION})
@@ -112,7 +119,7 @@ function(caribou_add_python_module NAME)
         endif ()
 
         if ("${pybind11_VERSION}" VERSION_GREATER_EQUAL "2.6.0")
-            target_link_libraries(${TARGET_NAME} PRIVATE pybind11::headers)
+            target_link_libraries(${TARGET_NAME} PUBLIC pybind11::headers)
             target_link_libraries(${TARGET_NAME} PRIVATE pybind11::embed)
             target_link_libraries(${TARGET_NAME} PRIVATE pybind11::lto)
             if(MSVC)
@@ -122,7 +129,7 @@ function(caribou_add_python_module NAME)
             pybind11_extension(${TARGET_NAME})
             pybind11_strip(${TARGET_NAME})
         else()
-            target_link_libraries(${TARGET_NAME} PRIVATE pybind11::module)
+            target_link_libraries(${TARGET_NAME} PUBLIC pybind11::module)
 
             # Equivalent to pybind11_extension(${TARGET_NAME}) which doesn't exists on pybind11 versions < 5
             set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "" SUFFIX "${PYTHON_MODULE_EXTENSION}")
@@ -160,15 +167,17 @@ function(caribou_add_python_module NAME)
         message(STATUS "${TARGET_NAME}: ${CMAKE_BINARY_DIR}/${LIBRARY_DESTINATION}")
 
         caribou_add_target_to_component(
-            TARGET_NAME          ${TARGET_NAME}
-            COMPONENT_NAME       ${COMPONENT_NAME}
-            PACKAGE_NAME         ${PACKAGE_NAME}
-            TARGET_VERSION       ${TARGET_VERSION}
-            PUBLIC_HEADERS       ${PUBLIC_HEADERS}
-            PRIVATE_HEADERS      ${PRIVATE_HEADERS}
-            HEADER_PREFIX        ${HEADER_PREFIX}
-            LIBRARY_DESTINATION  ${LIBRARY_DESTINATION}
-            RUNTIME_DESTINATION  ${RUNTIME_DESTINATION}
+            TARGET_NAME            ${TARGET_NAME}
+            COMPONENT_NAME         ${COMPONENT_NAME}
+            PACKAGE_NAME           ${PACKAGE_NAME}
+            TARGET_VERSION         ${TARGET_VERSION}
+            PUBLIC_HEADERS         ${PUBLIC_HEADERS}
+            PRIVATE_HEADERS        ${PRIVATE_HEADERS}
+            HEADER_SRC_PREFIX      ${HEADER_SRC_PREFIX}
+            HEADER_BUILD_PREFIX    ${HEADER_BUILD_PREFIX}
+            HEADER_INSTALL_PREFIX  ${HEADER_INSTALL_PREFIX}
+            LIBRARY_DESTINATION    ${LIBRARY_DESTINATION}
+            RUNTIME_DESTINATION    ${RUNTIME_DESTINATION}
         )
 
         # This will get the relative path from the current binding library to the plugin's "lib" directory.
@@ -321,16 +330,21 @@ macro(caribou_add_component_to_package)
 endmacro()
 
 # caribou_add_target_to_component (
-#     TARGET_NAME          <target_name>
-#     COMPONENT_NAME       <component_name>
-#     PACKAGE_NAME         <package_name>
-#     TARGET_VERSION       <version>           # defaults to ${PACKAGE_NAME}_VERSION
-#     PUBLIC_HEADERS       <[file1, ...]>
-#     PRIVATE_HEADERS      <[file1, ...]>
-#     HEADER_PREFIX        <[relative_path]>   # default to "${PACKAGE_NAME}/${COMPONENT_NAME}"
-#     RUNTIME_DESTINATION  <[folder_path]>     # default to "bin"
-#     LIBRARY_DESTINATION  <[folder_path]>     # default to "lib"
-#     ARCHIVE_DESTINATION  <[folder_path]>     # default to "lib"
+#     TARGET_NAME           <target_name>
+#     COMPONENT_NAME        <component_name>
+#     PACKAGE_NAME          <package_name>
+#     TARGET_VERSION        <version>           # defaults to ${PACKAGE_NAME}_VERSION
+#     PUBLIC_HEADERS        <[file1, ...]>
+#     PRIVATE_HEADERS       <[file1, ...]>
+#     HEADER_SRC_PREFIX     <[relative_path]>   # Path from where the relative path to the header files will be
+#                                               # computed. Default to "${CMAKE_CURRENT_SOURCE_DIR}/../..".
+#     HEADER_BUILD_PREFIX   <[relative_path]>   # Path where the header file will be configured. Default to "${CMAKE_BINARY_DIR}/include/__P__"
+#                                               # where __P__ is the relative path between ${HEADER_SRC_PREFIX} and the header file path.
+#     HEADER_INSTALL_PREFIX <[relative_path]>   # Path where the header file will be installed. Default to "include/__P__".
+#                                               # where __P__ is the relative path between ${HEADER_SRC_PREFIX} and the header file path.
+#     RUNTIME_DESTINATION   <[folder_path]>     # default to "bin"
+#     LIBRARY_DESTINATION   <[folder_path]>     # default to "lib"
+#     ARCHIVE_DESTINATION   <[folder_path]>     # default to "lib"
 # )
 #
 # Adds a target to a cmake component created using caribou_add_component.
@@ -342,18 +356,24 @@ endmacro()
 # The HEADER_PREFIX can be used to specify the relative prefix path where the header files will be configured/installed.
 # It is default to ${PACKAGE_NAME}/${COMPONENT_NAME}.
 macro(caribou_add_target_to_component)
-    set(oneValueArgs TARGET_NAME COMPONENT_NAME PACKAGE_NAME HEADER_PREFIX RUNTIME_DESTINATION LIBRARY_DESTINATION ARCHIVE_DESTINATION)
+    set(oneValueArgs TARGET_NAME COMPONENT_NAME PACKAGE_NAME HEADER_SRC_PREFIX HEADER_BUILD_PREFIX HEADER_INSTALL_PREFIX RUNTIME_DESTINATION LIBRARY_DESTINATION ARCHIVE_DESTINATION)
     set(multiValueArgs PUBLIC_HEADERS PRIVATE_HEADERS)
     set(optionalArgs )
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    # Header prefix
-    if (NOT ARG_HEADER_PREFIX)
-        if (ARG_PACKAGE_NAME)
-            set(ARG_HEADER_PREFIX "${ARG_PACKAGE_NAME}/${ARG_COMPONENT_NAME}")
-        else()
-            set(ARG_HEADER_PREFIX "${ARG_COMPONENT_NAME}")
-        endif()
+    # Header src prefix
+    if (NOT ARG_HEADER_SRC_PREFIX)
+        set(ARG_HEADER_SRC_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+    endif()
+
+    # Header build prefix
+    if (NOT ARG_HEADER_BUILD_PREFIX)
+        set(ARG_HEADER_BUILD_PREFIX "${CMAKE_BINARY_DIR}/include/__P__")
+    endif()
+
+    # Header install prefix
+    if (NOT ARG_HEADER_INSTALL_PREFIX)
+        set(ARG_HEADER_INSTALL_PREFIX "include/__P__")
     endif()
 
     # Target version
@@ -397,15 +417,15 @@ macro(caribou_add_target_to_component)
     endif()
 
     # Compile features
-    if (NOT TARGET_INTERFACE)
-        target_compile_features(${ARG_TARGET_NAME} PUBLIC cxx_std_17)
-    else ()
-        target_compile_features(${ARG_TARGET_NAME} INTERFACE cxx_std_17)
-    endif()
+    target_compile_features(${ARG_TARGET_NAME} ${VISIBILITY} cxx_std_17)
 
     # Include directories
-    target_include_directories(${ARG_TARGET_NAME} ${VISIBILITY} "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include/>")
-    target_include_directories(${ARG_TARGET_NAME} ${VISIBILITY} $<INSTALL_INTERFACE:include/${ARG_COMPONENT_NAME}>)
+    list(APPEND build_prefixes "${CMAKE_BINARY_DIR}/include")
+    if (ARG_HEADER_SRC_PREFIX)
+        list(APPEND build_prefixes "${ARG_HEADER_SRC_PREFIX}")
+    endif ()
+    target_include_directories(${ARG_TARGET_NAME} ${VISIBILITY} "$<BUILD_INTERFACE:${build_prefixes}>")
+    target_include_directories(${ARG_TARGET_NAME} ${VISIBILITY} $<INSTALL_INTERFACE:include>)
 
     # Install target
     install(
@@ -414,48 +434,57 @@ macro(caribou_add_target_to_component)
         RUNTIME DESTINATION "${ARG_RUNTIME_DESTINATION}" COMPONENT applications
         LIBRARY DESTINATION "${ARG_LIBRARY_DESTINATION}" COMPONENT libraries
         ARCHIVE DESTINATION "${ARG_ARCHIVE_DESTINATION}" COMPONENT libraries
-        PUBLIC_HEADER DESTINATION "include/${ARG_HEADER_PREFIX}" COMPONENT headers
+        PUBLIC_HEADER DESTINATION "include" COMPONENT headers
     )
 
     # Configure all header files (public or private)
     set(header_files ${ARG_PUBLIC_HEADERS} ${ARG_PRIVATE_HEADERS})
     foreach(header_file ${header_files})
-        file(RELATIVE_PATH path_from_package "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}")
-        get_filename_component(dir_from_package ${path_from_package} DIRECTORY)
-        get_filename_component(output_filename ${path_from_package} NAME)
+        set(dir_from_src "")
+        get_filename_component(output_filename ${header_file} NAME)
 
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include/${ARG_HEADER_PREFIX}/${dir_from_package}")
+        if (ARG_HEADER_SRC_PREFIX)
+            file(RELATIVE_PATH path_from_src "${ARG_HEADER_SRC_PREFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}")
+            get_filename_component(dir_from_src ${path_from_src} DIRECTORY)
+            get_filename_component(output_filename ${path_from_src} NAME)
+        endif()
 
         if (output_filename MATCHES "\\.in$")
-            string(REGEX REPLACE "\\.in$" "" output_filename ${output_filename})
-            configure_file("${header_file}" "${CMAKE_CURRENT_BINARY_DIR}/include/${ARG_HEADER_PREFIX}/${dir_from_package}/${output_filename}")
-        else()
-            caribou_link("${CMAKE_CURRENT_SOURCE_DIR}/${header_file}" "${CMAKE_CURRENT_BINARY_DIR}/include/${ARG_HEADER_PREFIX}/${dir_from_package}/${output_filename}")
+            string(REGEX REPLACE "\\.in$" "" configured_filename ${output_filename})
+            string(REPLACE "__P__" "${dir_from_src}" configured_path "${ARG_HEADER_BUILD_PREFIX}")
+            configure_file("${header_file}" "${configured_path}/${configured_filename}")
         endif()
     endforeach()
 
     # Install only public header files
     set(header_files ${ARG_PUBLIC_HEADERS})
     foreach(header_file ${header_files})
-        file(RELATIVE_PATH path_from_package "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}")
-        get_filename_component(dir_from_package ${path_from_package} DIRECTORY)
-        get_filename_component(output_filename ${path_from_package} NAME)
+        set(dir_from_src "")
+        get_filename_component(output_filename ${header_file} NAME)
+
+        if (ARG_HEADER_SRC_PREFIX)
+            file(RELATIVE_PATH path_from_src "${ARG_HEADER_SRC_PREFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}")
+            get_filename_component(dir_from_src ${path_from_src} DIRECTORY)
+            get_filename_component(output_filename ${path_from_src} NAME)
+        endif()
 
         if (output_filename MATCHES "\\.in$")
-            string(REGEX REPLACE "\\.in$" "" output_filename ${output_filename})
+            string(REGEX REPLACE "\\.in$" "" filename ${output_filename})
+            string(REPLACE "__P__" "${dir_from_src}" configuration_path "${ARG_HEADER_BUILD_PREFIX}")
+            string(REPLACE "__P__" "${dir_from_src}" installation_path "${ARG_HEADER_INSTALL_PREFIX}")
             install(
-                FILES "${CMAKE_CURRENT_BINARY_DIR}/include/${ARG_HEADER_PREFIX}/${dir_from_package}/${output_filename}"
-                DESTINATION "include/${ARG_COMPONENT_NAME}/${ARG_HEADER_PREFIX}/${dir_from_package}"
+                FILES "${configuration_path}/${filename}"
+                DESTINATION "${installation_path}"
                 COMPONENT headers
             )
         else()
+            string(REPLACE "__P__" "${dir_from_src}" installation_path "${ARG_HEADER_INSTALL_PREFIX}")
             install(
                 FILES "${header_file}"
-                DESTINATION "include/${ARG_COMPONENT_NAME}/${ARG_HEADER_PREFIX}/${dir_from_package}"
+                DESTINATION "${installation_path}"
                 COMPONENT headers
             )
         endif()
-
     endforeach()
 
 endmacro()

@@ -1,4 +1,4 @@
-project(Caribou.Bindings.SofaCaribou)
+project(SofaCaribou.Python)
 
 set(HEADER_FILES
     Forcefield/FictitiousGridElasticForce.h
@@ -30,14 +30,13 @@ set(PYTHON_FILES
 find_package(SofaPython3 REQUIRED)
 caribou_add_python_module(SofaCaribou
                           TARGET_NAME       ${PROJECT_NAME}
-                          TARGET_ALIAS      Caribou::Bindings.SofaCaribou
-                          TARGET_DEPENDS    Caribou::Geometry Caribou::Bindings.Config SofaCaribou SofaPython3::Bindings.Sofa.Core
-                          COMPONENT_NAME    Bindings
-                          PACKAGE_NAME      Caribou
+                          TARGET_ALIAS      Caribou::Python.SofaCaribou
+                          TARGET_DEPENDS    Caribou::Geometry Caribou::Python.Config SofaCaribou SofaPython3::Bindings.Sofa.Core
+                          COMPONENT_NAME    SofaCaribou
+                          PACKAGE_NAME      SofaCaribou
                           DESTINATION       SofaCaribou
                           SOURCE_FILES      ${SOURCE_FILES}
                           PUBLIC_HEADERS    ${HEADER_FILES}
-                          HEADER_PREFIX     SofaCaribou/Python
                           PYTHON_FILES      ${PYTHON_FILES}
                           PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
                           )

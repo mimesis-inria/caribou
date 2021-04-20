@@ -2,9 +2,9 @@ project(Config)
 
 set (HEADER_FILES
      config.h.in
-     constants.h
-     macros.h
-     traits.h
+     constants.h.in
+     macros.h.in
+     traits.h.in
      version.h.in
 )
 
@@ -25,7 +25,8 @@ caribou_add_target_to_component (
     COMPONENT_NAME ${PROJECT_NAME}
     PACKAGE_NAME   Caribou
     PUBLIC_HEADERS ${HEADER_FILES}
-    HEADER_PREFIX  "Caribou"
+    HEADER_BUILD_PREFIX  "${CMAKE_BINARY_DIR}/include/Caribou"
+    HEADER_INSTALL_PREFIX  "include/Caribou"
 )
 
 # This is required to be able to do "find_package(Caribou COMPONENTS Config)"

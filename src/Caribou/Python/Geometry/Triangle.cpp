@@ -6,8 +6,8 @@
 #include <Caribou/Geometry/Element.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Triangle.h>
-#include <Caribou/Bindings/Caribou.h>
-#include <Caribou/Bindings/Geometry/Element.h>
+#include <Caribou/Python/Caribou.h>
+#include <Caribou/Python/Geometry/Element.h>
 
 namespace py = pybind11;
 

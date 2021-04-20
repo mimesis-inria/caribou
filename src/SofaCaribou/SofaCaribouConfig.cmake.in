@@ -1,16 +1,23 @@
 @PACKAGE_INIT@
 
+# OPTIONS
+set(CARIBOU_WITH_OPENMP "@CARIBOU_WITH_OPENMP@")
+set(CARIBOU_WITH_SP3    "@CARIBOU_WITH_SP3@")
+
 # Caribou
 find_package(Caribou COMPONENTS Algebra Geometry Topology Mechanics REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "${Caribou_DIR}")
+
+# Python bindings
+if (CARIBOU_WITH_SP3)
+find_package(Caribou COMPONENTS Python REQUIRED)
+endif()
 
 # Sofa's packages
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 find_package(SOFA COMPONENTS SofaFramework SofaBaseLinearSolver SofaBaseTopology SofaEigen2Solver QUIET MODULE REQUIRED)
 
 if (CARIBOU_WITH_OPENMP)
     find_package(OpenMP REQUIRED)
 endif()
 
-include("${CMAKE_CURRENT_LIST_DIR}/@COMPONENT_NAME@Targets.cmake")
-
-check_required_components(@COMPONENT_NAME@)
+include("${CMAKE_CURRENT_LIST_DIR}/SofaCaribouTargets.cmake")

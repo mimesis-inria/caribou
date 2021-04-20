@@ -4,8 +4,8 @@
 #include <Eigen/Core>
 #include <Caribou/constants.h>
 #include <Caribou/Geometry/Segment.h>
-#include <Caribou/Bindings/Caribou.h>
-#include <Caribou/Bindings/Geometry/Element.h>
+#include <Caribou/Python/Caribou.h>
+#include <Caribou/Python/Geometry/Element.h>
 
 namespace py = pybind11;
 

@@ -118,20 +118,28 @@ endif()
 
 # Add the target to the component of the same name. This will enable to do:
 # CMakeLists.txt
-#    find_package(Caribou COMPONENTS SofaCaribou)
-#    add_library(my_cool_library SHARED)
-#    target_link_libraries(my_cool_library PRIVATE Caribou::SofaCaribou)
+#    find_package(SofaCaribou)
+#    add_library(my_cool_plugin SHARED)
+#    target_link_libraries(my_cool_library PRIVATE SofaCaribou)
 caribou_add_target_to_component (
-    TARGET_NAME    ${PROJECT_NAME}
-    COMPONENT_NAME SofaCaribou
-    PACKAGE_NAME   Caribou
-    PUBLIC_HEADERS "${TEMPLATE_FILES};${HEADER_FILES}"
-    HEADER_PREFIX  SofaCaribou
+    TARGET_NAME        ${PROJECT_NAME}
+    COMPONENT_NAME     SofaCaribou
+    PACKAGE_NAME       SofaCaribou
+    PUBLIC_HEADERS     "${TEMPLATE_FILES};${HEADER_FILES}"
+    HEADER_SRC_PREFIX  "${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
-# This is required to be able to do "find_package(Caribou COMPONENTS Plugin)"
-caribou_add_component_to_package (
-    COMPONENT_NAME SofaCaribou
-    PACKAGE_NAME   Caribou
+find_package(SofaPython3 QUIET)
+if (CARIBOU_WITH_SOFA AND SofaPython3_FOUND)
+    add_subdirectory(Python)
+    set(CARIBOU_WITH_SP3 ON)
+endif()
+
+install (
+    EXPORT SofaCaribouTargets
+    DESTINATION "lib/cmake/SofaCaribou"
+    COMPONENT headers
 )
 
+# This is required to be able to do "find_package(SofaCaribou)"
+caribou_create_package(SofaCaribou ${CARIBOU_VERSION})
