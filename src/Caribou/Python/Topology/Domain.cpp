@@ -7,7 +7,7 @@
 #include <Caribou/Geometry/Tetrahedron.h>
 #include <Caribou/Topology/Domain.h>
 
-#include <Caribou/Bindings/Topology/Domain.h>
+#include <Caribou/Python/Topology/Domain.h>
 
 namespace py = pybind11;
 
