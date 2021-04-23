@@ -1,12 +1,13 @@
 // Here are just several convenient functions to help user to know what contains the plugin
+#include <SofaCaribou/config.h>
 
 extern "C" {
-void        initExternalModule();
-const char* getModuleName();
-const char* getModuleVersion();
-const char* getModuleLicense();
-const char* getModuleDescription();
-const char* getModuleComponentList();
+    CARIBOU_API void        initExternalModule();
+    CARIBOU_API const char* getModuleName();
+    CARIBOU_API const char* getModuleVersion();
+    CARIBOU_API const char* getModuleLicense();
+    CARIBOU_API const char* getModuleDescription();
+    CARIBOU_API const char* getModuleComponentList();
 }
 
 void initExternalModule()
