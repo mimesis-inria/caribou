@@ -116,6 +116,8 @@ if (CARIBOU_WITH_OPENMP)
     target_compile_definitions(${PROJECT_NAME} PUBLIC CARIBOU_WITH_OPENMP)
 endif()
 
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
+
 # Add the target to the component of the same name. This will enable to do:
 # CMakeLists.txt
 #    find_package(SofaCaribou)
