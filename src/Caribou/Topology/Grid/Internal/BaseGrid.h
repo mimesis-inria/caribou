@@ -199,14 +199,14 @@ struct BaseGrid
                         }
                     }
                     {
-                        auto index = static_cast<std::size_t>(floor(rounded[axis] + d[axis]));
-                        if (index <= n[axis] - 1) { // Within the boundary of the grid
+                        auto index = static_cast<INTEGER_TYPE>(floor(rounded[axis] + d[axis]));
+                        if (index <= static_cast<INTEGER_TYPE>(n[axis] - 1)) { // Within the boundary of the grid
                             axis_indices[axis].emplace_back(index);
                         }
                     }
                 } else {
-                    auto index = static_cast<std::size_t>(floor(absolute[axis]));
-                    if (0 <= index and index <= n[axis]-1) { // Within the boundary of the grid
+                    auto index = static_cast<INTEGER_TYPE>(floor(absolute[axis]));
+                    if (0 <= index and index <= static_cast<INTEGER_TYPE>(n[axis]-1)) { // Within the boundary of the grid
                         axis_indices[axis].emplace_back(index);
                     }
                 }

@@ -9,6 +9,8 @@ set(HEADER_FILES
     Forcefield/FictitiousGridHyperelasticForce.h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
+    Forcefield/HyperelasticForcefield[Hexahedron].cpp
+    Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForce.h
     Material/HyperelasticMaterial.h
@@ -56,7 +58,8 @@ set(SOURCE_FILES
     Forcefield/FictitiousGridElasticForce.cpp
 #    Forcefield/FictitiousGridHyperelasticForce.cpp
     Forcefield/HexahedronElasticForce.cpp
-    Forcefield/HyperelasticForcefield.cpp
+    Forcefield/HyperelasticForcefield[Hexahedron].cpp
+    Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForce.cpp
     Material/HyperelasticMaterial.cpp

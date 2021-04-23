@@ -5,6 +5,7 @@
 #include <SofaSimulationGraph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.h>
+#include <SofaCaribou/Forcefield/HyperelasticForcefield[Hexahedron].h>
 
 using sofa::helper::system::PluginManager ;
 using namespace sofa::simulation;

@@ -15,16 +15,13 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <Caribou/config.h>
 #include <Caribou/constants.h>
 #include <Caribou/Geometry/Element.h>
-#include <Caribou/Geometry/Triangle.h>
-#include <Caribou/Geometry/Quad.h>
-#include <Caribou/Geometry/Tetrahedron.h>
-#include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Topology/Mesh.h>
 
 
 
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
+#include <SofaCaribou/Topology/CaribouTopology.h>
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
 namespace sofa { using Index = unsigned int; }
@@ -242,7 +239,9 @@ private:
     virtual auto get_gauss_nodes(const std::size_t & element_id, const Element & element) const -> GaussContainer;
 
     // Data members
-    Link<sofa::core::topology::BaseMeshTopology> d_topology_container;
+    /// This link is specifically set to point towards a very general BaseObject since it can be either a
+    /// BaseMeshTopology (SOFA topology container), or a CaribouTopology.
+    Link<sofa::core::objectmodel::BaseObject> d_topology_container;
     Link<material::HyperelasticMaterial<DataTypes>> d_material;
     Data<bool> d_enable_multithreading;
     Data<double> d_drawScale;
@@ -263,17 +262,5 @@ private:
     /// created by this force field to allow compatibility with SOFA topologies.
     std::unique_ptr< caribou::topology::Mesh<Dimension> > p_mesh;
 };
-
-// Tetrahedron specialization
-template <> void HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::create_domain_from(sofa::core::topology::BaseMeshTopology * topology) ;
-template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool;
-template <> auto HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>::templateName(const HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>> *) -> std::string;
-extern template class HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>;
-
-// Hexahedron specialization
-template <> void HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::create_domain_from(sofa::core::topology::BaseMeshTopology * topology) ;
-template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::mesh_is_compatible(const sofa::core::topology::BaseMeshTopology * topology) -> bool;
-template <> auto HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::templateName(const HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>> *) -> std::string;
-extern template class HyperelasticForcefield<caribou::geometry::Hexahedron < caribou::Linear>>;
 
 } // namespace SofaCaribou::forcefield
