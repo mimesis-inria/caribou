@@ -64,7 +64,7 @@ Quick example
         .. code-block:: xml
 
             <Node>
-                <RegularGridTopology name="grid" min="-7.5 -7.5 0" max="7.5 7.5 80" n="9 9 21">
+                <RegularGridTopology name="grid" min="-7.5 -7.5 0" max="7.5 7.5 80" n="9 9 21" />
                 <MechanicalObject src="@grid" />
                 <HexahedronSetTopologyContainer name="topology" src="@grid" />
                 <HexahedronElasticForce topology_container="@topology" youngModulus="3000" poissonRatio="0.49" corotated="1" printLog="1" />
