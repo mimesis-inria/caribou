@@ -55,7 +55,7 @@ Quick example
         .. code-block:: xml
 
             <Node>
-                <RegularGridTopology name="grid" min="-7.5 -7.5 0" max="7.5 7.5 80" n="9 9 21">
+                <RegularGridTopology name="grid" min="-7.5 -7.5 0" max="7.5 7.5 80" n="9 9 21" />
                 <MechanicalObject src="@grid" />
                 <HexahedronSetTopologyContainer name="hexahedral_topology" src="@grid" />
                 <TetrahedronSetTopologyContainer name="tetrahedral_topology" />
