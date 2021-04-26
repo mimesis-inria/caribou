@@ -87,6 +87,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(PYBIND11_FINDPYTHON ON)
 set(PYBIND11_PYTHON_VERSION 3)
 set(Python_FIND_FRAMEWORK LAST)
+find_package(SofaPython3 QUIET)
+if (SofaPython3_FOUND)
+    set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
+    set(PYBIND11_PYTHON_VERSION ${PYTHON_VERSION})
+endif()
 find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Interpreter Development QUIET)
 find_package(pybind11 CONFIG QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python_FOUND;pybind11_FOUND" OFF)
@@ -103,7 +108,6 @@ endif()
 
 # SOFA Python 3
 if (CARIBOU_WITH_SOFA)
-    find_package(SofaPython3 QUIET)
     get_filename_component(SOFA_ROOT_DIR "${SofaFramework_DIR}/../../.." ABSOLUTE)
     message(STATUS
             "Caribou with SOFA support\n"
