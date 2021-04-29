@@ -87,7 +87,7 @@ set(SOFA_FIND_COMPONENTS "${SOFA_FIND_COMPATIBLE_COMPONENTS}")
 
 set(_COMPONENT_FOUND )
 foreach(component ${SOFA_FIND_COMPONENTS})
-    sofa_find_package(${component} CONFIG QUIET HINTS ${SOFA_MODULE_DIR})
+    find_package(${component} CONFIG QUIET HINTS ${SOFA_MODULE_DIR})
     list(APPEND _COMPONENT_FOUND "${component}_FOUND")
     if(${component}_FOUND)
         set(SOFA_${component}_FOUND ${component}_FOUND)

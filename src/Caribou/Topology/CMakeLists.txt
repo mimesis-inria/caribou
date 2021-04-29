@@ -35,7 +35,13 @@ add_library(Caribou::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_link_libraries (${PROJECT_NAME} ${TARGET_VISIBILITY} Eigen3::Eigen)
 target_link_libraries(${PROJECT_NAME} ${TARGET_VISIBILITY} Caribou::Geometry)
-target_link_libraries(${PROJECT_NAME} ${TARGET_VISIBILITY} $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+        $<$<AND:$<PLATFORM_ID:Linux>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,8.0>>:stdc++fs>
+        $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:c++fs>)
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+        $<$<AND:$<PLATFORM_ID:Linux>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,8.0>>:LEGACY_CXX>
+        $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:LEGACY_CXX>)
+
 if (CARIBOU_WITH_VTK)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${VTK_LIBRARIES})
 endif()

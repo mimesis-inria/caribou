@@ -4,9 +4,9 @@ on: pull_request
 
 jobs:
   build:
-    name: Building on ubuntu 20.04
+    name: Building on ubuntu 18.04
     runs-on: ubuntu-20.04
-    container: jnbrunet/caribou-ubuntu-builder:v20.12
+    container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
     env:
       SOFA_ROOT: /opt/sofa
 
@@ -17,7 +17,7 @@ jobs:
       - name: Download SOFA Release
         run:  |
           curl --output sofa.zip -L \
-            https://github.com/sofa-framework/sofa/releases/download/v20.12.01/SOFA_v20.12.01_Linux.zip
+            https://github.com/sofa-framework/sofa/releases/download/v20.12.02/SOFA_v20.12.02_Linux.zip
           unzip sofa.zip -d temp
           mv temp/`ls temp` $SOFA_ROOT
 
@@ -46,7 +46,6 @@ jobs:
           export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
           ccache -z &&
           cmake
-          -GNinja
           -DCMAKE_C_COMPILER_LAUNCHER=ccache
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCARIBOU_BUILD_TESTS=ON
@@ -87,7 +86,7 @@ jobs:
       - name: Install SOFA v20.12.01
         run: |
           curl --output sofa.zip -L \
-            https://github.com/sofa-framework/sofa/releases/download/v20.12.01/SOFA_v20.12.01_Linux.zip
+            https://github.com/sofa-framework/sofa/releases/download/v20.12.02/SOFA_v20.12.02_Linux.zip
           unzip sofa.zip -d temp
           mv temp/`ls temp` $SOFA_ROOT
 
