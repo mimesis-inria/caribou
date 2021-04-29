@@ -9,13 +9,17 @@ set(SOURCE_FILES
         Forcefield/test_tractionforce.cpp
         ODE/test_backward_euler.cpp
         ODE/test_static.cpp
-        Topology/test_cariboutopology.cpp
         Topology/test_fictitiousgrid.cpp
 )
 
 enable_testing()
 
 find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver QUIET REQUIRED)
+find_package(Caribou COMPONENTS Topology REQUIRED)
+
+if (CARIBOU_WITH_VTK)
+    list(APPEND SOURCE_FILES Topology/test_cariboutopology.cpp)
+endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 

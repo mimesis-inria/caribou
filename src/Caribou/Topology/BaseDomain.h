@@ -50,6 +50,6 @@ namespace caribou::topology {
         /*!
          * Attach this Domain to the given Mesh.
          */
-        virtual inline void attach_to(const BaseMesh * mesh) = 0;
+        virtual void attach_to(const BaseMesh * mesh) = 0;
     };
 }

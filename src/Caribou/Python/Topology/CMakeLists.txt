@@ -37,8 +37,3 @@ caribou_add_python_module(Topology
                           PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
                           )
 
-if (NOT WIN32)
-    # Avoid an annoying warning since the bindings code are in "caribou/Python/*" but the headers are installed into
-    # "Caribou/Python/*" to be consistent with SOFA and the rest of caribou libraries.
-    target_compile_options(${PROJECT_NAME} PRIVATE "-Wno-nonportable-include-path")
-endif()

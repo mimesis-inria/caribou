@@ -268,7 +268,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          * \copydoc caribou::topology::BaseMesh::node
          */
         [[nodiscard]]
-        inline auto node(const UNSIGNED_INTEGER_TYPE & node_id) const -> Eigen::Vector3d {
+        inline auto node(const UNSIGNED_INTEGER_TYPE & node_id) const -> Eigen::Vector3d override {
             const auto p = position(node_id);
             Eigen::Vector3d n;
             n[0] = p[0];
