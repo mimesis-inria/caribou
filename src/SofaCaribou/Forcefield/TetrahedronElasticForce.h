@@ -3,6 +3,7 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <sofa/core/topology/BaseTopology.h>
@@ -10,6 +11,12 @@ DISABLE_ALL_WARNINGS_BEGIN
 DISABLE_ALL_WARNINGS_END
 
 #include <Caribou/Geometry/Tetrahedron.h>
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
+namespace sofa {
+using Index = sofa::core::topology::Topology::index_type;
+}
+#endif
 
 namespace SofaCaribou::forcefield {
 

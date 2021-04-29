@@ -41,7 +41,7 @@ public:
     using Real     = typename DataTypes::Real;
 
     template <typename ObjectType>
-    using Link = sofa::core::objectmodel::SingleLink<CaribouForcefield<Element>, ObjectType, sofa::core::BaseLink::FLAG_STRONGLINK>;
+    using Link = sofa::core::objectmodel::SingleLink<CaribouForcefield<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
     template<int nRows, int nColumns>
     using Matrix = typename caribou::geometry::Element<Element>::template Matrix<nRows, nColumns>;

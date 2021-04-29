@@ -16,7 +16,7 @@
 #include <Eigen/Dense>
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
 namespace sofa { using Index = unsigned int; }
 #endif
 
@@ -50,7 +50,7 @@ public:
     using Vec3   = Vector<3>;
 
     template <typename ObjectType>
-    using Link = sofa::core::objectmodel::SingleLink<HyperelasticForcefield<Element>, ObjectType, sofa::core::BaseLink::FLAG_STRONGLINK>;
+    using Link = sofa::core::objectmodel::SingleLink<HyperelasticForcefield<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
     // Data structures
     struct GaussNode {

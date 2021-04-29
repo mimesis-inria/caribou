@@ -6,12 +6,18 @@
 #include <SofaCaribou/Solver/LinearSolver.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/behavior/LinearSolver.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 DISABLE_ALL_WARNINGS_END
 
-#include <Eigen/Sparse>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
+namespace sofa {
+using Size = unsigned int;
+using Index = unsigned int;
+}
+#endif
 
 namespace SofaCaribou::solver {
 

@@ -55,7 +55,7 @@ public:
     using PointID  = sofa::core::topology::Topology::PointID;
 
     template <typename ObjectType>
-    using Link = sofa::core::objectmodel::SingleLink<CaribouTopology<Element>, ObjectType, sofa::core::BaseLink::FLAG_STRONGLINK>;
+    using Link = sofa::core::objectmodel::SingleLink<CaribouTopology<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
     template <typename T>
     using Data = sofa::core::objectmodel::Data<T>;
