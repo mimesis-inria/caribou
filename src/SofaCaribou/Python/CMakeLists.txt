@@ -1,8 +1,6 @@
 project(SofaCaribou.Python)
 
 set(HEADER_FILES
-    Forcefield/FictitiousGridElasticForce.h
-    Forcefield/FictitiousGridHyperelasticForcefield.h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
     Ode/LegacyStaticODESolver.h
@@ -13,8 +11,6 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
     SofaCaribou.cpp
-    Forcefield/FictitiousGridElasticForce.cpp
-    Forcefield/FictitiousGridHyperelasticForcefield.cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield.cpp
     Ode/LegacyStaticODESolver.cpp

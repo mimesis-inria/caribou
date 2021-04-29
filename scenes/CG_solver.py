@@ -10,7 +10,7 @@ youngModulus = 3000
 
 
 def createScene(root):
-    root.addObject('APIVersion', level='17.06')
+    root.addObject('APIVersion', level='21.06')
 
     root.addObject('RequiredPlugin', name='SofaComponentAll')
     root.addObject('RequiredPlugin', name='SofaOpenglVisual')
@@ -36,7 +36,7 @@ def createScene(root):
 
     meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
     meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads', printLog=True)
+    meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1/increments, topology='@quad_container', printLog=True)
 
     i+=1
     tx = 20*i
@@ -54,7 +54,7 @@ def createScene(root):
 
     meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
     meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads', printLog=True)
+    meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1/increments, topology='@quad_container', printLog=True)
 
     i+=1
     tx = 20*i
@@ -72,4 +72,4 @@ def createScene(root):
 
     meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
     meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/increments, quads='@quad_container.quads', printLog=True)
+    meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1/increments, topology='@quad_container', printLog=True)

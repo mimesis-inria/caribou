@@ -60,4 +60,4 @@ def createScene(root):
     # Apply traction on the right side of the beam
     meca.addObject('BoxROI', name='top_roi', quad='@../grid.quad', box=[-7.5, -7.5, 79.9, 7.5, 7.5, 80.1])
     meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
-    meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/5, quads='@quad_container.quads')
+    meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1/5, topology='@quad_container')

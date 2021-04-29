@@ -45,4 +45,3 @@ def createScene(root):
     root.hex20.addObject('FixedConstraint', indices='@fixed_roi.indices')
     root.hex20.addObject('CaribouTopology', name='surface_topology', template='Quad8', indices=beam_q2.cells_dict['quad8'][np.array(np.ma.masked_equal(beam_q2.cell_data['gmsh:physical'][0], 2).mask)].tolist())
     root.hex20.addObject('TractionForcefield', traction=[0, 600, 0], slope=1, topology='@surface_topology', printLog=True)
-

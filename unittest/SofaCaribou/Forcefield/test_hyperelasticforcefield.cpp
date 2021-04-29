@@ -50,7 +50,7 @@ TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
     // Apply traction on the right side of the beam
     createObject(meca, "BoxROI", {{"name", "top_roi"}, {"quad", "@surface_topology.quad"}, {"box", "-7.5 -7.5 79.9 7.5 7.5 80.1"}});
     createObject(meca, "QuadSetTopologyContainer", {{"name", "traction_container"}, {"quads", "@top_roi.quadInROI"}});
-    createObject(meca, "TractionForce", {{"traction", "0 -30 0"}, {"slope", "0.2"}, {"quads", "@traction_container.quads"}});
+    createObject(meca, "TractionForcefield", {{"traction", "0 -30 0"}, {"slope", "0.2"}, {"topology", "@traction_container"}});
 
     getSimulation()->init(root.get());
 

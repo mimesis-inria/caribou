@@ -10,8 +10,6 @@ set(HEADER_FILES
     Forcefield/CaribouForcefield[Quad].h
     Forcefield/CaribouForcefield[Tetrahedron].h
     Forcefield/CaribouForcefield[Triangle].h
-    Forcefield/FictitiousGridElasticForce.h
-    Forcefield/FictitiousGridHyperelasticForce.h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
     Forcefield/HyperelasticForcefield[Hexahedron].h
@@ -64,8 +62,6 @@ set(TEMPLATE_FILES
 
 set(SOURCE_FILES
     Algebra/BaseVectorOperations.cpp
-    Forcefield/FictitiousGridElasticForce.cpp
-#    Forcefield/FictitiousGridHyperelasticForce.cpp
     Forcefield/CaribouForcefield[Hexahedron].cpp
     Forcefield/CaribouForcefield[Quad].cpp
     Forcefield/CaribouForcefield[Tetrahedron].cpp
