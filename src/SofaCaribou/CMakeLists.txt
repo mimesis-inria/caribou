@@ -5,14 +5,21 @@ set(HEADER_FILES
     Algebra/BaseVectorOperations.h
     Algebra/EigenMatrix.h
     Algebra/EigenVector.h
+    Forcefield/CaribouForcefield.h
+    Forcefield/CaribouForcefield[Hexahedron].h
+    Forcefield/CaribouForcefield[Quad].h
+    Forcefield/CaribouForcefield[Tetrahedron].h
+    Forcefield/CaribouForcefield[Triangle].h
     Forcefield/FictitiousGridElasticForce.h
     Forcefield/FictitiousGridHyperelasticForce.h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
-    Forcefield/HyperelasticForcefield[Hexahedron].cpp
-    Forcefield/HyperelasticForcefield[Tetrahedron].cpp
+    Forcefield/HyperelasticForcefield[Hexahedron].h
+    Forcefield/HyperelasticForcefield[Tetrahedron].h
     Forcefield/TetrahedronElasticForce.h
-    Forcefield/TractionForce.h
+    Forcefield/TractionForcefield.h
+    Forcefield/TractionForcefield[Quad].h
+    Forcefield/TractionForcefield[Triangle].h
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
@@ -43,7 +50,9 @@ set(HEADER_FILES
 )
 
 set(TEMPLATE_FILES
+    Forcefield/CaribouForcefield.inl
     Forcefield/HyperelasticForcefield.inl
+    Forcefield/TractionForcefield.inl
     Solver/EigenSolver.inl
     Topology/CaribouMesh.inl
     Topology/CaribouTopology.inl
@@ -57,11 +66,16 @@ set(SOURCE_FILES
     Algebra/BaseVectorOperations.cpp
     Forcefield/FictitiousGridElasticForce.cpp
 #    Forcefield/FictitiousGridHyperelasticForce.cpp
+    Forcefield/CaribouForcefield[Hexahedron].cpp
+    Forcefield/CaribouForcefield[Quad].cpp
+    Forcefield/CaribouForcefield[Tetrahedron].cpp
+    Forcefield/CaribouForcefield[Triangle].cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield[Hexahedron].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     Forcefield/TetrahedronElasticForce.cpp
-    Forcefield/TractionForce.cpp
+    Forcefield/TractionForcefield[Quad].cpp
+    Forcefield/TractionForcefield[Triangle].cpp
     Material/HyperelasticMaterial.cpp
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp

@@ -88,7 +88,7 @@ void CaribouTopology<Element>::init() {
         // If some indices are set, but no mechanical state is linked, let's try to find one in the current context node
         if (not d_indices.getValue().empty() and d_state.get() == nullptr) {
             auto * context = this->getContext();
-            auto state = context->get<sofa::core::State<DataTypes>>(BaseContext::Local);
+            auto state = context->template get<sofa::core::State<DataTypes>>(BaseContext::Local);
             if (state) {
                 d_state.set(state);
                 msg_info() << "Automatically found the mechanical state '" << d_state.get()->getPathName() << "'.";

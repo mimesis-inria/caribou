@@ -1,14 +1,16 @@
 #pragma once
 
+#include <SofaCaribou/config.h>
 #include <Caribou/Geometry/Element.h>
 #include <Caribou/Topology/Mesh.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/State.h>
 #include <sofa/core/topology/Topology.h>
-
 #include <sofa/defaulttype/VecTypes.h>
+DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::topology {
 // Traits to get the Sofa vector type from the dimension
@@ -77,9 +79,26 @@ public:
     }
 
     /**
+     * Construct an element of the domain using the positions vector of the associated mechanical state at rest (rest_position).
+     * @param element_id The id of the element in this topology.
+     * @return A new Element instance from the domain.
+     */
+    [[nodiscard]] auto
+    element(const UNSIGNED_INTEGER_TYPE & element_id) const noexcept -> Element {
+        return this->p_domain->element(element_id);
+    }
+
+    /**
      * Get the pointer to the internal domain instance.
      */
-    auto domain() const -> const caribou::topology::Domain<Element, PointID> * {return p_domain;}
+    inline auto domain() const noexcept -> const caribou::topology::Domain<Element, PointID> * {return p_domain;}
+
+    /**
+     * Get the number of elements contained inside this topology.
+     */
+    [[nodiscard]] inline auto number_of_elements() const noexcept {
+        return (p_domain ? p_domain->number_of_elements() : 0);
+    }
 
     /**
      * Attach the underlying Domain to the given one and fill in the data attribute 'indices'.
