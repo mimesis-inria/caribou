@@ -24,10 +24,10 @@ void CaribouTopology<Element>::attachDomain(const caribou::topology::Domain<Elem
     const auto number_of_elements = domain->number_of_elements();
     indices.resize(number_of_elements);
 
-    for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
+    for (sofa::Index element_id = 0; element_id < number_of_elements; ++element_id) {
         const auto element_indices = domain->element_indices(element_id);
-        for (std::size_t node_id = 0; node_id < NumberOfNodes; ++node_id) {
-            indices[element_id][node_id] = element_indices[node_id];
+        for (sofa::Index node_id = 0; node_id < NumberOfNodes; ++node_id) {
+            indices[element_id][node_id] = static_cast<PointID>(element_indices[node_id]);
         }
     }
 }

@@ -434,7 +434,7 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
                 domain->attach_to(this);
             }
 
-            p_domains.template emplace_back(name, domain);
+            p_domains.emplace_back(name, domain);
             return domain;
         }
 

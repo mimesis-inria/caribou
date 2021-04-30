@@ -31,7 +31,6 @@ set(HEADER_FILES
     Solver/LinearSolver.h
     Solver/LLTSolver.h
     Solver/LUSolver.h
-    Topology/CaribouMesh.h
     Topology/CaribouTopology.h
     Topology/CaribouTopology[Hexahedron].h
     Topology/CaribouTopology[Quad].h
@@ -52,7 +51,6 @@ set(TEMPLATE_FILES
     Forcefield/HyperelasticForcefield.inl
     Forcefield/TractionForcefield.inl
     Solver/EigenSolver.inl
-    Topology/CaribouMesh.inl
     Topology/CaribouTopology.inl
     Topology/FictitiousGrid.inl
     Solver/LDLTSolver.inl
@@ -81,7 +79,6 @@ set(SOURCE_FILES
     Solver/LDLTSolver.cpp
     Solver/LLTSolver.cpp
     Solver/LUSolver.cpp
-    Topology/CaribouMesh.cpp
     Topology/CaribouTopology[Hexahedron].cpp
     Topology/CaribouTopology[Quad].cpp
     Topology/CaribouTopology[Tetrahedron].cpp

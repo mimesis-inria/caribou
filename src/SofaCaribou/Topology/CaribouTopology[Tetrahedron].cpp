@@ -1,7 +1,10 @@
+#include <SofaCaribou/config.h>
 #include <SofaCaribou/Topology/CaribouTopology.inl>
 #include <SofaCaribou/Topology/CaribouTopology[Tetrahedron].h>
 
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
+DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
 using namespace caribou::geometry;

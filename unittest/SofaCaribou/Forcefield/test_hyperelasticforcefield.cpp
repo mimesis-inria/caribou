@@ -1,9 +1,14 @@
+#include <SofaCaribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/testing/BaseTest.h>
 #include <sofa/simulation/Node.h>
 #include <SofaBaseMechanics/MechanicalObject.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
+DISABLE_ALL_WARNINGS_END
+
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.h>
 #include <SofaCaribou/Forcefield/HyperelasticForcefield[Hexahedron].h>
 

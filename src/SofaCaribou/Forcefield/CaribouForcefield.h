@@ -8,7 +8,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/defaulttype/VecTypes.h>
-DISABLE_ALL_WARNINGS_BEGIN
+DISABLE_ALL_WARNINGS_END
 
 #include <Caribou/config.h>
 #include <Caribou/constants.h>
