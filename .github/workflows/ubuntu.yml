@@ -1,13 +1,17 @@
-name: CI
+name: Linux
 
 on: pull_request
 
 jobs:
-  build:
-    name: Building on ubuntu 18.04
+  build_v20_12:
+    name: Building with SOFA ${{ matrix.sofa_version }}
     runs-on: ubuntu-20.04
     container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
+    strategy:
+      matrix:
+        sofa_version: [ v20.06.01, v20.12.02 ]
     env:
+      SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
 
     steps:
@@ -17,7 +21,7 @@ jobs:
       - name: Download SOFA Release
         run:  |
           curl --output sofa.zip -L \
-            https://github.com/sofa-framework/sofa/releases/download/v20.12.02/SOFA_v20.12.02_Linux.zip
+            https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_$SOFA_VERSION_Linux.zip
           unzip sofa.zip -d temp
           mv temp/`ls temp` $SOFA_ROOT
 
@@ -59,76 +63,77 @@ jobs:
       - name: Archive production
         uses: actions/upload-artifact@v2
         with:
-          name: caribou-ubuntu-1804
+          name: caribou_${{ matrix.sofa_version }}
           path: install
-  test:
-    name: Testing on ubuntu 20.04
-    needs: [build]
-    runs-on: ubuntu-20.04
-    container: ubuntu:20.04
-    env:
-      SOFA_ROOT: /opt/sofa
-      CARIBOU_ROOT: /opt/sofa/plugins/SofaCaribou
 
-    steps:
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install dependencies
-        run: |
-               apt-get update
-               apt-get -qq --no-install-recommends install \
-                  libgl1-mesa-glx libglib2.0-0 libglx0 libopengl0 libharfbuzz0b libgomp1 curl ca-certificates unzip
-               python -m pip install numpy meshio
-
-      - name: Install SOFA v20.12.01
-        run: |
-          curl --output sofa.zip -L \
-            https://github.com/sofa-framework/sofa/releases/download/v20.12.02/SOFA_v20.12.02_Linux.zip
-          unzip sofa.zip -d temp
-          mv temp/`ls temp` $SOFA_ROOT
-
-      - name: Install caribou
-        uses: actions/download-artifact@v2
-        with:
-          name: caribou-ubuntu-1804
-          path: /opt/sofa/plugins/SofaCaribou
-
-      - name: Caribou.unittests.Geometry
-        if: ${{ always() }}
-        run:
-          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Geometry &&
-          $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
-
-      - name: Caribou.Geometry.PyTest
-        if: ${{ always() }}
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
-          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Geometry_Test.py
-
-
-      - name: Caribou.unittests.Topology
-        if: ${{ always() }}
-        run:
-          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Topology &&
-          $CARIBOU_ROOT/bin/Caribou.unittests.Topology
-
-      - name: Caribou.Topology.PyTest
-        if: ${{ always() }}
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
-          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Topology_Test.py
-
-      - name: Caribou.unittests.Mechanics
-        if: ${{ always() }}
-        run:
-          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics &&
-          $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
-
-      - name: Caribou.unittests.SofaCaribou
-        if: ${{ always() }}
-        run:
-            chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou &&
-            $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
+#  test_v20_12:
+#    name: Testing with SOFA v20.12
+#    needs: [build_v20_12]
+#    runs-on: ubuntu-20.04
+#    container: ubuntu:20.04
+#    env:
+#      SOFA_ROOT: /opt/sofa
+#      CARIBOU_ROOT: /opt/sofa/plugins/SofaCaribou
+#
+#    steps:
+#      - name: Set up Python 3.7
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.7'
+#
+#      - name: Install dependencies
+#        run: |
+#               apt-get update
+#               apt-get -qq --no-install-recommends install \
+#                  libgl1-mesa-glx libglib2.0-0 libglx0 libopengl0 libharfbuzz0b libgomp1 curl ca-certificates unzip
+#               python -m pip install numpy meshio
+#
+#      - name: Install SOFA
+#        run: |
+#          curl --output sofa.zip -L \
+#            https://github.com/sofa-framework/sofa/releases/download/v20.12.02/SOFA_v20.12.02_Linux.zip
+#          unzip sofa.zip -d temp
+#          mv temp/`ls temp` $SOFA_ROOT
+#
+#      - name: Install caribou
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: caribou-ubuntu-1804
+#          path: /opt/sofa/plugins/SofaCaribou
+#
+#      - name: Caribou.unittests.Geometry
+#        if: ${{ always() }}
+#        run:
+#          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Geometry &&
+#          $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
+#
+#      - name: Caribou.Geometry.PyTest
+#        if: ${{ always() }}
+#        run: |
+#          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
+#          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Geometry_Test.py
+#
+#
+#      - name: Caribou.unittests.Topology
+#        if: ${{ always() }}
+#        run:
+#          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Topology &&
+#          $CARIBOU_ROOT/bin/Caribou.unittests.Topology
+#
+#      - name: Caribou.Topology.PyTest
+#        if: ${{ always() }}
+#        run: |
+#          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
+#          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Topology_Test.py
+#
+#      - name: Caribou.unittests.Mechanics
+#        if: ${{ always() }}
+#        run:
+#          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics &&
+#          $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
+#
+#      - name: Caribou.unittests.SofaCaribou
+#        if: ${{ always() }}
+#        run:
+#            chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou &&
+#            $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
