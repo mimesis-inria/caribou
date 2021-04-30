@@ -52,14 +52,14 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_INSTALL_PREFIX=install
           .
-          && ninja && ninja install
+          && make && make install
           && echo ${CCACHE_BASEDIR}
           && ccache -s
 
       - name: Archive production
         uses: actions/upload-artifact@v2
         with:
-          name: caribou-ubuntu-2004
+          name: caribou-ubuntu-1804
           path: install
   test:
     name: Testing on ubuntu 20.04
@@ -93,7 +93,7 @@ jobs:
       - name: Install caribou
         uses: actions/download-artifact@v2
         with:
-          name: caribou-ubuntu-2004
+          name: caribou-ubuntu-1804
           path: /opt/sofa/plugins/SofaCaribou
 
       - name: Caribou.unittests.Geometry
