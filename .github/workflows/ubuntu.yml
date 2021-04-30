@@ -4,7 +4,7 @@ on: pull_request
 
 jobs:
   build_v20_12:
-    name: Building with SOFA ${{ matrix.sofa_version }}
+    name: Building with ${{ matrix.sofa_version }}
     runs-on: ubuntu-20.04
     container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
     strategy:
@@ -21,7 +21,7 @@ jobs:
       - name: Download SOFA Release
         run:  |
           curl --output sofa.zip -L \
-            https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_$SOFA_VERSION_Linux.zip
+            "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
           unzip sofa.zip -d temp
           mv temp/`ls temp` $SOFA_ROOT
 
