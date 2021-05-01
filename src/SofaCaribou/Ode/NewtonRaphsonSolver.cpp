@@ -4,6 +4,7 @@
 #include <chrono>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/Node.h>
@@ -12,6 +13,10 @@ DISABLE_ALL_WARNINGS_BEGIN
 
 #include <SofaCaribou/Solver/LinearSolver.h>
 #include <SofaCaribou/Algebra/BaseVectorOperations.h>
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
+namespace sofa { using Size = int; }
+#endif
 
 namespace SofaCaribou::ode {
 

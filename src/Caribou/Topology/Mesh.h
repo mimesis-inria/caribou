@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 namespace caribou::topology {
 
@@ -123,12 +124,13 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
         using NodeContainer_t = std::decay_t<NodeContainerType>;
         static_assert(WorldDimension == 1 or WorldDimension == 2 or WorldDimension == 3, "The world dimension must be 1, 2 or 3.");
 
+        using Self = Mesh<WorldDimension, NodeContainer_t>;
         static constexpr INTEGER_TYPE Dimension = WorldDimension;
         using Real = typename NodeContainer_t::Scalar;
         using WorldCoordinates = Eigen::Matrix<Real, 1, Dimension>;
 
         template <typename Element, typename NodeIndex = UNSIGNED_INTEGER_TYPE>
-        using Domain = Domain<Mesh, Element, NodeIndex>;
+        using Domain = Domain<Element, NodeIndex>;
 
         /*!
          * Default constructor for an empty mesh.
@@ -263,6 +265,23 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
         inline auto number_of_nodes() const -> UNSIGNED_INTEGER_TYPE final {return p_nodes.size();};
 
         /*!
+         * \copydoc caribou::topology::BaseMesh::node
+         */
+        [[nodiscard]]
+        inline auto node(const UNSIGNED_INTEGER_TYPE & node_id) const -> Eigen::Vector3d override {
+            const auto p = position(node_id);
+            Eigen::Vector3d n;
+            n[0] = p[0];
+            if constexpr (Dimension > 1) {
+                n[1] = p[1];
+            }
+            if constexpr (Dimension > 2) {
+                n[2] = p[2];
+            }
+            return n;
+        }
+
+        /*!
          * Get the list of domains of the mesh.
          */
         [[nodiscard]]
@@ -321,13 +340,9 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             }
 
             auto domain_ptr = new Domain<Element, NodeIndex>(this, std::forward<Args>(args)...);
-            auto res = p_domains.emplace(p_domains.end(), name, std::unique_ptr<BaseDomain>(static_cast<BaseDomain *>(domain_ptr)));
-            if (res->second) {
-                return domain_ptr;
-            } else {
-                delete domain_ptr;
-                return static_cast<Domain<Element, NodeIndex>*> (nullptr);
-            }
+            add_domain(domain_ptr, name);
+
+            return domain_ptr;
         }
 
         /*!
@@ -345,17 +360,9 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
 
             auto domain_ptr = new Domain<Element, NodeIndex>(this, std::forward<Args>(args)...);
+            add_domain(domain_ptr);
 
-            std::ostringstream ss;
-            ss << "domain_" << domain_ptr;
-
-            auto res = p_domains.emplace(p_domains.end(), ss.str(), std::unique_ptr<BaseDomain>(static_cast<BaseDomain *>(domain_ptr)));
-            if (res->second) {
-                return domain_ptr;
-            } else {
-                delete domain_ptr;
-                return static_cast<Domain<Element, NodeIndex>*> (nullptr);
-            }
+            return domain_ptr;
         }
 
         /*!
@@ -397,16 +404,47 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             static_assert(geometry::traits<Element>::Dimension == Dimension, "The dimension of the mesh doesn't match the dimension of the element type.");
             auto domain_ptr = new Domain<Element>(this, std::forward<Args>(args)...);
 
-            std::ostringstream ss;
-            ss << "domain_" << domain_ptr;
+            add_domain(domain_ptr);
+            return domain_ptr;
+        }
 
-            auto res = p_domains.emplace(p_domains.end(), ss.str(), std::unique_ptr<BaseDomain>(static_cast<BaseDomain *>(domain_ptr)));
-            if (res->second) {
-                return domain_ptr;
+        /*!
+         * \copydoc caribou::topology::BaseMesh::add_domain
+         */
+        inline auto add_domain(BaseDomain * domain, const std::string & name) -> BaseDomain * override {
+            if (domain->mesh() == this) {
+                // Trying to attach the same mesh as the one which is already attached to this domain
+                using namespace std;
+                auto it = find_if(begin(p_domains), end(p_domains), [&domain](const auto & d) {
+                    return (d.second.get() == domain);
+                });
+                if (it != end(p_domains)) {
+                    if ((*it).first != name) {
+                        // The domain is already linked to this mesh, but with a different name
+                        throw std::logic_error("Trying to add a domain that is already attached to this mesh but with a different name.");
+                    }
+
+                    // The domain is already linked to this mesh, with the same name, let's simply return it
+                    return domain;
+                }
+            } else if (domain->mesh() != nullptr) {
+                // The domain is already attached to another Mesh
+                throw std::logic_error("Trying to add a domain that is already attached to another Mesh instance.");
             } else {
-                delete domain_ptr;
-                return static_cast<Domain<Element>*> (nullptr);
+                domain->attach_to(this);
             }
+
+            p_domains.emplace_back(name, domain);
+            return domain;
+        }
+
+        /*!
+         * \copydoc caribou::topology::BaseMesh::add_domain
+         */
+        inline auto add_domain(BaseDomain * domain) -> BaseDomain * override {
+            std::ostringstream ss;
+            ss << "domain_" << domain;
+            return add_domain(domain, ss.str());
         }
 
         /*!
@@ -574,14 +612,16 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
          */
         std::vector<std::pair<std::string, std::unique_ptr<BaseDomain>>> p_domains;
     };
+} // namespace caribou::topology
 
+
+namespace caribou::topology {
     // -------------------------------------------------------------------------------------
     //                                    IMPLEMENTATION
     // -------------------------------------------------------------------------------------
     // Implementation of methods that can be specialized later for an explicit container type
     // -------------------------------------------------------------------------------------
 
-    // None for now
 
     // -------------------------------------------------------------------------------------
     //                               TEMPLATE DEDUCTION GUIDES
@@ -609,4 +649,4 @@ struct EigenNodesHolder<Eigen::Matrix<Scalar_t, Rows, Cols, Options, MaxRows, Ma
             >
         >
     >;
-}
+} // namespace caribou::topology

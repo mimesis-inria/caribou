@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import Sofa
-import SofaCaribou
 from math import sqrt, pi, cos
 
 radius = 5
@@ -18,8 +17,8 @@ mx = ((circle_corner + 2*circle_corner) - radius)*s + eps
 
 
 def createScene(root):
-    root.bbox = [-radius, -radius, -1, radius, radius, 1]
-    root.addObject('APIVersion', level='20.06')
+    root.bbox = " ".join([str(a) for a in [-radius, -radius, -1, radius, radius, 1]])
+    root.addObject('APIVersion', level='21.06')
     root.addObject('InteractiveCamera', position=[0, 0, 1], lookAt=[0, 0, 0], projectionType=1, printLog=True)
 
     root.addObject('CircleIsoSurface', radius=radius, center=[0, 0])

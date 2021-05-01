@@ -15,7 +15,7 @@ template <UNSIGNED_INTEGER_TYPE Dim, typename MatrixType>
 void declare_mesh(py::module & m) {
     using M = Mesh<Dim, EigenNodesHolder<MatrixType>>;
     std::string name = typeid(M).name();
-    py::class_<M> c(m, name.c_str());
+    py::class_<M, BaseMesh> c(m, name.c_str());
 
     c.def("dimension", &M::dimension);
     c.def("number_of_domains", &M::number_of_domains);
@@ -36,7 +36,13 @@ void declare_mesh(py::module & m) {
         return m.positions(indices);
     }, py::arg("indices").noconvert());
 
-    declare_domains(c);
+    c.def("add_domain", [m](const M & self, const std::string & domain_name, py::object element_type, py::object node_indices) {
+        return m.attr("add_domain")(self, domain_name, element_type, node_indices);
+    }, py::arg("domain_name"), py::arg("element_type"), py::arg("node_indices"));
+
+    c.def("add_domain", [m](const M & self, py::object element_type, py::object node_indices) {
+        return m.attr("add_domain")(self, element_type, node_indices);
+    }, py::arg("element_type"), py::arg("node_indices"));
 
     m.def("Mesh", [](const MatrixType & nodes) {
         return py::cast(M(nodes));
@@ -50,6 +56,8 @@ void declare_mesh(py::module &m) {
 }
 
 void create_mesh(py::module & m) {
+    py::class_<BaseMesh> a (m, "BaseMesh");
+
     declare_mesh<1>(m);
     declare_mesh<2>(m);
     declare_mesh<3>(m);

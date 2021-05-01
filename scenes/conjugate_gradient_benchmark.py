@@ -190,7 +190,7 @@ class Controller(Sofa.Core.Controller):
 
 def createScene(root):
     root.addObject(Controller())
-    root.addObject('APIVersion', level='17.06')
+    root.addObject('APIVersion', level='21.06')
 
     root.addObject('RequiredPlugin', name='SofaComponentAll')
     root.addObject('RequiredPlugin', name='SofaOpenglVisual')
@@ -222,7 +222,8 @@ def createScene(root):
         meca.addObject('BoxROI', name='top_roi',  box=[-radius-eps, -radius-eps, +length/2-eps, radius+eps, radius+eps, +length/2+eps], quad='@mechanical_topology.quads')
 
         meca.addObject('FixedConstraint', indices='@base_roi.indices')
-        meca.addObject('TractionForce', traction=[0, -30, 0], slope=1/5, quads='@top_roi.quadInROI')
+        meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
+        meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1/5, topology='@quad_container')
 
 
 if __name__ == "__main__":
