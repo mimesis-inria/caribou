@@ -27,7 +27,11 @@ TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
+#else
+    createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
+#endif
 #if (defined(SOFA_VERSION) && SOFA_VERSION > 201299)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
 #endif

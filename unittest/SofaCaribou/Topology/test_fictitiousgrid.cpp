@@ -19,7 +19,9 @@ class FictitiousGrid : public sofa::helper::testing::BaseTest {
     void SetUp() override {
         setSimulation(new sofa::simulation::graph::DAGSimulation()) ;
         root = getSimulation()->createNewNode("root");
-        createObject(root, "RequiredPlugin", {{"name", "SofaGeneralLoader"}});
+#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
+        createObject(root, "RequiredPlugin", {{"pluginName", "SofaGeneralLoader"}});
+#endif
     }
     void TearDown() override {
         root.reset();
