@@ -105,7 +105,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: caribou_${{ matrix.sofa_version }}
-          path: /tmp/SofaCaribou.tar.gz
+          path: /tmp
+
       -name: Unpack caribou
         run: tar xzf /tmp/SofaCaribou.tar.gz -C /opt/sofa/plugins
 
