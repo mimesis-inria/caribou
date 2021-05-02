@@ -16,12 +16,12 @@
 
 namespace caribou::topology::io {
 
-template<UNSIGNED_INTEGER_TYPE Dimension>
+template<UNSIGNED_INTEGER_TYPE Dimension, typename NodeIndex = UNSIGNED_INTEGER_TYPE>
 class VTKReader {
     static_assert(Dimension == 1 or Dimension == 2 or Dimension == 3, "The VTKReader can only read 1D, 2D or 3D fields.");
 public:
 
-    using ElementsIndices = Eigen::Matrix<UNSIGNED_INTEGER_TYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+    using ElementsIndices = Eigen::Matrix<NodeIndex, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     using DomainBuilder =  std::function<BaseDomain* (Mesh<Dimension> &, const ElementsIndices &)>;
     using MeshType = Mesh<Dimension>;
 
@@ -39,7 +39,7 @@ public:
     template<typename Element>
     auto register_element_type(const VTKCellType & vtkCellType) -> VTKReader & {
         p_domain_builders[vtkCellType] = [](MeshType & m, const ElementsIndices & indices) {
-            return m.template add_domain<Element>("domain_"+std::to_string(m.number_of_domains()+1), indices);
+            return m.template add_domain<Element, NodeIndex>("domain_"+std::to_string(m.number_of_domains()+1), indices);
         };
         return *this;
     }
@@ -95,9 +95,17 @@ private:
     std::unordered_map<VTKCellType, DomainBuilder> p_domain_builders;
 };
 
-extern template class VTKReader<1>;
-extern template class VTKReader<2>;
-extern template class VTKReader<3>;
+extern template class VTKReader<1, unsigned long long int>;
+extern template class VTKReader<1, unsigned long int>;
+extern template class VTKReader<1, unsigned int>;
+
+extern template class VTKReader<2, unsigned long long int>;
+extern template class VTKReader<2, unsigned long int>;
+extern template class VTKReader<2, unsigned int>;
+
+extern template class VTKReader<3, unsigned long long int>;
+extern template class VTKReader<3, unsigned long int>;
+extern template class VTKReader<3, unsigned int>;
 
 template<UNSIGNED_INTEGER_TYPE Dimension>
 auto operator<<(std::ostream& os, const caribou::topology::io::VTKReader<Dimension> & t) -> std::ostream&

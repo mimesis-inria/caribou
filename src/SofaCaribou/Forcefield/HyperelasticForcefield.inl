@@ -2,11 +2,12 @@
 
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.h>
+#include <SofaCaribou/Forcefield/CaribouForcefield.inl>
+#include <SofaCaribou/Topology/CaribouTopology.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/core/MechanicalParams.h>
-#include <sofa/core/visual/VisualParams.h>
 DISABLE_ALL_WARNINGS_END
 
 #include <Caribou/Mechanics/Elasticity/Strain.h>
@@ -18,10 +19,7 @@ namespace SofaCaribou::forcefield {
 
 template <typename Element>
 HyperelasticForcefield<Element>::HyperelasticForcefield()
-: d_topology_container(initLink(
-    "topology",
-    "Topology container containing the elements on which this forcefield will be applied."))
-, d_material(initLink(
+: d_material(initLink(
     "material",
     "Material used to compute the hyperelastic force field."))
 , d_enable_multithreading(initData(&d_enable_multithreading,
@@ -30,55 +28,15 @@ HyperelasticForcefield<Element>::HyperelasticForcefield()
     "Enable the multithreading computation of the stiffness matrix. Only use this if you have a "
     "very large number of elements, otherwise performance might be worse than single threading."
     "When enabled, use the environment variable OMP_NUM_THREADS=N to use N threads."))
-, d_drawScale(initData(&d_drawScale,
-    0.85,
-    "draw_scale",
-    "Scaling factor for the drawing of elements (between 0 and 1). The factor allows to shrink "
-    "the element relative to its center point when drawing it."))
 {
 }
 
 template <typename Element>
 void HyperelasticForcefield<Element>::init()
 {
+    using sofa::core::topology::BaseMeshTopology;
+    using sofa::core::objectmodel::BaseContext;
     Inherit::init();
-
-    if (number_of_elements() == 0) {
-        if (d_topology_container.get()) {
-            msg_warning() << "No element found in the mesh topology '" << d_topology_container->getPathName() << "'.";
-        } else if (not d_topology_container.get()) {
-            // No topology specified. Try to find one suitable.
-            auto containers = this->getContext()->template getObjects<sofa::core::topology::BaseMeshTopology>(
-                BaseContext::Local);
-            if (containers.empty()) {
-                msg_warning() << "Could not find a topology container in the current context.";
-            } else {
-                std::vector<sofa::core::topology::BaseMeshTopology *> suitable_containers;
-                for (const auto &container : containers) {
-                    d_topology_container.set(container);
-                    if (number_of_elements() > 0) {
-                        suitable_containers.push_back(container);
-                    }
-                    d_topology_container.set(nullptr);
-                }
-
-                if (suitable_containers.empty()) {
-                    msg_warning() << "Could not find a suitable topology container in the current context.";
-                } else if (suitable_containers.size() > 1) {
-                    msg_warning() <<
-                                  "Multiple topology were found in the context node." <<
-                                  " Please specify which one contains the elements on which this force field will be applied "
-                                  <<
-                                  "by explicitly setting the container's path in the  '"
-                                  << d_topology_container.getName() << "'  parameter.";
-                } else {
-                    d_topology_container.set(suitable_containers[0]);
-                    msg_info() << "Automatically found the topology '" << d_topology_container.get()->getPathName()
-                               << "'.";
-                }
-            }
-        }
-    }
 
     // No material set, try to find one in the current context
     if (not d_material.get()) {
@@ -104,11 +62,14 @@ void HyperelasticForcefield<Element>::init()
 
 template <typename Element>
 void HyperelasticForcefield<Element>::addForce(
-    const MechanicalParams* mparams,
-    Data<VecDeriv>& d_f,
-    const Data<VecCoord>& d_x,
-    const Data<VecDeriv>& d_v)
+    const sofa::core::MechanicalParams* mparams,
+    sofa::core::objectmodel::Data<VecDeriv>& d_f,
+    const sofa::core::objectmodel::Data<VecCoord>& d_x,
+    const sofa::core::objectmodel::Data<VecDeriv>& d_v)
 {
+    using namespace sofa::core::objectmodel;
+    using namespace sofa::helper;
+
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(d_v);
 
@@ -123,13 +84,13 @@ void HyperelasticForcefield<Element>::addForce(
     // Update material parameters in case the user changed it
     material->before_update();
 
-    sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x = d_x;
-    sofa::helper::WriteAccessor<Data<VecDeriv>> sofa_f = d_f;
+    ReadAccessor<Data<VecCoord>> sofa_x = d_x;
+    WriteAccessor<Data<VecDeriv>> sofa_f = d_f;
 
     if (sofa_x.size() != sofa_f.size())
         return;
     const auto nb_nodes = sofa_x.size();
-    const auto nb_elements = number_of_elements();
+    const auto nb_elements = this->number_of_elements();
 
     if (nb_nodes == 0 || nb_elements == 0)
         return;
@@ -145,17 +106,17 @@ void HyperelasticForcefield<Element>::addForce(
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
         // Fetch the node indices of the element
-        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
+        auto node_indices = this->topology()->domain()->element_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
-        Matrix<NumberOfNodes, Dimension> current_nodes_position;
+        Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
 
-        for (std::size_t i = 0; i < NumberOfNodes; ++i) {
+        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
 
         // Compute the nodal forces
-        Matrix<NumberOfNodes, Dimension> nodal_forces;
+        Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
 
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
@@ -181,7 +142,7 @@ void HyperelasticForcefield<Element>::addForce(
             const Mat33 S = material->PK2_stress(J, C);
 
             // Elastic forces w.r.t the gauss node applied on each nodes
-            for (size_t i = 0; i < NumberOfNodes; ++i) {
+            for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
                 const auto dx = dN_dx.row(i).transpose();
                 const Vector<Dimension> f_ = (detJ * w) * F*S*dx;
                 for (size_t j = 0; j < Dimension; ++j) {
@@ -190,7 +151,7 @@ void HyperelasticForcefield<Element>::addForce(
             }
         }
 
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
+        for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
                 sofa_f[node_indices[i]][j] -= nodal_forces(i,j);
             }
@@ -205,10 +166,12 @@ void HyperelasticForcefield<Element>::addForce(
 
 template <typename Element>
 void HyperelasticForcefield<Element>::addDForce(
-    const MechanicalParams* mparams,
-    Data<VecDeriv>& d_df,
-    const Data<VecDeriv>& d_dx)
+    const sofa::core::MechanicalParams* mparams,
+    sofa::core::objectmodel::Data<VecDeriv>& d_df,
+    const sofa::core::objectmodel::Data<VecDeriv>& d_dx)
 {
+    using namespace sofa::core::objectmodel;
+
     if (not K_is_up_to_date) {
         update_stiffness();
     }
@@ -278,8 +241,10 @@ void HyperelasticForcefield<Element>::addKToMatrix(
 
 template <typename Element>
 SReal HyperelasticForcefield<Element>::getPotentialEnergy (
-    const MechanicalParams* mparams,
-    const Data<VecCoord>& d_x) const {
+    const sofa::core::MechanicalParams* mparams,
+    const sofa::core::objectmodel::Data<VecCoord>& d_x) const {
+    using namespace sofa::core::objectmodel;
+
     SOFA_UNUSED(mparams);
 
     if (!this->mstate)
@@ -297,7 +262,7 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
         return 0.;
 
     const auto nb_nodes = sofa_x.size();
-    const auto nb_elements = number_of_elements();
+    const auto nb_elements = this->number_of_elements();
 
     if (nb_nodes == 0 || nb_elements == 0)
         return 0;
@@ -314,20 +279,20 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
-        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
+        auto node_indices = this->topology()->domain()->element_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
-        Matrix<NumberOfNodes, Dimension> initial_nodes_position;
-        Matrix<NumberOfNodes, Dimension> current_nodes_position;
+        Matrix<NumberOfNodesPerElement, Dimension> initial_nodes_position;
+        Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
 
-        for (std::size_t i = 0; i < NumberOfNodes; ++i) {
+        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
 
         // Compute the nodal displacement
-        Matrix<NumberOfNodes, Dimension> U {};
-        for (size_t i = 0; i < NumberOfNodes; ++i) {
+        Matrix<NumberOfNodesPerElement, Dimension> U {};
+        for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
             for (size_t j = 0; j < Dimension; ++j) {
                 U(i, j) = u[j];
@@ -365,39 +330,17 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
 }
 
 template <typename Element>
-void HyperelasticForcefield<Element>::computeBBox(const sofa::core::ExecParams*, bool onlyVisible)
-{
-    if (!onlyVisible)  return;
-    if (!this->mstate) return;
-
-    sofa::helper::ReadAccessor<Data<VecCoord>> x = this->mstate->read(sofa::core::VecCoordId::position());
-
-    static const Real max_real = std::numeric_limits<Real>::max();
-    static const Real min_real = std::numeric_limits<Real>::lowest();
-    Real maxBBox[3] = {min_real,min_real,min_real};
-    Real minBBox[3] = {max_real,max_real,max_real};
-    for (size_t i=0; i<x.size(); i++)
-    {
-        for (int c=0; c<3; c++)
-        {
-            if (x[i][c] > maxBBox[c]) maxBBox[c] = static_cast<Real>(x[i][c]);
-            else if (x[i][c] < minBBox[c]) minBBox[c] = static_cast<Real>(x[i][c]);
-        }
-    }
-
-    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
-}
-
-template <typename Element>
 void HyperelasticForcefield<Element>::initialize_elements()
 {
+    using namespace sofa::core::objectmodel;
+
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::initialize_elements");
 
     if (!this->mstate)
         return;
 
     // Resize the container of elements'quadrature nodes
-    const auto nb_elements = number_of_elements();
+    const auto nb_elements = this->number_of_elements();
     if (p_elements_quadrature_nodes.size() != nb_elements) {
         p_elements_quadrature_nodes.resize(nb_elements);
     }
@@ -409,17 +352,8 @@ void HyperelasticForcefield<Element>::initialize_elements()
     // Loop on each element and compute the shape functions and their derivatives for every of their integration points
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
-        // Fetch the node indices of the element
-        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
-        Matrix<NumberOfNodes, Dimension> initial_nodes_position;
-
-        // Fetch the initial positions of the element's nodes
-        for (std::size_t i = 0; i < NumberOfNodes; ++i) {
-            initial_nodes_position.row(i) = X0.row(node_indices[i]);
-        }
-
-        // Create an Element instance from the node positions
-        const Element initial_element = Element(initial_nodes_position);
+        // Get an Element instance from the Domain
+        const auto initial_element = this->topology()->element(element_id);
 
         // Fill in the Gauss integration nodes for this element
         p_elements_quadrature_nodes[element_id] = get_gauss_nodes(element_id, initial_element);
@@ -428,7 +362,7 @@ void HyperelasticForcefield<Element>::initialize_elements()
     // Compute the volume
     Real v = 0.;
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-        for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
+        for (const auto & gauss_node : gauss_nodes_of(element_id)) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const auto detJ = gauss_node.jacobian_determinant;
 
@@ -446,7 +380,11 @@ void HyperelasticForcefield<Element>::initialize_elements()
 template <typename Element>
 void HyperelasticForcefield<Element>::update_stiffness()
 {
+    using namespace sofa::core::objectmodel;
+
     const auto material = d_material.get();
+
+    [[maybe_unused]]
     const auto enable_multithreading = d_enable_multithreading.getValue();
     if (!material) {
         return;
@@ -456,7 +394,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
     material->before_update();
 
     static const auto Id = Mat33::Identity();
-    const auto nb_elements = number_of_elements();
+    const auto nb_elements = this->number_of_elements();
 
     const sofa::helper::ReadAccessor<Data<VecCoord>> X = this->mstate->readRestPositions();
     const auto nDofs = X.size() * 3;
@@ -471,12 +409,12 @@ void HyperelasticForcefield<Element>::update_stiffness()
     #pragma omp parallel for if (enable_multithreading)
     for (int element_id = 0; element_id < static_cast<int>(nb_elements); ++element_id) {
         // Fetch the node indices of the element
-        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
+        auto node_indices = this->topology()->domain()->element_indices(element_id);
 
-        using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodes*Dimension, NumberOfNodes*Dimension, Eigen::RowMajor>;
+        using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodesPerElement*Dimension, NumberOfNodesPerElement*Dimension, Eigen::RowMajor>;
         Stiffness Ke = Stiffness::Zero();
 
-        for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
+        for (const auto & gauss_node : gauss_nodes_of(element_id)) {
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
             const auto detJ = gauss_node.jacobian_determinant;
 
@@ -500,7 +438,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
             const auto D = material->PK2_stress_jacobian(J, C);
 
             // Computation of the tangent-stiffness matrix
-            for (std::size_t i = 0; i < NumberOfNodes; ++i) {
+            for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
                 // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
                 const Vec3 dxi = dN_dx.row(i).transpose();
 
@@ -521,7 +459,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
 
                 // We now loop only on the upper triangular part of the
                 // element stiffness matrix Ke since it is symmetric
-                for (std::size_t j = i+1; j < NumberOfNodes; ++j) {
+                for (std::size_t j = i+1; j < NumberOfNodesPerElement; ++j) {
                     // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
                     const Vec3 dxj = dN_dx.row(j).transpose();
 
@@ -543,7 +481,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
         }
 
         #pragma omp critical
-        for (std::size_t i = 0; i < NumberOfNodes; ++i) {
+        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             // Node index of the ith node in the global stiffness matrix
             const auto x = static_cast<int>(node_indices[i]*Dimension);
             for (int m = 0; m < Dimension; ++m) {
@@ -552,7 +490,7 @@ void HyperelasticForcefield<Element>::update_stiffness()
                 }
             }
 
-            for (std::size_t j = i+1; j < NumberOfNodes; ++j) {
+            for (std::size_t j = i+1; j < NumberOfNodesPerElement; ++j) {
                 // Node index of the jth node in the global stiffness matrix
                 const auto y = static_cast<int>(node_indices[j]*Dimension);
                 for (int m = 0; m < Dimension; ++m) {
@@ -573,11 +511,12 @@ void HyperelasticForcefield<Element>::update_stiffness()
 template <typename Element>
 auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*element_id*/, const Element & element) const -> GaussContainer {
     GaussContainer gauss_nodes {};
-    if constexpr (NumberOfGaussNodes == caribou::Dynamic) {
+    if constexpr (NumberOfGaussNodesPerElement == caribou::Dynamic) {
         gauss_nodes.resize(element.number_of_gauss_nodes());
     }
 
-    for (std::size_t gauss_node_id = 0; gauss_node_id < element.number_of_gauss_nodes(); ++gauss_node_id) {
+    const auto nb_of_gauss_nodes = gauss_nodes.size();
+    for (std::size_t gauss_node_id = 0; gauss_node_id < nb_of_gauss_nodes; ++gauss_node_id) {
         const auto & g = element.gauss_node(gauss_node_id);
 
         const auto J = element.jacobian(g.position);
@@ -585,7 +524,7 @@ auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*elem
         const auto detJ = J.determinant();
 
         // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-        const Matrix<NumberOfNodes, Dimension> dN_dx =
+        const Matrix<NumberOfNodesPerElement, Dimension> dN_dx =
             (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
 
 
@@ -626,175 +565,6 @@ auto HyperelasticForcefield<Element>::cond() -> Real {
     const auto max = values.maxCoeff();
 
     return min/max;
-}
-
-static const unsigned long long kelly_colors_hex[] =
-{
-    0xFFFFB300, // Vivid Yellow
-    0xFF803E75, // Strong Purple
-    0xFFFF6800, // Vivid Orange
-    0xFFA6BDD7, // Very Light Blue
-    0xFFC10020, // Vivid Red
-    0xFFCEA262, // Grayish Yellow
-    0xFF817066, // Medium Gray
-
-    // The following don't work well for people with defective color vision
-    0xFF007D34, // Vivid Green
-    0xFFF6768E, // Strong Purplish Pink
-    0xFF00538A, // Strong Blue
-    0xFFFF7A5C, // Strong Yellowish Pink
-    0xFF53377A, // Strong Violet
-    0xFFFF8E00, // Vivid Orange Yellow
-    0xFFB32851, // Strong Purplish Red
-    0xFFF4C800, // Vivid Greenish Yellow
-    0xFF7F180D, // Strong Reddish Brown
-    0xFF93AA00, // Vivid Yellowish Green
-    0xFF593315, // Deep Yellowish Brown
-    0xFFF13A13, // Vivid Reddish Orange
-    0xFF232C16, // Dark Olive Green
-};
-
-template <typename Element>
-void HyperelasticForcefield<Element>::draw(const sofa::core::visual::VisualParams *vparams) {
-    using Color = sofa::helper::types::RGBAColor;
-    using Face = typename caribou::geometry::traits<Element>::BoundaryElementType;
-    constexpr static auto NumberOfFaces = caribou::geometry::traits<Element>::NumberOfBoundaryElementsAtCompileTime;
-    constexpr static auto NumberOfNodesPerFaces = caribou::geometry::traits<Face>::NumberOfNodesAtCompileTime;
-
-    if (!vparams->displayFlags().getShowForceFields())
-        return;
-
-    const auto nb_elements = number_of_elements();
-
-    if (nb_elements == 0)
-        return;
-
-    vparams->drawTool()->saveLastState();
-    if (vparams->displayFlags().getShowWireFrame())
-        vparams->drawTool()->setPolygonMode(0,true);
-    vparams->drawTool()->disableLighting();
-
-    const double & scale = d_drawScale.getValue();
-    const VecCoord& sofa_x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
-    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.data()->data(),  sofa_x.size(), Dimension);
-
-    std::vector< sofa::defaulttype::Vec<Dimension, Real> > faces_points[NumberOfFaces];
-    for (std::size_t face_id = 0; face_id < NumberOfFaces; ++face_id) {
-        faces_points[face_id].reserve(nb_elements*NumberOfNodesPerFaces);
-    }
-
-    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-        // Fetch the node indices of the element
-        const sofa::Index * node_indices = get_element_nodes_indices(element_id);
-        Matrix<NumberOfNodes, Dimension> element_nodes_position;
-
-        // Fetch the initial positions of the element's nodes
-        for (std::size_t node_id = 0; node_id < NumberOfNodes; ++node_id) {
-            element_nodes_position.row(node_id) = X.row(node_indices[node_id]);
-        }
-
-        // Create an Element instance from the node positions
-        const Element e = Element(element_nodes_position);
-
-        // Scale down the element around its center point
-        const auto c = e.center();
-        for (std::size_t node_id = 0; node_id < NumberOfNodes; ++node_id) {
-            const auto & p = element_nodes_position.row(node_id).transpose();
-            element_nodes_position.row(node_id) = (c + (p - c)*scale).transpose();
-        }
-
-        // Push the faces scaled-down nodes
-        const auto face_node_indices = e.boundary_elements_node_indices();
-        for (std::size_t face_id = 0; face_id < NumberOfFaces; ++face_id) {
-            for (std::size_t face_node_id = 0; face_node_id < NumberOfNodesPerFaces; ++face_node_id) {
-                const auto & p = element_nodes_position.row(face_node_indices[face_id][face_node_id]);
-                if constexpr (Dimension == 2) {
-                    faces_points[face_id].emplace_back(p[0], p[1]);
-                } else if constexpr (Dimension == 3) {
-                    faces_points[face_id].emplace_back(p[0], p[1], p[2]);
-                }
-            }
-        }
-    }
-
-    if constexpr (Dimension == 3) {
-        for (std::size_t face_id = 0; face_id < NumberOfFaces; ++face_id) {
-            const auto &hex_color = kelly_colors_hex[face_id % 20];
-            const Color face_color(
-                    static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(16))) / 255.),
-                    static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(8))) / 255.),
-                    static_cast<float> ((static_cast<unsigned char> (hex_color >> static_cast<unsigned>(0))) / 255.),
-                    static_cast<float> (1));
-
-            if (NumberOfNodesPerFaces == 3) {
-                vparams->drawTool()->drawTriangles(faces_points[face_id], face_color);
-            } else if (NumberOfNodesPerFaces == 4) {
-                vparams->drawTool()->drawQuads(faces_points[face_id], face_color);
-            } else {
-                throw std::runtime_error("Drawing an unsupported face type");
-            }
-        }
-    }
-
-    if (vparams->displayFlags().getShowWireFrame())
-        vparams->drawTool()->setPolygonMode(0,false);
-
-    vparams->drawTool()->restoreLastState();
-}
-
-template <typename Element>
-auto HyperelasticForcefield<Element>::canCreate(HyperelasticForcefield<Element>* o, BaseContext* context, BaseObjectDescription* arg) -> bool {
-    std::string requested_element_type = arg->getAttribute( "template", "");
-    std::string this_element_type = templateName(o);
-
-    // to lower
-    std::string requested_element_type_lower = requested_element_type, this_element_type_lower = this_element_type;
-    std::transform(requested_element_type.begin(), requested_element_type.end(), requested_element_type_lower.begin(), [](unsigned char c){ return std::tolower(c); });
-    std::transform(this_element_type.begin(), this_element_type.end(), this_element_type_lower.begin(), [](unsigned char c){ return std::tolower(c); });
-
-    if (requested_element_type_lower == this_element_type_lower) {
-        return Inherit::canCreate(o, context, arg);
-    }
-
-    if (not requested_element_type.empty()) {
-        arg->logError("Requested element type is not '"+templateName(o)+"'.");
-        return false;
-    }
-
-    std::string topology_path = arg->getAttribute("topology", "");
-    if (not topology_path.empty()) {
-        topology_path = topology_path.substr(1); // removes the "@"
-        // Make sure the specified topology has elements of type Element
-        auto topology = context->get<sofa::core::topology::BaseMeshTopology>(topology_path);
-        if (not topology or not mesh_is_compatible(topology)) {
-            arg->logError("Cannot deduce the element type from the specified mesh topology '" + topology_path + "'. Add template=\""+this_element_type+"\" to use it.");
-            return false;
-        }
-    } else {
-        // Try to find a compatible topology in the current context
-        sofa::core::topology::BaseMeshTopology * topology = nullptr;
-        const auto topologies = context->getObjects<sofa::core::topology::BaseMeshTopology>(
-            BaseContext::SearchDirection::Local);
-        for (const auto t : topologies) {
-            if (mesh_is_compatible(t)) {
-                topology = t;
-                break;
-            }
-        }
-        if (not topology) {
-            arg->logError("Cannot find a topology in the current context from which the template '"+this_element_type+"' can be deduced.");
-            return false;
-        }
-
-        if (Inherit::canCreate(o, context, arg)) {
-            arg->setAttribute("topology", "@" + topology->getPathName());
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    return Inherit::canCreate(o, context, arg);
 }
 
 } // namespace SofaCaribou::forcefield

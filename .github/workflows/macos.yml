@@ -23,7 +23,7 @@ jobs:
 
       - name: Install requirements
         run: |
-          brew install ccache ninja boost eigen pybind11
+          brew install ccache boost eigen pybind11
           python3 -m pip install numpy
 
       - name: Download SOFA nightly build
@@ -65,13 +65,12 @@ jobs:
           export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
           ccache -z &&
           cmake
-          -GNinja
           -DCMAKE_C_COMPILER_LAUNCHER=ccache
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCARIBOU_BUILD_TESTS=ON
           -DCMAKE_BUILD_TYPE=Release
           .
-          && ninja && ninja install
+          && make && make install
           && echo ${CCACHE_BASEDIR}
           && ccache -s
 

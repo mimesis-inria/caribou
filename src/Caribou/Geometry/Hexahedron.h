@@ -183,7 +183,7 @@ struct traits<Hexahedron <Quadratic>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 3;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = 3;
     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 20;
-    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
 
     using BoundaryElementType = Quad<3, Quadratic>;
     static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 6;

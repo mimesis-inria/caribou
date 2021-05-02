@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import Sofa
-import SofaCaribou
 
 radius = 5
 n = [10, 10, 10]
@@ -13,7 +12,7 @@ mz = (radius / ((n[2])*pow(2, subdivisions)))/2
 
 
 def createScene(root):
-    root.addObject('APIVersion', level='17.06')
+    root.addObject('APIVersion', level='21.06')
 
     root.addObject('SphereIsoSurface', radius=radius, center=[0, 0, 0])
 

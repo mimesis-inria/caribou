@@ -5,6 +5,7 @@ set(SOURCE_FILES
         Algebra/test_base_vector_operations.cpp
         Algebra/test_eigen_matrix_wrapper.cpp
         Algebra/test_eigen_vector_wrapper.cpp
+        Forcefield/test_hyperelasticforcefield.cpp
         Forcefield/test_tractionforce.cpp
         ODE/test_backward_euler.cpp
         ODE/test_static.cpp
@@ -14,6 +15,11 @@ set(SOURCE_FILES
 enable_testing()
 
 find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver QUIET REQUIRED)
+find_package(Caribou COMPONENTS Topology REQUIRED)
+
+if (CARIBOU_WITH_VTK)
+    list(APPEND SOURCE_FILES Topology/test_cariboutopology.cpp)
+endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 

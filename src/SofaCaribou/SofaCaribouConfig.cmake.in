@@ -20,4 +20,6 @@ if (CARIBOU_WITH_OPENMP)
     find_package(OpenMP REQUIRED)
 endif()
 
-include("${CMAKE_CURRENT_LIST_DIR}/SofaCaribouTargets.cmake")
+if (NOT TARGET SofaCaribou)
+    include("${CMAKE_CURRENT_LIST_DIR}/SofaCaribouTargets.cmake")
+endif()

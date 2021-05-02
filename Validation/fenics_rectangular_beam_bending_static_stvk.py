@@ -4,8 +4,21 @@
 Bending rectangular beam simulated with fenics.
 
 Dimensions: 15x15x80
-Material: St-Venant-Kirchhoff (young modulus 3000, poisson ratio 0.4999
+Material: St-Venant-Kirchhoff (young modulus 3000, poisson ratio 0.499)
 ODE solver: Static Newton-Raphson
+Left face: Clamped
+Right face: Traction of [0, -30, 0]
+Number of load increments: 5
+
+To run with podman:
+podman run --rm --userns keep-id \
+    -v $PWD/.instant-cache:/home/fenics/.instant-cache:z \
+    -v $PWD:/home/fenics/shared:z \
+    -w /home/fenics/shared \
+    --env FIX_DIJITSO=1 \
+    --env INSTANT_CACHE_DIR=/home/fenics/.instant-cache/instant \
+    --env DIJITSO_CACHE_DIR=/home/fenics/.instant-cache/dijitso \
+    quay.io/fenicsproject/stable@caaeaf912e18 python3 fenics_rectangular_beam_bending_static_stvk.py
 """
 
 from dolfin import *
@@ -13,9 +26,9 @@ import os
 
 if os.getenv('FIX_DIJITSO', 0):
     import dijitso
-    # Fix bug on podman
+    # Fix bug on podman (see https://bitbucket.org/fenics-project/dijitso/issues/35/failing-to-link-between-temp_dir_root-and)
     default_params = dijitso.params.default_cache_params()
-    default_params['temp_dir_root'] = "/home/fenics/.cache/fenics"
+    default_params['temp_dir_root'] = "/home/fenics/.instant-cache"
     def _params() :
         return default_params
     dijitso.params.default_cache_params = _params
@@ -33,10 +46,10 @@ max_nb_of_newton_iterations = 10
 
 # Load mesh
 mesh = Mesh()
-with XDMFFile('rectangular_beam_q1.xdmf') as infile:
+with XDMFFile('meshes/rectangular_beam_q1.xdmf') as infile:
     infile.read(mesh)
 
-V = VectorFunctionSpace(mesh, 'P', degree=1)
+V = VectorFunctionSpace(mesh, 'Lagrange', degree=1)
 
 
 # Sub domain for clamp at left end

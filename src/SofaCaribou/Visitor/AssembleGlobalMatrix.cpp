@@ -1,5 +1,9 @@
 #include <SofaCaribou/Visitor/AssembleGlobalMatrix.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/core/behavior/BaseForceField.h>
+DISABLE_ALL_WARNINGS_END
+
 namespace SofaCaribou::visitor {
 using namespace sofa::core;
 

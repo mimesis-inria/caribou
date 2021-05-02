@@ -53,8 +53,6 @@ Implementation of an hyperelasticity forcefield for any element type topologies.
       - The template argument is used to specified the element type on which to compute the hyperelasticity force.
         By default, the component will try to deduce its element type from the given topology.
 
-            * **Triangle**
-            * **Quad**
             * **Tetrahedron**
             * **Hexahedron**
 

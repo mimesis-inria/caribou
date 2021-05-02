@@ -5,12 +5,19 @@ set(HEADER_FILES
     Algebra/BaseVectorOperations.h
     Algebra/EigenMatrix.h
     Algebra/EigenVector.h
-    Forcefield/FictitiousGridElasticForce.h
-    Forcefield/FictitiousGridHyperelasticForce.h
+    Forcefield/CaribouForcefield.h
+    Forcefield/CaribouForcefield[Hexahedron].h
+    Forcefield/CaribouForcefield[Quad].h
+    Forcefield/CaribouForcefield[Tetrahedron].h
+    Forcefield/CaribouForcefield[Triangle].h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
+    Forcefield/HyperelasticForcefield[Hexahedron].h
+    Forcefield/HyperelasticForcefield[Tetrahedron].h
     Forcefield/TetrahedronElasticForce.h
-    Forcefield/TractionForce.h
+    Forcefield/TractionForcefield.h
+    Forcefield/TractionForcefield[Quad].h
+    Forcefield/TractionForcefield[Triangle].h
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
@@ -24,6 +31,11 @@ set(HEADER_FILES
     Solver/LinearSolver.h
     Solver/LLTSolver.h
     Solver/LUSolver.h
+    Topology/CaribouTopology.h
+    Topology/CaribouTopology[Hexahedron].h
+    Topology/CaribouTopology[Quad].h
+    Topology/CaribouTopology[Tetrahedron].h
+    Topology/CaribouTopology[Triangle].h
     Topology/CircleIsoSurface.h
     Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
@@ -35,8 +47,11 @@ set(HEADER_FILES
 )
 
 set(TEMPLATE_FILES
+    Forcefield/CaribouForcefield.inl
     Forcefield/HyperelasticForcefield.inl
+    Forcefield/TractionForcefield.inl
     Solver/EigenSolver.inl
+    Topology/CaribouTopology.inl
     Topology/FictitiousGrid.inl
     Solver/LDLTSolver.inl
     Solver/LLTSolver.inl
@@ -45,12 +60,16 @@ set(TEMPLATE_FILES
 
 set(SOURCE_FILES
     Algebra/BaseVectorOperations.cpp
-    Forcefield/FictitiousGridElasticForce.cpp
-    Forcefield/FictitiousGridHyperelasticForce.cpp
+    Forcefield/CaribouForcefield[Hexahedron].cpp
+    Forcefield/CaribouForcefield[Quad].cpp
+    Forcefield/CaribouForcefield[Tetrahedron].cpp
+    Forcefield/CaribouForcefield[Triangle].cpp
     Forcefield/HexahedronElasticForce.cpp
-    Forcefield/HyperelasticForcefield.cpp
+    Forcefield/HyperelasticForcefield[Hexahedron].cpp
+    Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     Forcefield/TetrahedronElasticForce.cpp
-    Forcefield/TractionForce.cpp
+    Forcefield/TractionForcefield[Quad].cpp
+    Forcefield/TractionForcefield[Triangle].cpp
     Material/HyperelasticMaterial.cpp
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp
@@ -60,6 +79,10 @@ set(SOURCE_FILES
     Solver/LDLTSolver.cpp
     Solver/LLTSolver.cpp
     Solver/LUSolver.cpp
+    Topology/CaribouTopology[Hexahedron].cpp
+    Topology/CaribouTopology[Quad].cpp
+    Topology/CaribouTopology[Tetrahedron].cpp
+    Topology/CaribouTopology[Triangle].cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
     Visitor/AssembleGlobalMatrix.cpp
@@ -87,6 +110,13 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry 
 target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+list(APPEND target_rpath
+    "$ORIGIN/../lib"
+    "@executable_path/../lib"
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${target_rpath}" )
 
 if (CARIBOU_OPTIMIZE_FOR_NATIVE)
 #    todo(jnbrunet2000@gmail.com) Deactivated since it seems to create mis-alignments

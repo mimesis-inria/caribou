@@ -1,5 +1,9 @@
 #include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/core/behavior/BaseProjectiveConstraintSet.h>
+DISABLE_ALL_WARNINGS_END
+
 namespace SofaCaribou::visitor {
 using namespace sofa::core;
 
