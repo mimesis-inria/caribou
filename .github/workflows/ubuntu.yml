@@ -107,7 +107,7 @@ jobs:
           name: caribou_${{ matrix.sofa_version }}
           path: /tmp
 
-      -name: Unpack caribou
+      - name: Unpack caribou
         run: tar xzf /tmp/SofaCaribou.tar.gz -C /opt/sofa/plugins
 
       - name: Caribou.unittests.Geometry
