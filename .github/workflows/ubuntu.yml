@@ -55,9 +55,10 @@ jobs:
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCARIBOU_BUILD_TESTS=ON
           -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_INSTALL_PREFIX=install
+          -DCMAKE_INSTALL_PREFIX=SofaCaribou
           .
           && make && make install
+          && tar czvf SofaCaribou.tar.gz SofaCaribou
           && echo ${CCACHE_BASEDIR}
           && ccache -s
 
@@ -65,7 +66,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: caribou_${{ matrix.sofa_version }}
-          path: install
+          path: SofaCaribou.tar.gz
 
   test:
     name: Testing with ${{ matrix.sofa_version }}
@@ -100,21 +101,22 @@ jobs:
           unzip sofa.zip -d temp
           mv temp/`ls temp` $SOFA_ROOT
 
-      - name: Install caribou
+      - name: Download caribou
         uses: actions/download-artifact@v2
         with:
           name: caribou_${{ matrix.sofa_version }}
-          path: /opt/sofa/plugins/SofaCaribou
+          path: /tmp/SofaCaribou.tar.gz
+      -name: Unpack caribou
+        run: tar xzf /tmp/SofaCaribou.tar.gz -C /opt/sofa/plugins
 
       - name: Caribou.unittests.Geometry
         if: ${{ always() }}
         run: |
-          [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
-          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
+          export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
           $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
 
       - name: Caribou.Geometry.PyTest
-        if: ${{ matrix.sofa_version != '' }}
+        if: ${{ always() }}
         run: |
           export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
           python3 $CARIBOU_ROOT/bin/pytest/Caribou_Geometry_Test.py
@@ -124,11 +126,10 @@ jobs:
         if: ${{ always() }}
         run: |
           [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
-          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Topology
           $CARIBOU_ROOT/bin/Caribou.unittests.Topology
 
       - name: Caribou.Topology.PyTest
-        if: ${{ matrix.sofa_version != '' }}
+        if: ${{ always() }}
         run: |
           export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
           python3 $CARIBOU_ROOT/bin/pytest/Caribou_Topology_Test.py
@@ -136,13 +137,11 @@ jobs:
       - name: Caribou.unittests.Mechanics
         if: ${{ always() }}
         run: |
-          [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
-          chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
+          export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
           $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
 
       - name: Caribou.unittests.SofaCaribou
         if: ${{ always() }}
         run: |
             [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
-            chmod +x $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
             $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
