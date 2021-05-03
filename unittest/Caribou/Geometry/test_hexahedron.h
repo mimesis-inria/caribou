@@ -12,6 +12,7 @@ TEST(Hexahedron, Linear) {
     using Hexahedron = caribou::geometry::Hexahedron<Linear>;
     using Tetrahedron = caribou::geometry::Tetrahedron<Linear>;
     using Quad = caribou::geometry::Quad<3, Linear>;
+    using Triangle = caribou::geometry::Triangle<3, Linear>;
     using Edge = caribou::geometry::Segment<3, Linear>;
     using LocalCoordinates = Hexahedron::LocalCoordinates;
     using WorldCoordinates = Hexahedron::WorldCoordinates;
@@ -145,6 +146,20 @@ TEST(Hexahedron, Linear) {
         }
 
         EXPECT_DOUBLE_EQ(numerical_solution_hexa, numerical_solution_tetras);
+
+        // Intersection with triangles (test taken from a failing scene)
+        {
+            Hexahedron h (
+                    WorldCoordinates(194.948, -111.776, -1547.85), WorldCoordinates(195.837, -111.776, -1547.85),
+                    WorldCoordinates(195.837, -110.461, -1547.85), WorldCoordinates(194.948, -110.461, -1547.85),
+                    WorldCoordinates(194.948, -111.776, -1546.86), WorldCoordinates(195.837, -111.776, -1546.86),
+                    WorldCoordinates(195.837, -110.461, -1546.86), WorldCoordinates(194.948, -110.461, -1546.86)
+            );
+
+            Triangle t (WorldCoordinates {195.402, -112.092, -1543.81}, WorldCoordinates {196.468, -108.742, -1546.42}, WorldCoordinates {193.869, -110.918, -1548.45});
+
+            ASSERT_TRUE(h.intersects(t, 0));
+        }
     }
 }
 
