@@ -45,10 +45,11 @@ RUN apt-get update && \
         libpython3.7 python3.7 python3-pip libgl1-mesa-glx libglib2.0-0 libglx0 libopengl0 libharfbuzz0b libgomp1 curl ca-certificates unzip  && \
     apt-get clean && \
     rm /usr/bin/python3 && ln -s /usr/bin/python3.7 /usr/bin/python3 && ln -s /usr/bin/python3.7 /usr/bin/python && \
-    python3-m pip install numpy meshio sympy
+    python -m pip install numpy meshio sympy
 
 # Install SOFA + SofaCaribou
 COPY --from=build /opt/sofa /opt/sofa
 
 # Install bindings
-RUN ln -s $CARIBOU_ROOT/lib/python3/site-packages/* /usr/local/lib/python3.7/dist-packages/
+RUN ln -s $CARIBOU_ROOT/lib/python3/site-packages/* /usr/local/lib/python3.7/dist-packages/ && \
+    ln -s $SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages/* /usr/local/lib/python3.7/dist-packages/
