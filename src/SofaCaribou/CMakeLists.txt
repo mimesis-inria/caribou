@@ -175,3 +175,11 @@ install (
 
 # This is required to be able to do "find_package(SofaCaribou)"
 caribou_create_package(SofaCaribou ${CARIBOU_VERSION})
+# Make the target relocatable
+set_target_properties(${PROJECT_NAME} PROPERTIES RELOCATABLE_INSTALL_DIR "plugins/SofaCaribou")
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_PROPERTIES "RELOCATABLE_INSTALL_DIR")
+
+if (SOFA_VERSION VERSION_GREATER_EQUAL "20.12.99")
+    # Set RPATH towards relocatable dependencies
+    sofa_auto_set_target_rpath(TARGETS ${PROJECT_NAME} RELOCATABLE "plugins")
+endif()

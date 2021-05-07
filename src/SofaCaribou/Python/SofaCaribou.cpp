@@ -1,11 +1,12 @@
 #include <pybind11/pybind11.h>
 
-#include <SofaCaribou/Python/Topology/FictitiousGrid.h>
 #include <SofaCaribou/Python/Ode/LegacyStaticODESolver.h>
 #include <SofaCaribou/Python/Ode/StaticODESolver.h>
 #include <SofaCaribou/Python/Forcefield/HexahedronElasticForce.h>
 #include <SofaCaribou/Python/Forcefield/HyperelasticForcefield.h>
 #include <SofaCaribou/Python/Solver/ConjugateGradientSolver.h>
+#include <SofaCaribou/Python/Topology/CaribouTopology.h>
+#include <SofaCaribou/Python/Topology/FictitiousGrid.h>
 
 #include <vector>
 #include <pybind11/stl_bind.h>
@@ -15,6 +16,7 @@ PYBIND11_MODULE(SofaCaribou, m) {
 
     // Topology bindings
     SofaCaribou::topology::python::addFictitiousGrid(m);
+    SofaCaribou::topology::python::addCaribouTopology(m);
 
     // ODE bindings
     SofaCaribou::ode::python::addLegacyStaticODESolver(m);

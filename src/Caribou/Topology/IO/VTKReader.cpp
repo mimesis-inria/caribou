@@ -1,4 +1,11 @@
+#ifdef LEGACY_CXX
+#include <experimental/filesystem>
+namespace fs = ::std::experimental::filesystem;
+#else
 #include <filesystem>
+namespace fs = ::std::filesystem;
+#endif
+
 #include <bitset>
 
 #include <Caribou/constants.h>
@@ -18,8 +25,6 @@
 #include <vtkUnstructuredGridReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkPointData.h>
-
-namespace fs = std::filesystem;
 
 namespace caribou::topology::io {
 

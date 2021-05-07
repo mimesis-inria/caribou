@@ -31,7 +31,11 @@ void declare_triangle(py::module & m) {
     // BaseTriangle
     std::string base_name = "Base" + name;
     declare_element<Triangle>(m, base_name);
-    py::class_<BaseTriangle, Element<Triangle>> (m, base_name.c_str());
+    py::class_<BaseTriangle, Element<Triangle>> b (m, base_name.c_str());
+
+    if constexpr(Dimension == 3) {
+        b.def("normal", &BaseTriangle::normal);
+    }
 
     // Triangle
     py::class_<Triangle, BaseTriangle> c (m, name.c_str());

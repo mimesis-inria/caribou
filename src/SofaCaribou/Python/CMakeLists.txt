@@ -6,6 +6,7 @@ set(HEADER_FILES
     Ode/LegacyStaticODESolver.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
+    Topology/CaribouTopology.h
     Topology/FictitiousGrid.h
 )
 
@@ -16,6 +17,7 @@ set(SOURCE_FILES
     Ode/LegacyStaticODESolver.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
+    Topology/CaribouTopology.cpp
     Topology/FictitiousGrid.cpp
 )
 
