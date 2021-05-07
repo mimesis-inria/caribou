@@ -22,7 +22,7 @@ RUN chmod a+x /tmp/cmake-3.20.1-linux-x86_64.sh \
 &&  rm /tmp/cmake-3.20.1-linux-x86_64.sh
 
 # Install pybind11
-RUN git clone --depth 1 -b v2.6  https://github.com/pybind/pybind11.git /tmp/pybind11 \
+RUN git clone --depth 1 -b v2.4  https://github.com/pybind/pybind11.git /tmp/pybind11 \
 &&  cmake -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release \
 && cmake --install /tmp/pybind11/build \
 && rm -rf /tmp/pybind11
