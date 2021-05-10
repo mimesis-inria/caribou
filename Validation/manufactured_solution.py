@@ -9,16 +9,13 @@ Manufactured solution by explicitly setting the solution displacement functions 
 
 with (x, y, z) material coordinates (undeformed, at rest). The external forces applied to the domain becomes:
 
-  ext = integrate( Div(P), volume_domain) + integrate( Div(P) . N , neummann_domain)
+  ext = integrate( Div(P), volume_domain) + integrate( P . N , neummann_domain)
 
-where P is the first Piola-Kirchoff stress tensor, N is the surface normal at rest. The geometry of the volumetric
+where P is the first Piola-Kirchhoff stress tensor, N is the surface normal at rest. The geometry of the volumetric
 domain is a cylinder having a radius of 1 and a length of 3.
 
-To run with podman :
-  podman run --rm --userns keep-id \
-             -v $PWD:/opt/shared:z \
-             -w /opt/shared \
-             jnbrunet/caribou_validation python manufactured_solution.py
+To run with docker :
+  docker run --rm -v $PWD:/w -w /w jnbrunet/caribou_validation python manufactured_solution.py
 """
 
 import Sofa, SofaRuntime, SofaCaribou
@@ -41,8 +38,8 @@ def create_scene(root):
     root.addObject('RequiredPlugin', name='SofaCaribou')
     root.addObject('VisualStyle', displayFlags='showBehaviorModels showForceFields')
 
-    root.addObject('StaticODESolver', newton_iterations=10, residual_tolerance_threshold=1e-10, printLog=False)
-    root.addObject('LDLTSolver', backend='Eigen')
+    root.addObject('StaticODESolver', newton_iterations=10, residual_tolerance_threshold=1e-10, printLog=True)
+    root.addObject('LDLTSolver', backend='Pardiso')
     root.addObject('MechanicalObject', name='mo', position=mesh.points.tolist())
     root.addObject('CaribouTopology', name='volume', template='Tetrahedron', indices=mesh.cells[1].data.tolist())
     root.addObject('CaribouTopology', name='dirichlet_boundary', template='Triangle', indices=mesh.cells[0].data[np.ma.masked_equal(mesh.cell_data['gmsh:physical'][0], 1).mask].tolist())

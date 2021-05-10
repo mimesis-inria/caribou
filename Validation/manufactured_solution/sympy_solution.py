@@ -9,7 +9,7 @@ def compute(mu, lmbda, rad, length):
     l, m    = 1.25, 1.
     Id      = smp.eye(3)
     x, y, z = smp.symbols('x y z')
-    u, v, w = [1e-3*z*smp.exp(v) for v in [x, y, z]]
+    u, v, w = [z*smp.exp(v/length) for v in [x, y, z]]
     grad_u  = Matrix([u, v, w]).jacobian(Matrix([x, y, z]))
 
     F       = smp.MatrixSymbol('F', 3, 3)
