@@ -44,3 +44,12 @@ $ docker build -t febio_validation - < febio_validation.dockerfile
 The docker/podman line used to compute the solution from this image is written at the top of each
 FEBio scripts.
 
+## Running the manufactured solution script
+The manufactured solution is computed using sympy and meshio. To reproduce
+the validation data, the docker image can be created using the following command:
+```shell
+$ docker build -t caribou_validation - < manufactured_solution/caribou.dockerfile
+```
+
+The docker/podman line used to compute the solution from this image is written at the top of the
+script.
