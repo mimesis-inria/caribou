@@ -1,10 +1,31 @@
+#!/usr/bin/python3
+
+"""
+Manufactured solution by explicitly setting the solution displacement functions to:
+
+                | 1e-3 * z *exp(x) |
+  u (x, y, z) = | 1e-3 * z *exp(y) |
+                | 1e-3 * z *exp(z) |
+
+with (x, y, z) material coordinates (undeformed, at rest). The external forces applied to the domain becomes:
+
+  ext = integrate( Div(P), volume_domain) + integrate( Div(P) . N , neummann_domain)
+
+where P is the first Piola-Kirchoff stress tensor, N is the surface normal at rest. The geometry of the volumetric
+domain is a cylinder having a radius of 1 and a length of 3.
+
+To run with podman :
+  podman run --rm --userns keep-id \
+             -v $PWD:/opt/shared:z \
+             -w /opt/shared \
+             jnbrunet/caribou_validation python manufactured_solution.py
+"""
+
 import Sofa, SofaRuntime, SofaCaribou
 import meshio, numpy as np
-from sympy_solution import compute
-from assemble import assemble, integrate
-from Forcefield import ConstantForceField
+from manufactured_solution import assemble, integrate, compute_solution, ConstantForceField
 
-mesh = meshio.read('../meshes/cylinder_p2.vtu')
+mesh = meshio.read('meshes/cylinder_p1.vtu')
 
 mu = 1.0
 l  = 1.25
@@ -12,7 +33,7 @@ rad = 1
 length = 3
 poisson_ratio = 1. / (2 * ((mu / l) + 1))
 young_modulus = 2 * mu * (1 + poisson_ratio)
-P, f, u_s = compute(mu, l, rad, length)
+P, f, u_s = compute_solution(mu, l, rad, length)
 
 
 def create_scene(root):
@@ -23,15 +44,14 @@ def create_scene(root):
     root.addObject('StaticODESolver', newton_iterations=10, residual_tolerance_threshold=1e-10, printLog=False)
     root.addObject('LDLTSolver', backend='Eigen')
     root.addObject('MechanicalObject', name='mo', position=mesh.points.tolist())
-    root.addObject('CaribouTopology', name='volume', template='Tetrahedron10', indices=mesh.cells[1].data.tolist())
-    root.addObject('CaribouTopology', name='dirichlet_boundary', template='Triangle6', indices=mesh.cells[0].data[np.ma.masked_equal(mesh.cell_data['gmsh:physical'][0], 1).mask].tolist())
-    root.addObject('CaribouTopology', name='neumann_boundary',   template='Triangle6', indices=mesh.cells[0].data[np.ma.masked_inside(mesh.cell_data['gmsh:physical'][0], 2, 3).mask].tolist())
+    root.addObject('CaribouTopology', name='volume', template='Tetrahedron', indices=mesh.cells[1].data.tolist())
+    root.addObject('CaribouTopology', name='dirichlet_boundary', template='Triangle', indices=mesh.cells[0].data[np.ma.masked_equal(mesh.cell_data['gmsh:physical'][0], 1).mask].tolist())
+    root.addObject('CaribouTopology', name='neumann_boundary',   template='Triangle', indices=mesh.cells[0].data[np.ma.masked_inside(mesh.cell_data['gmsh:physical'][0], 2, 3).mask].tolist())
 
     root.addObject('SaintVenantKirchhoffMaterial', young_modulus=young_modulus, poisson_ratio=poisson_ratio)
     root.addObject('HyperelasticForcefield', topology='@volume', printLog=True)
 
     root.addObject('FixedConstraint', indices=np.unique(root.dirichlet_boundary.indices.array()).tolist())
-    # root.addObject('FixedConstraint', indices=np.unique(root.neumann_boundary.indices.array()).tolist())
     root.addObject(ConstantForceField(name='external_forces'))
 
 

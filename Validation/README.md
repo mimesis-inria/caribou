@@ -11,6 +11,9 @@ $ pip3 install --user numpy meshio
 The validation meshes can thereafter be created using:
 ```shell
 $ cd meshes
+
+$ # Rectangular beams
+
 $ # Linear tetrahedral mesh (4 nodes)
 $ python3 create_beam_mesh.py -t p1 -n 3 3 9 --p0 -7.5 -7.5 0 --p1 7.5 7.5 80 -o beam_p1.vtu
 $ # Quadratic tetrahedral mesh (10 nodes)
@@ -19,6 +22,11 @@ $ # Trilinear hexahedral mesh (8 nodes)
 $ python3 create_beam_mesh.py -t q1 -n 3 3 9 --p0 -7.5 -7.5 0 --p1 7.5 7.5 80 -o beam_q1.vtu
 $ # Quadratic hexahedral mesh (20 nodes)
 $ python3 create_beam_mesh.py -t q2 -n 3 3 9 --p0 -7.5 -7.5 0 --p1 7.5 7.5 80 -o beam_q2.vtu
+
+$ # Cylindrical beam
+
+$ # Linear tetrahedral mesh (4 nodes)
+$ python create_cylinder_mesh.py -t p1 -s 0.18 -r 1 -l 3 -v -o cylinder_p1.vtu 
 ```
 
 ## Running the fenics validation scripts
@@ -35,3 +43,4 @@ $ docker build -t febio_validation - < febio_validation.dockerfile
 
 The docker/podman line used to compute the solution from this image is written at the top of each
 FEBio scripts.
+
