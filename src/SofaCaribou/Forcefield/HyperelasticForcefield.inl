@@ -521,7 +521,7 @@ auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*elem
 
         const auto J = element.jacobian(g.position);
         const Mat33 Jinv = J.inverse();
-        const auto detJ = J.determinant();
+        const auto detJ = std::abs(J.determinant());
 
         // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
         const Matrix<NumberOfNodesPerElement, Dimension> dN_dx =

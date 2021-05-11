@@ -6,6 +6,7 @@ set(HEADER_FILES
     Ode/LegacyStaticODESolver.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
+    Topology/CaribouTopology.h
     Topology/FictitiousGrid.h
 )
 
@@ -16,6 +17,7 @@ set(SOURCE_FILES
     Ode/LegacyStaticODESolver.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
+    Topology/CaribouTopology.cpp
     Topology/FictitiousGrid.cpp
 )
 
@@ -37,3 +39,19 @@ caribou_add_python_module(SofaCaribou
                           PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
                           )
 
+list(APPEND target_rpath
+     "$ORIGIN/../../../../../../lib"
+     "$loader_path/../../../../../../lib"
+     "$ORIGIN/../../../../lib"
+     "$loader_path/../../../../lib"
+     )
+set_target_properties(
+    ${PROJECT_NAME}
+    PROPERTIES
+    INSTALL_RPATH "${target_rpath}"
+)
+
+if (SOFA_VERSION VERSION_GREATER_EQUAL "20.12.99")
+    # Set RPATH towards relocatable dependencies
+    sofa_auto_set_target_rpath(TARGETS ${PROJECT_NAME} RELOCATABLE "plugins")
+endif()

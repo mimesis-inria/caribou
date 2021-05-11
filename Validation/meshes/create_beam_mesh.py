@@ -4,7 +4,6 @@ import tempfile
 import subprocess
 import os
 import argparse
-import pathlib
 
 from meshio.xdmf.common import meshio_to_xdmf_type
 meshio_to_xdmf_type['tetra10'] = ['Tet_10']
@@ -26,21 +25,7 @@ def main():
     dimension = len(args.n)
 
     mesh = rectangle(args.p0, args.p1, args.n, dimension, order, quads, args.verbose)
-    # if len(mesh.cells) > 1:
-    #     mesh.cells = [mesh.cells[-1]] # Remove the surface mesh and keep only the volumetric part
     options = {}
-    # if pathlib.Path(args.output).suffix == '.xdmf':
-    #     options['data_format'] = 'XML'
-        # if args.type in ('q1', 'Q1'):
-        #     vtk_mapping = [0, 1, 3, 2, 4, 5, 7, 6]
-        #     indices = np.array(mesh.cells[0].data, copy=False)
-        #     for index, vtk_index in enumerate(vtk_mapping):
-        #         if index >= vtk_index:
-        #             continue
-        #         print(f'Swapping {index} with {vtk_index}')
-        #         temp = np.array(indices[:, index], copy=True)
-        #         indices[:, index] = indices[:, vtk_index]
-        #         indices[:, vtk_index] = temp
     meshio.write(args.output, mesh, **options)
 
 

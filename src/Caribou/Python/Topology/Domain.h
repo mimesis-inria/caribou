@@ -22,7 +22,7 @@ void declare_domain(pybind11::module & m, const std::string & name) {
     }, py::arg("element_id"));
 
     c.def("element_indices", &D::element_indices, py::arg("index"));
-    c.def("mesh", &D::mesh);
+    c.def("mesh", &D::mesh, py::return_value_policy::reference);
 
     // Mesh's add_domain binding for Domain<Element, NodeIndex> type
     m.def("add_domain", [](BaseMesh & mesh, const std::string & domain_name, const Element &, const Eigen::Matrix<NodeIndex, Eigen::Dynamic, geometry::traits<Element>::NumberOfNodesAtCompileTime> & node_indices) {
