@@ -18,11 +18,6 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
       - name: Download SOFA Release
         run:  |
           curl --output sofa.zip -L \
@@ -56,6 +51,7 @@ jobs:
           export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
           ccache -z &&
           cmake
+          -DPYTHON_EXECUTABLE=/usr/bin/python3.7
           -DCMAKE_C_COMPILER_LAUNCHER=ccache
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCARIBOU_BUILD_TESTS=ON
