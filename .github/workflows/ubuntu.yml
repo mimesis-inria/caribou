@@ -20,7 +20,7 @@ jobs:
 
       - name: Download SOFA Release
         run:  |
-          if ["$SOFA_VERSION" = "master" ]; then
+          if [ "$SOFA_VERSION" = "master" ]; then
               curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_SCOPE=binaries_standard/lastSuccessfulBuild/artifact/Linux/SOFA_v20.12.99_Linux.zip"
           else
               curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
@@ -100,7 +100,7 @@ jobs:
 
       - name: Install SOFA
         run: |
-          if ["$SOFA_VERSION" = "master" ]; then
+          if [ "$SOFA_VERSION" = "master" ]; then
               curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_SCOPE=binaries_standard/lastSuccessfulBuild/artifact/Linux/SOFA_v20.12.99_Linux.zip"
           else
               curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
