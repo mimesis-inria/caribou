@@ -9,7 +9,7 @@ jobs:
     container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
     strategy:
       matrix:
-        sofa_version: [ v20.06.01, v20.12.02 ]
+        sofa_version: [ v20.06.01, v20.12.02, master ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -20,8 +20,11 @@ jobs:
 
       - name: Download SOFA Release
         run:  |
-          curl --output sofa.zip -L \
-            "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
+          [ "$SOFA_VERSION" == "master" ] && \
+              curl --output sofa.zip -L \
+                  "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_SCOPE=binaries_standard/lastSuccessfulBuild/artifact/Linux/SOFA_v20.12.99_Linux.zip" || \
+              curl --output sofa.zip -L \
+                  "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
           unzip sofa.zip -d temp
           mv temp/`ls temp` $SOFA_ROOT
 
@@ -76,7 +79,7 @@ jobs:
     container: ubuntu:20.04
     strategy:
       matrix:
-        sofa_version: [ v20.06.01, v20.12.02 ]
+        sofa_version: [ v20.06.01, v20.12.02, master ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -97,8 +100,11 @@ jobs:
 
       - name: Install SOFA
         run: |
-          curl --output sofa.zip -L \
-            "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
+          [ "$SOFA_VERSION" == "master" ] && \
+              curl --output sofa.zip -L \
+                  "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_SCOPE=binaries_standard/lastSuccessfulBuild/artifact/Linux/SOFA_v20.12.99_Linux.zip" || \
+              curl --output sofa.zip -L \
+                  "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
           unzip sofa.zip -d temp
           mv temp/`ls temp` $SOFA_ROOT
 
