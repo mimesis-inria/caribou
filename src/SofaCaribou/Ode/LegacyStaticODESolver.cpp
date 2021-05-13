@@ -25,6 +25,7 @@ namespace SofaCaribou::ode {
 using sofa::core::VecId;
 using namespace sofa::defaulttype;
 using namespace sofa::core::behavior;
+using namespace sofa::simulation;
 
 LegacyStaticODESolver::LegacyStaticODESolver()
     : d_newton_iterations(initData(&d_newton_iterations,
