@@ -12,6 +12,11 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/simulation/Node.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
+#include <sofa/simulation/MechanicalMatrixVisitor.h>
+#else
+#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
+#endif
 DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::ode {
@@ -19,6 +24,7 @@ namespace SofaCaribou::ode {
 using sofa::core::VecId;
 using namespace sofa::defaulttype;
 using namespace sofa::core::behavior;
+using namespace sofa::simulation::mechanicalvisitor;
 
 LegacyStaticODESolver::LegacyStaticODESolver()
     : d_newton_iterations(initData(&d_newton_iterations,
@@ -200,7 +206,7 @@ void LegacyStaticODESolver::solve(const sofa::core::ExecParams* params, double /
 
         // Propagate positions to mapped mechanical objects, for example, identity mappings, barycentric mappings, ...
         // This will call the methods apply and applyJ on every mechanical mappings.
-        sofa::simulation::MechanicalPropagateOnlyPositionAndVelocityVisitor(&mparams).execute(this->getContext());
+        MechanicalPropagateOnlyPositionAndVelocityVisitor(&mparams).execute(this->getContext());
 
         // Update the force residual
         sofa::helper::AdvancedTimer::stepBegin("ComputeForce");

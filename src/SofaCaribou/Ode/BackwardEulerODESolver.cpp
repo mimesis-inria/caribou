@@ -4,12 +4,24 @@
 #include <SofaCaribou/Visitor/ConstrainGlobalMatrix.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/ConstraintSolver.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalVisitor.h>
-#include <sofa/simulation/MechanicalMatrixVisitor.h>
 #include <sofa/simulation/VectorOperations.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
+#include <sofa/simulation/MechanicalMatrixVisitor.h>
+#else
+#include <sofa/simulation/mechanicalvisitor/MechanicalAddMBKdxVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalApplyConstraintsVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalComputeForceVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalMultiVectorFromBaseVectorVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalMultiVectorToBaseVectorVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalVOpVisitor.h>
+#endif
 DISABLE_ALL_WARNINGS_BEGIN
 
 namespace SofaCaribou::ode {
@@ -17,6 +29,7 @@ namespace SofaCaribou::ode {
 int BackwardEulerClass = sofa::core::RegisterObject("Backward Euler ODE Solver").add< BackwardEulerODESolver >();
 
 using namespace sofa::simulation;
+using namespace sofa::simulation::mechanicalvisitor;
 using sofa::core::behavior::MultiMatrixAccessor;
 using sofa::core::MechanicalParams;
 using sofa::core::MultiVecCoordId;

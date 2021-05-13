@@ -3,8 +3,8 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #include <sofa/core/behavior/OdeSolver.h>
-#include <sofa/simulation/MechanicalMatrixVisitor.h>
 #include <sofa/core/behavior/MultiVec.h>
 DISABLE_ALL_WARNINGS_END
 
