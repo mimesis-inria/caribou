@@ -77,41 +77,53 @@ endif()
 
 find_path(MKL_INCLUDE_DIR
     NAME mkl.h
-    HINTS 
-    $ENV{HOME}/intel/mkl/include
-    /opt/intel/mkl/include
-    $ENV{MKLROOT}/include 
-    /usr/include/mkl)
+    HINTS
+        $ENV{MKLROOT}/include
+        $ENV{HOME}/intel/mkl/include
+        /opt/intel/mkl/include
+        /opt/intel/oneapi/mkl/latest/include
+        /usr/include/mkl)
+
+if (MKL_INCLUDE_DIR)
+    set(MKL_ROOT "${MKL_INCLUDE_DIR}/..")
+    message(STATUS "FOUND MKL AT ${MKL_INCLUDE_DIR}")
+endif()
 
 find_library(MKL_INTERFACE_LIBRARY
     NAME ${INT_LIB}
-    PATHS $ENV{MKLROOT}/lib
-    $ENV{HOME}/intel/mkl/lib/intel64_lin
-    /opt/intel/mkl/lib/intel64_lin
-    /opt/intel/mkl/lib
-    /usr/lib/x86_64-linux-gnu
-    $ENV{MKLROOT}/lib/intel64
-    $ENV{INTEL}/mkl/lib/intel64)
+    PATHS
+        ${MKL_ROOT}/lib
+        $ENV{MKLROOT}/lib
+        $ENV{HOME}/intel/mkl/lib/intel64_lin
+        /opt/intel/mkl/lib/intel64_lin
+        /opt/intel/mkl/lib
+        /usr/lib/x86_64-linux-gnu
+        $ENV{MKLROOT}/lib/intel64
+        $ENV{INTEL}/mkl/lib/intel64)
 
 find_library(MKL_THREAD_LAYER_LIBRARY
     NAME ${THR_LIB}
-    PATHS $ENV{MKLROOT}/lib
-    $ENV{HOME}/intel/mkl/lib/intel64_lin
-    /opt/intel/mkl/lib/intel64_lin
-    /opt/intel/mkl/lib
-    /usr/lib/x86_64-linux-gnu
-    $ENV{MKLROOT}/lib/intel64
-    $ENV{INTEL}/mkl/lib/intel64)
+    PATHS
+        ${MKL_ROOT}/lib
+        $ENV{MKLROOT}/lib
+        $ENV{HOME}/intel/mkl/lib/intel64_lin
+        /opt/intel/mkl/lib/intel64_lin
+        /opt/intel/mkl/lib
+        /usr/lib/x86_64-linux-gnu
+        $ENV{MKLROOT}/lib/intel64
+        $ENV{INTEL}/mkl/lib/intel64)
 
 find_library(MKL_CORE_LIBRARY
     NAME ${COR_LIB}
-    PATHS $ENV{MKLROOT}/lib
-    $ENV{HOME}/intel/mkl/lib/intel64_lin
-    /opt/intel/mkl/lib/intel64_lin
-    /opt/intel/mkl/lib
-    /usr/lib/x86_64-linux-gnu
-    $ENV{MKLROOT}/lib/intel64
-    $ENV{INTEL}/mkl/lib/intel64)
+    PATHS
+        ${MKL_ROOT}/lib
+        $ENV{MKLROOT}/lib
+        $ENV{HOME}/intel/mkl/lib/intel64_lin
+        /opt/intel/mkl/lib/intel64_lin
+        /opt/intel/mkl/lib
+        /usr/lib/x86_64-linux-gnu
+        $ENV{MKLROOT}/lib/intel64
+        $ENV{INTEL}/mkl/lib/intel64)
 
 set(MKL_INCLUDE_DIRS ${MKL_INCLUDE_DIR})
 if (APPLE)
