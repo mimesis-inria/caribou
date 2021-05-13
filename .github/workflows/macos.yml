@@ -47,7 +47,8 @@ jobs:
           curl --output boost.tar.gz -L "https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz"
           tar xzf boost.tar.gz
           cd boost_1_67_0
-          curl https://github.com/boostorg/build/commit/b3a59d265929a213f02a451bb63cea75d668a4d9.patch\?full_index\=1 | git apply --directory=tools/build --numstat --apply
+          curl --output a.patch -L https://github.com/boostorg/build/commit/b3a59d265929a213f02a451bb63cea75d668a4d9.patch\?full_index\=1
+          git apply --directory=tools/build --numstat --apply a.patch
           ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --libdir=/opt/boost/lib
           sudo ./b2 toolset=darwin cxxflags=-std=c++17 link=shared threading=multi,single --layout=tagged variant=release architecture=x86 install
 
