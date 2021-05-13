@@ -30,7 +30,7 @@ jobs:
               curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/v20.12.02/SOFA_v20.12.02_MacOS.zip"
           fi
           unzip sofa.zip -d temp
-          mv temp/`ls temp` $SOFA_ROOT
+          sudo mv temp/`ls temp` $SOFA_ROOT
 
       - name: Get Time
         id: time
@@ -44,9 +44,9 @@ jobs:
         if: ${{ always() }}
         with:
           path: .ccache
-          key: ubuntu-ccache-${{ steps.time.outputs.time }}
+          key: macos-ccache-${{ steps.time.outputs.time }}
           restore-keys: |
-            ubuntu-ccache-
+            macos-ccache-
 
       - name: cache MKL
         uses: actions/cache@v2
