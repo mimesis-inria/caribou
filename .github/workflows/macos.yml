@@ -24,7 +24,7 @@ jobs:
 
       - name: Install requirements
         run: |
-          brew install ccache boost eigen
+          brew install ccache eigen
           python3 -m pip install numpy
 
       - name: Install pybind11
@@ -47,8 +47,9 @@ jobs:
           curl --output boost.tar.gz -L "https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz"
           tar xzf boost.tar.gz
           cd boost_1_67_0
-          ./bootstrap.sh --prefix=/opt/boost
-          ./b2
+          ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log
+          ./b2 headers
+          ./b2 --prefix=/opt/boost cxxflags=-std=c++14 cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++
           sudo ./b2 install
 
       - name: Download SOFA Release
