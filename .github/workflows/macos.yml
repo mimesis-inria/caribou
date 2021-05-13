@@ -60,7 +60,7 @@ jobs:
         run: |
           URL=https://registrationcenter-download.intel.com/akdlm/irc_nas/17714/m_BaseKit_p_2021.2.0.2855_offline.dmg
           curl --output /tmp/intel_mkl.dmg --url "$URL" --retry 5 --retry-delay 5
-          hdiutil attach intel_mkl.dmg
+          hdiutil attach /tmp/intel_mkl.dmg
           sudo /Volumes/"$(basename "$URL" .dmg)"/bootstrapper.app/Contents/MacOS/bootstrapper -s --action install --eula=accept --continue-with-optional-error=yes --log-dir=.
           hdiutil detach /Volumes/"$(basename "$URL" .dmg)" -quiet
 
