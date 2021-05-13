@@ -48,9 +48,7 @@ jobs:
           tar xzf boost.tar.gz
           cd boost_1_67_0
           ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log
-          ./b2 headers
-          ./b2 --prefix=/opt/boost cxxflags=-std=c++14 cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++
-          sudo ./b2 install
+          sudo ./b2 cxxflags=-std=c++17 link=static install
 
       - name: Download SOFA Release
         run:  |
