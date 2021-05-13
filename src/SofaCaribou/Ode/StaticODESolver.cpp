@@ -18,6 +18,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalVOpVisitor.h>
+using namespace sofa::simulation::mechanicalvisitor;
 #endif
 DISABLE_ALL_WARNINGS_END
 
@@ -26,7 +27,6 @@ namespace SofaCaribou::ode {
 int StaticOdeSolverClass = sofa::core::RegisterObject("Static ODE Solver").add< StaticODESolver >();
 
 using namespace sofa::simulation;
-using namespace sofa::simulation::mechanicalvisitor;
 using Timer = sofa::helper::AdvancedTimer;
 
 // Assemble F in A [dx] = F

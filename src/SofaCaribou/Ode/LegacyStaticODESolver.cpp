@@ -16,6 +16,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/simulation/MechanicalMatrixVisitor.h>
 #else
 #include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
+using namespace sofa::simulation::mechanicalvisitor;
 #endif
 DISABLE_ALL_WARNINGS_END
 
@@ -24,7 +25,6 @@ namespace SofaCaribou::ode {
 using sofa::core::VecId;
 using namespace sofa::defaulttype;
 using namespace sofa::core::behavior;
-using namespace sofa::simulation::mechanicalvisitor;
 
 LegacyStaticODESolver::LegacyStaticODESolver()
     : d_newton_iterations(initData(&d_newton_iterations,

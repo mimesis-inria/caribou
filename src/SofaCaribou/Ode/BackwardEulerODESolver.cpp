@@ -21,6 +21,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalVOpVisitor.h>
+using namespace sofa::simulation::mechanicalvisitor;
 #endif
 DISABLE_ALL_WARNINGS_BEGIN
 
@@ -29,7 +30,6 @@ namespace SofaCaribou::ode {
 int BackwardEulerClass = sofa::core::RegisterObject("Backward Euler ODE Solver").add< BackwardEulerODESolver >();
 
 using namespace sofa::simulation;
-using namespace sofa::simulation::mechanicalvisitor;
 using sofa::core::behavior::MultiMatrixAccessor;
 using sofa::core::MechanicalParams;
 using sofa::core::MultiVecCoordId;
