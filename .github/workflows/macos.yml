@@ -8,7 +8,7 @@ jobs:
     runs-on: macos-10.15
     strategy:
       matrix:
-        sofa_version: [ v20.06.01, v20.12.02, master ]
+        sofa_version: [ v20.06.01 ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
