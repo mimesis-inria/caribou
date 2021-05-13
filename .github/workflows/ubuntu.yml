@@ -1,155 +1,155 @@
-name: Linux
-
-on: pull_request
-
-jobs:
-  build:
-    name: Building with ${{ matrix.sofa_version }}
-    runs-on: ubuntu-20.04
-    container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
-    strategy:
-      matrix:
-        sofa_version: [ v20.06.01, v20.12.02, master ]
-    env:
-      SOFA_VERSION: ${{ matrix.sofa_version }}
-      SOFA_ROOT: /opt/sofa
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v2
-
-      - name: Download SOFA Release
-        run:  |
-          if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_SCOPE=binaries_standard/lastSuccessfulBuild/artifact/Linux/SOFA_v20.12.99_Linux.zip"
-          else
-              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
-          fi
-          unzip sofa.zip -d temp
-          mv temp/`ls temp` $SOFA_ROOT
-
-      - name: Get Time
-        id: time
-        uses: nanzm/get-time-action@v1.0
-        with:
-          timeZone: 8
-          format: 'YYYY-MM-DD-HH-mm-ss'
-
-      - name: ccache cache files
-        uses: actions/cache@v2
-        if: ${{ always() }}
-        with:
-          path: .ccache
-          key: ubuntu-ccache-${{ steps.time.outputs.time }}
-          restore-keys: |
-            ubuntu-ccache-
-
-      - name: Build caribou
-        env:
-          CCACHE_COMPRESS: true
-          CCACHE_COMPRESSLEVEL: 6
-          CCACHE_MAXSIZE: "500M"
-        run:
-          export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
-          export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
-          ccache -z &&
-          cmake
-          -DPYTHON_EXECUTABLE=/usr/bin/python3.7
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCARIBOU_BUILD_TESTS=ON
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_INSTALL_PREFIX=SofaCaribou
-          .
-          && make && make install
-          && tar czvf SofaCaribou.tar.gz SofaCaribou
-          && echo ${CCACHE_BASEDIR}
-          && ccache -s
-
-      - name: Archive production
-        uses: actions/upload-artifact@v2
-        with:
-          name: caribou_${{ matrix.sofa_version }}
-          path: SofaCaribou.tar.gz
-
-  test:
-    name: Testing with ${{ matrix.sofa_version }}
-    needs: [build]
-    runs-on: ubuntu-20.04
-    container: ubuntu:20.04
-    strategy:
-      matrix:
-        sofa_version: [ v20.06.01, v20.12.02, master ]
-    env:
-      SOFA_VERSION: ${{ matrix.sofa_version }}
-      SOFA_ROOT: /opt/sofa
-      CARIBOU_ROOT: /opt/sofa/plugins/SofaCaribou
-
-    steps:
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install dependencies
-        run: |
-               apt-get update
-               apt-get -qq --no-install-recommends install \
-                  libgl1-mesa-glx libglib2.0-0 libglx0 libopengl0 libharfbuzz0b libgomp1 curl ca-certificates unzip
-               python -m pip install numpy meshio
-
-      - name: Install SOFA
-        run: |
-          if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_SCOPE=binaries_standard/lastSuccessfulBuild/artifact/Linux/SOFA_v20.12.99_Linux.zip"
-          else
-              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
-          fi
-          unzip sofa.zip -d temp
-          mv temp/`ls temp` $SOFA_ROOT
-
-      - name: Download caribou
-        uses: actions/download-artifact@v2
-        with:
-          name: caribou_${{ matrix.sofa_version }}
-          path: /tmp
-
-      - name: Unpack caribou
-        run: tar xzf /tmp/SofaCaribou.tar.gz -C /opt/sofa/plugins
-
-      - name: Caribou.unittests.Geometry
-        if: ${{ always() }}
-        run: |
-          export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
-          $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
-
-      - name: Caribou.Geometry.PyTest
-        if: ${{ always() }}
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
-          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Geometry_Test.py
-
-
-      - name: Caribou.unittests.Topology
-        if: ${{ always() }}
-        run: |
-          [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
-          $CARIBOU_ROOT/bin/Caribou.unittests.Topology
-
-      - name: Caribou.Topology.PyTest
-        if: ${{ always() }}
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
-          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Topology_Test.py
-
-      - name: Caribou.unittests.Mechanics
-        if: ${{ always() }}
-        run: |
-          export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
-          $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
-
-      - name: Caribou.unittests.SofaCaribou
-        if: ${{ always() }}
-        run: |
-            [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
-            $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
+#name: Linux
+#
+#on: pull_request
+#
+#jobs:
+#  build:
+#    name: Building with ${{ matrix.sofa_version }}
+#    runs-on: ubuntu-20.04
+#    container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
+#    strategy:
+#      matrix:
+#        sofa_version: [ v20.06.01, v20.12.02, master ]
+#    env:
+#      SOFA_VERSION: ${{ matrix.sofa_version }}
+#      SOFA_ROOT: /opt/sofa
+#
+#    steps:
+#      - name: Checkout source code
+#        uses: actions/checkout@v2
+#
+#      - name: Download SOFA Release
+#        run:  |
+#          if [ "$SOFA_VERSION" = "master" ]; then
+#              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_SCOPE=binaries_standard/lastSuccessfulBuild/artifact/Linux/SOFA_v20.12.99_Linux.zip"
+#          else
+#              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
+#          fi
+#          unzip sofa.zip -d temp
+#          mv temp/`ls temp` $SOFA_ROOT
+#
+#      - name: Get Time
+#        id: time
+#        uses: nanzm/get-time-action@v1.0
+#        with:
+#          timeZone: 8
+#          format: 'YYYY-MM-DD-HH-mm-ss'
+#
+#      - name: ccache cache files
+#        uses: actions/cache@v2
+#        if: ${{ always() }}
+#        with:
+#          path: .ccache
+#          key: ubuntu-ccache-${{ steps.time.outputs.time }}
+#          restore-keys: |
+#            ubuntu-ccache-
+#
+#      - name: Build caribou
+#        env:
+#          CCACHE_COMPRESS: true
+#          CCACHE_COMPRESSLEVEL: 6
+#          CCACHE_MAXSIZE: "500M"
+#        run:
+#          export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
+#          export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
+#          ccache -z &&
+#          cmake
+#          -DPYTHON_EXECUTABLE=/usr/bin/python3.7
+#          -DCMAKE_C_COMPILER_LAUNCHER=ccache
+#          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+#          -DCARIBOU_BUILD_TESTS=ON
+#          -DCMAKE_BUILD_TYPE=Release
+#          -DCMAKE_INSTALL_PREFIX=SofaCaribou
+#          .
+#          && make && make install
+#          && tar czvf SofaCaribou.tar.gz SofaCaribou
+#          && echo ${CCACHE_BASEDIR}
+#          && ccache -s
+#
+#      - name: Archive production
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: caribou_${{ matrix.sofa_version }}
+#          path: SofaCaribou.tar.gz
+#
+#  test:
+#    name: Testing with ${{ matrix.sofa_version }}
+#    needs: [build]
+#    runs-on: ubuntu-20.04
+#    container: ubuntu:20.04
+#    strategy:
+#      matrix:
+#        sofa_version: [ v20.06.01, v20.12.02, master ]
+#    env:
+#      SOFA_VERSION: ${{ matrix.sofa_version }}
+#      SOFA_ROOT: /opt/sofa
+#      CARIBOU_ROOT: /opt/sofa/plugins/SofaCaribou
+#
+#    steps:
+#      - name: Set up Python 3.7
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.7'
+#
+#      - name: Install dependencies
+#        run: |
+#               apt-get update
+#               apt-get -qq --no-install-recommends install \
+#                  libgl1-mesa-glx libglib2.0-0 libglx0 libopengl0 libharfbuzz0b libgomp1 curl ca-certificates unzip
+#               python -m pip install numpy meshio
+#
+#      - name: Install SOFA
+#        run: |
+#          if [ "$SOFA_VERSION" = "master" ]; then
+#              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_SCOPE=binaries_standard/lastSuccessfulBuild/artifact/Linux/SOFA_v20.12.99_Linux.zip"
+#          else
+#              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
+#          fi
+#          unzip sofa.zip -d temp
+#          mv temp/`ls temp` $SOFA_ROOT
+#
+#      - name: Download caribou
+#        uses: actions/download-artifact@v2
+#        with:
+#          name: caribou_${{ matrix.sofa_version }}
+#          path: /tmp
+#
+#      - name: Unpack caribou
+#        run: tar xzf /tmp/SofaCaribou.tar.gz -C /opt/sofa/plugins
+#
+#      - name: Caribou.unittests.Geometry
+#        if: ${{ always() }}
+#        run: |
+#          export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+#          $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
+#
+#      - name: Caribou.Geometry.PyTest
+#        if: ${{ always() }}
+#        run: |
+#          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
+#          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Geometry_Test.py
+#
+#
+#      - name: Caribou.unittests.Topology
+#        if: ${{ always() }}
+#        run: |
+#          [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+#          $CARIBOU_ROOT/bin/Caribou.unittests.Topology
+#
+#      - name: Caribou.Topology.PyTest
+#        if: ${{ always() }}
+#        run: |
+#          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
+#          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Topology_Test.py
+#
+#      - name: Caribou.unittests.Mechanics
+#        if: ${{ always() }}
+#        run: |
+#          export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+#          $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
+#
+#      - name: Caribou.unittests.SofaCaribou
+#        if: ${{ always() }}
+#        run: |
+#            [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+#            $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
