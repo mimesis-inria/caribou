@@ -44,8 +44,6 @@ jobs:
       - name: Install boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
-#          git clone -b boost-1.67.0 --depth 1 https://github.com/boostorg/boost.git
-#          cd boost
           curl --output boost.tar.gz -L "https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz"
           tar xzf boost.tar.gz
           cd boost_1_67_0
