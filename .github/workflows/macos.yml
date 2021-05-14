@@ -122,12 +122,12 @@ jobs:
           /Volumes/"$(basename "$URL" .dmg)"/bootstrapper.app/Contents/MacOS/bootstrapper -s --action install --eula=accept --continue-with-optional-error=yes --log-dir=.
           hdiutil detach /Volumes/"$(basename "$URL" .dmg)" -quiet
 
-       - name: Build caribou
-         env:
+      - name: Build caribou
+        env:
            CCACHE_COMPRESS: true
            CCACHE_COMPRESSLEVEL: 6
            CCACHE_MAXSIZE: "500M"
-         run:
+        run:
            export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
            export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
            ccache -z &&
@@ -145,8 +145,8 @@ jobs:
            && echo ${CCACHE_BASEDIR}
            && ccache -s
 
-       - name: Archive production
-         uses: actions/upload-artifact@v2
-         with:
+      - name: Archive production
+        uses: actions/upload-artifact@v2
+        with:
            name: caribou_macos_${{ matrix.sofa_version }}
            path: SofaCaribou.tar.gz
