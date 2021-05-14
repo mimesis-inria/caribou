@@ -49,7 +49,7 @@ jobs:
       - name: Patch boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
-            curl --output a.patch -L "https://gist.githubusercontent.com/jnbrunet/28b93c3b36672e6395b0d875fe151c7b/raw/b21c7f1c5b238e38092152569157afcac24ecdbd/boost_remove_unsuported_flags_darwin.patch"
+            curl --output a.patch -L "https://github.com/boostorg/build/commit/b3a59d265929a213f02a451bb63cea75d668a4d9.patch?full_index=1"
             git apply -v --directory=boost_1_67_0/tools/build a.patch 
       - name: Build boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
