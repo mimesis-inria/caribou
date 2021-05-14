@@ -86,7 +86,6 @@ find_path(MKL_INCLUDE_DIR
 
 if (MKL_INCLUDE_DIR)
     set(MKL_ROOT "${MKL_INCLUDE_DIR}/..")
-    message(STATUS "FOUND MKL AT ${MKL_INCLUDE_DIR}")
 endif()
 
 find_library(MKL_INTERFACE_LIBRARY
