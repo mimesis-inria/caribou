@@ -24,7 +24,7 @@ jobs:
 
       - name: Install requirements
         run: |
-          brew install ccache eigen
+          brew install ccache eigen libpng libjpeg libtiff glew
           python3 -m pip install numpy
 
       - name: Install pybind11
