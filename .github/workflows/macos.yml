@@ -55,8 +55,8 @@ jobs:
         if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
           cd boost_1_67_0
-          ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --libdir=/opt/boost/lib -with-toolset=darwin
-          sudo ./b2 toolset=darwin cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
+          ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --without-icu --libdir=/opt/boost/lib -with-toolset=darwin
+          sudo ./b2 toolset=darwin cxxflags=-std=c++11 link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
 
       - name: Download SOFA Release
         run:  |
