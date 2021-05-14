@@ -39,7 +39,8 @@ jobs:
         id: cache-boost
         with:
           path: /opt/boost
-          key: boost-macos-10-15
+          key: boost-1.67.0-macos-1015
+          restore-keys: boost-macos-10-15
 
       - name: Download boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
@@ -102,29 +103,30 @@ jobs:
           sudo /Volumes/"$(basename "$URL" .dmg)"/bootstrapper.app/Contents/MacOS/bootstrapper -s --action install --eula=accept --continue-with-optional-error=yes --log-dir=.
           hdiutil detach /Volumes/"$(basename "$URL" .dmg)" -quiet
 
-#       - name: Build caribou
-#         env:
-#           CCACHE_COMPRESS: true
-#           CCACHE_COMPRESSLEVEL: 6
-#           CCACHE_MAXSIZE: "500M"
-#         run:
-#           export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
-#           export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
-#           ccache -z &&
-#           cmake
-#           -DCMAKE_C_COMPILER_LAUNCHER=ccache
-#           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-#           -DCARIBOU_BUILD_TESTS=ON
-#           -DCMAKE_BUILD_TYPE=Release
-#           -DCMAKE_INSTALL_PREFIX=SofaCaribou
-#           .
-#           && make && make install
-#           && tar czvf SofaCaribou.tar.gz SofaCaribou
-#           && echo ${CCACHE_BASEDIR}
-#           && ccache -s
+      - name: Build caribou
+        env:
+          CCACHE_COMPRESS: true
+          CCACHE_COMPRESSLEVEL: 6
+          CCACHE_MAXSIZE: "500M"
+        run:
+          export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
+          export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
+          ccache -z &&
+          cmake
+          -DBOOST_ROOT=/opt/boost
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          -DCARIBOU_BUILD_TESTS=ON
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_INSTALL_PREFIX=SofaCaribou
+          .
+          && make && make install
+          && tar czvf SofaCaribou.tar.gz SofaCaribou
+          && echo ${CCACHE_BASEDIR}
+          && ccache -s
 
-#       - name: Archive production
-#         uses: actions/upload-artifact@v2
-#         with:
-#           name: caribou_macos_${{ matrix.sofa_version }}
-#           path: SofaCaribou.tar.gz
+      - name: Archive production
+        uses: actions/upload-artifact@v2
+        with:
+          name: caribou_macos_${{ matrix.sofa_version }}
+          path: SofaCaribou.tar.gz
