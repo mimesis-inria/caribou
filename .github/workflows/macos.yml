@@ -33,6 +33,9 @@ jobs:
           cmake -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release
           sudo cmake --install /tmp/pybind11/build
           rm -rf /tmp/pybind11
+          
+      - name: Opt permission
+        run: sudo chown -R $(whoami) /opt
 
       - name: cache boost
         uses: actions/cache@v2
@@ -59,7 +62,7 @@ jobs:
         run: |
           cd boost_1_67_0
           ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --without-icu --libdir=/opt/boost/lib -with-toolset=darwin
-          sudo ./b2 toolset=darwin cxxflags=-std=c++11 link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
+          ./b2 toolset=darwin cxxflags=-std=c++11 link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
 
       - name: Download SOFA Release
         run:  |
