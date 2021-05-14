@@ -43,7 +43,6 @@ jobs:
         with:
           path: /opt/boost
           key: boost-1.67.0-macos-1015
-          restore-keys: boost-macos-10-15
 
       - name: Download boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
