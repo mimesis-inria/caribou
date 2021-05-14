@@ -43,19 +43,17 @@ jobs:
 
       - name: Install boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
-        run: |
-          curl --output boost.tar.gz -L "https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz"
-          tar xzf boost.tar.gz
-          cd boost_1_67_0
-          echo "before patch"
-          grep coalesce tools/build/src/tools/darwin.jam
-          cd tools/build
-          curl "https://gist.githubusercontent.com/jnbrunet/28b93c3b36672e6395b0d875fe151c7b/raw/b21c7f1c5b238e38092152569157afcac24ecdbd/boost_remove_unsuported_flags_darwin.patch" | git apply -v
-          cd ../../
-          echo "after patch"
-          grep coalesce tools/build/src/tools/darwin.jam
-          ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --libdir=/opt/boost/lib -with-toolset=darwin
-          sudo ./b2 toolset=darwin cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
+        run:
+          curl --output boost.tar.gz -L "https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz" \
+          && tar xzf boost.tar.gz \
+          && cd boost_1_67_0 \
+          && cd tools/build \
+          && curl "https://gist.githubusercontent.com/jnbrunet/28b93c3b36672e6395b0d875fe151c7b/raw/b21c7f1c5b238e38092152569157afcac24ecdbd/boost_remove_unsuported_flags_darwin.patch" | git apply -v \
+          && cd ../../ \
+          && echo "after patch" \
+          && grep coalesce tools/build/src/tools/darwin.jam \
+          && ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --libdir=/opt/boost/lib -with-toolset=darwin \
+          && sudo ./b2 toolset=darwin cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
 
       - name: Download SOFA Release
         run:  |
