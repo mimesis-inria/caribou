@@ -52,7 +52,7 @@ jobs:
             curl --output a.patch -L "https://github.com/boostorg/build/commit/b3a59d265929a213f02a451bb63cea75d668a4d9.patch?full_index=1"
             git apply -v --directory=boost_1_67_0/tools/build a.patch
             curl --output b.patch -L "https://gist.githubusercontent.com/jnbrunet/d9537ff8679b2b35976356f11f334777/raw/8d2a2a1e46d13064c2e18c5caa229b9b81933285/6e14ca24.patch"
-            patch boost/atomic/detail/ops_gcc_x86_dcas.hpp < b.patch
+            patch -d boost_1_67_0 boost/atomic/detail/ops_gcc_x86_dcas.hpp < b.patch
       - name: Build boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
