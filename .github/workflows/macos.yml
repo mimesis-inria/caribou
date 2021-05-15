@@ -122,9 +122,7 @@ jobs:
           echo "MKL volume mounted. Now trying to install..."
           sudo /Volumes/"$(basename "$URL" .dmg)"/bootstrapper.app/Contents/MacOS/bootstrapper --action install --components intel.oneapi.mac.mkl.devel --eula=accept --continue-with-optional-error=yes --log-dir=. -c
           sudo chown -R $(whoami) /opt
-          echo "MKL installation done. Detatching...."
-          hdiutil detach /Volumes/"$(basename "$URL" .dmg)" -quiet
-          echo "Done.
+          echo "MKL installation done."
 
 
       - name: Build caribou
