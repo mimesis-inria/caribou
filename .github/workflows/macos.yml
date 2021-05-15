@@ -27,9 +27,10 @@ jobs:
           brew install ccache eigen libpng libjpeg libtiff glew
           python3 -m pip install numpy
 
+#     pybind11
       - name: Install pybind11
         run: |
-          git clone --depth 1 -b v2.4  https://github.com/pybind/pybind11.git /tmp/pybind11
+          git clone --depth 1 -b v2.6  https://github.com/pybind/pybind11.git /tmp/pybind11
           cmake -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release
           sudo cmake --install /tmp/pybind11/build
           rm -rf /tmp/pybind11
