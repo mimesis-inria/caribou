@@ -1,6 +1,12 @@
 name: MacOS
 
-on: pull_request
+on:
+  pull_request:
+    branches:
+      - master
+  schedule:
+    # Runs every day at 23:15
+      - cron:  '15 23 * * *'
 
 jobs:
   build:
