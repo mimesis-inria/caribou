@@ -8,7 +8,7 @@ jobs:
     runs-on: macos-10.15
     strategy:
       matrix:
-        sofa_version: [ v20.06.01 ]
+        sofa_version: [ v20.06.01, v20.12.02, master ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -27,7 +27,7 @@ jobs:
           brew install ccache eigen libpng libjpeg libtiff glew
           python3 -m pip install numpy
 
-#     pybind11
+#     PYBIND11
       - name: Install pybind11
         run: |
           git clone --depth 1 -b v2.6  https://github.com/pybind/pybind11.git /tmp/pybind11
@@ -81,16 +81,20 @@ jobs:
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
           modules: 'qtcharts qtwebengine'
 
+
+#     SOFA
       - name: Download SOFA Release
         run:  |
           if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_standard/artifact/MacOS/*zip*/MacOS.zip"
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastSuccessfulBuild/CI_SCOPE=binaries_standard/artifact/MacOS/*zip*/MacOS.zip"
           else
-              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/v20.12.02/SOFA_v20.12.02_MacOS.zip"
+              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_MacOS.zip"
           fi
           unzip sofa.zip -d temp
           sudo mv temp/`ls temp` $SOFA_ROOT
 
+
+#     CCACHE
       - name: Get Time
         id: time
         uses: nanzm/get-time-action@v1.0
@@ -107,6 +111,8 @@ jobs:
           restore-keys: |
             macos-ccache-
 
+
+#     MKL
       - name: cache MKL
         uses: actions/cache@v2
         id: cache-mkl
@@ -126,6 +132,7 @@ jobs:
           echo "MKL installation done."
 
 
+#     CARIBOU
       - name: Build caribou
         env:
            CCACHE_COMPRESS: true
