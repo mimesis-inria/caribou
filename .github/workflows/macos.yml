@@ -1,15 +1,22 @@
-name: CI
+name: MacOS
 
-on: pull_request
+on:
+  pull_request:
+    branches:
+      - master
+  schedule:
+    # Runs every day at 23:15
+      - cron:  '15 23 * * *'
 
 jobs:
   build:
-    name: Building on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Building with ${{ matrix.sofa_version }}
+    runs-on: macos-10.15
     strategy:
       matrix:
-        os: [macos-10.15]
+        sofa_version: [ v20.06.01, v20.12.02, master ]
     env:
+      SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
 
     steps:
@@ -23,23 +30,77 @@ jobs:
 
       - name: Install requirements
         run: |
-          brew install ccache boost eigen pybind11
+          brew install ccache eigen libpng libjpeg libtiff glew
           python3 -m pip install numpy
 
-      - name: Download SOFA nightly build
-        run:  |
-          curl --output sofa.zip -L \
-          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_minimal/artifact/MacOS/*zip*/MacOS.zip
+#     PYBIND11
+      - name: Install pybind11
+        run: |
+          git clone --depth 1 -b v2.6  https://github.com/pybind/pybind11.git /tmp/pybind11
+          cmake -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release
+          sudo cmake --install /tmp/pybind11/build
+          rm -rf /tmp/pybind11
+          
+      - name: Opt permission
+        run: sudo chown -R $(whoami) /opt
 
-      - name: Install SOFA nightly build
-        run:  |
-          sudo unzip sofa.zip -d temp
-          sudo unzip temp/MacOS/`ls temp/MacOS/` -d temp
-          sudo rm -rf temp/MacOS
-          sudo mkdir -p $SOFA_ROOT
-          sudo mv temp/`ls temp`/* $SOFA_ROOT/
-          sudo rm -rf temp
+#     BOOST
+      - name: cache boost
+        uses: actions/cache@v2
+        id: cache-boost
+        with:
+          path: /opt/boost
+          key: boost-1.67.0-macos-1015
+      - name: Download boost
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        run: |
+          curl --output boost.tar.gz -L "https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz"
+          tar xzf boost.tar.gz
+      - name: Patch boost
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        run: |
+            curl --output a.patch -L "https://github.com/boostorg/build/commit/b3a59d265929a213f02a451bb63cea75d668a4d9.patch?full_index=1"
+            git apply -v --directory=boost_1_67_0/tools/build a.patch
+            curl --output b.patch -L "https://gist.githubusercontent.com/jnbrunet/d9537ff8679b2b35976356f11f334777/raw/8d2a2a1e46d13064c2e18c5caa229b9b81933285/6e14ca24.patch"
+            patch -d boost_1_67_0 boost/atomic/detail/ops_gcc_x86_dcas.hpp < b.patch
+      - name: Build boost
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        run: |
+          cd boost_1_67_0
+          ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --without-icu --libdir=/opt/boost/lib -with-toolset=darwin
+          ./b2 toolset=darwin cxxflags=-std=c++11 link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
 
+
+#     QT
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: /opt/qt
+          key: qt-5.12.6-macos-10.15
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: '5.12.6'
+          dir: '/opt/qt'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          modules: 'qtcharts qtwebengine'
+
+
+#     SOFA
+      - name: Download SOFA Release
+        run:  |
+          if [ "$SOFA_VERSION" = "master" ]; then
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastSuccessfulBuild/CI_SCOPE=binaries_standard/artifact/MacOS/*zip*/MacOS.zip"
+          else
+              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_MacOS.zip"
+          fi
+          unzip sofa.zip -d temp
+          sudo mv temp/`ls temp` $SOFA_ROOT
+
+
+#     CCACHE
       - name: Get Time
         id: time
         uses: nanzm/get-time-action@v1.0
@@ -49,117 +110,60 @@ jobs:
 
       - name: ccache cache files
         uses: actions/cache@v2
+        if: ${{ always() }}
         with:
           path: .ccache
-          key: ${{ matrix.os }}-ccache-${{ steps.time.outputs.time }}
+          key: macos-ccache-${{ steps.time.outputs.time }}
           restore-keys: |
-            ${{ matrix.os }}-ccache-
+            macos-ccache-
 
-      - name: Build
+
+#     MKL
+      - name: cache MKL
+        uses: actions/cache@v2
+        id: cache-mkl
+        with:
+          path: /opt/intel
+          key: mkl-macos-10.15
+
+      - name: Install MKL
+        if: steps.cache-mkl.outputs.cache-hit != 'true'
+        run: |
+          URL=https://registrationcenter-download.intel.com/akdlm/irc_nas/17714/m_BaseKit_p_2021.2.0.2855_offline.dmg
+          curl --output intel_mkl.dmg --url "$URL" --retry 5 --retry-delay 5
+          hdiutil attach intel_mkl.dmg
+          echo "MKL volume mounted. Now trying to install..."
+          sudo /Volumes/"$(basename "$URL" .dmg)"/bootstrapper.app/Contents/MacOS/bootstrapper --action install --components intel.oneapi.mac.mkl.devel --eula=accept --continue-with-optional-error=yes --log-dir=. -c
+          sudo chown -R $(whoami) /opt
+          echo "MKL installation done."
+
+
+#     CARIBOU
+      - name: Build caribou
         env:
-          CCACHE_COMPRESS: true
-          CCACHE_COMPRESSLEVEL: 6
-          CCACHE_MAXSIZE: "500M"
+           CCACHE_COMPRESS: true
+           CCACHE_COMPRESSLEVEL: 6
+           CCACHE_MAXSIZE: "500M"
         run:
-          export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
-          export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
-          ccache -z &&
-          cmake
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DCARIBOU_BUILD_TESTS=ON
-          -DCMAKE_BUILD_TYPE=Release
-          .
-          && make && make install
-          && echo ${CCACHE_BASEDIR}
-          && ccache -s
+           export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
+           export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
+           ccache -z &&
+           cmake
+           -DBOOST_ROOT=/opt/boost
+           -DPYTHON_EXECUTABLE=/usr/bin/python3.7
+           -DCMAKE_C_COMPILER_LAUNCHER=ccache
+           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+           -DCARIBOU_BUILD_TESTS=ON
+           -DCMAKE_BUILD_TYPE=Release
+           -DCMAKE_INSTALL_PREFIX=SofaCaribou
+           .
+           && make && make install
+           && tar czvf SofaCaribou.tar.gz SofaCaribou
+           && echo ${CCACHE_BASEDIR}
+           && ccache -s
 
       - name: Archive production
         uses: actions/upload-artifact@v2
         with:
-          name: caribou-${{ matrix.os }}
-          path: install
-
-  tests:
-    name: Testing on ${{ matrix.os }}
-    needs: [build]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-10.15]
-    env:
-      SOFA_ROOT: /opt/sofa
-
-    steps:
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Install requirements
-        run: |
-          brew install boost
-          python3 -m pip install numpy meshio
-
-      - name: Download SOFA nightly build
-        run:  |
-          curl --output sofa.zip -L \
-          https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries-v20.12/lastSuccessfulBuild/CI_SCOPE=binaries_minimal/artifact/MacOS/*zip*/MacOS.zip
-
-      - name: Install SOFA nightly build
-        run:  |
-          sudo unzip sofa.zip -d temp
-          sudo unzip temp/MacOS/`ls temp/MacOS/` -d temp
-          sudo rm -rf temp/MacOS
-          sudo mkdir -p $SOFA_ROOT
-          sudo mv temp/`ls temp`/* $SOFA_ROOT/
-          sudo rm -rf temp
-
-      - name: Install caribou
-        uses: actions/download-artifact@v2
-        with:
-          name: caribou-${{ matrix.os }}
-          path: caribou
-
-      - name: Caribou.unittests.Geometry
-        if: ${{ always() }}
-        run: 
-          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
-          chmod +x caribou/bin/Caribou.unittests.Geometry &&
-          ./caribou/bin/Caribou.unittests.Geometry
-
-      - name: Caribou.Geometry.PyTest
-        if: ${{ always() }}
-        run: |
-          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
-          export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3/site-packages
-          python caribou/bin/pytest/Caribou_Geometry_Test.py
-
-      - name: Caribou.unittests.Topology
-        if: ${{ always() }}
-        run:
-          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
-          chmod +x caribou/bin/Caribou.unittests.Topology &&
-          ./caribou/bin/Caribou.unittests.Topology
-
-      - name: Caribou.Topology.PyTest
-        if: ${{ always() }}
-        run: |
-          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH
-          export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/caribou/lib/python3/site-packages
-          python caribou/bin/pytest/Caribou_Topology_Test.py
-
-      - name: Caribou.unittests.Mechanics
-        if: ${{ always() }}
-        run:
-          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
-          chmod +x caribou/bin/Caribou.unittests.Mechanics &&
-          ./caribou/bin/Caribou.unittests.Mechanics
-
-      - name: Caribou.unittests.SofaCaribou
-        if: ${{ always() }}
-        run:
-          export DYLD_LIBRARY_PATH=$SOFA_ROOT/lib:$LD_LIBRARY_PATH &&
-          chmod +x caribou/bin/Caribou.unittests.SofaCaribou &&
-          ./caribou/bin/Caribou.unittests.SofaCaribou
+           name: caribou_macos_${{ matrix.sofa_version }}
+           path: SofaCaribou.tar.gz

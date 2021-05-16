@@ -52,7 +52,9 @@ endif()
 
 list(APPEND target_rpath
     "$ORIGIN/../lib"
+    "$ORIGIN/../../../lib"
     "@executable_path/../lib"
+    "@executable_path/../../../lib"
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${target_rpath}" )

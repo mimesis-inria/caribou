@@ -179,7 +179,7 @@ caribou_create_package(SofaCaribou ${CARIBOU_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES RELOCATABLE_INSTALL_DIR "plugins/SofaCaribou")
 set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_PROPERTIES "RELOCATABLE_INSTALL_DIR")
 
-if (SOFA_VERSION VERSION_GREATER_EQUAL "20.12.99")
+if (SOFA_VERSION VERSION_GREATER_EQUAL "20.12.00")
     # Set RPATH towards relocatable dependencies
     sofa_auto_set_target_rpath(TARGETS ${PROJECT_NAME} RELOCATABLE "plugins")
 endif()

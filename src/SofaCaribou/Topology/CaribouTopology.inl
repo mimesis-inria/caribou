@@ -10,7 +10,6 @@ DISABLE_ALL_WARNINGS_END
 namespace sofa { using Index = unsigned int; }
 #endif
 
-
 namespace SofaCaribou::topology {
 
 template <typename Element>
