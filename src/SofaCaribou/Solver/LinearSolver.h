@@ -61,7 +61,7 @@ public:
      * @note LinearSolver::factorize must have been called before this method.
      */
     virtual bool solve(const sofa::defaulttype::BaseVector * F,
-                       sofa::defaulttype::BaseVector * X) const = 0;
+                       sofa::defaulttype::BaseVector * X) = 0;
 
     /**
      * Analyze the pattern of the given matrix.
@@ -73,7 +73,7 @@ public:
      * @param A The matrix to analyze.
      * @return True if the matrix pattern was successfully analyzed, false otherwise.
      */
-    virtual bool analyze_pattern(const sofa::defaulttype::BaseMatrix * A) = 0;
+    virtual bool analyze_pattern() = 0;
 
     /**
      * Factorize the given matrix.
@@ -83,7 +83,28 @@ public:
      * @param A The matrix to factorize.
      * @return True if the matrix was successfully factorized, false otherwise.
      */
-    virtual bool factorize(const sofa::defaulttype::BaseMatrix * A) = 0;
+    virtual bool factorize() = 0;
+
+    /**
+     * Pass the (assembled) system matrix that will have to be solved
+     * later on using the analyse_patern(), factorize(), and solve() methods.
+     * @param A A pointer to the fully assembled system matrix.
+     */
+    virtual void set_system_matrix(const sofa::defaulttype::BaseMatrix * A) = 0;
+
+    /**
+     * Returns true if this solver is an iterative one, false otherwise. In case of iterative solvers,
+     * the method squared_residuals() returns the list of squared residual norms of every
+     * iterations of the last solve call.
+     */
+    [[nodiscard]] virtual bool is_iterative() const = 0;
+
+    /**
+     * For iterative solvers, returns the list of squared residual norms (||r||^2)
+     * of every iterations of the last solve call.
+     * For direct solvers, returns an empty set.
+     */
+    [[nodiscard]] virtual auto squared_residuals() const -> std::vector<FLOATING_POINT_TYPE> = 0;
 
 };
 

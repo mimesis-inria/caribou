@@ -50,6 +50,7 @@ set(TEMPLATE_FILES
     Forcefield/CaribouForcefield.inl
     Forcefield/HyperelasticForcefield.inl
     Forcefield/TractionForcefield.inl
+    Solver/ConjugateGradientSolver.inl
     Solver/EigenSolver.inl
     Topology/CaribouTopology.inl
     Topology/FictitiousGrid.inl

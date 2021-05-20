@@ -173,7 +173,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     p_times.reserve(newton_iterations);
 
     // Start the advanced timer
-    sofa::helper::ScopedAdvancedTimer timer ("BackwardEuler::Solve");
+    sofa::helper::ScopedAdvancedTimer timer (this->getClassName() + "::Solve");
 
     // ###########################################################################
     // #                           Mechanical graph                              #
@@ -254,6 +254,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
             sofa::helper::ScopedAdvancedTimer _t_("MBKBuild");
             p_A->clear();
             this->assemble_system_matrix(mechanical_parameters, accessor, p_A.get());
+            linear_solver->set_system_matrix(p_A.get());
         }
 
         // Part 2. Analyze the pattern of the matrix in order to compute a permutation matrix.
@@ -271,7 +272,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
 
                 sofa::helper::ScopedAdvancedTimer _t_("MBKAnalyze");
 
-                if (not linear_solver->analyze_pattern(p_A.get())) {
+                if (not linear_solver->analyze_pattern()) {
                     info << "[DIVERGED] Failed to analyze the pattern of the system matrix.";
                     diverged = true;
                     break;
@@ -284,7 +285,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
         // Part 3. Factorize the matrix.
         {
             sofa::helper::ScopedAdvancedTimer _t_("MBKFactorize");
-            if (not linear_solver->factorize(p_A.get())) {
+            if (not linear_solver->factorize()) {
                 info << "[DIVERGED] Failed to factorize the system matrix.";
                 diverged = true;
                 break;
@@ -295,7 +296,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
         {
             sofa::helper::ScopedAdvancedTimer _t_("MBKSolve");
             if (not linear_solver->solve(p_F.get(), p_DX.get())) {
-                info << "[DIVERGED] Failed to solve the unknown increment.";
+                info << "[DIVERGED] The linear solver failed to solve the unknown increment.";
                 diverged = true;
                 break;
             }
@@ -348,6 +349,9 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
                  << "  |du| / |U| = " << std::setw(12) << sqrt(dx_squared_norm / du_squared_norm)
                  << std::defaultfloat;
             info << "  Time = " << iteration_time/1000/1000 << " ms";
+            if (linear_solver->is_iterative()) {
+                info << "  # of linear solver iterations = " << linear_solver->squared_residuals().size();
+            }
             info << "\n";
         }
 

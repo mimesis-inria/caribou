@@ -2,8 +2,8 @@
 
 import Sofa
 
-newton_iterations = 2
-cg_iterations = 100
+newton_iterations = 10
+cg_iterations = 1000
 increments=100
 # cg_precond = 'None'
 cg_precond = 'Identity'
@@ -30,7 +30,7 @@ def createScene(root):
     i = 0
     tx = 20*i
     meca = root.addChild("caribou_StVk_hexa")
-    meca.addObject('LegacyStaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
+    meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
     meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
     meca.addObject('HexahedronSetTopologyContainer', name='topo', src='@../mesh')
@@ -48,7 +48,7 @@ def createScene(root):
     i += 1
     tx = 20*i
     meca = root.addChild("caribou_hyperelastic_tetra")
-    meca.addObject('LegacyStaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
+    meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
     meca.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
     meca.addObject('MechanicalObject', src='@../mesh', translation=[tx, 0, 0])
     meca.addObject('TetrahedronSetTopologyContainer', name='topo')

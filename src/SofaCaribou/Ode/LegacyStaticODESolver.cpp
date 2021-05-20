@@ -79,7 +79,7 @@ void LegacyStaticODESolver::solve(const sofa::core::ExecParams* params, double /
     // Get the linear solver and convert it to a CG if it is one
     const auto context = mop.ctx;
     auto linear_solver = context->get<LinearSolver>(context->getTags(), sofa::core::objectmodel::BaseContext::SearchDown);
-    auto cg_linear_solver = dynamic_cast<SofaCaribou::solver::ConjugateGradientSolver *>(linear_solver);
+    auto cg_linear_solver = dynamic_cast<SofaCaribou::solver::LinearSolver *>(linear_solver);
 
     // Incremental displacement of one iteration
     dx.realloc( &vop );
@@ -241,7 +241,7 @@ void LegacyStaticODESolver::solve(const sofa::core::ExecParams* params, double /
         // If the linear solver is the caribou's CG, copy the residual norms of the CG iterations
         if (cg_linear_solver) {
             p_iterative_linear_solver_squared_residuals.emplace_back(cg_linear_solver->squared_residuals());
-            p_iterative_linear_solver_squared_rhs_norms.emplace_back(cg_linear_solver->squared_initial_residual());
+            p_iterative_linear_solver_squared_rhs_norms.emplace_back((n_it == 0) ? p_squared_initial_residual : p_squared_residuals[n_it-1]);
         }
 
         // We completed one iteration, increment the counter

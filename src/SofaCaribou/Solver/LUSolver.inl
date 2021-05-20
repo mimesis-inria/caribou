@@ -42,8 +42,8 @@ struct solver_traits <Eigen::PardisoLU< MatrixType >> {
 }
 
 template<class EigenSolver_t>
-bool LUSolver<EigenSolver_t>::analyze_pattern(const sofa::defaulttype::BaseMatrix * A) {
-    auto A_ = dynamic_cast<const SofaCaribou::Algebra::EigenMatrix<Matrix> *>(A);
+bool LUSolver<EigenSolver_t>::analyze_pattern() {
+    auto A_ = this->A();
     if (not A_) {
         throw std::runtime_error("Tried to analyze an incompatible matrix (not an Eigen matrix).");
     }
@@ -58,8 +58,8 @@ bool LUSolver<EigenSolver_t>::analyze_pattern(const sofa::defaulttype::BaseMatri
 }
 
 template<class EigenSolver_t>
-bool LUSolver<EigenSolver_t>::factorize(const sofa::defaulttype::BaseMatrix *A) {
-    auto A_ = dynamic_cast<const SofaCaribou::Algebra::EigenMatrix<Matrix> *>(A);
+bool LUSolver<EigenSolver_t>::factorize() {
+    auto A_ = this->A();
     if (not A_) {
         throw std::runtime_error("Tried to analyze an incompatible matrix (not an Eigen matrix).");
     }
@@ -71,7 +71,7 @@ bool LUSolver<EigenSolver_t>::factorize(const sofa::defaulttype::BaseMatrix *A) 
 
 template<class EigenSolver_t>
 bool LUSolver<EigenSolver_t>::solve(const sofa::defaulttype::BaseVector * F,
-                                     sofa::defaulttype::BaseVector *X) const {
+                                     sofa::defaulttype::BaseVector *X) {
     auto F_ = dynamic_cast<const SofaCaribou::Algebra::EigenVector<Vector> *>(F);
     auto X_ = dynamic_cast<SofaCaribou::Algebra::EigenVector<Vector> *>(X);
 
