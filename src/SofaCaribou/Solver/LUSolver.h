@@ -26,17 +26,17 @@ public:
 
     /** @see LinearSolver::analyze_pattern */
     CARIBOU_API
-    bool analyze_pattern(const sofa::defaulttype::BaseMatrix * A) override;
+    bool analyze_pattern() override;
 
     /** @see LinearSolver::factorize */
     CARIBOU_API
-    bool factorize(const sofa::defaulttype::BaseMatrix * A) override;
+    bool factorize() override;
 
     /**
      * @see SofaCaribou::solver::LinearSolver::solve
      */
     CARIBOU_API
-    bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) const override;
+    bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) override;
 
     /**
      * States if the system matrix is symmetric. Note that this value isn't set automatically, the user must

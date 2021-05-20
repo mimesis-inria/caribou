@@ -28,7 +28,7 @@ void EigenSolver<EigenMatrix_t>::resetSystem() {
 }
 
 template <class EigenMatrix_t>
-auto EigenSolver<EigenMatrix_t>::assemble (const sofa::core::MechanicalParams* mparams, SofaCaribou::Algebra::EigenMatrix<Matrix> & A) const -> sofa::component::linearsolver::DefaultMultiMatrixAccessor
+auto EigenSolver<EigenMatrix_t>::assemble (const sofa::core::MechanicalParams* mparams) -> sofa::component::linearsolver::DefaultMultiMatrixAccessor
 {
     using Timer = sofa::helper::AdvancedTimer;
     sofa::component::linearsolver::DefaultMultiMatrixAccessor accessor;
@@ -61,9 +61,9 @@ auto EigenSolver<EigenMatrix_t>::assemble (const sofa::core::MechanicalParams* m
     Timer::stepEnd("SetupMatrixIndices");
 
     Timer::stepBegin("Clear");
-    A.resize(n, n);
-    A.set_symmetric(symmetric()); // Enables some optimization when the system matrix is symmetric
-    accessor.setGlobalMatrix(&A);
+    p_A.resize(n, n);
+    p_A.set_symmetric(symmetric()); // Enables some optimization when the system matrix is symmetric
+    accessor.setGlobalMatrix(&p_A);
     Timer::stepEnd("Clear");
 
     Timer::stepEnd("PrepareMatrix");
@@ -98,9 +98,13 @@ auto EigenSolver<EigenMatrix_t>::assemble (const sofa::core::MechanicalParams* m
 
     // Step 4. Convert the system matrix to a compressed sparse matrix
     Timer::stepBegin("ConvertToSparse");
-    A.compress();
+    p_A.compress();
     Timer::stepEnd("ConvertToSparse");
     Timer::stepEnd("BuildMatrix");
+
+    // Step 5. Point the system matrix pointer to this newly assembled system matrix
+    p_A_ptr = &p_A;
+    this->set_system_matrix(p_A_ptr);
 
     return accessor;
 }
@@ -120,14 +124,14 @@ void EigenSolver<EigenMatrix_t>::setSystemMBKMatrix(const sofa::core::Mechanical
 
     // Step 1. Assemble the system matrix
     auto previous_dimension = p_A.rowSize();
-    p_accessor = assemble(mparams, p_A);
+    p_accessor = assemble(mparams);
     auto current_dimension = p_A.rowSize();
 
     // Step 2. Let the solver analyse the matrix
     bool matrix_shape_has_changed = previous_dimension != current_dimension;
     if (matrix_shape_has_changed) {
         Timer::stepBegin("MatrixAnalysis");
-        if (not this->analyze_pattern(&p_A)) {
+        if (not this->analyze_pattern()) {
             msg_error() << "Failed to analyse the system matrix pattern";
         }
         Timer::stepEnd("MatrixAnalysis");
@@ -136,7 +140,7 @@ void EigenSolver<EigenMatrix_t>::setSystemMBKMatrix(const sofa::core::Mechanical
 
     // Step 5. Factorize the system matrix
     Timer::stepBegin("MatrixFactorization");
-    p_A_is_factorized = this->factorize(&p_A);
+    p_A_is_factorized = this->factorize();
     if (not p_A_is_factorized) {
         msg_error() << "Failed to factorize the system matrix";
     }

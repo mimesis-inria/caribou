@@ -1,12 +1,11 @@
 #pragma once
 
 #include <SofaCaribou/config.h>
+#include <SofaCaribou/Solver/EigenSolver.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/core/behavior/LinearSolver.h>
 #include <sofa/core/behavior/MultiVec.h>
 #include <sofa/core/MechanicalParams.h>
-#include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <sofa/helper/OptionsGroup.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -34,12 +33,14 @@ using namespace sofa::core::behavior;
  * accumulated from the mechanical objects of the current scene context graph. Once the dense
  * vector x is found, it is propagated back to the mechanical object's vectors.
  */
-class ConjugateGradientSolver : public LinearSolver {
+template <class EigenMatrix_t>
+class ConjugateGradientSolver : public EigenSolver<EigenMatrix_t> {
 
 public:
-    SOFA_CLASS(ConjugateGradientSolver, LinearSolver);
-    using SparseMatrix = Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor>;
-    using Vector = Eigen::Matrix<FLOATING_POINT_TYPE, Eigen::Dynamic, 1>;
+    SOFA_CLASS(SOFA_TEMPLATE(ConjugateGradientSolver, EigenMatrix_t), SOFA_TEMPLATE(EigenSolver, EigenMatrix_t));
+    using Base = EigenSolver<EigenMatrix_t>;
+    using Matrix = typename Base::Matrix;
+    using Vector = typename Base::Vector;
 
     /// Preconditioning methods
     enum class PreconditioningMethod : unsigned int {
@@ -62,17 +63,6 @@ public:
     };
 
     /**
-     * Reset the complete system (A, x and b are cleared).
-     *
-     * When using no preconditioner (None), this does absolutely nothing here since the complete
-     * system is never built.
-     *
-     * This method is called by the MultiMatrix::clear() and MultiMatrix::reset() methods.
-     */
-    CARIBOU_API
-    void resetSystem() final;
-
-    /**
      * Set the linear system matrix A = (mM + bB + kK), storing the coefficients m, b and k of
      * the mechanical M,B,K matrices.
      *
@@ -83,6 +73,8 @@ public:
      * preconditioner factorize this resulting matrix for later use during the solve step.
      *
      * @param mparams Contains the coefficients m, b and k of the matrices M, B and K
+     *
+     * \note Only used by SOFA ODE solvers and the Caribou's LegacyStaticODESolver.
      */
     CARIBOU_API
     void setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) final;
@@ -91,6 +83,8 @@ public:
      * Gives the identifier of the right-hand side vector b. This identifier will be used to find the actual vector
      * in the mechanical objects of the system.When using a preconditioner (other than None), the complete
      * dense vector is accumulated from the mechanical objects found in the graph subtree of the current context.
+     *
+     * \note Only used by SOFA ODE solvers and the Caribou's LegacyStaticODESolver.
      */
     CARIBOU_API
     void setSystemRHVector(sofa::core::MultiVecDerivId b_id) final;
@@ -99,6 +93,8 @@ public:
      * Gives the identifier of the left-hand side vector x. This identifier will be used to find the actual vector
      * in the mechanical objects of the system. When using a preconditioner (other than None), the complete
      * dense vector is accumulated from the mechanical objects found in the graph subtree of the current context.
+     *
+     * \note Only used by SOFA ODE solvers and the Caribou's LegacyStaticODESolver.
      */
     CARIBOU_API
     void setSystemLHVector(sofa::core::MultiVecDerivId x_id) final;
@@ -106,14 +102,22 @@ public:
     /**
      * Solves the system by the conjugate gradient method using the coefficients m, b and k; and
      * the vectors x and b.
+     *
+     * \note Only used by SOFA ODE solvers and the Caribou's LegacyStaticODESolver.
      */
     CARIBOU_API
     void solveSystem() final;
 
+    /** @see SofaCaribou::solver::LinearSolver::is_iterative */
+    CARIBOU_API
+    bool is_iterative() const override {
+        return true;
+    }
+
     /**
      * List of squared residual norms (||r||^2) of every CG iterations of the last solve call.
      */
-    auto squared_residuals() const -> const std::vector<FLOATING_POINT_TYPE> & {
+    std::vector<FLOATING_POINT_TYPE> squared_residuals() const override {
         return p_squared_residuals;
     }
 
@@ -124,20 +128,10 @@ public:
         return p_squared_initial_residual;
     }
 
-    /**
-     * Get the system matrix.
-     */
-    auto system_matrix () const -> const SparseMatrix & {
-        return p_A;
+    template<typename Derived>
+    static auto canCreate(Derived*, sofa::core::objectmodel::BaseContext*, sofa::core::objectmodel::BaseObjectDescription*) -> bool {
+        return true;
     }
-
-    /**
-     * Assemble the system matrix A = (mM + bB + kK).
-     * @param mparams Mechanical parameters containing the m, b and k factors.
-     */
-    CARIBOU_API
-    void assemble (const sofa::core::MechanicalParams* mparams);
-
 protected:
     /// Constructor
     ConjugateGradientSolver();
@@ -156,6 +150,18 @@ protected:
      */
     void solve(sofa::core::behavior::MultiVecDeriv & b, sofa::core::behavior::MultiVecDeriv & x);
 
+    /** @see LinearSolver::analyze_pattern */
+    CARIBOU_API
+    bool analyze_pattern() override;
+
+    /** @see LinearSolver::factorize */
+    CARIBOU_API
+    bool factorize() override;
+
+    /** @see SofaCaribou::solver::LinearSolver::solve */
+    CARIBOU_API
+    bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) override;
+
     /**
      * Solve the linear system Ax = b using a preconditioner.
      *
@@ -166,9 +172,10 @@ protected:
      * @param A The system matrix as an Eigen matrix
      * @param b The right-hand side vector of the system
      * @param x The solution vector of the system. It should be filled with an initial guess or the previous solution.
+     * @return True if the CG converged, false otherwise.
      */
-    template <typename Matrix, typename Preconditioner>
-    void solve(const Preconditioner & precond, const Matrix & A, const Vector & b, Vector & x);
+    template <typename Preconditioner>
+    bool solve(const Preconditioner & precond, const Matrix & A, const Vector & b, Vector & x);
 
     /// INPUTS
     Data<bool> d_verbose;
@@ -187,23 +194,11 @@ private:
     ///< The mechanical parameters containing the m, b and k coefficients.
     sofa::core::MechanicalParams p_mechanical_params;
 
-    ///< Accessor used to determine the index of each mechanical object matrix and vector in the global system.
-    DefaultMultiMatrixAccessor p_accessor;
-
     ///< The identifier of the b vector
     sofa::core::MultiVecDerivId p_b_id;
 
     ///< The identifier of the x vector
     sofa::core::MultiVecDerivId p_x_id;
-
-    ///< Global system matrix (only built when a preconditioning method needs it)
-    SparseMatrix p_A;
-
-    ///< Global system solution vector (usually filled with an initial guess or the previous solution)
-    Vector p_x;
-
-    ///< Global system right-hand side vector
-    Vector p_b;
 
     ///< Identity preconditioner
     Eigen::IdentityPreconditioner p_identity;
@@ -229,5 +224,6 @@ private:
     FLOATING_POINT_TYPE p_squared_initial_residual;
 };
 
+extern template class ConjugateGradientSolver<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::RowMajor, int>>;
 } // namespace SofaCaribou::solver
 

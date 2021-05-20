@@ -50,17 +50,12 @@ def extract_newton_steps(record):
         data['Precond Factorize'] = '-'
         data['Nb of CG iterations'] = '-'
         data['Mean CG iteration time'] = '-'
-        data['Total CG time'] = '-'
-        if 'ConjugateGradient::ComputeGlobalMatrix' in MBKBuild:
-            if 'BuildMatrix' in MBKBuild['ConjugateGradient::ComputeGlobalMatrix']:
-                data['Update global matrix'] = MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['BuildMatrix']['total_time']
-                data['Precond Factorize'] = MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerFactorization']['total_time']
-                if 'PreconditionerAnalysis' in MBKBuild['ConjugateGradient::ComputeGlobalMatrix']:
-                    data['Precond Analysis'] = MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['PreconditionerAnalysis']['total_time']
-            else:
-                data['Update global matrix'] = MBKBuild['ConjugateGradient::ComputeGlobalMatrix']['total_time']
-        else:
-            data['Update global matrix'] = MBKBuild['total_time']
+        data['Total solve time'] = MBKSolve['total_time']
+        data['Update global matrix'] = MBKBuild['total_time']
+        if 'MBKAnalyze' in newton_record:
+            data['Precond Analysis'] = newton_record['MBKAnalyze']['total_time']
+        if 'MBKFactorize' in newton_record:
+            data['Precond Factorize'] = newton_record['MBKFactorize']['total_time']
 
         if 'PCGLinearSolver::solve' in MBKSolve:
             MBKSolve = MBKSolve['PCGLinearSolver::solve']
@@ -70,24 +65,26 @@ def extract_newton_steps(record):
             MBKSolve = MBKSolve['CG-Solve']
 
         if 'ConjugateGradient::solve' in MBKSolve:
+            MBKSolve = MBKSolve['ConjugateGradient::solve']
+        if 'nb_iterations' in MBKSolve:
             update_matrix_time = 0.
-            if 'HyperelasticForcefield::update_stiffness' in MBKSolve['ConjugateGradient::solve']:
-                update_matrix_time = MBKSolve['ConjugateGradient::solve']['HyperelasticForcefield::update_stiffness']['total_time']
+            if 'HyperelasticForcefield::update_stiffness' in MBKSolve:
+                update_matrix_time = MBKSolve['HyperelasticForcefield::update_stiffness']['total_time']
                 data['Update global matrix'] += update_matrix_time
-            data['Nb of CG iterations'] = str(int(MBKSolve['ConjugateGradient::solve']['nb_iterations']))
+            data['Nb of CG iterations'] = str(int(MBKSolve['nb_iterations']))
             mean_time = 0.
-            if 'cg_iteration' in MBKSolve['ConjugateGradient::solve']:
-                for cg_iteration in MBKSolve['ConjugateGradient::solve']['cg_iteration']:
+            if 'cg_iteration' in MBKSolve:
+                for cg_iteration in MBKSolve['cg_iteration']:
                     mean_time += cg_iteration['total_time']
-                if len(MBKSolve['ConjugateGradient::solve']['cg_iteration']):
-                    data['Mean CG iteration time'] = mean_time / len(MBKSolve['ConjugateGradient::solve']['cg_iteration'])
-            data['Total CG time'] = MBKSolve['ConjugateGradient::solve']['total_time'] - update_matrix_time
+                if len(MBKSolve['cg_iteration']):
+                    data['Mean CG iteration time'] = mean_time / len(MBKSolve['cg_iteration'])
+            data['Total solve time'] = data['Total solve time'] - update_matrix_time
         elif 'HyperelasticForcefield::addDForce' in MBKSolve:
             update_matrix_time = 0
             if 'HyperelasticForcefield::update_stiffness' in MBKSolve:
                 update_matrix_time = MBKSolve['HyperelasticForcefield::update_stiffness']['total_time']
                 data['Update global matrix'] += update_matrix_time
-            data['Total CG time'] = MBKSolve['total_time'] - update_matrix_time
+            data['Total solve time'] = data['Total solve time'] - update_matrix_time
             mean_time = 0.
             for cg_iteration in MBKSolve['HyperelasticForcefield::addDForce']:
                 mean_time += cg_iteration['total_time']
@@ -98,7 +95,6 @@ def extract_newton_steps(record):
                 continue
             if v < 1e-4:
                 data[k] = '0'
-
 
         newton_steps.append(data)
     return newton_steps
@@ -205,7 +201,10 @@ def createScene(root):
         arguments = s['arguments']
 
         meca = root.addChild(name)
-        meca.addObject('LegacyStaticODESolver', newton_iterations=number_of_newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=False)
+        if cg_solver == 'ConjugateGradientSolver' and arguments['preconditioning_method'] != 'None':
+            meca.addObject('StaticODESolver', newton_iterations=number_of_newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=False)
+        else:
+            meca.addObject('LegacyStaticODESolver', newton_iterations=number_of_newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=False)
 
         if 'precond' in s:
             meca.addObject(cg_solver, preconditioners='precond', **arguments)
@@ -225,6 +224,37 @@ def createScene(root):
         meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
         meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1/5, topology='@quad_container')
 
+    # Direct solution
+    meca = root.addChild("Cholesky")
+    meca.addObject('StaticODESolver', newton_iterations=number_of_newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=False)
+    meca.addObject('LLTSolver', backend='Pardiso')
+
+    meca.addObject('MechanicalObject', name='mo', position='@../grid.position')
+    meca.addObject('HexahedronSetTopologyContainer', name='mechanical_topology', src='@../grid')
+    meca.addObject('SaintVenantKirchhoffMaterial', young_modulus=3000, poisson_ratio=0)
+    meca.addObject('HyperelasticForcefield')
+
+    meca.addObject('BoxROI', name='base_roi',
+                   box=[-radius - eps, -radius - eps, -length / 2 - eps, radius + eps, radius + eps, -length / 2 + eps])
+    meca.addObject('BoxROI', name='top_roi',
+                   box=[-radius - eps, -radius - eps, +length / 2 - eps, radius + eps, radius + eps, +length / 2 + eps],
+                   quad='@mechanical_topology.quads')
+
+    meca.addObject('FixedConstraint', indices='@base_roi.indices')
+    meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
+    meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1 / 5, topology='@quad_container')
+
+
+def print_l2_error(root):
+    print("\n=======================")
+    print("Relative L2-norm errors against a direct Cholesky solver")
+    u_sol = root.Cholesky.mo.position.array()-root.Cholesky.mo.rest_position.array()
+    for n in root.children:
+        if n is root.Cholesky:
+            continue
+        u = n.mo.position.array() - n.mo.rest_position.array()
+        print(f'{n.name.value: ^10}: {np.linalg.norm(u-u_sol) / np.linalg.norm(u_sol): ^10}')
+
 
 if __name__ == "__main__":
     import Sofa.Simulation
@@ -238,3 +268,7 @@ if __name__ == "__main__":
     Sofa.Simulation.init(root)
     print("Computing... (this may take a while)")
     Sofa.Simulation.animate(root, 1)
+
+    # Print relative L2-norm error (approx. since we aren't going to do a full integration on the same mesh...)
+    print_l2_error(root)
+
