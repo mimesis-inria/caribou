@@ -28,13 +28,16 @@ class TestMesh(unittest.TestCase):
         nodes = np.array([1., 2., 3., 4., 5.])
         mesh = Mesh(nodes)
         self.assertMatrixEqual([1., 2., 3., 4., 5.], mesh.positions([0, 1, 2, 3, 4]))
+        self.assertEqual(mesh.dimension(), 1)
 
         mesh = Mesh([1., 2., 3., 4., 5.])
         self.assertMatrixEqual([1., 2., 3., 4., 5.], mesh.positions([0, 1, 2, 3, 4]))
+        self.assertEqual(mesh.dimension(), 1)
 
     def test_contructor_3d(self):
         mesh = Mesh([[1,2,3], [4,5,6]])
         self.assertMatrixEqual([[1,2,3], [4,5,6]], mesh.positions([0, 1]))
+        self.assertEqual(mesh.dimension(), 3)
 
 
 class TestDomain(unittest.TestCase):

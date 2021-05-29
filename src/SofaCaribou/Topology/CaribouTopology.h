@@ -69,6 +69,7 @@ public:
     template <typename T>
     using Data = sofa::core::objectmodel::Data<T>;
 
+    using Domain = typename caribou::topology::Domain<Element, PointID>;
     using LocalCoordinates = typename caribou::geometry::Element<Element>::LocalCoordinates;
     using WorldCoordinates = typename caribou::geometry::Element<Element>::WorldCoordinates;
 
@@ -100,7 +101,7 @@ public:
     /**
      * Get the pointer to the internal domain instance.
      */
-    inline auto domain() const noexcept -> const caribou::topology::Domain<Element, PointID> * {return p_domain;}
+    inline auto domain() const noexcept -> const Domain * {return p_domain;}
 
     /**
      * Get the number of elements contained inside this topology.
@@ -120,7 +121,7 @@ public:
      * \note The given domain instance must stay valid throughout the lifespan of this
      *       component.
      */
-    void attachDomain(const caribou::topology::Domain<Element, PointID> * domain);
+    void attachDomain(const Domain * domain);
 
     /**
      * Create the underlying Domain by coping the indices from the data attribute 'indices'.
@@ -139,11 +140,15 @@ public:
     void initializeFromIndices();
 private:
     // Data members
-    Link<sofa::core::State<DataTypes>> d_state;
+
+    /// Position vector of the domain's nodes.
+    Data<VecCoord> d_position;
+
+    /// Node indices (w.r.t the position vector) of each elements.
     Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>> d_indices;
 
     /// Pointer to the Domain representing this topology of elements.
-    const caribou::topology::Domain<Element, PointID> * p_domain {nullptr};
+    const Domain * p_domain {nullptr};
 
     /// Pointer to a Mesh that created the domain. This pointer will be null if
     /// a caribou's Domain instance was attached to this component (see

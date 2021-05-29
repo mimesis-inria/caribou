@@ -35,6 +35,14 @@ The project is composed of two modules:
 
 
 .. toctree::
+    :caption: Mappings
+    :maxdepth: 1
+    :titlesonly:
+    :hidden:
+
+    CaribouBarycentricMapping <Mapping/CaribouBarycentricMapping.rst>
+
+.. toctree::
     :caption: Materials
     :maxdepth: 1
     :titlesonly:

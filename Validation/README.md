@@ -26,7 +26,7 @@ $ python3 create_beam_mesh.py -t q2 -n 3 3 9 --p0 -7.5 -7.5 0 --p1 7.5 7.5 80 -o
 $ # Cylindrical beam
 
 $ # Linear tetrahedral mesh (4 nodes)
-$ python create_cylinder_mesh.py -t p1 -s 0.18 -r 1 -l 3 -v -o cylinder_p1.vtu 
+$ python create_cylinder_mesh.py -t p1 -s 5 -r 7.5 -l 80 -v -o cylinder_p1.vtu 
 ```
 
 ## Running the fenics validation scripts

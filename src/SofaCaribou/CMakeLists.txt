@@ -18,6 +18,9 @@ set(HEADER_FILES
     Forcefield/TractionForcefield.h
     Forcefield/TractionForcefield[Quad].h
     Forcefield/TractionForcefield[Triangle].h
+    Mapping/CaribouBarycentricMapping.h
+    Mapping/CaribouBarycentricMapping[Hexahedron].h
+    Mapping/CaribouBarycentricMapping[Tetrahedron].h
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
@@ -50,6 +53,7 @@ set(TEMPLATE_FILES
     Forcefield/CaribouForcefield.inl
     Forcefield/HyperelasticForcefield.inl
     Forcefield/TractionForcefield.inl
+    Mapping/CaribouBarycentricMapping.inl
     Solver/ConjugateGradientSolver.inl
     Solver/EigenSolver.inl
     Topology/CaribouTopology.inl
@@ -71,6 +75,8 @@ set(SOURCE_FILES
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
     Forcefield/TractionForcefield[Triangle].cpp
+    Mapping/CaribouBarycentricMapping[Hexahedron].cpp
+    Mapping/CaribouBarycentricMapping[Tetrahedron].cpp
     Material/HyperelasticMaterial.cpp
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp
