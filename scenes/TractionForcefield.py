@@ -19,7 +19,7 @@ l = youngModulus * poissonRatio / ((1.0 + poissonRatio) * (1.0 - 2.0 * poissonRa
 
 
 def createScene(root):
-    root.addObject('APIVersion', level='17.06')
+    root.addObject('APIVersion', level='21.06')
 
     root.addObject('RequiredPlugin', name='SofaComponentAll')
     root.addObject('RequiredPlugin', name='SofaOpenglVisual')

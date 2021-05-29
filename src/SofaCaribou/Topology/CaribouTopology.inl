@@ -14,12 +14,12 @@ namespace SofaCaribou::topology {
 
 template <typename Element>
 CaribouTopology<Element>::CaribouTopology ()
-: d_state (initLink(
-    "state",
-    "Mechanical state (object) containing the position of each nodes of this topology."))
+: d_position(initData(&d_position,
+    "position",
+    "Position vector of the domain's nodes."))
 , d_indices(initData(&d_indices,
     "indices",
-    "Contains for each element, a list of each element node indices relative to the mechanical state position vector."))
+    "Node indices (w.r.t the position vector) of each elements."))
 {}
 
 template <typename Element>
@@ -52,20 +52,37 @@ void CaribouTopology<Element>::initializeFromIndices() {
         return;
     }
 
-    if (not this->d_state.get()) {
-        msg_error() << "Initializing the topology from a set of indices requires a mechanical state. The data attribute "
-                    << "'" << d_state.getName() << "' can be used to link this component to a mechanical object.";
+    auto positions = ReadAccessor<Data<VecCoord>>(d_position);
+    if (positions.empty()) {
+        msg_warning() << "Initializing the topology from a set of indices, but without any node positions "
+                      << "vector. Make sure you fill the " << "'" << d_position.getName() << "' data attribute "
+                      << "with a vector of node positions.";
+        return;
+    }
+
+    std::size_t invalid_elements = 0;
+    for (std::size_t element_id = 0; element_id < indices.size(); ++element_id) {
+        for (const auto & node_index : indices[element_id]) {
+            if (node_index >= positions.size()) {
+                ++invalid_elements;
+                break;
+            }
+        }
+    }
+    if (invalid_elements > 0) {
+        msg_warning() << "There are " << invalid_elements << " elements containing one or more node index greater than "
+                      << "the size of the position vector. Make sure the node indices are relative to the position "
+                      << "vector set in the data attribute " << "'" << d_position.getName() << "'.";
         return;
     }
 
     // Get the mechanical object's position vector and create the internal Mesh instance
 
-    const auto & mo_positions = this->d_state->readRestPositions();
-    const auto number_of_nodes = mo_positions.size();
+    const auto number_of_nodes = positions.size();
     std::vector<typename caribou::topology::Mesh<Dimension>::WorldCoordinates> mesh_positions_vector;
     mesh_positions_vector.reserve(number_of_nodes);
     for (std::size_t i = 0; i < number_of_nodes; ++i) {
-        const auto & n = mo_positions[i];
+        const auto & n = positions[i];
         if constexpr (Dimension == 1) {
             mesh_positions_vector.emplace_back(n[0]);
         } else if constexpr (Dimension == 2) {
@@ -94,12 +111,12 @@ void CaribouTopology<Element>::init() {
         }
 
         // If some indices are set, but no mechanical state is linked, let's try to find one in the current context node
-        if (not d_indices.getValue().empty() and d_state.get() == nullptr) {
+        if (not d_indices.getValue().empty() and not d_position.isSet()) {
             auto * context = this->getContext();
             auto state = context->template get<sofa::core::State<DataTypes>>(BaseContext::Local);
-            if (state) {
-                d_state.set(state);
-                msg_info() << "Automatically found the mechanical state '" << d_state.get()->getPathName() << "'.";
+            if (state and state->findData("rest_position")) {
+                d_position.setParent(state->findData("rest_position"));
+                msg_info() << "Automatically found the nodes positions from'" << state->findData("rest_position")->getLinkPath() << "'.";
             }
         }
 

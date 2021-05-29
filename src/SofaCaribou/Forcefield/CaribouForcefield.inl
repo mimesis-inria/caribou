@@ -89,13 +89,7 @@ void CaribouForcefield<Element>::init() {
             // Initialize a new caribou topology from the SOFA topology
             p_topology = sofa::core::objectmodel::New<SofaCaribou::topology::CaribouTopology<Element>>();
             p_topology->findData("indices")->setParent(this->get_indices_from(sofa_topology));
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
-            using CaribouTopologyMechanicalLink = typename SofaCaribou::topology::CaribouTopology<Element>::template Link<sofa::core::State<DataTypes>>;
-            auto state_link = dynamic_cast<CaribouTopologyMechanicalLink*>(p_topology->findLink("state"));
-            state_link->set(this->getMState());
-#else
-            p_topology->findLink("state")->set(this->getMState());
-#endif
+            p_topology->findData("position")->setParent(this->getMState()->findData("position"));
             p_topology->init();
         } else {
             // A Caribou topology already exists in the scene

@@ -62,8 +62,6 @@ def cylinder(radius, length, size=0.5, dimension=2, order=1, verbose=False, geo_
     Mesh {dimension};
     """
 
-    print(s)
-
     return geo_to_msh(s, dimension=dimension, verbose=verbose)
 
 

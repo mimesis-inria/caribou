@@ -196,11 +196,12 @@ public:
 
         // Interpolate field values
         const auto number_of_embedded_points = static_cast<signed >(p_barycentric_points.size());
+        const bool some_nodes_are_outside = (not outside_nodes().empty());
         for (Eigen::Index node_id = 0; node_id < number_of_embedded_points; ++node_id) {
             const auto & element_index = p_barycentric_points[node_id].element_index;
             const auto & local_coordinates = p_barycentric_points[node_id].local_coordinates;
 
-            if (element_index < 0) {
+            if (some_nodes_are_outside and element_index < 0) {
                 continue;
             }
 
@@ -214,7 +215,7 @@ public:
                 values (element.number_of_nodes(), container_field_values.cols());
 
             for (UNSIGNED_INTEGER_TYPE i = 0; i < element.number_of_nodes(); ++i) {
-                values.row(i) = container_field_values.row(element_node_indices[i]);
+                values.row(i).noalias() = container_field_values.row(element_node_indices[i]);
             }
 
             // Interpolate the field value at the local position
@@ -224,7 +225,7 @@ public:
             if constexpr (Eigen::MatrixBase<Derived2>::ColsAtCompileTime == 1) {
                 embedded_field_values[node_id] = interpolated_value;
             } else {
-                embedded_field_values.row(node_id) = interpolated_value;
+                embedded_field_values.row(node_id).noalias() = interpolated_value;
             }
         }
     }
