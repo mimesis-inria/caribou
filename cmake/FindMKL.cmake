@@ -88,41 +88,36 @@ if (MKL_INCLUDE_DIR)
     set(MKL_ROOT "${MKL_INCLUDE_DIR}/..")
 endif()
 
+message(STATUS "MKL WAS FOUND AT ${MKL_ROOT}")
+
+# This is where the different MKL libraries will be searched for
+list( APPEND _MKL_LIBRARY_SEARCH_DIRECTORIES
+        ${MKL_ROOT}/lib
+        ${MKL_ROOT}/lib/intel64
+        ${MKL_ROOT}/lib/intel64_lin
+        $ENV{MKLROOT}/lib
+        $ENV{MKLROOT}/lib/intel64
+        $ENV{MKLROOT}/lib/intel64_lin
+        $ENV{HOME}/intel/mkl/lib
+        $ENV{HOME}/intel/mkl/lib/intel64
+        $ENV{HOME}/intel/mkl/lib/intel64_lin
+        /usr/lib/x86_64-linux-gnu
+)
+
 find_library(MKL_INTERFACE_LIBRARY
     NAME ${INT_LIB}
     PATHS
-        ${MKL_ROOT}/lib
-        $ENV{MKLROOT}/lib
-        $ENV{HOME}/intel/mkl/lib/intel64_lin
-        /opt/intel/mkl/lib/intel64_lin
-        /opt/intel/mkl/lib
-        /usr/lib/x86_64-linux-gnu
-        $ENV{MKLROOT}/lib/intel64
-        $ENV{INTEL}/mkl/lib/intel64)
+        ${_MKL_LIBRARY_SEARCH_DIRECTORIES})
 
 find_library(MKL_THREAD_LAYER_LIBRARY
     NAME ${THR_LIB}
     PATHS
-        ${MKL_ROOT}/lib
-        $ENV{MKLROOT}/lib
-        $ENV{HOME}/intel/mkl/lib/intel64_lin
-        /opt/intel/mkl/lib/intel64_lin
-        /opt/intel/mkl/lib
-        /usr/lib/x86_64-linux-gnu
-        $ENV{MKLROOT}/lib/intel64
-        $ENV{INTEL}/mkl/lib/intel64)
+        ${_MKL_LIBRARY_SEARCH_DIRECTORIES})
 
 find_library(MKL_CORE_LIBRARY
     NAME ${COR_LIB}
     PATHS
-        ${MKL_ROOT}/lib
-        $ENV{MKLROOT}/lib
-        $ENV{HOME}/intel/mkl/lib/intel64_lin
-        /opt/intel/mkl/lib/intel64_lin
-        /opt/intel/mkl/lib
-        /usr/lib/x86_64-linux-gnu
-        $ENV{MKLROOT}/lib/intel64
-        $ENV{INTEL}/mkl/lib/intel64)
+        ${_MKL_LIBRARY_SEARCH_DIRECTORIES})
 
 set(MKL_INCLUDE_DIRS ${MKL_INCLUDE_DIR})
 if (APPLE)
