@@ -1,15 +1,15 @@
-.. _sparse_ldlt_doc:
+.. _sparse_lu_doc:
 .. role:: important
 .. role:: warning
 
-<LDLTSolver />
-====================
+<LUSolver />
+==================
 
 .. rst-class:: doxy-label
 .. rubric:: Doxygen:
-    :cpp:class:`SofaCaribou::solver::LDLTSolver`
+    :cpp:class:`SofaCaribou::solver::LUSolver`
 
-Implementation of a sparse :math:`LDL^T` linear solver.
+Implementation of a sparse LU linear solver.
 
 
 .. list-table::
@@ -26,11 +26,16 @@ Implementation of a sparse :math:`LDL^T` linear solver.
       - Eigen
       - Solver backend to use.
             * **Eigen**
-                | Eigen LDLT solver (SimplicialLDLT).
+                | Eigen LU solver (SparseLU).
                 | **[default]**
 
             * **Pardiso**
-                Pardiso LLT solver. :warning:`Requires Intel® Math Kernel Library (MKL) installed.`
+                Pardiso LU solver.
+    * - symmetric
+      - bool
+      - False
+      - Allows to explicitly state that the system matrix will be symmetric. This will in turn enable various optimizations.
+        This option is only used by the Eigen backend.
 
 Quick example
 *************
@@ -43,7 +48,7 @@ Quick example
 
             <Node>
                 <StaticODESolver newton_iterations="10" correction_tolerance_threshold="1e-8" residual_tolerance_threshold="1e-8" printLog="1" />
-                <LDLTSolver backend="Pardiso" />
+                <LUSolver backend="Pardiso" />
             </Node>
 
     .. tab-container:: tab2
@@ -52,7 +57,7 @@ Quick example
         .. code-block:: python
 
             node.addObject('StaticODESolver', newton_iterations=10, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-            node.addObject('LDLTSolver', backend="Pardiso")
+            node.addObject('LUSolver', backend="Pardiso")
 
 
 Available python bindings

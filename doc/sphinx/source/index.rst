@@ -19,7 +19,7 @@ The project is composed of two modules:
     :maxdepth: 2
     :hidden:
 
-    installation
+    Building <Building.rst>
 
 
 .. toctree::
@@ -28,10 +28,10 @@ The project is composed of two modules:
     :titlesonly:
     :hidden:
 
-    HexahedronElasticForce <hexahedron_elastic_force_doc.rst>
-    TetrahedronElasticForce <tetrahedron_elastic_force_doc.rst>
-    HyperelasticForcefield <hyperelastic_forcefield_doc.rst>
-    TractionForce <traction_force_doc.rst>
+    HexahedronElasticForce  <Forcefield/HexahedronElasticForce.rst>
+    TetrahedronElasticForce <Forcefield/TetrahedronElasticForce.rst>
+    HyperelasticForcefield  <Forcefield/HyperelasticForcefield.rst>
+    TractionForcefield      <Forcefield/TractionForcefield.rst>
 
 
 .. toctree::
@@ -40,18 +40,18 @@ The project is composed of two modules:
     :titlesonly:
     :hidden:
 
-    SaintVenantKirchhoff <stvk_material_doc.rst>
-    NeoHookean <neohookean_material_doc.rst>
+    SaintVenantKirchhoffMaterial <Material/SaintVenantKirchhoffMaterial.rst>
+    NeoHookeanMaterial <Material/NeoHookeanMaterial.rst>
 
 .. toctree::
-    :caption: ODE
+    :caption: Time integrators
     :maxdepth: 1
     :titlesonly:
     :hidden:
 
-    BackwardEuler <backward_euler_ode_doc.rst>
-    StaticODESolver <static_ode_doc.rst>
-    LegacyStaticODESolver <legacy_static_ode_doc.rst>
+    BackwardEulerODESolver <Ode/BackwardEulerODESolver.rst>
+    StaticODESolver <Ode/StaticODESolver.rst>
+    LegacyStaticODESolver <Ode/LegacyStaticODESolver.rst>
 
 .. toctree::
     :caption: Linear solvers
@@ -59,10 +59,10 @@ The project is composed of two modules:
     :titlesonly:
     :hidden:
 
-    ConjugateGradient <cg_solver_doc.rst>
-    LLTSolver <sparse_llt_doc.rst>
-    LDLTSolver <sparse_ldlt_doc.rst>
-    LUSolver <sparse_lu_doc.rst>
+    ConjugateGradientSolver <Solver/ConjugateGradientSolver.rst>
+    LLTSolver  <Solver/LLTSolver.rst>
+    LDLTSolver <Solver/LDLTSolver.rst>
+    LUSolver   <Solver/LUSolver.rst>
 
 .. toctree::
     :caption: Topology
@@ -70,7 +70,7 @@ The project is composed of two modules:
     :titlesonly:
     :hidden:
 
-    FictitiousGrid <fictitious_grid_doc.rst>
-    CircleIsoSurface <circle_iso_doc.rst>
-    CylinderIsoSurface <cylinder_iso_doc.rst>
-    SphereIsoSurface <sphere_iso_doc.rst>
+    FictitiousGrid <Topology/FictitiousGrid.rst>
+    CircleIsoSurface <Topology/CircleIsoSurface.rst>
+    CylinderIsoSurface <Topology/CylinderIsoSurface.rst>
+    SphereIsoSurface <Topology/SphereIsoSurface.rst>

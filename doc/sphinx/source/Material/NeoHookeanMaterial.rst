@@ -2,7 +2,7 @@
  .. role:: important
 
 <NeoHookeanMaterial />
-================================
+======================
 
 .. rst-class:: doxy-label
 .. rubric:: Doxygen:
