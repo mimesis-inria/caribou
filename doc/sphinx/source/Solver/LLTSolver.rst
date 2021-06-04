@@ -36,7 +36,7 @@ The component uses the Eigen SimplicialLLT class as the solver backend.
                 | **[default]**
 
             * **Pardiso**
-                Pardiso LLT solver. :warning:`Requires Intel® Math Kernel Library (MKL) installed.`
+                Pardiso LLT solver.
 
 Quick example
 *************

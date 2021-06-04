@@ -1,13 +1,13 @@
- .. _installation:
+ .. _building:
 
-Installation
-============
+Building
+========
 
 Prerequisites - Caribou
 -----------------------
 
-At the moment, the only way to install Caribou is by compiling it on your computer. You can look at the following table
-for the dependencies that you will have to install before starting the compilation.
+At the moment, the only way to install Caribou is by compiling it. The following table states
+packages dependencies required before starting the compilation.
 
 +------------------------------------------------------------------------------------------+--------------+-----------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------+
 | Package                                                                                  | Type         | Ubuntu                                  | Mac OSX                                                                                                                           | Description                                                         |
@@ -29,8 +29,8 @@ for the dependencies that you will have to install before starting the compilati
 | `SofaPython3 <https://github.com/sofa-framework/plugin.SofaPython3#pluginsofapython3>`__ | Optional     | See below for more information                                                                                                                                                                                                                    |
 +------------------------------------------------------------------------------------------+--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-Prerequisites - Sofa
---------------------
+Prerequisites - SofaCaribou (optional)
+--------------------------------------
 
 If you want to compile the Caribou's SOFA plugin (alias **SofaCaribou**), you will need to either:
 
@@ -44,19 +44,19 @@ Once done, export the installation path of SOFA inside the ``SOFA_INSTALL`` envi
 
 .. code-block:: bash
 
-    $ export SOFA_INSTALL="/home/user/sofa/build/master/install"
+    $ export SOFA_ROOT="/home/user/sofa/build/master/install"
 
 
 .. note::
 
-   To make sure your ``SOFA_INSTALL`` is well defined, you can verify that the following file path exists:
+   To make sure your ``SOFA_ROOT`` is well defined, you can verify that the following file path exists:
 
    .. code-block:: bash
 
-        $SOFA_INSTALL/lib/cmake/SofaFramework/SofaFrameworkTargets.cmake
+        $SOFA_ROOT/lib/cmake/SofaFramework/SofaFrameworkTargets.cmake
 
-Prerequisites - SofaPython3
----------------------------
+Prerequisites - SofaPython3 bindings (optional)
+-----------------------------------------------
 If you want the **SofaCaribou** python bindings, you will also need to compile the `SofaPython3 plugin <https://github.com/sofa-framework/plugin.SofaPython3>`__.
 This plugin allows you to compile it using two different methods.
 
@@ -74,30 +74,32 @@ If instead you used the `"out-of-tree" build type <https://github.com/sofa-frame
 you will need to install the built files by using the command ``cmake --install .``
 in the build directory of the plugin (similarly to what you have done with SOFA in the last section).
 
-Once done, export the installation path of SofaPython3 inside the ``SP3_INSTALL`` environment variable. For example, for
+Once done, export the installation path of SofaPython3 inside the ``SP3_ROOT`` environment variable. For example, for
 an out-of-tree build in the */home/user/plugin.SofaPython3* directory:
 
 .. code-block:: bash
 
-    $ export SP3_INSTALL="/home/user/plugin.SofaPython3/build/master/install"
+    $ export SP3_ROOT="/home/user/plugin.SofaPython3/build/master/install"
 
-For an "in-tree" build type, the ``SP3_INSTALL`` environment variable will be exactly the same as the ``SOFA_INSTALL``
+For an "in-tree" build type, the ``SP3_ROOT`` environment variable will be ``$SOFA_ROOT/plugins/SofaPython3``
+
+exactly the same as the ``SOFA_ROOT``
 environment variable defined earlier.
 
 
 .. note::
 
-   To make sure your ``SP3_INSTALL`` is well defined, you can verify that the following file path exists:
+   To make sure your ``SP3_ROOT`` is well defined, you can verify that the following file path exists:
 
    .. code-block:: bash
 
-        $SP3_INSTALL/lib/cmake/SofaPython3/PluginTargets.cmake
+        $SP3_ROOT/lib/cmake/SofaPython3/PluginTargets.cmake
 
 
 Compiling
 ---------
 All right, at this point you should have everything needed to compile Caribou. If you are also building SofaCaribou and
-its python bindings, you also have defined the ``SOFA_INSTALL`` and ``SP3_INSTALL`` environment variables.
+its python bindings, you also have defined the ``SOFA_ROOT`` and ``SP3_ROOT`` environment variables.
 
 Start by cloning the Caribou source code and create a build directory inside of it.
 
@@ -132,11 +134,11 @@ the following configuration variables:
 | CMAKE_INSTALL_PREFIX        | Path   | install/ | Specify where the built files (following the `make install` command) should be installed. |
 +-----------------------------+--------+----------+-------------------------------------------------------------------------------------------+
 
-If you are compiling the Caribou's SOFA plugin, you will also need to tell cmake where it should find it. This can be
-done by setting the cmake variable ``CMAKE_PREFIX_PATH`` to ``$SOFA_INSTALL/lib/install/cmake``. The same
-thing needs to be done with SofaPython3 if you are also compiling Caribou's python bindings. In this case, you can set
-``CMAKE_PREFIX_PATH`` to ``$SOFA_INSTALL/lib/install/cmake;$SP3_INSTALL/lib/install/cmake`` (note the semicolon ``;``
-between the two paths).
+If you are compiling the Caribou's SOFA plugin, you will also need to tell cmake where it should find it. Caribou will automatically
+find it by looking inside the ``SOFA_ROOT`` environment variable. Otherwise, if the ``SOFA_ROOT`` environment variable cannot be used,
+setting the cmake variable ``CMAKE_PREFIX_PATH`` to ``$SOFA_ROOT/lib/install/cmake`` should also work. The same
+thing needs to be done with SofaPython3 if you are also compiling Caribou's python bindings *and* if SofaPython3 was compiled
+out-of-tree. In this case, you can set ``CMAKE_PREFIX_PATH`` to ``$SP3_INSTALL/lib/install/cmake``.
 
 For example, if you want to compile Caribou with MKL support and python bindings:
 
@@ -148,7 +150,9 @@ If you want to compile Caribou with SOFA and python bindings:
 
 .. code-block:: bash
 
-    $ cmake -DCARIBOU_WITH_PYTHON_3=ON -DCMAKE_PREFIX_PATH="$SOFA_INSTALL/lib/cmake;$SP3_INSTALL/lib/cmake" ..
+    $ export SOFA_ROOT=/opt/sofa/build/install
+    $ export SP3_ROOT=/opt/SofaPython3/build/install
+    $ cmake -DCARIBOU_WITH_PYTHON_3=ON -DCMAKE_PREFIX_PATH="$SP3_ROOT/lib/cmake" ..
 
 You can now start the compilation.
 
@@ -159,19 +163,19 @@ You can now start the compilation.
 
 The last command (``cmake --install .``) installed all the built files inside the directory ``install`` (or the directory
 specified by the cmake variable ``CMAKE_INSTALL_PREFIX`` if you changed it). Export this path to the environment variable
-``CARIBOU_INSTALL``:
+``CARIBOU_ROOT``:
 
 .. code-block:: bash
 
-    $ export CARIBOU_INSTALL="${PWD}/install"
+    $ export CARIBOU_ROOT="${PWD}/install"
 
 .. note::
 
-   To make sure your ``CARIBOU_INSTALL`` is well defined, you can verify that the following file path exists:
+   To make sure your ``CARIBOU_ROOT`` is well defined, you can verify that the following file path exists:
 
    .. code-block:: bash
 
-        $CARIBOU_INSTALL/lib/cmake/Caribou/CaribouTargets.cmake
+        $CARIBOU_ROOT/lib/cmake/Caribou/CaribouTargets.cmake
 
 
 Installing python bindings
@@ -184,13 +188,13 @@ For linux, this can be done with the following command:
 
 .. code-block:: bash
 
-    $ ln -sFfv $(find $CARIBOU_INSTALL/lib/python3.7/site-packages -maxdepth 1 -mindepth 1) $(python3 -m site --user-site)
+    $ ln -sFfv $(find $CARIBOU_ROOT/lib/python3/site-packages -maxdepth 1 -mindepth 1) $(python3 -m site --user-site)
 
 And for Mac OSX:
 
 .. code-block:: bash
 
-    $ ln -sFfv $(find $CARIBOU_INSTALL/lib/python3.7/site-packages -d 1) $(python3 -m site --user-site)
+    $ ln -sFfv $(find $CARIBOU_ROOT/lib/python3/site-packages -d 1) $(python3 -m site --user-site)
 
 You can test that the bindings have been correctly installed by starting a python shell and import Caribou:
 
