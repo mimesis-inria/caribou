@@ -93,25 +93,7 @@ public:
         return p_topology;
     }
 
-protected:
-    // These protected methods are implemented but can be overridden
-    /**
-     * Return true if the mesh topology is compatible with the type Element.
-     *
-     * This internal function is used when the scene graph is created and no template is specified to this component.
-     * When a MeshTopology is found in the context node, this function will return true if the MeshTopology is a good
-     * hint of the element type that should be used. For example, if a TetrahedronSetTopologyContainer passed as
-     * parameter, then CaribouForcefied<Tetrahedron>::mesh_is_compatible(topology) will return true.
-     */
-    inline
-    static auto mesh_is_compatible(const sofa::core::topology::BaseMeshTopology *) -> bool {
-        return false;
-    }
-
 private:
-
-    /** Get the data field from the given BaseMeshTopology that contains the node indices of the elements of this force field */
-    virtual auto get_indices_from(const sofa::core::topology::BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData *;
 
     /**
      * Construct triangles representing the visual of a given face to be draw by the force field.
@@ -131,7 +113,7 @@ private:
     // Private variables
     /// Pointer to a CaribouTopology. This pointer will be null if a CaribouTopology
     /// is found within the scene graph and linked using the d_topology_container data
-    /// parameter. Otherwise, if a compatible SOFA's topology (see mesh_is_compatible())
+    /// parameter. Otherwise, if a compatible SOFA's topology (see SofaCaribou::topology::CaribouTopology::mesh_is_compatible())
     /// is found and linked, an internal CaribouTopology component will be created
     /// and its pointer will be stored here.
     typename SofaCaribou::topology::CaribouTopology<Element>::SPtr p_topology;
