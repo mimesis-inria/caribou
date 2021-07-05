@@ -19,6 +19,10 @@ DISABLE_ALL_WARNINGS_END
 namespace sofa { using Index = unsigned int; }
 #endif
 
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+namespace sofa::type { using Vector3 = ::sofa::defaulttype::Vector3; }
+#endif
+
 namespace SofaCaribou::forcefield {
 
 // Traits to get the Sofa vector type from the dimension
