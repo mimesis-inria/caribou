@@ -19,6 +19,10 @@ DISABLE_ALL_WARNINGS_END
 namespace sofa { using Index = unsigned int; }
 #endif
 
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+namespace sofa::type { using Vector3 = ::sofa::defaulttype::Vector3; }
+#endif
+
 namespace SofaCaribou::forcefield {
 
 // Traits to get the Sofa vector type from the dimension
@@ -116,7 +120,7 @@ private:
      * @param triangles_nodes [output] The position of each triangle nodes that will have to be draw to correctly represent the
      *                        face (visually).
      */
-    void triangulate_face(const Element & e, const std::size_t & face_id, std::vector<sofa::defaulttype::Vector3> & triangles_nodes);
+    void triangulate_face(const Element & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes);
 
     // Data members
     /// This link is specifically set to point towards a very general BaseObject since it can be either a

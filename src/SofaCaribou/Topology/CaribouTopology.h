@@ -10,6 +10,8 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/State.h>
 #include <sofa/core/topology/Topology.h>
 #include <sofa/defaulttype/VecTypes.h>
+#include <sofa/helper/vector.h>
+#include <sofa/helper/fixed_array.h>
 DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::topology {

@@ -40,7 +40,7 @@ auto CaribouForcefield<Triangle<_2D, Linear>>::templateName(const CaribouForcefi
 }
 
 template <>
-void CaribouForcefield<Triangle<_2D, Linear>>::triangulate_face(const Triangle<_2D, Linear> & e, const std::size_t & /*face_id*/, std::vector<sofa::defaulttype::Vector3> & triangles_nodes) {
+void CaribouForcefield<Triangle<_2D, Linear>>::triangulate_face(const Triangle<_2D, Linear> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
     auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
     for (const auto &n : triangle) {
         triangles_nodes.emplace_back(n[0], n[1], 0);
@@ -70,7 +70,7 @@ auto CaribouForcefield<Triangle<_3D, Linear>>::templateName(const CaribouForcefi
 }
 
 template <>
-void CaribouForcefield<Triangle<_3D, Linear>>::triangulate_face(const Triangle<_3D, Linear> & e, const std::size_t & /*face_id*/, std::vector<sofa::defaulttype::Vector3> & triangles_nodes) {
+void CaribouForcefield<Triangle<_3D, Linear>>::triangulate_face(const Triangle<_3D, Linear> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
     auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
     for (const auto &n : triangle) {
         triangles_nodes.emplace_back(n[0], n[1], n[2]);
@@ -104,7 +104,7 @@ auto CaribouForcefield<Triangle<_2D, Quadratic>>::templateName(const CaribouForc
 }
 
 template <>
-void CaribouForcefield<Triangle<_2D, Quadratic>>::triangulate_face(const Triangle<_2D, Quadratic> & e, const std::size_t & /*face_id*/, std::vector<sofa::defaulttype::Vector3> & triangles_nodes) {
+void CaribouForcefield<Triangle<_2D, Quadratic>>::triangulate_face(const Triangle<_2D, Quadratic> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
     auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
     for (const auto &n : triangle) {
         triangles_nodes.emplace_back(n[0], n[1], 0);
@@ -134,7 +134,7 @@ auto CaribouForcefield<Triangle<_3D, Quadratic>>::templateName(const CaribouForc
 }
 
 template <>
-void CaribouForcefield<Triangle<_3D, Quadratic>>::triangulate_face(const Triangle<_3D, Quadratic> & e, const std::size_t & /*face_id*/, std::vector<sofa::defaulttype::Vector3> & triangles_nodes) {
+void CaribouForcefield<Triangle<_3D, Quadratic>>::triangulate_face(const Triangle<_3D, Quadratic> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
     auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
     for (const auto &n : triangle) {
         triangles_nodes.emplace_back(n[0], n[1], n[2]);

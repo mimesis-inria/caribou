@@ -20,6 +20,16 @@ using namespace sofa::helper::logging;
 using namespace sofa::testing;
 #endif
 
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+namespace sofa::type {
+using Vec3 = ::sofa::defaulttype::Vec3;
+template <sofa::Size N, sofa::Size M, typename Real>
+using Mat = ::sofa::defaulttype::Mat<N, M, Real>;
+template <sofa::Size N, typename Real>
+using Vec = ::sofa::defaulttype::Vec<N, Real>;
+}
+#endif
+
 /** Make sure residual norms at each newton steps remains the same */
 TEST(BackwardEulerODESolver, Beam) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
@@ -149,7 +159,7 @@ TEST(BackwardEulerODESolver, Beam) {
         // Let's also validate the position of the node positioned at the center of the end-surface of the beam
         // (the surface where the traction is applied)
         const auto & middle_point = mo->read(sofa::core::ConstVecCoordId::position())->getValue()[76];
-        const auto  middle_point_solution = sofa::defaulttype::Vec3(middle_point_positions[step_id][0], middle_point_positions[step_id][1], middle_point_positions[step_id][2]);
+        const auto  middle_point_solution = sofa::type::Vec3(middle_point_positions[step_id][0], middle_point_positions[step_id][1], middle_point_positions[step_id][2]);
         const auto abs_err = (middle_point - middle_point_solution).norm();
         const auto rel_err = abs_err / middle_point_solution.norm();
 

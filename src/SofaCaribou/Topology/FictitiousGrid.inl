@@ -140,14 +140,14 @@ void FictitiousGrid<DataTypes>::init() {
                 } else {
                     topology = surface_containers[0];
                     if (Dimension == 2) {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<SofaEdge>>> w_edges = d_surface_edges;
+                        sofa::helper::WriteAccessor<Data<sofa::type::vector<SofaEdge>>> w_edges = d_surface_edges;
                         for (unsigned int i = 0; i < topology->getNbEdges(); ++i) {
                             w_edges.push_back(topology->getEdge(i));
                         }
                         msg_info() << "Automatically found " << topology->getNbEdges() << " edges in the container '"
                                    << topology->getPathName() << "'.";
                     } else {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<SofaTriangle >>> w_triangles = d_surface_triangles;
+                        sofa::helper::WriteAccessor<Data<sofa::type::vector<SofaTriangle >>> w_triangles = d_surface_triangles;
                         for (unsigned int i = 0; i < topology->getNbTriangles(); ++i) {
                             w_triangles.push_back(topology->getTriangle(i));
                         }
@@ -159,7 +159,7 @@ void FictitiousGrid<DataTypes>::init() {
                 topology = containers[0];
                 if (Dimension == 2) {
                     if (topology->getNbEdges() > 0) {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<SofaEdge>>> w_edges = d_surface_edges;
+                        sofa::helper::WriteAccessor<Data<sofa::type::vector<SofaEdge>>> w_edges = d_surface_edges;
                         for (unsigned int i = 0; i < topology->getNbEdges(); ++i) {
                             w_edges.push_back(topology->getEdge(i));
                         }
@@ -170,7 +170,7 @@ void FictitiousGrid<DataTypes>::init() {
                     }
                 } else {
                     if (topology->getNbTriangles() > 0) {
-                        sofa::helper::WriteAccessor<Data<sofa::helper::vector<SofaTriangle >>> w_triangles = d_surface_triangles;
+                        sofa::helper::WriteAccessor<Data<sofa::type::vector<SofaTriangle >>> w_triangles = d_surface_triangles;
                         for (unsigned int i = 0; i < topology->getNbTriangles(); ++i) {
                             w_triangles.push_back(topology->getTriangle(i));
                         }
@@ -680,8 +680,8 @@ FictitiousGrid<DataTypes>::create_sparse_grid()
     }
 
     // 3. Add the sparse cells and create the bijection between sparse cells and full grid cells
-    sofa::helper::WriteAccessor<Data < sofa::helper::vector<SofaHexahedron> >> hexahedrons = d_hexahedrons;
-    sofa::helper::WriteAccessor<Data < sofa::helper::vector<SofaQuad > >> quads = d_quads;
+    sofa::helper::WriteAccessor<Data < sofa::type::vector<SofaHexahedron> >> hexahedrons = d_hexahedrons;
+    sofa::helper::WriteAccessor<Data < sofa::type::vector<SofaQuad > >> quads = d_quads;
     if (Dimension == 2) {
         quads.clear();
         quads.wref().reserve(p_grid->number_of_cells());
@@ -1180,7 +1180,7 @@ static const unsigned long long kelly_colors_hex[] = {
 template <typename DataTypes>
 void FictitiousGrid<DataTypes>::draw(const sofa::core::visual::VisualParams* vparams)
 {
-    using Color = sofa::helper::types::RGBAColor;
+    using Color = sofa::type::RGBAColor;
     if (!p_grid)
         return;
 

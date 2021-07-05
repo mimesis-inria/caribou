@@ -25,6 +25,14 @@ DISABLE_ALL_WARNINGS_END
 namespace sofa { using Index = unsigned int; }
 #endif
 
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+namespace sofa::type {
+template <typename T> using vector = ::sofa::helper::vector<T>;
+using RGBAColor = ::sofa::helper::types::RGBAColor;
+template <typename Real> using TBoundingBox = ::sofa::defaulttype::TBoundingBox<Real> ;
+}
+#endif
+
 namespace SofaCaribou::topology {
 
 using namespace sofa::core::objectmodel;
@@ -52,9 +60,9 @@ public:
     using SofaVecInt = sofa::defaulttype::Vec<Dimension, UNSIGNED_INTEGER_TYPE>;
     using SofaVecFloat = sofa::defaulttype::Vec<Dimension, SofaFloat>;
     using Coord = typename DataTypes::Coord;
-    using SofaVecCoord = sofa::helper::vector<Coord>;
+    using SofaVecCoord = sofa::type::vector<Coord>;
     using ElementId = sofa::Index;
-    using VecElementId = sofa::helper::vector<ElementId>;
+    using VecElementId = sofa::type::vector<ElementId>;
     using SofaHexahedron = sofa::core::topology::BaseMeshTopology::Hexahedron;
     using SofaQuad = sofa::core::topology::BaseMeshTopology::Quad;
     using SofaTriangle = sofa::core::topology::BaseMeshTopology::Triangle;
@@ -256,9 +264,9 @@ public:
             const Float max[3] = {
                 d_max.getValue()[0], d_max.getValue()[1], +1
             };
-            this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Float>(min, max));
+            this->f_bbox.setValue(sofa::type::TBoundingBox<Float>(min, max));
         } else {
-            this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Float>(
+            this->f_bbox.setValue(sofa::type::TBoundingBox<Float>(
                 d_min.getValue().array(),d_max.getValue().array()));
         }
     }
@@ -305,10 +313,10 @@ private:
     Data< SofaVecCoord > d_surface_positions;
 
     ///< List of edges (ex: [e1p1 e1p2 e2p1 e2p2 ...]).
-    Data<sofa::helper::vector<SofaEdge> > d_surface_edges;
+    Data<sofa::type::vector<SofaEdge> > d_surface_edges;
 
     ///< List of triangles (ex: [t1p1 t1p2 t1p3 t2p1 t2p2 t2p3 ...]).
-    Data<sofa::helper::vector<SofaTriangle> > d_surface_triangles;
+    Data<sofa::type::vector<SofaTriangle> > d_surface_triangles;
 
     // -------------------
     // Output data members
@@ -317,10 +325,10 @@ private:
     Data< SofaVecCoord > d_positions;
 
     ///< List of quads contained in the sparse grid (ex: [q1p1 q1p2 q1p3 q1p4 q2p1 ... qnp3 qnp4]).
-    Data < sofa::helper::vector<SofaQuad> > d_quads;
+    Data < sofa::type::vector<SofaQuad> > d_quads;
 
     ///< List of hexahedrons contained in the sparse grid (ex: [h1p1 h1p2 h1p3 h1p4 h1p5 ... hnp6 hnp7]).
-    Data < sofa::helper::vector<SofaHexahedron> > d_hexahedrons;
+    Data < sofa::type::vector<SofaHexahedron> > d_hexahedrons;
 
     // ---------------
     // Private members
