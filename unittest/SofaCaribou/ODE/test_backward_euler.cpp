@@ -20,6 +20,20 @@ using namespace sofa::helper::logging;
 using namespace sofa::testing;
 #endif
 
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 200699)
+namespace sofa { using Size = unsigned int; }
+#endif
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+namespace sofa::type {
+using Vec3 = ::sofa::defaulttype::Vec3;
+template <sofa::Size N, sofa::Size M, typename Real>
+using Mat = ::sofa::defaulttype::Mat<N, M, Real>;
+template <sofa::Size N, typename Real>
+using Vec = ::sofa::defaulttype::Vec<N, Real>;
+}
+#endif
+
 /** Make sure residual norms at each newton steps remains the same */
 TEST(BackwardEulerODESolver, Beam) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;

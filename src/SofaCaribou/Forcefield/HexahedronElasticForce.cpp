@@ -6,12 +6,31 @@
 #include <SofaCaribou/Forcefield/HexahedronElasticForce.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/helper/AdvancedTimer.h>
 DISABLE_ALL_WARNINGS_END
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 200699)
+namespace sofa { using Size = unsigned int; }
+#endif
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+namespace sofa::type {
+using Vector3 = ::sofa::defaulttype::Vector3;
+using Mat3x3 = ::sofa::defaulttype::Mat3x3;
+template <sofa::Size N, sofa::Size M, typename Real>
+using Mat = ::sofa::defaulttype::Mat<N, M, Real>;
+template <sofa::Size N, typename Real>
+using Vec = ::sofa::defaulttype::Vec<N, Real>;
+using RGBAColor = ::sofa::helper::types::RGBAColor;
+template <typename Real>
+using TBoundingBox = ::sofa::defaulttype::TBoundingBox<Real> ;
+}
+#endif
 
 #include <Eigen/Sparse>
 

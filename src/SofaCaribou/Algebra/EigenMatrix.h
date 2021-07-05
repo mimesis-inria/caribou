@@ -4,8 +4,25 @@
 #include <Caribou/traits.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #include <sofa/defaulttype/BaseMatrix.h>
 DISABLE_ALL_WARNINGS_END
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 200699)
+namespace sofa { using Size = unsigned int; }
+#endif
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+namespace sofa::type {
+using Mat3x3d = ::sofa::defaulttype::Mat3x3d;
+using Mat3x3f = ::sofa::defaulttype::Mat3x3f;
+using Mat2x2d = ::sofa::defaulttype::Mat2x2d;
+using Mat2x2f = ::sofa::defaulttype::Mat2x2f;
+template <sofa::Size N, sofa::Size M, typename Real>
+using Mat = ::sofa::defaulttype::Mat<N, M, Real>;
+}
+#endif
+
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>

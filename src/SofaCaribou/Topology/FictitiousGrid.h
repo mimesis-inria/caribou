@@ -25,6 +25,15 @@ DISABLE_ALL_WARNINGS_END
 namespace sofa { using Index = unsigned int; }
 #endif
 
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+namespace sofa::type {
+template <typename T> using vector = ::sofa::helper::vector<T>;
+using Vector3 = ::sofa::defaulttype::Vector3;
+using RGBAColor = ::sofa::helper::types::RGBAColor;
+template <typename Real> using TBoundingBox = ::sofa::defaulttype::TBoundingBox<Real> ;
+}
+#endif
+
 namespace SofaCaribou::topology {
 
 using namespace sofa::core::objectmodel;
