@@ -2,6 +2,7 @@
 
 #include <SofaCaribou/Python/Ode/LegacyStaticODESolver.h>
 #include <SofaCaribou/Python/Ode/StaticODESolver.h>
+#include <SofaCaribou/Python/Mass/CaribouMass.h>
 #include <SofaCaribou/Python/Forcefield/HexahedronElasticForce.h>
 #include <SofaCaribou/Python/Forcefield/HyperelasticForcefield.h>
 #include <SofaCaribou/Python/Solver/ConjugateGradientSolver.h>
@@ -21,6 +22,9 @@ PYBIND11_MODULE(SofaCaribou, m) {
     // ODE bindings
     SofaCaribou::ode::python::addLegacyStaticODESolver(m);
     SofaCaribou::ode::python::addStaticODESolver(m);
+
+    // Mass bindings
+    SofaCaribou::mass::python::addCaribouMass(m);
 
     // Forcefield bindings
     SofaCaribou::forcefield::python::addHexahedronElasticForce(m);

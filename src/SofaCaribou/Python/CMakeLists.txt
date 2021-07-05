@@ -3,6 +3,7 @@ project(SofaCaribou.Python)
 set(HEADER_FILES
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
+    Mass/CaribouMass.h
     Ode/LegacyStaticODESolver.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
@@ -14,6 +15,7 @@ set(SOURCE_FILES
     SofaCaribou.cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield.cpp
+    Mass/CaribouMass.cpp
     Ode/LegacyStaticODESolver.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
@@ -27,6 +29,7 @@ set(PYTHON_FILES
 
 set(PYTHON_TEST_FILES
     pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
+    pytest/SofaCaribou_Mass_CaribouMass.py
 )
 
 find_package(SofaPython3 REQUIRED)

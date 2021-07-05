@@ -90,7 +90,7 @@ void CaribouForcefield<Element>::init() {
         if (sofa_topology) {
             // Initialize a new caribou topology from the SOFA topology
             p_topology = sofa::core::objectmodel::New<CaribouTopology>();
-            p_topology->findData("indices")->setParent(CaribouTopology::get_indices_from(sofa_topology));
+            p_topology->findData("indices")->setParent(CaribouTopology::get_indices_data_from(sofa_topology));
             p_topology->findData("position")->setParent(this->getMState()->findData("position"));
             p_topology->init();
         } else {

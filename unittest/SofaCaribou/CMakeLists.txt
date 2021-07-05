@@ -7,6 +7,7 @@ set(SOURCE_FILES
         Algebra/test_eigen_vector_wrapper.cpp
         Forcefield/test_hyperelasticforcefield.cpp
         Forcefield/test_tractionforce.cpp
+        Mass/test_cariboumass.cpp
         ODE/test_backward_euler.cpp
         ODE/test_static.cpp
         Topology/test_fictitiousgrid.cpp
@@ -14,7 +15,7 @@ set(SOURCE_FILES
 
 enable_testing()
 
-find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver QUIET REQUIRED)
+find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver SofaMiscForceField QUIET REQUIRED)
 find_package(Caribou COMPONENTS Topology REQUIRED)
 
 if (CARIBOU_WITH_VTK)
@@ -29,7 +30,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC gtest)
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCaribou)
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaSimulationCommon SofaBaseLinearSolver)
+target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaSimulationCommon SofaBaseLinearSolver SofaMiscForceField)
 target_link_libraries(${PROJECT_NAME} PUBLIC
                       $<$<AND:$<PLATFORM_ID:Linux>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,8.0>>:stdc++fs>
                       $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:c++fs>)
