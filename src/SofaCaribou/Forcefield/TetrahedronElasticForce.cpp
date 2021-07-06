@@ -279,7 +279,7 @@ void TetrahedronElasticForce::addKToMatrix(
     const auto number_of_elements = topology->getNbTetrahedra();
     for (std::size_t element_id = 0; element_id < number_of_elements; ++element_id) {
         const auto & node_indices = topology->getTetrahedron(static_cast<sofa::Index>(element_id));
-        sofa::defaulttype::Mat3x3 R;
+        sofa::type::Mat3x3 R;
         for (unsigned int m = 0; m < 3; ++m) {
             for (unsigned int n = 0; n < 3; ++n) {
                 R(m, n) = current_rotation[element_id](m, n);
@@ -294,7 +294,7 @@ void TetrahedronElasticForce::addKToMatrix(
         // Blocks on the diagonal
         for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
             const auto x = static_cast<Eigen::Index>(i*Dimension);
-            sofa::defaulttype::Mat<Dimension, Dimension, Real> k;
+            sofa::type::Mat<Dimension, Dimension, Real> k;
             for (Eigen::Index m = 0; m < Dimension; ++m) {
                 for (Eigen::Index n = 0; n < Dimension; ++n) {
                     k(static_cast<unsigned int>(m), static_cast<unsigned int>(n)) = K(x+m, x+n);
@@ -312,7 +312,7 @@ void TetrahedronElasticForce::addKToMatrix(
                 const auto x = static_cast<Eigen::Index>(i*Dimension);
                 const auto y = static_cast<Eigen::Index>(j*Dimension);
 
-                sofa::defaulttype::Mat<Dimension, Dimension, Real> k;
+                sofa::type::Mat<Dimension, Dimension, Real> k;
                 for (Eigen::Index m = 0; m < Dimension; ++m) {
                     for (Eigen::Index n = 0; n < Dimension; ++n) {
                         k(static_cast<unsigned int>(m), static_cast<unsigned int>(n)) = K(x+m, y+n);
@@ -348,7 +348,7 @@ void TetrahedronElasticForce::computeBBox(const sofa::core::ExecParams*, bool on
         }
     }
 
-    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
+    this->f_bbox.setValue(sofa::type::TBoundingBox<Real>(minBBox,maxBBox));
 }
 
 void TetrahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparams)
@@ -369,7 +369,7 @@ void TetrahedronElasticForce::draw(const sofa::core::visual::VisualParams* vpara
 
     const VecCoord &x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
 
-    std::vector< sofa::defaulttype::Vec<3, double> > points[4];
+    std::vector< sofa::type::Vec<3, double> > points[4];
     const auto number_of_elements = topology->getNbTetrahedra();
     for(Topology::TetrahedronID i = 0 ; i<number_of_elements;++i)
     {
@@ -402,7 +402,7 @@ void TetrahedronElasticForce::draw(const sofa::core::visual::VisualParams* vpara
         points[3].push_back(pb);
     }
 
-    sofa::helper::types::RGBAColor face_colors[4] = {
+    sofa::type::RGBAColor face_colors[4] = {
             {1.0, 0.0, 0.0, 1.0},
             {1.0, 0.0, 0.5, 1.0},
             {1.0, 1.0, 0.0, 1.0},

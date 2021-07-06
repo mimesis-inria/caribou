@@ -60,7 +60,7 @@ TEST(CaribouTopology, QuadLinear2DAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 4>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 4>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 16); // Number of elements
 
@@ -119,7 +119,7 @@ TEST(CaribouTopology, QuadLinear2DFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 4>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 4>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -187,7 +187,7 @@ TEST(CaribouTopology, QuadQuadratic2DAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 8>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 8>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 16); // Number of elements
 
@@ -246,7 +246,7 @@ TEST(CaribouTopology, QuadQuadratic2DFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 8>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 8>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -314,7 +314,7 @@ TEST(CaribouTopology, QuadLinear3DAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 4>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 4>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 16); // Number of elements
 
@@ -373,7 +373,7 @@ TEST(CaribouTopology, QuadLinear3DFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 4>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 4>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -442,7 +442,7 @@ TEST(CaribouTopology, QuadQuadratic3DAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 8>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 8>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 16); // Number of elements
 
@@ -501,7 +501,7 @@ TEST(CaribouTopology, QuadQuadratic3DFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 8>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 8>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -570,7 +570,7 @@ TEST(CaribouTopology, TriangleLinear2DAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 3>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 3>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 32); // Number of elements
 
@@ -629,7 +629,7 @@ TEST(CaribouTopology, TriangleLinear2DFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 3>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 3>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -697,7 +697,7 @@ TEST(CaribouTopology, TriangleQuadratic2DAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 6>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 6>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 32); // Number of elements
 
@@ -756,7 +756,7 @@ TEST(CaribouTopology, TriangleQuadratic2DFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 6>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 6>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -824,7 +824,7 @@ TEST(CaribouTopology, TriangleLinear3DAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 3>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 3>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 32); // Number of elements
 
@@ -883,7 +883,7 @@ TEST(CaribouTopology, TriangleLinear3DFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 3>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 3>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -952,7 +952,7 @@ TEST(CaribouTopology, TriangleQuadratic3DAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 6>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 6>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 32); // Number of elements
 
@@ -1011,7 +1011,7 @@ TEST(CaribouTopology, TriangleQuadratic3DFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 6>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 6>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -1080,7 +1080,7 @@ TEST(CaribouTopology, TetrahedronLinearAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 4>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 4>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 681); // Number of elements
 
@@ -1139,7 +1139,7 @@ TEST(CaribouTopology, TetrahedronLinearFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 4>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 4>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -1211,7 +1211,7 @@ TEST(CaribouTopology, TetrahedronQuadraticAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 10>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 10>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 681); // Number of elements
 
@@ -1270,7 +1270,7 @@ TEST(CaribouTopology, TetrahedronQuadraticFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 10>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 10>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -1342,7 +1342,7 @@ TEST(CaribouTopology, HexahedronLinearAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 8>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 8>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 64); // Number of elements
 
@@ -1401,7 +1401,7 @@ TEST(CaribouTopology, HexahedronLinearFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 8>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 8>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 
@@ -1471,7 +1471,7 @@ TEST(CaribouTopology, HexahedronQuadraticAttachDomain) {
     topo->attachDomain(domain);
 
     // Make sure the data parameter `indices` has been filled-up correctly
-    using DataIndices = Data<vector<fixed_array<PointID, 20>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 20>>>;
     auto indices = ReadAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     EXPECT_EQ(indices.size(), 64); // Number of elements
 
@@ -1530,7 +1530,7 @@ TEST(CaribouTopology, HexahedronQuadraticFromIndices) {
     EXPECT_NE(topo, nullptr);
 
     // Set the indices
-    using DataIndices = Data<vector<fixed_array<PointID, 20>>>;
+    using DataIndices = Data<sofa::type::vector<sofa::type::fixed_array<PointID, 20>>>;
     auto indices = WriteOnlyAccessor<DataIndices> (dynamic_cast<DataIndices*>(topo->findData("indices")));
     indices.resize(domain->number_of_elements());
 

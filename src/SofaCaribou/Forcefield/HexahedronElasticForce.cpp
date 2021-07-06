@@ -339,7 +339,7 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
     const auto number_of_elements = topology->getNbHexahedra();
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(static_cast<Topology::HexaID>(hexa_id));
-        sofa::defaulttype::Mat3x3 R;
+        sofa::type::Mat3x3 R;
         for (unsigned int m = 0; m < 3; ++m) {
             for (unsigned int n = 0; n < 3; ++n) {
                 R(m, n) = current_rotation[hexa_id](m, n);
@@ -354,7 +354,7 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
         // Blocks on the diagonal
         for (sofa::Index i = 0; i < NumberOfNodes; ++i) {
             const auto x = static_cast<Eigen::Index>(i*3);
-            sofa::defaulttype::Mat<3, 3, Real> Kii;
+            sofa::type::Mat<3, 3, Real> Kii;
             for (Eigen::Index m = 0; m < 3; ++m) {
                 for (Eigen::Index n = 0; n < 3; ++n) {
                     Kii(static_cast<sofa::Index>(m), static_cast<sofa::Index>(n)) = K(x+m, x+n);
@@ -372,7 +372,7 @@ void HexahedronElasticForce::addKToMatrix(sofa::defaulttype::BaseMatrix * matrix
                 const auto x = static_cast<Eigen::Index>(i*3);
                 const auto y = static_cast<Eigen::Index>(j*3);
 
-                sofa::defaulttype::Mat<3, 3, Real> Kij;
+                sofa::type::Mat<3, 3, Real> Kij;
                 for (size_t m = 0; m < 3; ++m) {
                     for (size_t n = 0; n < 3; ++n) {
                         Kij(static_cast<sofa::Index>(m), static_cast<sofa::Index>(n)) = K(x+m, y+n);
@@ -576,7 +576,7 @@ void HexahedronElasticForce::computeBBox(const sofa::core::ExecParams*, bool onl
         }
     }
 
-    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
+    this->f_bbox.setValue(sofa::type::TBoundingBox<Real>(minBBox,maxBBox));
 }
 
 void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparams)
@@ -597,7 +597,7 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
 
     const VecCoord& x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
 
-    std::vector< sofa::defaulttype::Vector3 > points[6];
+    std::vector< sofa::type::Vector3 > points[6];
     const auto number_of_elements = topology->getNbHexahedra();
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(static_cast<sofa::Index>(hexa_id));
@@ -668,15 +668,15 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
         points[5].push_back(pf);
     }
 
-    vparams->drawTool()->drawTriangles(points[0], sofa::helper::types::RGBAColor(0.7f,0.7f,0.1f,1.0f));
-    vparams->drawTool()->drawTriangles(points[1], sofa::helper::types::RGBAColor(0.7f,0.0f,0.0f,1.0f));
-    vparams->drawTool()->drawTriangles(points[2], sofa::helper::types::RGBAColor(0.0f,0.7f,0.0f,1.0f));
-    vparams->drawTool()->drawTriangles(points[3], sofa::helper::types::RGBAColor(0.0f,0.0f,0.7f,1.0f));
-    vparams->drawTool()->drawTriangles(points[4], sofa::helper::types::RGBAColor(0.1f,0.7f,0.7f,1.0f));
-    vparams->drawTool()->drawTriangles(points[5], sofa::helper::types::RGBAColor(0.7f,0.1f,0.7f,1.0f));
+    vparams->drawTool()->drawTriangles(points[0], sofa::type::RGBAColor(0.7f,0.7f,0.1f,1.0f));
+    vparams->drawTool()->drawTriangles(points[1], sofa::type::RGBAColor(0.7f,0.0f,0.0f,1.0f));
+    vparams->drawTool()->drawTriangles(points[2], sofa::type::RGBAColor(0.0f,0.7f,0.0f,1.0f));
+    vparams->drawTool()->drawTriangles(points[3], sofa::type::RGBAColor(0.0f,0.0f,0.7f,1.0f));
+    vparams->drawTool()->drawTriangles(points[4], sofa::type::RGBAColor(0.1f,0.7f,0.7f,1.0f));
+    vparams->drawTool()->drawTriangles(points[5], sofa::type::RGBAColor(0.7f,0.1f,0.7f,1.0f));
 
 
-    std::vector< sofa::defaulttype::Vector3 > ignored_points[6];
+    std::vector< sofa::type::Vector3 > ignored_points[6];
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(static_cast<sofa::Index>(hexa_id));
 
@@ -746,12 +746,12 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
         ignored_points[5].push_back(pf);
     }
 
-    vparams->drawTool()->drawTriangles(ignored_points[0], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[1], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[2], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[3], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[4], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
-    vparams->drawTool()->drawTriangles(ignored_points[5], sofa::helper::types::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[0], sofa::type::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[1], sofa::type::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[2], sofa::type::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[3], sofa::type::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[4], sofa::type::RGBAColor(0.49f,0.49f,0.49f,0.3f));
+    vparams->drawTool()->drawTriangles(ignored_points[5], sofa::type::RGBAColor(0.49f,0.49f,0.49f,0.3f));
 
 
     if (vparams->displayFlags().getShowWireFrame())
