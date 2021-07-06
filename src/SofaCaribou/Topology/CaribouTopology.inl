@@ -27,7 +27,7 @@ void CaribouTopology<Element>::attachDomain(const caribou::topology::Domain<Elem
     this->p_domain = domain;
 
     using namespace sofa::helper;
-    auto indices = WriteOnlyAccessor<Data<vector<fixed_array<PointID, NumberOfNodes>>>>(d_indices);
+    auto indices = WriteOnlyAccessor<Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>>>(d_indices);
 
     const auto number_of_elements = domain->number_of_elements();
     indices.resize(number_of_elements);
@@ -45,7 +45,7 @@ void CaribouTopology<Element>::initializeFromIndices() {
     using namespace sofa::helper;
 
     // Sanity checks
-    auto indices = ReadAccessor<Data<vector<fixed_array<PointID, NumberOfNodes>>>>(d_indices);
+    auto indices = ReadAccessor<Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>>>(d_indices);
     if (indices.empty()) {
         msg_warning() << "Initializing the topology from an empty set of indices. Make sure you fill the "
                       << "'" << d_indices.getName() << "' data attribute with a vector of node indices.";

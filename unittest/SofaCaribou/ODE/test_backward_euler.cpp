@@ -149,7 +149,7 @@ TEST(BackwardEulerODESolver, Beam) {
         // Let's also validate the position of the node positioned at the center of the end-surface of the beam
         // (the surface where the traction is applied)
         const auto & middle_point = mo->read(sofa::core::ConstVecCoordId::position())->getValue()[76];
-        const auto  middle_point_solution = sofa::defaulttype::Vec3(middle_point_positions[step_id][0], middle_point_positions[step_id][1], middle_point_positions[step_id][2]);
+        const auto  middle_point_solution = sofa::type::Vec3(middle_point_positions[step_id][0], middle_point_positions[step_id][1], middle_point_positions[step_id][2]);
         const auto abs_err = (middle_point - middle_point_solution).norm();
         const auto rel_err = abs_err / middle_point_solution.norm();
 

@@ -37,7 +37,7 @@ auto CaribouForcefield<Hexahedron<Linear>>::templateName(const CaribouForcefield
 }
 
 template <>
-void CaribouForcefield<Hexahedron<Linear>>::triangulate_face(const Hexahedron < Linear> & e, const std::size_t & face_id, std::vector<sofa::defaulttype::Vector3> & triangles_nodes) {
+void CaribouForcefield<Hexahedron<Linear>>::triangulate_face(const Hexahedron < Linear> & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes) {
     const auto face_indices = e.boundary_elements_node_indices();
     auto triangle_1 = std::vector {e.node(face_indices[face_id][0]), e.node(face_indices[face_id][1]), e.node(face_indices[face_id][2])};
     auto triangle_2 = std::vector {e.node(face_indices[face_id][2]), e.node(face_indices[face_id][3]), e.node(face_indices[face_id][0])};
@@ -74,7 +74,7 @@ auto CaribouForcefield<Hexahedron<Quadratic>>::templateName(const CaribouForcefi
 }
 
 template <>
-void CaribouForcefield<Hexahedron<Quadratic>>::triangulate_face(const Hexahedron < Quadratic> & e, const std::size_t & face_id, std::vector<sofa::defaulttype::Vector3> & triangles_nodes) {
+void CaribouForcefield<Hexahedron<Quadratic>>::triangulate_face(const Hexahedron < Quadratic> & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes) {
     const auto face_indices = e.boundary_elements_node_indices();
     auto triangle_1 = std::vector {e.node(face_indices[face_id][0]), e.node(face_indices[face_id][1]), e.node(face_indices[face_id][2])};
     auto triangle_2 = std::vector {e.node(face_indices[face_id][2]), e.node(face_indices[face_id][3]), e.node(face_indices[face_id][0])};

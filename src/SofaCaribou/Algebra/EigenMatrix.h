@@ -107,10 +107,10 @@ public:
     }
 
     // Block operations on 3x3 and 2x2 sub-matrices
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3d & m) override { add_block<double, 3, 3>(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3f & m) override { add_block<float, 3, 3>(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2d & m) override { add_block<double, 2, 2>(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2f & m) override { add_block<float, 2, 2>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::type::Mat3x3d & m) override { add_block<double, 3, 3>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::type::Mat3x3f & m) override { add_block<float, 3, 3>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::type::Mat2x2d & m) override { add_block<double, 2, 2>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::type::Mat2x2f & m) override { add_block<float, 2, 2>(i, j, m);}
 
     /** Sets the entire row i to zero */
     inline void clearRow(Index i) final {
@@ -138,7 +138,7 @@ public:
 private:
 
     template <typename Scalar, unsigned int nrows, unsigned int ncols>
-    void add_block(Index i, Index j, const sofa::defaulttype::Mat<nrows, ncols, Scalar> & m) {
+    void add_block(Index i, Index j, const sofa::type::Mat<nrows, ncols, Scalar> & m) {
         const Eigen::Map<const Eigen::Matrix<Scalar, nrows, ncols, Eigen::RowMajor>> block(&(m[0][0]));
         p_eigen_matrix.block(i, j, nrows, ncols) += block. template cast<typename EigenType::Scalar>();
     }
@@ -267,10 +267,10 @@ public:
     }
 
     // Block operations on 3x3 and 2x2 sub-matrices
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3d & m) override { add_block<double, 3, 3>(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat3x3f & m) override { add_block<float, 3, 3>(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2d & m) override { add_block<double, 2, 2>(i, j, m);}
-    inline void add(Index i, Index j, const sofa::defaulttype::Mat2x2f & m) override { add_block<float, 2, 2>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::type::Mat3x3d & m) override { add_block<double, 3, 3>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::type::Mat3x3f & m) override { add_block<float, 3, 3>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::type::Mat2x2d & m) override { add_block<double, 2, 2>(i, j, m);}
+    inline void add(Index i, Index j, const sofa::type::Mat2x2f & m) override { add_block<float, 2, 2>(i, j, m);}
 
     /** Sets the entire row i to zero */
     inline void clearRow(Index row_id) final {
@@ -423,7 +423,7 @@ private:
      * Block addition with a NxC matrix
      */
     template <typename Scalar, unsigned int N, unsigned int C>
-    void add_block(Index i, Index j, const sofa::defaulttype::Mat<N, C, Scalar> & m) {
+    void add_block(Index i, Index j, const sofa::type::Mat<N, C, Scalar> & m) {
         using StorageIndex = typename Eigen::SparseMatrix<typename EigenType::Scalar>::StorageIndex;
         for (unsigned int k=0;k<N;++k) {
             for (unsigned int l=0;l<C;++l) {

@@ -131,7 +131,7 @@ public:
 private:
     // Data members
     Link<sofa::core::State<DataTypes>> d_state;
-    Data<sofa::helper::vector<sofa::helper::fixed_array<PointID, NumberOfNodes>>> d_indices;
+    Data<sofa::type::vector<sofa::type::fixed_array<PointID, NumberOfNodes>>> d_indices;
 
     /// Pointer to the Domain representing this topology of elements.
     const caribou::topology::Domain<Element, PointID> * p_domain {nullptr};
