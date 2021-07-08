@@ -1,0 +1,9 @@
+#pragma once
+
+#cmakedefine CARIBOU_VERSION_STR @CARIBOU_VERSION_STR@
+
+// We use version numbers based on the date: yy.mm.pp (year, month, patch).
+// - CARIBOU_VERSION / 10000 is the year number
+// - CARIBOU_VERSION / 100 % 100 is the month number
+// - CARIBOU_VERSION % 100 is the patch number
+#cmakedefine CARIBOU_VERSION @CARIBOU_VERSION_NUM@

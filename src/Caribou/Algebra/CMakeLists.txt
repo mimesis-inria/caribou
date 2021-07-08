@@ -1,23 +1,30 @@
-cmake_minimum_required(VERSION 3.1)
-project(Caribou.Algebra)
+project(Algebra)
 
 set(HEADER_FILES
-        Vector.h
-        Matrix.h
-        )
+    Tensor.h
+)
 
-set(TEMPLATE_FILES
-        Matrix.inl)
+find_package(Eigen3 QUIET REQUIRED)
 
-set(SOURCE_FILES
-        Algebra.cpp
-        )
+add_library(${PROJECT_NAME} INTERFACE)
+add_library(Caribou::Algebra ALIAS ${PROJECT_NAME})
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${TEMPLATE_FILES} ${SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen)
 
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
+# Add the target Algebra to the component of the same name. This will enable to do:
+# CMakeLists.txt
+#    find_package(Caribou COMPONENTS Algebra)
+#    add_library(my_cool_library SHARED)
+#    target_link_libraries(my_cool_library PRIVATE Caribou::Algebra)
+caribou_add_target_to_component (
+    TARGET_NAME    ${PROJECT_NAME}
+    COMPONENT_NAME ${PROJECT_NAME}
+    PACKAGE_NAME   Caribou
+    PUBLIC_HEADERS ${HEADER_FILES}
+)
 
-if (CARIBOU_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
+# This is required to be able to do "find_package(Caribou COMPONENTS Algebra)"
+caribou_add_component_to_package (
+    COMPONENT_NAME ${PROJECT_NAME}
+    PACKAGE_NAME   Caribou
+)

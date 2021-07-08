@@ -1,208 +1,181 @@
-#ifndef CARIBOU_GEOMETRY_SEGMENT_H
-#define CARIBOU_GEOMETRY_SEGMENT_H
+#pragma once
 
-#include <Caribou/Geometry/Point.h>
+#include <Caribou/config.h>
+#include <Caribou/Geometry/BaseSegment.h>
+#include <Eigen/Core>
 
-#ifdef CARIBOU_USE_DOUBLE
-#define FLOATING_POINT_TYPE double
-#else
-#define FLOATING_POINT_TYPE float
-#endif
+namespace caribou::geometry {
 
-namespace caribou
-{
-namespace geometry
-{
+template<UNSIGNED_INTEGER_TYPE _Dimension, UNSIGNED_INTEGER_TYPE _Order = Linear>
+struct Segment;
+
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+ struct traits<Segment <_Dimension, Linear>> {
+     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 1;
+     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
+     static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 2;
+     static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 1;
+ };
 
 /**
- * A segment (between 2 nodes) in space (independent of the space dimension).
- * @tparam TPoint The type of Point we want to use for our segment
+ * Linear segment
+ *
+ * \verbatim
+ * P1 : 0-----+-----1 --> u
+ * \endverbatim
+ *
+ * @tparam _Dimension The world coordinates dimension
  */
-template <size_t Dim>
-class Segment
-{
-public:
-    static constexpr size_t Dimension = Dim;
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct Segment <_Dimension, Linear> : public BaseSegment<Segment <_Dimension, Linear>> {
+    // Types
+    using Base = BaseSegment<Segment <_Dimension, Linear>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
 
-    using PointType = Point<Dimension>;
-    using VectorType = typename PointType::VectorType ;
+    using GaussNode = typename Base::GaussNode;
 
-    Segment() = default;
-    Segment(const PointType & p1, const PointType & p2) : nodes({p1, p2}){};
-    Segment(const Segment & s) {
-        std::copy(std::begin(s.nodes), std::end(s.nodes), std::begin(nodes));
-    }
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
 
-    /** Const accessor to the first node of the segment */
-    inline const PointType &
-    first_node () const
-    { return nodes[0]; }
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
 
-    /** Accessor to the first node of the segment */
-    inline PointType &
-    first_node ()
-    { return nodes[0]; }
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+    static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    /** Const accessor to the second node of the segment */
-    inline const PointType &
-    second_node () const
-    { return nodes[1]; }
-
-    /** Accessor to the second node of the segment */
-    inline PointType &
-    second_node ()
-    { return nodes[1]; }
-
-    /** Get the direction vector (from p1 to p2) **/
-    inline VectorType
-    direction() const
-    {
-        return second_node() - first_node();
-    }
-
-    /** Get the unit vector (aka normalized direction vector)  **/
-    inline VectorType
-    unit() const
-    {
-        VectorType dir = direction();
-        return dir / dir.length();
-    }
-
-    /** Get the reversed segment (from p2 to p1) **/
-    inline Segment<Dimension>
-    reversed() const
-    {
-        return Segment<Dimension>(second_node(), first_node());
-    }
-
-    /** Get the length of the segment **/
-    inline typename VectorType::ValueType
-    length() const
-    {
-        return direction().length();
-    }
-
-    /** Test if the segment contains the position x **/
-    inline bool
-    contains(const VectorType & x, FLOATING_POINT_TYPE tolerance = 0.00001 ) const
-    {
-        const auto & p0 = first_node();
-        const auto & p1 = second_node();
-
-        if (((x-p0)^(x-p1)).length_squared() > tolerance*tolerance) {
-            // The point isn't on the line made by the segment
-            return false;
+    // Constructors
+    using Base::Base;
+    Segment() : Base() {
+        if constexpr (Dimension == 1) {
+            this->p_nodes[0] = -1;
+            this->p_nodes[1] = +1;
+        } else if constexpr (Dimension == 2) {
+            this->p_nodes.row(0) = WorldCoordinates(-1, 0);
+            this->p_nodes.row(1) = WorldCoordinates(+1, 0);
+        } else {
+            this->p_nodes.row(0) = WorldCoordinates(-1, 0, 0);
+            this->p_nodes.row(1) = WorldCoordinates(+1, 0, 0);
         }
+    };
 
-        const auto c = (p1 - p0) * (x - p0);
-        if (c < 0 || c > (p1 - p0) * (p1 - p0)) {
-            // The point is on the line, but isn't between the two nodes of the segment
-            return false;
-        }
 
-        return true;
+private:
+    // Implementations
+    friend struct Element<Segment <_Dimension, Linear>>;
+    friend struct BaseSegment<Segment <_Dimension, Linear>>;
+    inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
+        const auto  & u = xi[0];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(1/2. * (1 - u)),
+            static_cast<FLOATING_POINT_TYPE>(1/2. * (1 + u))
+        };
+    };
+
+    inline auto get_dL(const LocalCoordinates & /*xi*/) const -> Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> {
+        return {
+            static_cast<FLOATING_POINT_TYPE>(-1/2.),
+            static_cast<FLOATING_POINT_TYPE>(+1/2.)
+        };
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        static std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(0), 2} // Node 0
+        };
+        return gauss_nodes;
     }
-
-    /**
-     * Assignment operator from an other segment (this = other;)
-     * @param other The other segment from which data we want to copy inside this one
-     * @return This segment
-     */
-    inline Segment &
-    operator=(const Segment<Dimension> & other)
-    {
-        // check for self-assignment
-        if(&other == this)
-            return *this;
-
-        std::copy(std::begin(other.nodes), std::end(other.nodes), std::begin(nodes));
-
-        return *this;
-    }
-
-    /**
-     * Equality operator (this == other)
-     * @param other The other segment against who we want to compare ourself
-     * @return True if other is equal to this segment, false otherwise
-     */
-    inline bool
-    operator==(const Segment & other) const
-    {
-        return (
-                std::equal(std::begin(nodes), std::end(nodes), std::begin(other.nodes))
-        );
-    }
-
-    /**
-     * see operator==
-     */
-    inline bool
-    operator!=(const Segment & other) const
-    {
-        return not (*this == other);
-    }
+};
 
 
-    /**
-     * Subscript operator (this[index])
-     * @param index The index (0 or 1) of the point we want to get
-     * @return A reference to the node at position index
-     */
-    inline PointType &
-    operator[] (std::size_t index)
-    {
-        return nodes[index];
-    }
-
-    /**
-     * Subscript operator (this[index])
-     * @param index The index (0 or 1) of the point we want to get
-     * @return A const reference to the node at position index
-     */
-    inline const PointType &
-    operator[] (std::size_t x) const
-    {
-        return nodes[x];
-    }
-
-    std::array<PointType, 2> nodes;
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct traits<Segment <_Dimension, Quadratic>> {
+    static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 1;
+    static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 3;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 2;
 };
 
 /**
- * Create a new segment between two points.
+ * Quadratic segment
  *
- * Example:
+ * \verbatim
+ * P2 : 0-----2-----1 --> u
+ * \endverbatim
  *
- * \code{.cpp}
- * auto p1 = make_point(0,0,0)
- * auto p2 = make_point(1,1,1)
- *
- * auto s1 = make_segment(p1, p2)
- * \endcode
- *
- * @tparam Dim The dimension of the point
- * @param p1 First node of the segment
- * @param p2 Second node of the segment
- *
- * @return A newly created segment between p1 and p2
+ * @tparam _Dimension The world coordinates dimension
  */
-template <size_t Dim>
-Segment<Dim> make_segment(const Point<Dim> & p1, const Point<Dim> & p2) {
-    return Segment<Dim>(p1, p2);
+template<UNSIGNED_INTEGER_TYPE _Dimension>
+struct Segment <_Dimension, Quadratic> : public BaseSegment<Segment <_Dimension, Quadratic>> {
+// Types
+    using Base = BaseSegment<Segment <_Dimension, Quadratic>>;
+    using LocalCoordinates = typename Base::LocalCoordinates;
+    using WorldCoordinates = typename Base::WorldCoordinates;
+
+    using GaussNode = typename Base::GaussNode;
+
+    template <UNSIGNED_INTEGER_TYPE Dim>
+    using Vector = typename Base::template Vector<Dim>;
+
+    template <UNSIGNED_INTEGER_TYPE Rows, UNSIGNED_INTEGER_TYPE Cols>
+    using Matrix = typename Base::template Matrix<Rows, Cols>;
+
+    // Constants
+    static constexpr auto CanonicalDimension = Base::CanonicalDimension;
+    static constexpr auto Dimension = Base::Dimension;
+    static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
+
+    // Constructors
+    using Base::Base;
+    Segment() : Base() {
+        if constexpr (Dimension == 1) {
+            this->p_nodes[0] = -1;
+            this->p_nodes[1] = +1;
+            this->p_nodes[2] =  0;
+        } else if constexpr (Dimension == 2) {
+            this->p_nodes.row(0) = WorldCoordinates(-1, 0);
+            this->p_nodes.row(1) = WorldCoordinates(+1, 0);
+            this->p_nodes.row(2) = WorldCoordinates( 0, 0);
+        } else {
+            this->p_nodes.row(0) = WorldCoordinates(-1, 0, 0);
+            this->p_nodes.row(1) = WorldCoordinates(+1, 0, 0);
+            this->p_nodes.row(2) = WorldCoordinates( 0, 0, 0);
+        }
+    };
+
+
+private:
+    // Implementations
+    friend struct Element<Segment <_Dimension, Quadratic>>;
+    friend struct BaseSegment<Segment <_Dimension, Quadratic>>;
+    inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
+        const auto  & u = xi[0];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(1/2. * u * (u - 1)),
+            static_cast<FLOATING_POINT_TYPE>(1/2. * u * (u + 1)),
+            static_cast<FLOATING_POINT_TYPE>(1 - (u * u))
+        };
+    };
+
+    inline auto get_dL(const LocalCoordinates & xi) const -> Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> {
+        const auto  & u = xi[0];
+        return {
+            static_cast<FLOATING_POINT_TYPE>(u - 1/2.),
+            static_cast<FLOATING_POINT_TYPE>(u + 1/2.),
+            static_cast<FLOATING_POINT_TYPE>( -2 * u )
+        };
+    };
+
+    inline auto get_gauss_nodes() const -> const auto & {
+        static std::vector<GaussNode> gauss_nodes {
+            GaussNode {LocalCoordinates(-1/sqrt(3)), 1}, // Node 0
+            GaussNode {LocalCoordinates(+1/sqrt(3)), 1}  // Node 1
+        };
+        return gauss_nodes;
+    }
+};
+
 }
-
-template<size_t N, typename ValueType>
-Segment<N>
-make_segment(ValueType const (&a1)[N], ValueType const (&a2)[N])
-{
-    Point <N> p1(a1);
-    Point <N> p2(a2);
-
-    return make_segment(p1, p2);
-}
-
-} // namespace geometry
-
-} // namespace caribou
-
-#endif //CARIBOU_GEOMETRY_SEGMENT_H

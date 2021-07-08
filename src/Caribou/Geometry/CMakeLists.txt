@@ -1,22 +1,45 @@
-cmake_minimum_required(VERSION 3.1)
-project(Caribou.Geometry)
+project(Geometry)
 
 set(HEADER_FILES
-        Point.h
-        )
+    BaseHexahedron.h
+    BaseQuad.h
+    BaseRectangularHexahedron.h
+    BaseRectangularQuad.h
+    BaseSegment.h
+    BaseTetrahedron.h
+    BaseTriangle.h
+    Element.h
+    Hexahedron.h
+    Quad.h
+    RectangularHexahedron.h
+    RectangularQuad.h
+    Segment.h
+    Tetrahedron.h
+    Triangle.h
+)
 
-set(SOURCE_FILES
-        )
+find_package(Eigen3 QUIET REQUIRED)
 
-#add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+add_library(${PROJECT_NAME} INTERFACE)
+add_library(Caribou::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-#target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/>")
-#target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
+target_link_libraries (${PROJECT_NAME} INTERFACE Caribou::Config)
+target_link_libraries (${PROJECT_NAME} INTERFACE Eigen3::Eigen)
 
-if (CARIBOU_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
+# Add the target Geometry to the component of the same name. This will enable to do:
+# CMakeLists.txt
+#    find_package(Caribou COMPONENTS Geometry)
+#    add_library(my_cool_library SHARED)
+#    target_link_libraries(my_cool_library PRIVATE Caribou::Geometry)
+caribou_add_target_to_component (
+    TARGET_NAME    ${PROJECT_NAME}
+    COMPONENT_NAME ${PROJECT_NAME}
+    PACKAGE_NAME   Caribou
+    PUBLIC_HEADERS ${HEADER_FILES}
+)
 
-if (CARIBOU_WITH_PYTHON_2 OR CARIBOU_WITH_PYTHON_3)
-    add_subdirectory(Python)
-endif()
+# This is required to be able to do "find_package(Caribou COMPONENTS Geometry)"
+caribou_add_component_to_package (
+    COMPONENT_NAME ${PROJECT_NAME}
+    PACKAGE_NAME   Caribou
+)

@@ -1,0 +1,20 @@
+#pragma once
+
+#include <Caribou/config.h>
+#include <sofa/config.h>
+
+#ifdef CARIBOU_BUILD_SOFACARIBOU
+#  define CARIBOU_TARGET SofaCaribou
+#  define CARIBOU_API SOFA_EXPORT_DYNAMIC_LIBRARY
+#else
+#  define CARIBOU_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#endif
+
+// Used to disable warnings on external project headers (MSVC only since gcc and clang already do it)
+#ifdef _MSC_VER
+#define DISABLE_ALL_WARNINGS_BEGIN __pragma(warning(push, 0))
+#define DISABLE_ALL_WARNINGS_END   __pragma(warning(pop))
+#else
+#define DISABLE_ALL_WARNINGS_BEGIN
+#define DISABLE_ALL_WARNINGS_END
+#endif
