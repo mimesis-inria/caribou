@@ -48,10 +48,10 @@ public:
     using Link = sofa::core::objectmodel::SingleLink<CaribouForcefield<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
     template<int nRows, int nColumns>
-    using Matrix = typename caribou::geometry::Element<Element>::template Matrix<nRows, nColumns>;
+    using Matrix =Eigen::Matrix<Real, nRows, nColumns, Eigen::RowMajor>;
 
     template<int nRows>
-    using Vector = typename caribou::geometry::Element<Element>::template Vector<nRows>;
+    using Vector = Eigen::Matrix<Real, nRows, 1>;
 
     // Constant properties
     static constexpr INTEGER_TYPE Dimension = caribou::geometry::traits<Element>::Dimension;

@@ -20,15 +20,15 @@
 namespace sofa { using Index = unsigned int; }
 #endif
 
-namespace SofaCaribou::forcefield {
+namespace SofaCaribou::benchmark::forcefield {
 
 template <typename Element>
-class HyperelasticForcefield : public CaribouForcefield<Element> {
+class HyperelasticForcefieldRecomputeF : public ::SofaCaribou::forcefield::CaribouForcefield<Element> {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(HyperelasticForcefield, Element), SOFA_TEMPLATE(CaribouForcefield, Element));
+    SOFA_CLASS(SOFA_TEMPLATE(HyperelasticForcefieldRecomputeF, Element), SOFA_TEMPLATE(::SofaCaribou::forcefield::CaribouForcefield, Element));
 
     // Type definitions
-    using Inherit  = CaribouForcefield<Element>;
+    using Inherit  = ::SofaCaribou::forcefield::CaribouForcefield<Element>;
     using DataTypes = typename Inherit::DataTypes;
     using VecCoord  = typename DataTypes::VecCoord;
     using VecDeriv  = typename DataTypes::VecDeriv;
@@ -50,7 +50,7 @@ public:
     using Vec3   = Vector<3>;
 
     template <typename ObjectType>
-    using Link = sofa::core::objectmodel::SingleLink<HyperelasticForcefield<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
+    using Link = sofa::core::objectmodel::SingleLink<HyperelasticForcefieldRecomputeF<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
     // Data structures
     struct GaussNode {
@@ -70,7 +70,7 @@ public:
     // Public methods
 
     CARIBOU_API
-    HyperelasticForcefield();
+    HyperelasticForcefieldRecomputeF();
 
     CARIBOU_API
     void init() override;
@@ -156,7 +156,7 @@ public:
     auto cond() -> Real;
 
     /**
-     *  Assemble the stiffness matrix K.
+     *  Update the stiffness matrix K for every elements.
      *
      *  Since the stiffness matrix is function of the position vector x, i.e. K(x), this method will
      *  use the mechanical state vector used in the last call to addForce (usually Position or FreePosition).
@@ -166,10 +166,10 @@ public:
      *  obtained using the method K().
      *
      */
-    virtual void assemble_stiffness();
+    virtual void update_stiffness();
 
     /**
-     *  Assemble the stiffness matrix K.
+     *  Update the stiffness matrix K for every elements.
      *
      *  Since the stiffness matrix is function of the position vector x, i.e. K(x), this method will
      *  use the data vector x passed as parameter. If the
@@ -178,20 +178,7 @@ public:
      *  obtained using the method K().
      *
      */
-    virtual void assemble_stiffness(const sofa::core::objectmodel::Data<VecCoord> & x);
-
-    /**
-     *  Assemble the stiffness matrix K.
-     *
-     *  Since the stiffness matrix is function of the position vector x, i.e. K(x), this method will
-     *  use the position vector x passed as a Eigen matrix nx3 parameter with n the number of nodes.
-     *
-     *  A reference to the assembled stiffness matrix K as a column major sparse matrix can be later
-     *  obtained using the method K().
-     *
-     */
-     template <typename Derived>
-    void assemble_stiffness(const Eigen::MatrixBase<Derived> & x);
+    virtual void update_stiffness(const sofa::core::objectmodel::Data<VecCoord> & x);
 
 private:
 
@@ -219,4 +206,4 @@ private:
     bool eigenvalues_are_up_to_date = false;
 };
 
-} // namespace SofaCaribou::forcefield
+} // namespace SofaCaribou::benchmark::forcefield

@@ -25,6 +25,10 @@ set(PYTHON_FILES
     __init__.py
 )
 
+set(PYTHON_TEST_FILES
+    pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
+)
+
 find_package(SofaPython3 REQUIRED)
 caribou_add_python_module(SofaCaribou
                           TARGET_NAME       ${PROJECT_NAME}

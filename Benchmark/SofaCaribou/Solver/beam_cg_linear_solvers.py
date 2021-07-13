@@ -101,6 +101,7 @@ def extract_newton_steps(record):
         newton_steps.append(data)
     return newton_steps
 
+
 def pretty_print_methods(methods, number_format='{:.3f}'):
     if len(methods) == 0:
         return

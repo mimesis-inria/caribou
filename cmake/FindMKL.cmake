@@ -88,8 +88,6 @@ if (MKL_INCLUDE_DIR)
     set(MKL_ROOT "${MKL_INCLUDE_DIR}/..")
 endif()
 
-message(STATUS "MKL WAS FOUND AT ${MKL_ROOT}")
-
 # This is where the different MKL libraries will be searched for
 list( APPEND _MKL_LIBRARY_SEARCH_DIRECTORIES
         ${MKL_ROOT}/lib
