@@ -84,6 +84,14 @@ elseif(NOT GTest_FOUND AND NOT GMock_FOUND)
     message(STATUS "Caribou without unittests (missing GTest)")
 endif()
 
+# Benchmarks
+OPTION(CARIBOU_BUILD_BENCHMARKS "Compile the benchmarks for Caribou." ON)
+if (CARIBOU_BUILD_BENCHMARKS)
+    message(STATUS "Caribou with benchmarks")
+else()
+    message(STATUS "Caribou without benchmarks")
+endif()
+
 # Python 3 option
 find_package(SofaPython3 QUIET)
 set(CMAKE_CXX_STANDARD 17)
@@ -210,6 +218,10 @@ endif()
 
 if (CARIBOU_BUILD_TESTS)
     add_subdirectory(unittest)
+endif()
+
+if (CARIBOU_BUILD_BENCHMARKS)
+    add_subdirectory(Benchmark)
 endif()
 
 install(

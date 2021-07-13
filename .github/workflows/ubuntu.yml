@@ -107,7 +107,7 @@ jobs:
                apt-get update
                apt-get -qq --no-install-recommends install \
                   libgl1-mesa-glx libglib2.0-0 libglx0 libopengl0 libharfbuzz0b libgomp1 curl ca-certificates unzip
-               python -m pip install numpy meshio
+               python -m pip install numpy meshio scipy
 
       - name: Install SOFA
         run: |
@@ -169,3 +169,9 @@ jobs:
         run: |
             [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
             $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
+
+      - name: SofaCaribou.PyTest
+        if: ${{ matrix.sofa_version == 'v20.12.02' }}
+        run: |
+            export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
+            python3 $CARIBOU_ROOT/bin/pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py

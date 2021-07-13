@@ -20,15 +20,15 @@
 namespace sofa { using Index = unsigned int; }
 #endif
 
-namespace SofaCaribou::forcefield {
+namespace SofaCaribou::benchmark::forcefield {
 
 template <typename Element>
-class HyperelasticForcefield : public CaribouForcefield<Element> {
+class HyperelasticForcefieldStoreF : public ::SofaCaribou::forcefield::CaribouForcefield<Element> {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(HyperelasticForcefield, Element), SOFA_TEMPLATE(CaribouForcefield, Element));
+    SOFA_CLASS(SOFA_TEMPLATE(HyperelasticForcefieldStoreF, Element), SOFA_TEMPLATE(::SofaCaribou::forcefield::CaribouForcefield, Element));
 
     // Type definitions
-    using Inherit  = CaribouForcefield<Element>;
+    using Inherit  = ::SofaCaribou::forcefield::CaribouForcefield<Element>;
     using DataTypes = typename Inherit::DataTypes;
     using VecCoord  = typename DataTypes::VecCoord;
     using VecDeriv  = typename DataTypes::VecDeriv;
@@ -50,13 +50,14 @@ public:
     using Vec3   = Vector<3>;
 
     template <typename ObjectType>
-    using Link = sofa::core::objectmodel::SingleLink<HyperelasticForcefield<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
+    using Link = sofa::core::objectmodel::SingleLink<HyperelasticForcefieldStoreF<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
     // Data structures
     struct GaussNode {
-        Real weight;
-        Real jacobian_determinant;
-        Matrix<NumberOfNodesPerElement, Dimension> dN_dx;
+        Real weight; /* 8 */
+        Real jacobian_determinant; /* 8 */
+        Matrix<NumberOfNodesPerElement, Dimension> dN_dx; /* 8 * 3 * 8 = 192 */
+        Mat33 F = Mat33::Identity(); // Deformation gradient /* 3*3*8 = 72 */
     };
 
     // The container of Gauss points (for each elements) is an array if the number of integration
@@ -70,7 +71,7 @@ public:
     // Public methods
 
     CARIBOU_API
-    HyperelasticForcefield();
+    HyperelasticForcefieldStoreF();
 
     CARIBOU_API
     void init() override;
@@ -100,7 +101,7 @@ public:
     void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
     /** Get the set of Gauss integration nodes of an element */
-    inline auto gauss_nodes_of(std::size_t element_id) const -> const auto & {
+    auto gauss_nodes_of(std::size_t element_id) const -> const auto & {
         return p_elements_quadrature_nodes[element_id];
     }
 
@@ -156,7 +157,7 @@ public:
     auto cond() -> Real;
 
     /**
-     *  Assemble the stiffness matrix K.
+     *  Update the stiffness matrix K for every elements.
      *
      *  Since the stiffness matrix is function of the position vector x, i.e. K(x), this method will
      *  use the mechanical state vector used in the last call to addForce (usually Position or FreePosition).
@@ -166,10 +167,10 @@ public:
      *  obtained using the method K().
      *
      */
-    virtual void assemble_stiffness();
+    virtual void update_stiffness();
 
     /**
-     *  Assemble the stiffness matrix K.
+     *  Update the stiffness matrix K for every elements.
      *
      *  Since the stiffness matrix is function of the position vector x, i.e. K(x), this method will
      *  use the data vector x passed as parameter. If the
@@ -178,20 +179,7 @@ public:
      *  obtained using the method K().
      *
      */
-    virtual void assemble_stiffness(const sofa::core::objectmodel::Data<VecCoord> & x);
-
-    /**
-     *  Assemble the stiffness matrix K.
-     *
-     *  Since the stiffness matrix is function of the position vector x, i.e. K(x), this method will
-     *  use the position vector x passed as a Eigen matrix nx3 parameter with n the number of nodes.
-     *
-     *  A reference to the assembled stiffness matrix K as a column major sparse matrix can be later
-     *  obtained using the method K().
-     *
-     */
-     template <typename Derived>
-    void assemble_stiffness(const Eigen::MatrixBase<Derived> & x);
+    virtual void update_stiffness(const sofa::core::objectmodel::Data<VecCoord> & x);
 
 private:
 
@@ -219,4 +207,4 @@ private:
     bool eigenvalues_are_up_to_date = false;
 };
 
-} // namespace SofaCaribou::forcefield
+} // namespace SofaCaribou::benchmark::forcefield
