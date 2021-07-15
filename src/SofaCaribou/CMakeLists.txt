@@ -1,4 +1,4 @@
-project(SofaCaribou VERSION 20.12.00)
+project(SofaCaribou)
 
 set(HEADER_FILES
     config.h.in
@@ -114,6 +114,11 @@ find_package(SOFA COMPONENTS SofaFramework SofaBaseLinearSolver SofaBaseTopology
 
 # Optional packages
 find_package(Eigen3 QUIET REQUIRED)
+
+# Bugged dependencies
+if (macos)
+    find_package(Boost COMPONENTS system QUIET) # Bug introduced in SOFA v21.06 where this dependencies isn't propagated
+endif()
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
 add_library(Caribou::Plugin ALIAS ${PROJECT_NAME})
