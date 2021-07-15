@@ -1,4 +1,4 @@
-project(SofaCaribou VERSION 20.12.00)
+project(SofaCaribou)
 
 set(HEADER_FILES
     config.h.in

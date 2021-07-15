@@ -15,7 +15,7 @@ jobs:
     container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
     strategy:
       matrix:
-        sofa_version: [ v20.06.01, v20.12.02, master ]
+        sofa_version: [ v20.06.01, v20.12.03, v21.06.00, master ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -38,6 +38,13 @@ jobs:
               unzip sofa.zip -d temp
               mv temp/`ls temp` $SOFA_ROOT
           fi
+
+      - name: pybind11
+        if: ${{ matrix.sofa_version == 'v21.06.00' }}
+        run: |
+          git clone --depth 1 -b v2.6  https://github.com/pybind/pybind11.git /tmp/pybind11
+          cmake -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --install /tmp/pybind11/build
 
       - name: Get Time
         id: time
@@ -90,7 +97,7 @@ jobs:
     container: ubuntu:20.04
     strategy:
       matrix:
-        sofa_version: [ v20.06.01, v20.12.02, master ]
+        sofa_version: [ v20.06.01, v20.12.03, v21.06.00, master ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -171,7 +178,7 @@ jobs:
             $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
 
       - name: SofaCaribou.PyTest
-        if: ${{ matrix.sofa_version == 'v20.12.02' }}
+        if: ${{ matrix.sofa_version == 'v20.12.03' || matrix.sofa_version == 'v21.06.00' }}
         run: |
             export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
             python3 $CARIBOU_ROOT/bin/pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py

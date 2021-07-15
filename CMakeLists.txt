@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(Caribou VERSION 20.12.99)
+project(Caribou VERSION 21.06.00)
 
 # Policies
 cmake_policy(SET CMP0072 NEW)

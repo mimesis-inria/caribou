@@ -15,11 +15,11 @@ DISABLE_ALL_WARNINGS_END
 #include <Caribou/Geometry/Element.h>
 #include <Caribou/Topology/Mesh.h>
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
 namespace sofa { using Index = unsigned int; }
 #endif
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
 namespace sofa::type { using Vector3 = ::sofa::defaulttype::Vector3; }
 #endif
 
