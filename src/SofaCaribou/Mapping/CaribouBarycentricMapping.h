@@ -63,7 +63,7 @@ public:
     }
 
     static auto templateName(const CaribouBarycentricMapping<Element, MappedDataTypes>* = nullptr) -> std::string {
-        return SofaCaribou::topology::CaribouTopology<Element>::templateName();
+        return SofaCaribou::topology::CaribouTopology<Element>::templateName() + "," + MappedDataTypes::Name();
     }
 
     template <typename Derived>

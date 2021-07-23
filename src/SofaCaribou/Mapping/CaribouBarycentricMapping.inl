@@ -21,6 +21,12 @@ using Vector3 = ::sofa::defaulttype::Vector3;
 
 namespace SofaCaribou::mapping {
 
+namespace {
+template <typename T> struct is_rigid_types {static constexpr bool value = false;};
+template <sofa::Size N, typename real> struct is_rigid_types<sofa::defaulttype::StdRigidTypes<N, real>> {static constexpr bool value = true;};
+template <typename T> static constexpr auto is_rigid_types_v = is_rigid_types<T>::value;
+}
+
 template<typename Element, typename MappedDataTypes>
 CaribouBarycentricMapping<Element, MappedDataTypes>::CaribouBarycentricMapping()
 : d_topology(initLink("topology", "Topology that contains the embedding (parent) elements."))
@@ -57,6 +63,9 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::init() {
         // We got one, use it
         d_topology.set(topology);
         msg_info() << "Topology automatically found at '" << topology->getPathName() << "'";
+    } else if (not d_topology.get()) {
+        msg_error() << "The '" << d_topology.getName() << "' data field does not point towards a valid topology container.";
+        return;
     }
 
     // Quick sanity checks
@@ -155,49 +164,40 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
                     MappedDimension
             );
 
-    const auto & barycentric_points = p_barycentric_container->barycentric_points();
-    const auto * domain = d_topology->domain();
+    if constexpr (is_rigid_types_v<MappedDataTypes>) {
+        const auto & barycentric_points = p_barycentric_container->barycentric_points();
+        const auto nb_of_barycentric_points = barycentric_points.size();
 
-    for (std::size_t i = 0; i < barycentric_points.size(); ++i) {
+        for (std::size_t i = 0; i <nb_of_barycentric_points; ++i) {
             const auto & bp = barycentric_points[i];
 
-            const auto & element_index = bp.element_index; 
+            const auto & element_index = bp.element_index;
             const auto & local_coordinates = bp.local_coordinates;
             const auto elem = d_topology->element(element_index, data_input_position);
-            
-    
-            const auto new_positions = elem.world_coordinates(local_coordinates);
-            
-            auto rotation = elem.frame(local_coordinates);
 
-            std::cout << rotation << std::endl;
-            std::cout << new_positions << std::endl;
+
+            const auto new_positions = elem.world_coordinates(local_coordinates);
+
+            auto rotation = elem.frame(local_coordinates);
 
             Eigen::Quaterniond q;
             q = rotation;
 
-            std::cout << q.x() << std::endl;
-            std::cout << q.y() << std::endl;
-            std::cout << q.z() << std::endl;
-            std::cout << q.w() << std::endl;
-            if constexpr(std::is_same_v<MappedDataTypes, sofa::defaulttype::Vec3Types>) {
-                mapped_positions(i, 0) = new_positions[0];
-                mapped_positions(i, 1) = new_positions[1];
-                mapped_positions(i, 2) = new_positions[2];
-            } else if constexpr(std::is_same_v<MappedDataTypes, sofa::defaulttype::RigidTypes>) {
-                mapped_positions(i, 0) = new_positions[0];
-                mapped_positions(i, 1) = new_positions[1];
-                mapped_positions(i, 2) = new_positions[2];
-                mapped_positions(i, 3) = q.x();
-                mapped_positions(i, 4) = q.y();
-                mapped_positions(i, 5) = q.z();
-                mapped_positions(i, 6) = q.w();
+            // Coordinates part of the DOFs
+            for (std::size_t j = 0; j < Dimension; ++j) {
+                mapped_positions(i, j) = new_positions[j];
             }
-            std::cout << mapped_positions << std::endl;
 
+            // Rotation part of the DOFs
+            mapped_positions(i, Dimension+0) = q.x();
+            mapped_positions(i, Dimension+1) = q.y();
+            mapped_positions(i, Dimension+2) = q.z();
+            mapped_positions(i, Dimension+3) = q.w();
+        }
+    } else {
+        // Interpolate the parent positions onto the mapped nodes
+        p_barycentric_container->interpolate(positions, mapped_positions);
     }
-    // Interpolate the parent positions onto the mapped nodes
-    p_barycentric_container->interpolate(positions, mapped_positions);
 }
 
 
@@ -350,19 +350,49 @@ auto CaribouBarycentricMapping<Element, MappedDataTypes>::canCreate(Derived * o,
     using namespace sofa::core::objectmodel;
     using CaribouTopology = SofaCaribou::topology::CaribouTopology<Element>;
 
-    std::string requested_element_type = arg->getAttribute( "template", "");
-    std::string this_element_type = Derived::templateName(o);
+    std::string requested_template = arg->getAttribute( "template", "");
+    std::string this_template = Derived::templateName(o);
 
-    
-    
-    // to lower
-    std::string requested_element_type_lower = requested_element_type, this_element_type_lower = this_element_type;
-    std::transform(requested_element_type.begin(), requested_element_type.end(), requested_element_type_lower.begin(), [](unsigned char c){ return std::tolower(c); });
-    std::transform(this_element_type.begin(), this_element_type.end(), this_element_type_lower.begin(), [](unsigned char c){ return std::tolower(c); });
-    
+    // Multiple spaces to one space
+    auto trim_spaces = [](std::string str) {
+        std::string::iterator new_end =
+                std::unique(str.begin(), str.end(),
+                            [=](char lhs, char rhs){ return (lhs == rhs) && (lhs == ' '); }
+                );
+        str.erase(new_end, str.end());
+        return str;
+    };
+
+    // To lower case
+    auto to_lower = [](std::string str) {
+        std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c){ return std::tolower(c); });
+        return str;
+    };
+
+    // Replace space for comma
+    auto space_to_coma = [](std::string str) {
+        std::replace(str.begin(), str.end(), ' ', ',');
+        return str;
+    };
+
+    // Split comas to vectors
+    auto split = [](std::string str) {
+        std::stringstream ss(str);
+        std::string item;
+        std::vector<std::string> elems;
+        while (std::getline(ss, item, ',')) {
+             elems.push_back(std::move(item));
+        }
+        return elems;
+    };
+
+    const auto parsed_requested_template = split(to_lower(space_to_coma(trim_spaces(requested_template))));
+    const auto parsed_this_template      = split(to_lower(space_to_coma(trim_spaces(requested_template))));
+    const std::string requested_element_type = parsed_requested_template.empty() ? "" : parsed_requested_template[0];
+    const std::string this_element_type      = parsed_this_template.empty() ? "" : parsed_this_template[0];
+
     // Simplest case, the user set the template argument and it is equal to this template specialization
-    if (requested_element_type_lower == this_element_type_lower) {
-        std::cout << std::endl <<"Debug" << std::endl;
+    if (requested_element_type == this_element_type) {
         return Inherit1::canCreate(o, context, arg);
     }
     
@@ -381,7 +411,7 @@ auto CaribouBarycentricMapping<Element, MappedDataTypes>::canCreate(Derived * o,
     
     if (not topology_path.empty()) {
         topology_path = topology_path.substr(1); // removes the "@"
-        auto topology = context->getRootContext()->get<CaribouTopology>(topology_path);
+        auto topology = context->get<CaribouTopology>(topology_path);
         if (not topology) {
             arg->logError("The element type of the given topology '" + topology_path + "' is not '"+this_element_type+"'.");
             return false;
