@@ -328,8 +328,13 @@ auto CaribouBarycentricMapping<Element, MappedDataTypes>::canCreate(Derived * o,
     std::string topology_path = arg->getAttribute("topology", "");
     if (not topology_path.empty()) {
         topology_path = topology_path.substr(1); // removes the "@"
-        auto topology = context->getRootContext()->get<CaribouTopology>(topology_path);
+        auto topology = context->get<sofa::core::objectmodel::BaseObject>(topology_path);
         if (not topology) {
+            arg->logError("The given path to a topology '" + topology_path + "' does not point to a valid component.");
+            return false;
+        }
+
+        if (not dynamic_cast<const CaribouTopology *>(topology)) {
             arg->logError("The element type of the given topology '" + topology_path + "' is not '"+this_element_type+"'.");
             return false;
         }
