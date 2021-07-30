@@ -13,6 +13,7 @@ jobs:
     name: Building with ${{ matrix.sofa_version }}
     runs-on: macos-10.15
     strategy:
+      fail-fast: false
       matrix:
         sofa_version: [ v20.06.01, v20.12.02, master ]
     env:
@@ -92,7 +93,7 @@ jobs:
       - name: Download SOFA Release
         run:  |
           if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastSuccessfulBuild/CI_SCOPE=binaries_standard/artifact/MacOS/*zip*/MacOS.zip"
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_BRANCH=master,CI_SCOPE=standard/artifact/MacOS/*zip*/MacOS.zip"
           else
               curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_MacOS.zip"
           fi
