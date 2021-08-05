@@ -49,6 +49,15 @@ list(APPEND target_rpath
     "$ORIGIN/../../../lib"
     "@executable_path/../lib"
     "@executable_path/../../../lib"
+    # SofaMiscForceField
+    "$ORIGIN/../../../plugins/SofaMiscForceField/lib"
+    "@executable_path/../../../plugins/SofaMiscForceField/lib"
+    # SofaMiscTopology
+    "$ORIGIN/../../../plugins/SofaMiscTopology/lib"
+    "@executable_path/../../../plugins/SofaMiscTopology/lib"
+    # SofaDeformable
+    "$ORIGIN/../../../plugins/SofaDeformable/lib"
+    "@executable_path/../../../plugins/SofaDeformable/lib"
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${target_rpath}" )

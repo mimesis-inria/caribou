@@ -35,12 +35,9 @@ TEST(CaribouMass, LinearTetrahedron) {
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
 #if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine SofaTopologyMapping"}});
 #else
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
-#endif
-#if (defined(SOFA_VERSION) && SOFA_VERSION > 201299)
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
 #endif
 
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
@@ -153,12 +150,9 @@ TEST(CaribouMass, LinearHexahedron) {
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
 #if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine SofaTopologyMapping"}});
 #else
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
-#endif
-#if (defined(SOFA_VERSION) && SOFA_VERSION > 201299)
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
 #endif
 
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
