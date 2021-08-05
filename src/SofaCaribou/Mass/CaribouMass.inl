@@ -245,7 +245,7 @@ void CaribouMass<Element>::assemble_mass_matrix(const Eigen::MatrixBase<Derived>
 
                     // The 3x3 sub-matrix Mij is diagonal
                     Me.template block<3, 3>(i*Dimension, j*Dimension)
-                      .template diagonal()
+                      .template diagonal<0>()
                       += Vector<3>::Constant(density*Ni*Nj*w*detJ);
                 }
             }
