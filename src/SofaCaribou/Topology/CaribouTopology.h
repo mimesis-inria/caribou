@@ -138,6 +138,31 @@ public:
      *       with respect to the position vector of the mechanical state.
      */
     void initializeFromIndices();
+
+    /**
+     * Return true if the SOFA mesh topology is compatible with the type Element of this component.
+     *
+     * This method can be used when we wish to make sure a SOFA topology (such as a topology container or mesh topology)
+     * is compatible with this topology, i.e. it can be used to populate its topology indices vector.
+     *
+     * This method should be template specialized for every Element type.
+     */
+    inline
+    static auto mesh_is_compatible(const sofa::core::topology::BaseMeshTopology *) -> bool {
+        return false;
+    }
+
+    /**
+     * Return a pointer to the Data member containing the indices vector of the given SOFA topology. For example,
+     * passing an HexahedronSetTopologyContainer as the arguement will return its "hexahedra" data.
+     *
+     * This method should be template specialized for every Element type.
+     */
+    inline
+    static auto get_indices_data_from(const sofa::core::topology::BaseMeshTopology *) -> sofa::core::objectmodel::BaseData * {
+        return nullptr;
+    }
+
 private:
     // Data members
 

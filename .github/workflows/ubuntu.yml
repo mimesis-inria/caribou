@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-20.04
     container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
     strategy:
+      fail-fast: false
       matrix:
         sofa_version: [ v20.06.01, v20.12.02, master ]
     env:
@@ -27,7 +28,7 @@ jobs:
       - name: Download SOFA Release
         run:  |
           if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastSuccessfulBuild/CI_SCOPE=binaries_standard/artifact/Linux/*zip*/Linux.zip"
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_BRANCH=master,CI_SCOPE=standard/artifact/Linux/*zip*/Linux.zip"
               unzip sofa.zip -d temp
               mv temp/Linux/`ls temp/Linux` sofa.zip 
               rm -rf temp
@@ -89,6 +90,7 @@ jobs:
     runs-on: ubuntu-20.04
     container: ubuntu:20.04
     strategy:
+      fail-fast: false
       matrix:
         sofa_version: [ v20.06.01, v20.12.02, master ]
     env:
@@ -112,7 +114,7 @@ jobs:
       - name: Install SOFA
         run: |
           if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastSuccessfulBuild/CI_SCOPE=binaries_standard/artifact/Linux/*zip*/Linux.zip"
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_BRANCH=master,CI_SCOPE=standard/artifact/Linux/*zip*/Linux.zip"
               unzip sofa.zip -d temp
               mv temp/Linux/`ls temp/Linux` sofa.zip 
               rm -rf temp

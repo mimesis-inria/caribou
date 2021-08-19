@@ -4,13 +4,10 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <SofaBaseTopology/QuadSetTopologyContainer.h>
 DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
-using namespace sofa::core::topology;
 using namespace sofa::core::objectmodel;
-using namespace sofa::component::topology;
 using namespace caribou::geometry;
 using namespace caribou;
 
@@ -21,18 +18,6 @@ namespace SofaCaribou::forcefield {
 // --------------------------------
 
 // 2D
-
-template <>
-auto CaribouForcefield<Quad<_2D, Linear>>::get_indices_from(const sofa::core::topology::BaseMeshTopology * topology) -> BaseData * {
-    return topology->findData("quads");
-}
-
-template <>
-auto CaribouForcefield<Quad<_2D, Linear>>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
-    return (
-            dynamic_cast<const QuadSetTopologyContainer*>(topology) != nullptr
-    );
-}
 
 template <>
 auto CaribouForcefield<Quad<_2D, Linear>>::templateName(const CaribouForcefield<Quad<_2D, Linear>> *) -> std::string {
@@ -55,18 +40,6 @@ void CaribouForcefield<Quad<_2D, Linear>>::triangulate_face(const Quad<_2D, Line
 template class CaribouForcefield<Quad<_2D, Linear>>;
 
 // 3D
-
-template <>
-auto CaribouForcefield<Quad<_3D, Linear>>::get_indices_from(const sofa::core::topology::BaseMeshTopology * topology) -> BaseData * {
-    return topology->findData("quads");
-}
-
-template <>
-auto CaribouForcefield<Quad<_3D, Linear>>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
-    return (
-            dynamic_cast<const QuadSetTopologyContainer*>(topology) != nullptr
-    );
-}
 
 template <>
 auto CaribouForcefield<Quad<_3D, Linear>>::templateName(const CaribouForcefield<Quad<_3D, Linear>> *) -> std::string {
@@ -95,18 +68,6 @@ template class CaribouForcefield<Quad<_3D, Linear>>;
 // 2D
 
 template <>
-auto CaribouForcefield<Quad<_2D, Quadratic>>::get_indices_from(const sofa::core::topology::BaseMeshTopology * /*topology*/) -> BaseData * {
-    // We cannot create a quadratic topology from a linear one
-    return nullptr;
-}
-
-template <>
-auto CaribouForcefield<Quad<_2D, Quadratic>>::mesh_is_compatible(const BaseMeshTopology * /*topology*/) -> bool {
-    // We cannot create a quadratic topology from a linear one
-    return false;
-}
-
-template <>
 auto CaribouForcefield<Quad<_2D, Quadratic>>::templateName(const CaribouForcefield<Quad<_2D, Quadratic>> *) -> std::string {
     return SofaCaribou::topology::CaribouTopology<Quad<_2D, Quadratic>>::templateName();
 }
@@ -127,18 +88,6 @@ void CaribouForcefield<Quad<_2D, Quadratic>>::triangulate_face(const Quad<_2D, Q
 template class CaribouForcefield<Quad<_2D, Quadratic>>;
 
 // 3D
-
-template <>
-auto CaribouForcefield<Quad<_3D, Quadratic>>::get_indices_from(const sofa::core::topology::BaseMeshTopology * /*topology*/) -> BaseData * {
-    // We cannot create a quadratic topology from a linear one
-    return nullptr;
-}
-
-template <>
-auto CaribouForcefield<Quad<_3D, Quadratic>>::mesh_is_compatible(const BaseMeshTopology * /*topology*/) -> bool {
-    // We cannot create a quadratic topology from a linear one
-    return false;
-}
 
 template <>
 auto CaribouForcefield<Quad<_3D, Quadratic>>::templateName(const CaribouForcefield<Quad<_3D, Quadratic>> *) -> std::string {

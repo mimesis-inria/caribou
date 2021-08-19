@@ -3,13 +3,10 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <SofaBaseTopology/TetrahedronSetTopologyContainer.h>
 DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
-using namespace sofa::core::topology;
 using namespace sofa::core::objectmodel;
-using namespace sofa::component::topology;
 using namespace caribou::geometry;
 using namespace caribou;
 
@@ -18,19 +15,6 @@ namespace SofaCaribou::forcefield {
 // --------------------------------
 // Tetrahedron linear specialization
 // --------------------------------
-
-template <>
-auto CaribouForcefield<Tetrahedron<Linear>>::get_indices_from(const sofa::core::topology::BaseMeshTopology * topology) -> BaseData * {
-    return topology->findData("tetrahedra");
-}
-
-template <>
-auto CaribouForcefield<Tetrahedron<Linear>>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
-    return (
-            dynamic_cast<const TetrahedronSetTopologyContainer*>(topology) != nullptr
-    );
-}
-
 template <>
 auto CaribouForcefield<Tetrahedron<Linear>>::templateName(const CaribouForcefield<Tetrahedron<Linear>> *) -> std::string {
     return SofaCaribou::topology::CaribouTopology<Tetrahedron<Linear>>::templateName();
@@ -51,18 +35,6 @@ template class CaribouForcefield<Tetrahedron < Linear>>;
 // -----------------------------------
 // Tetrahedron quadratic specialization
 // -----------------------------------
-
-template <>
-auto CaribouForcefield<Tetrahedron<Quadratic>>::get_indices_from(const sofa::core::topology::BaseMeshTopology *) -> BaseData * {
-    // We cannot create a quadratic topology from a linear one
-    return nullptr;
-}
-
-template <>
-auto CaribouForcefield<Tetrahedron<Quadratic>>::mesh_is_compatible(const BaseMeshTopology *) -> bool {
-    // We cannot create a quadratic topology from a linear one
-    return false;
-}
 
 template <>
 auto CaribouForcefield<Tetrahedron<Quadratic>>::templateName(const CaribouForcefield<Tetrahedron<Quadratic>> *) -> std::string {

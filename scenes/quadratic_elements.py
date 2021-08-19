@@ -27,7 +27,7 @@ def createScene(root):
     root.addChild("tet10")
     root.tet10.addObject('MechanicalObject', name='mo', position=beam_p2.points.tolist(), showObject=True, showObjectScale=5)
     root.tet10.addObject('CaribouTopology', name='volumetric_topology', template='Tetrahedron10', indices=beam_p2.cells_dict['tetra10'].tolist())
-    root.tet10.addObject('UniformMass', totalMass=18000*mass_density)  # Volume is 15x15x80 = 18000
+    root.tet10.addObject('CaribouMass', density=mass_density, lumped=True, topology='@volumetric_topology')
     root.tet10.addObject('SaintVenantKirchhoffMaterial', young_modulus=young_modulus, poisson_ratio=poisson_ratio)
     root.tet10.addObject('HyperelasticForcefield', printLog=True)
     root.tet10.addObject('BoxROI', name='fixed_roi', box=[-7.5, -7.5, -0.9, 7.5, 7.5, 0.1])

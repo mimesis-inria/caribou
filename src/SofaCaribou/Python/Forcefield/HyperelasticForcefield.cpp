@@ -12,6 +12,9 @@ void addHyperElasticForcefield(pybind11::module &m) {
     using namespace caribou;
     using namespace caribou::geometry;
     bind_hyperelastic_forcefield<Tetrahedron<Linear>>(m);
+    bind_hyperelastic_forcefield<Tetrahedron<Quadratic>>(m);
     bind_hyperelastic_forcefield<Hexahedron<Linear>>(m);
+    bind_hyperelastic_forcefield<Hexahedron<Quadratic>>(m);
 }
+
 }
