@@ -139,7 +139,7 @@ TEST(CaribouMass, LinearTetrahedron) {
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, 3, Eigen::RowMajor>> f_sofa_dia ((d_f_sofa_dia.getValue().data()->data()),  mo->getSize(), 3);
 
 
-    EXPECT_DOUBLE_EQ(f_caribou.norm(), f_sofa.norm());
+    EXPECT_DOUBLE_EQ(f_caribou.norm(), f_caribou_dia.norm());
     EXPECT_DOUBLE_EQ(f_caribou_dia.norm(), f_sofa_dia.norm());
 }
 
