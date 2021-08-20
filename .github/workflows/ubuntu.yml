@@ -23,6 +23,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with: fetch-depth: 0
+
       - run: |
           git fetch origin
           git rebase origin/master
