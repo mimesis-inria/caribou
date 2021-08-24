@@ -12,7 +12,7 @@ jobs:
   build:
     name: Building with ${{ matrix.sofa_version }}
     runs-on: ubuntu-20.04
-    container: jnbrunet/caribou-ubuntu-1804-builder:v20.12
+    container: jnbrunet/caribou-ubuntu-1804-builder:latest
     strategy:
       fail-fast: false
       matrix:
@@ -22,8 +22,13 @@ jobs:
       SOFA_ROOT: /opt/sofa
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - run: |
+          git fetch origin
+          git rebase origin/master
 
       - name: Download SOFA Release
         run:  |

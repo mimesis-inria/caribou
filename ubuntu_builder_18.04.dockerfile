@@ -6,6 +6,7 @@ RUN apt-get -qq update \
 &&  apt-get -qq --no-install-recommends install software-properties-common \
 &&  add-apt-repository -y ppa:deadsnakes \
 &&  add-apt-repository -y ppa:mhier/libboost-latest \
+&&  add-apt-repository -y ppa:git-core/ppa \
 &&  apt-get -qq update
 
 RUN apt-get -qq --no-install-recommends install libpython3.7 python3.7 python3-pip libpython3.7-dev \
