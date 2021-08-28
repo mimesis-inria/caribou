@@ -67,7 +67,7 @@ jobs:
           fi
           tar xzf boost.tar.gz
       - name: Patch boost
-        if: {{ steps.cache-boost.outputs.cache-hit != 'true' &&  matrix.sofa_version != "v21.06.00" }}
+        if: ${{ steps.cache-boost.outputs.cache-hit != 'true' &&  matrix.sofa_version != 'v21.06.00' }}
         run: |
             curl --output a.patch -L "https://github.com/boostorg/build/commit/b3a59d265929a213f02a451bb63cea75d668a4d9.patch?full_index=1"
             git apply -v --directory=boost_1_67_0/tools/build a.patch
