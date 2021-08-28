@@ -20,11 +20,11 @@ using namespace sofa::helper::logging;
 using namespace sofa::testing;
 #endif
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 200699)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
 namespace sofa { using Size = unsigned int; }
 #endif
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
 namespace sofa::type {
 using Vec3 = ::sofa::defaulttype::Vec3;
 template <sofa::Size N, sofa::Size M, typename Real>

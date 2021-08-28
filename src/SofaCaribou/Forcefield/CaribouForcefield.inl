@@ -7,7 +7,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/visual/VisualParams.h>
 DISABLE_ALL_WARNINGS_END
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
 namespace sofa::type {
 using RGBAColor = ::sofa::helper::types::RGBAColor;
 template <typename Real>
