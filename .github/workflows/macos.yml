@@ -78,12 +78,13 @@ jobs:
         run: |
           if [ "$SOFA_VERSION" = "v21.06.00" ]; then
             cd boost_1_76_0
+            ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --without-icu --libdir=/opt/boost/lib -with-toolset=intel-darwin
+            ./b2 toolset=intel-darwin cxxflags=-std=c++11 link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
           else
             cd boost_1_67_0
+            ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --without-icu --libdir=/opt/boost/lib -with-toolset=darwin
+            ./b2 toolset=darwin cxxflags=-std=c++11 link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
           fi
-          ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --without-icu --libdir=/opt/boost/lib -with-toolset=darwin
-          ./b2 toolset=darwin cxxflags=-std=c++11 link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
-
 
 #     QT
       - name: Cache Qt
