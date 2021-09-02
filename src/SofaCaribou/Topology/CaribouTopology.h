@@ -97,7 +97,24 @@ public:
     element(const UNSIGNED_INTEGER_TYPE & element_id) const noexcept -> Element {
         return this->p_domain->element(element_id);
     }
+    /**
+     * Construct an element of the domain using the positions vector x.
+     * @param element_id The id of the element in this topology.
+     * @param x The position vector of every nodes
+     * @return A new Element instance from the domain.
+     */
+    [[nodiscard]] auto
+    element(const UNSIGNED_INTEGER_TYPE & element_id, const Data<VecCoord> & x) const noexcept -> Element {
+        using namespace sofa::helper;
+        static constexpr auto Dimension = caribou::geometry::traits<Element>::Dimension;
+        ReadAccessor<Data<VecCoord>> sofa_x = x;
 
+        Eigen::Map<
+            const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>
+        > eigen_x (sofa_x.ref().data()->data(),  sofa_x.size(), Dimension);
+
+        return this->p_domain->element(element_id, eigen_x);
+    }
     /**
      * Get the pointer to the internal domain instance.
      */

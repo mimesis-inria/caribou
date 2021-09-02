@@ -237,6 +237,7 @@ public:
         return p_barycentric_points;
     }
 
+
     /**
      * Indices of nodes found outside of the domain (ie, nodes that were not found inside any container elements of the
      * domain).

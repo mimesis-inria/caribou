@@ -1,4 +1,5 @@
 #include <SofaCaribou/Mapping/CaribouBarycentricMapping.h>
+#include <Caribou/Geometry/Hexahedron.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
@@ -11,19 +12,25 @@ DISABLE_ALL_WARNINGS_END
 namespace sofa { using Index = unsigned int; }
 #endif
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210699)
 namespace sofa::type {
-using RGBAColor = ::sofa::helper::types::RGBAColor;
-using Vector3 = ::sofa::defaulttype::Vector3;
+using RGBAColor = ::sofa::type::RGBAColor;
+using Vector3 = ::sofa::type::Vector3;
 }
 #endif
 
 namespace SofaCaribou::mapping {
 
+namespace {
+template <typename T> struct is_rigid_types {static constexpr bool value = false;};
+template <sofa::Size N, typename real> struct is_rigid_types<sofa::defaulttype::StdRigidTypes<N, real>> {static constexpr bool value = true;};
+template <typename T> static constexpr auto is_rigid_types_v = is_rigid_types<T>::value;
+}
+
 template<typename Element, typename MappedDataTypes>
 CaribouBarycentricMapping<Element, MappedDataTypes>::CaribouBarycentricMapping()
 : d_topology(initLink("topology", "Topology that contains the embedding (parent) elements."))
-{
+{  
 }
 
 template<typename Element, typename MappedDataTypes>
@@ -56,6 +63,9 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::init() {
         // We got one, use it
         d_topology.set(topology);
         msg_info() << "Topology automatically found at '" << topology->getPathName() << "'";
+    } else if (not d_topology.get()) {
+        msg_error() << "The '" << d_topology.getName() << "' data field does not point towards a valid topology container.";
+        return;
     }
 
     // Quick sanity checks
@@ -86,11 +96,15 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::init() {
     }
 
     // Create the barycentric container
+
     auto mapped_rest_positions =
-        Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Dimension, Eigen::RowMajor>> (
-            this->getToModel()->readRestPositions()[0].ptr(),
-            this->getToModel()->readRestPositions().size(),
-            Dimension
+        Eigen::Map<const Eigen::Matrix<MappedScalar, Eigen::Dynamic, MappedDimension, Eigen::RowMajor>, 
+                    Eigen::Unaligned, 
+                    Eigen::Stride<MapTotalSize, 1>
+                > (
+                this->getToModel()->readRestPositions()[0].ptr(),
+                this->getToModel()->readRestPositions().size(),
+                MappedDimension
         );
     p_barycentric_container.reset(new caribou::topology::BarycentricContainer<Domain>(d_topology->domain()->embed(mapped_rest_positions)));
 
@@ -129,6 +143,8 @@ template<typename Element, typename MappedDataTypes>
 void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core::MechanicalParams * /*mparams*/,
                                                                 MappedDataVecCoord & data_output_mapped_position,
                                                                 const DataVecCoord & data_input_position) {
+    
+    
     // Sanity check
     if (not p_barycentric_container or not p_barycentric_container->outside_nodes().empty()) {
         return;
@@ -142,19 +158,63 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
                     input_position.size(),
                     Dimension
             );
-
+            
     // Mapped (embedded) nodes
     auto output_mapped_position = sofa::helper::WriteOnlyAccessor<MappedDataVecCoord>(data_output_mapped_position);
     auto mapped_positions =
-            Eigen::Map<Eigen::Matrix<MappedScalar, Eigen::Dynamic, MappedDimension, Eigen::RowMajor>> (
-                    output_mapped_position[0].ptr(),
-                    output_mapped_position.size(),
-                    MappedDimension
-            );
+        Eigen::Map<Eigen::Matrix<MappedScalar, Eigen::Dynamic, MappedDimension, Eigen::RowMajor>, 
+                    Eigen::Unaligned, 
+                    Eigen::Stride<MapTotalSize, 1>
+                > (
+                output_mapped_position[0].ptr(),
+                output_mapped_position.size(),
+                MappedDimension
+                /* Eigen::Stride<MapTotalSize, 1>(MapTotalSize, 1) */
+        );
 
-    // Interpolate the parent positions onto the mapped nodes
-    p_barycentric_container->interpolate(positions, mapped_positions);
+    /* std::cout << mapped_positions << std::endl; */
+    
+
+    if constexpr (is_rigid_types_v<MappedDataTypes>) {
+        const auto & barycentric_points = p_barycentric_container->barycentric_points();
+        const auto nb_of_barycentric_points = barycentric_points.size();
+
+
+        for (std::size_t i = 0; i <nb_of_barycentric_points; ++i) {
+            const auto & bp = barycentric_points[i];
+            
+            const auto & element_index = bp.element_index;
+            const auto & local_coordinates = bp.local_coordinates;
+            const auto elem = d_topology->element(element_index, data_input_position);
+            
+            const auto new_positions = elem.world_coordinates(local_coordinates);
+            
+            auto rotation = elem.frame(local_coordinates);
+            //std::cout << rotation << std::endl;
+
+            Eigen::Quaterniond q;
+            q = rotation;
+
+            // Coordinates part of the DOFs
+            for (std::size_t j = 0; j < Dimension; ++j) {
+                mapped_positions(i, j) = new_positions[j]; 
+            }
+
+            // Rotation part of the DOFs
+            mapped_positions(i, Dimension+0) = q.x();
+            mapped_positions(i, Dimension+1) = q.y();
+            mapped_positions(i, Dimension+2) = q.z();
+            mapped_positions(i, Dimension+3) = q.w();
+
+        }
+    } else {
+        // Interpolate the parent positions onto the mapped nodes
+        p_barycentric_container->interpolate(positions, mapped_positions);
+    } 
+
+    /* std::cout << mapped_positions << std::endl; */
 }
+
 
 template<typename Element, typename MappedDataTypes>
 void CaribouBarycentricMapping<Element, MappedDataTypes>::applyJ(const sofa::core::MechanicalParams * /*mparams*/,
@@ -204,34 +264,106 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::applyJT(const sofa::co
                     output_forces.size(),
                     Dimension
             );
-
+    
     // Mapped (embedded) nodes
     auto input_mapped_forces = sofa::helper::ReadAccessor<MappedDataVecDeriv>(data_input_mapped_force);
     auto mapped_forces =
-            Eigen::Map<const Eigen::Matrix<MappedScalar, Eigen::Dynamic, MappedDimension, Eigen::RowMajor>> (
-                    input_mapped_forces[0].ptr(),
-                    input_mapped_forces.size(),
-                    MappedDimension
-            );
+        Eigen::Map<const Eigen::Matrix<MappedScalar, Eigen::Dynamic, MappedDimension, Eigen::RowMajor>, 
+                         Eigen::Unaligned, 
+                         Eigen::Stride<MapForce, 1>
+                > (
+                input_mapped_forces[0].ptr(),
+                input_mapped_forces.size(),
+                MappedDimension
+                /* Eigen::Stride<MapTotalSize, 1>(MapTotalSize, 1) */
+        );
 
-    // Inverse mapping using the transposed of the Jacobian matrix
-    forces.noalias() += p_J.transpose() * mapped_forces;
 
+    const auto number_of_nodes = p_J.transpose().rows();
+    const auto number_of_elements = number_of_nodes/4 - 1;
+    const auto & barycentric_points = p_barycentric_container->barycentric_points();
+    const auto nb_of_barycentric_points = barycentric_points.size();
+
+    Eigen::MatrixXd domain_world_coordinates(number_of_nodes, 3);
+    for(int i = 0; i < number_of_elements; ++i) {
+        const auto elem = d_topology->element(i);
+        const auto nodes = elem.nodes();
+        domain_world_coordinates.row(4*i+0) = nodes.row(0);
+        domain_world_coordinates.row(4*i+1) = nodes.row(1);
+        domain_world_coordinates.row(4*i+2) = nodes.row(2);
+        domain_world_coordinates.row(4*i+3) = nodes.row(3);
+    
+        if(i == number_of_elements-1) {
+            domain_world_coordinates.row(4*i+4) = nodes.row(4);
+            domain_world_coordinates.row(4*i+5) = nodes.row(5);
+            domain_world_coordinates.row(4*i+6) = nodes.row(6);
+            domain_world_coordinates.row(4*i+7) = nodes.row(7);
+        }
+    }
+ 
+    Eigen::MatrixXd mapped_torques(nb_of_barycentric_points, 3);
+    Eigen::MatrixXd global_torques(number_of_nodes, 3);
+    
+    for(int i = 0; i < input_mapped_forces.size(); ++i) {
+        for(int j = 0; j < 3; ++j) {
+            mapped_torques(i, j) = input_mapped_forces[i][j+3];
+        }
+    } 
+
+    for(int node_index_ = 0; node_index_ < domain_world_coordinates.rows(); ++node_index_) {
+        const auto node = domain_world_coordinates.row(node_index_);
+        float torque_x, torque_y, torque_z = 0;
+        for(int mapped_point_index = 0; mapped_point_index < nb_of_barycentric_points; ++mapped_point_index) {
+            const auto & bp = barycentric_points[mapped_point_index];
+            const auto & element_index = bp.element_index; 
+            const auto elem = d_topology->element(element_index); 
+            const auto nodes = elem.nodes();
+            bool the_point_is_in_the_element = false; 
+            for(int temp = 0; temp < 8; ++temp) {
+                if(nodes.row(temp) == node) {
+                    the_point_is_in_the_element = true;
+                }
+            }
+            if(the_point_is_in_the_element) {
+                torque_x += mapped_torques(mapped_point_index, 0);
+                torque_y += mapped_torques(mapped_point_index, 1);
+                torque_z += mapped_torques(mapped_point_index, 2);
+            }
+        }
+        global_torques(node_index_, 0) = torque_x;
+        global_torques(node_index_, 1) = torque_y;
+        global_torques(node_index_, 2) = torque_z;
+    }  
+
+
+    Eigen::MatrixXd cross_product_result(number_of_nodes, 3);
+    for(int i = 0; i < domain_world_coordinates.rows(); ++i) {
+        Eigen::Vector3d v = global_torques.row(i).transpose();
+        Eigen::Vector3d w = domain_world_coordinates.row(i).transpose();
+        cross_product_result.row(i) =  v.cross(w).transpose();
+    }
+
+    /* std::cout << domain_world_coordinates.rows() << std::endl; */
+
+    if constexpr (is_rigid_types_v<MappedDataTypes>) { 
+        forces.noalias() += p_J.transpose() * mapped_forces - cross_product_result;  
+    } else {
+        // Inverse mapping using the transposed of the Jacobian matrix
+        forces.noalias() += p_J.transpose() * mapped_forces;
+    }
 }
 
 template<typename Element, typename MappedDataTypes>
 void CaribouBarycentricMapping<Element, MappedDataTypes>::applyJT(const sofa::core::ConstraintParams * /*cparams*/,
                                                                   CaribouBarycentricMapping::DataMapMapSparseMatrix & data_output_jacobian,
                                                                   const CaribouBarycentricMapping::MappedDataMapMapSparseMatrix & data_input_mapped_jacobian) {
-    using SparseMatrix = decltype(p_J);
+    /* using SparseMatrix = decltype(p_J);
     using StorageIndex = typename SparseMatrix::StorageIndex;
     static constexpr auto J_is_row_major = SparseMatrix::IsRowMajor;
-
     // Sanity check
     if (not p_barycentric_container or not p_barycentric_container->outside_nodes().empty()) {
         return;
     }
-
     // With the mapping matrix J, every columns j of a given row i represent the jth shape
     // value evaluated at the ith mapped node. We want to compute H = Jt H_m where H_m is
     // the constraint matrix of the mapped DOFs. Both Jt and H_m are sparse matrices.
@@ -239,18 +371,15 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::applyJT(const sofa::co
     // vector.
     auto output_jacobian = sofa::helper::WriteAccessor<DataMapMapSparseMatrix>(data_output_jacobian);
     auto input_mapped_jacobian = sofa::helper::ReadAccessor<MappedDataMapMapSparseMatrix>(data_input_mapped_jacobian);
-
     const auto rowEnd = input_mapped_jacobian->end();
     for (auto rowIt = input_mapped_jacobian->begin(); rowIt != rowEnd; ++rowIt) {
         auto colItEnd = rowIt.end();
         auto colIt = rowIt.begin();
         if (colIt == colItEnd) continue;
-
         auto output_row = output_jacobian->writeLine(rowIt.index());
         for ( ; colIt != colItEnd; ++colIt) {
             auto mapped_node_index  =  colIt.index();
             auto mapped_value = colIt.val();
-
             if constexpr (J_is_row_major) {
                 for (typename SparseMatrix::InnerIterator it(p_J, mapped_node_index); it; ++it) {
                     const auto node_index = it.col();
@@ -270,7 +399,7 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::applyJT(const sofa::co
                 }
             }
         }
-    }
+    } */
 }
 
 template<typename Element, typename MappedDataTypes>
@@ -304,31 +433,68 @@ auto CaribouBarycentricMapping<Element, MappedDataTypes>::canCreate(Derived * o,
     using namespace sofa::core::objectmodel;
     using CaribouTopology = SofaCaribou::topology::CaribouTopology<Element>;
 
-    std::string requested_element_type = arg->getAttribute( "template", "");
-    std::string this_element_type = Derived::templateName(o);
+    std::string requested_template = arg->getAttribute( "template", "");
+    std::string this_template = Derived::templateName(o);
 
-    // to lower
-    std::string requested_element_type_lower = requested_element_type, this_element_type_lower = this_element_type;
-    std::transform(requested_element_type.begin(), requested_element_type.end(), requested_element_type_lower.begin(), [](unsigned char c){ return std::tolower(c); });
-    std::transform(this_element_type.begin(), this_element_type.end(), this_element_type_lower.begin(), [](unsigned char c){ return std::tolower(c); });
+    // Multiple spaces to one space
+    auto trim_spaces = [](std::string str) {
+        std::string::iterator new_end =
+                std::unique(str.begin(), str.end(),
+                            [=](char lhs, char rhs){ return (lhs == rhs) && (lhs == ' '); }
+                );
+        str.erase(new_end, str.end());
+        return str;
+    };
+
+    // To lower case
+    auto to_lower = [](std::string str) {
+        std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c){ return std::tolower(c); });
+        return str;
+    };
+
+    // Replace space for comma
+    auto space_to_coma = [](std::string str) {
+        std::replace(str.begin(), str.end(), ' ', ',');
+        return str;
+    };
+
+    // Split comas to vectors
+    auto split = [](std::string str) {
+        std::stringstream ss(str);
+        std::string item;
+        std::vector<std::string> elems;
+        while (std::getline(ss, item, ',')) {
+             elems.push_back(std::move(item));
+        }
+        return elems;
+    };
+
+    const auto parsed_requested_template = split(to_lower(space_to_coma(trim_spaces(requested_template))));
+    const auto parsed_this_template      = split(to_lower(space_to_coma(trim_spaces(requested_template))));
+    const std::string requested_element_type = parsed_requested_template.empty() ? "" : parsed_requested_template[0];
+    const std::string this_element_type      = parsed_this_template.empty() ? "" : parsed_this_template[0];
 
     // Simplest case, the user set the template argument and it is equal to this template specialization
-    if (requested_element_type_lower == this_element_type_lower) {
+    if (requested_element_type == this_element_type) {
         return Inherit1::canCreate(o, context, arg);
     }
-
+    
     // The user set the template argument, but it doesn't match this template specialization
     if (not requested_element_type.empty()) {
         arg->logError("Requested element type is not '"+this_element_type+"'.");
         return false;
     }
-    // The user didn't set any template argument. Let's try to deduce it.
 
+    
+    // The user didn't set any template argument. Let's try to deduce it.
+    
     // The user specified a path to a CaribouTopology, let's check if the Element type matches
     std::string topology_path = arg->getAttribute("topology", "");
+
+    
     if (not topology_path.empty()) {
         topology_path = topology_path.substr(1); // removes the "@"
-        auto topology = context->getRootContext()->get<CaribouTopology>(topology_path);
+        auto topology = context->get<CaribouTopology>(topology_path);
         if (not topology) {
             arg->logError("The element type of the given topology '" + topology_path + "' is not '"+this_element_type+"'.");
             return false;
@@ -336,7 +502,7 @@ auto CaribouBarycentricMapping<Element, MappedDataTypes>::canCreate(Derived * o,
         // The topology element type matched this mapping, all good here
         return Inherit1::canCreate(o, context, arg);
     }
-
+    
     // The user hasn't specified any path to a topology, nor he has manually set the Element type using the template argument
     // Let's try to find a matching topology in the parent or current context.
     auto * context_node = dynamic_cast<sofa::simulation::Node*>(context);
@@ -364,4 +530,3 @@ auto CaribouBarycentricMapping<Element, MappedDataTypes>::canCreate(Derived * o,
 }
 
 } // namespace SofaCaribou::mapping
-

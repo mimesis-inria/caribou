@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -fdiagnostics-color -Wall -pedantic -g -shared -Wl,-soname,Caribou.cpython-38-x86_64-linux-gnu.so.21.6.0 -o ../../../../lib/python3/site-packages/Caribou/Caribou.cpython-38-x86_64-linux-gnu.so.21.6.0 CMakeFiles/Caribou.Python.Config.dir/Caribou.cpp.o  -Wl,-rpath,:::::::::::::::::::::::::::::::::::::::: /usr/lib/x86_64-linux-gnu/libpython3.8.so 

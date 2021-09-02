@@ -5,7 +5,7 @@
 #include <Caribou/Geometry/Element.h>
 #include <Caribou/Geometry/Triangle.h>
 #include <Eigen/Core>
-
+#include <Eigen/Dense>
 
 namespace caribou::geometry {
 
@@ -136,6 +136,16 @@ struct BaseHexahedron : public Element<Derived> {
         Matrix<3, 3> m;
         m << u, v, w;
 
+        /* Eigen::HouseholderQR<Matrix<3, 3>> qr(m.rows(), m.cols());
+        qr.compute(m);
+
+        Matrix<3, 3> Q = qr.householderQ(); */
+        /* Matrix<3, 3> R = qr.householderR();
+        Matrix<3, 3> t_Q = Q.transpose();
+        Matrix<3, 3> res = Q*t_Q;
+        std::cout << "This is the original Matrix: \n" << m << std::endl;
+        std::cout << "This is its Orthogonal component: \n" << Q << std::endl;
+        std::cout << "The dot product: \n" << res << std::endl; */
         return m;
     }
 

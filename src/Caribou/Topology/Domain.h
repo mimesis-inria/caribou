@@ -237,6 +237,10 @@ namespace caribou::topology {
             p_mesh = mesh;
         }
 
+        inline auto get_p_buffer() {
+            return this->p_buffer;
+        }
+
     protected:
 
         friend void swap(Domain & first, Domain& second) noexcept

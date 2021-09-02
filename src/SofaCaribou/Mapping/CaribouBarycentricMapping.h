@@ -32,6 +32,9 @@ public:
     using Domain = typename SofaCaribou::topology::CaribouTopology<Element>::Domain;
 
     static constexpr auto MappedDimension = MappedDataTypes::Coord::spatial_dimensions;
+    static constexpr auto MapTotalSize = MappedDataTypes::Coord::total_size;
+    static constexpr auto MapForce = 6;
+    
     using MappedScalar = typename MappedDataTypes::Real;
     using MappedDataVecCoord = sofa::core::objectmodel::Data<typename MappedDataTypes::VecCoord>;
     using MappedDataVecDeriv = sofa::core::objectmodel::Data<typename MappedDataTypes::VecDeriv>;
@@ -63,7 +66,7 @@ public:
     }
 
     static auto templateName(const CaribouBarycentricMapping<Element, MappedDataTypes>* = nullptr) -> std::string {
-        return SofaCaribou::topology::CaribouTopology<Element>::templateName();
+        return SofaCaribou::topology::CaribouTopology<Element>::templateName() + "," + MappedDataTypes::Name();
     }
 
     template <typename Derived>

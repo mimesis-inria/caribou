@@ -17,6 +17,7 @@ namespace SofaCaribou::mapping {
 
 // This will force the compiler to compile the following templated class
 template class CaribouBarycentricMapping<caribou::geometry::Hexahedron<caribou::Linear>, sofa::defaulttype::Vec3Types>;
+template class CaribouBarycentricMapping<caribou::geometry::Hexahedron<caribou::Linear>, sofa::defaulttype::Rigid3Types>;
 
 // -----------------------------------
 // Hexahedron quadratic specialization
@@ -24,14 +25,21 @@ template class CaribouBarycentricMapping<caribou::geometry::Hexahedron<caribou::
 
 // This will force the compiler to compile the following templated class
 template class CaribouBarycentricMapping<caribou::geometry::Hexahedron<caribou::Quadratic>, sofa::defaulttype::Vec3Types>;
+template class CaribouBarycentricMapping<caribou::geometry::Hexahedron<caribou::Quadratic>, sofa::defaulttype::Rigid3Types>;
 
 } // namespace SofaCaribou::mapping
 
 namespace sofa::core::objectmodel {
 using namespace SofaCaribou::mapping;
 
+
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou barycentric mapping")
 .add<CaribouBarycentricMapping<Hexahedron<Linear>, sofa::defaulttype::Vec3Types>>()
-.add<CaribouBarycentricMapping<Hexahedron<Quadratic>, sofa::defaulttype::Vec3Types>>();
+.add<CaribouBarycentricMapping<Hexahedron<Quadratic>, sofa::defaulttype::Vec3Types>>()
+
+.add<CaribouBarycentricMapping<Hexahedron<Linear>, sofa::defaulttype::Rigid3Types>>()
+.add<CaribouBarycentricMapping<Hexahedron<Quadratic>, sofa::defaulttype::Rigid3Types>>()
+
+;
 }
