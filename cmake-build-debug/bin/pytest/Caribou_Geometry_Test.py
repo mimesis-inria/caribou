@@ -1,1 +1,0 @@
-/home/sidaty/Desktop/external_plugins/caribou/src/Caribou/Python/Geometry/pytest/Caribou_Geometry_Test.py
