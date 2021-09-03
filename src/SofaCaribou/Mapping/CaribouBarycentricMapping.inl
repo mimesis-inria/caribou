@@ -150,6 +150,9 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
         return;
     }
 
+    const auto & barycentric_points = p_barycentric_container->barycentric_points();
+    const auto nb_of_barycentric_points = barycentric_points.size();
+
     // Container (parent) nodes
     auto input_position = sofa::helper::ReadAccessor<DataVecCoord>(data_input_position);
     auto positions =
@@ -171,14 +174,23 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
                 MappedDimension
                 /* Eigen::Stride<MapTotalSize, 1>(MapTotalSize, 1) */
         );
+    
+    /* Eigen::MatrixXd mapped_rotations(output_mapped_position.size(), 4);
+    
+    for(int i = 0; i < output_mapped_position.size(); ++i) {
+        for(int j = 0; j < 4; ++j) {
+            mapped_rotations(i, j) = output_mapped_position[i][j+3];
+        }
+    }  */
 
-    /* std::cout << mapped_positions << std::endl; */
+
+    
     
 
     if constexpr (is_rigid_types_v<MappedDataTypes>) {
-        const auto & barycentric_points = p_barycentric_container->barycentric_points();
-        const auto nb_of_barycentric_points = barycentric_points.size();
-
+        
+        /* std::cout << "Debut: " << std::endl;
+        std::cout << mapped_rotations << std::endl; */
 
         for (std::size_t i = 0; i <nb_of_barycentric_points; ++i) {
             const auto & bp = barycentric_points[i];
@@ -201,10 +213,10 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
             }
 
             // Rotation part of the DOFs
-            mapped_positions(i, Dimension+0) = q.x();
-            mapped_positions(i, Dimension+1) = q.y();
-            mapped_positions(i, Dimension+2) = q.z();
-            mapped_positions(i, Dimension+3) = q.w();
+            mapped_positions(i, Dimension+0) = q.x(); // mapped_rotations(i, 0);
+            mapped_positions(i, Dimension+1) = q.y(); // mapped_rotations(i, 1);
+            mapped_positions(i, Dimension+2) = q.z(); // mapped_rotations(i, 2);
+            mapped_positions(i, Dimension+3) = q.w(); // mapped_rotations(i, 3);
 
         }
     } else {
