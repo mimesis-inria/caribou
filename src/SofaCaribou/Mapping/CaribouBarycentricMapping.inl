@@ -175,16 +175,13 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
                 /* Eigen::Stride<MapTotalSize, 1>(MapTotalSize, 1) */
         );
     
-    /* Eigen::MatrixXd mapped_rotations(output_mapped_position.size(), 4);
+    Eigen::MatrixXd mapped_rotations(output_mapped_position.size(), 4);
     
     for(int i = 0; i < output_mapped_position.size(); ++i) {
         for(int j = 0; j < 4; ++j) {
             mapped_rotations(i, j) = output_mapped_position[i][j+3];
         }
-    }  */
-
-
-    
+    } 
     
 
     if constexpr (is_rigid_types_v<MappedDataTypes>) {
@@ -213,10 +210,10 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
             }
 
             // Rotation part of the DOFs
-            mapped_positions(i, Dimension+0) = q.x(); // mapped_rotations(i, 0);
-            mapped_positions(i, Dimension+1) = q.y(); // mapped_rotations(i, 1);
-            mapped_positions(i, Dimension+2) = q.z(); // mapped_rotations(i, 2);
-            mapped_positions(i, Dimension+3) = q.w(); // mapped_rotations(i, 3);
+            mapped_positions(i, Dimension+0) = mapped_rotations(i, 0); // q.x();
+            mapped_positions(i, Dimension+1) = mapped_rotations(i, 1); // q.y();
+            mapped_positions(i, Dimension+2) = mapped_rotations(i, 2); // q.z(); 
+            mapped_positions(i, Dimension+3) = mapped_rotations(i, 3); // q.w();
 
         }
     } else {
@@ -290,75 +287,40 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::applyJT(const sofa::co
                 /* Eigen::Stride<MapTotalSize, 1>(MapTotalSize, 1) */
         );
 
-
     const auto number_of_nodes = p_J.transpose().rows();
-    const auto number_of_elements = number_of_nodes/4 - 1;
+    const auto number_of_elements =d_topology->number_of_elements(); // nomber of element
     const auto & barycentric_points = p_barycentric_container->barycentric_points();
     const auto nb_of_barycentric_points = barycentric_points.size();
 
-    Eigen::MatrixXd domain_world_coordinates(number_of_nodes, 3);
-    for(int i = 0; i < number_of_elements; ++i) {
-        const auto elem = d_topology->element(i);
-        const auto nodes = elem.nodes();
-        domain_world_coordinates.row(4*i+0) = nodes.row(0);
-        domain_world_coordinates.row(4*i+1) = nodes.row(1);
-        domain_world_coordinates.row(4*i+2) = nodes.row(2);
-        domain_world_coordinates.row(4*i+3) = nodes.row(3);
-    
-        if(i == number_of_elements-1) {
-            domain_world_coordinates.row(4*i+4) = nodes.row(4);
-            domain_world_coordinates.row(4*i+5) = nodes.row(5);
-            domain_world_coordinates.row(4*i+6) = nodes.row(6);
-            domain_world_coordinates.row(4*i+7) = nodes.row(7);
-        }
-    }
- 
+    // Container (parent) nodes
+    auto input_position = sofa::helper::ReadAccessor<DataVecCoord>(this->getFromModel()->readPositions());
+    auto positions =
+    Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Dimension, Eigen::RowMajor>> (
+        input_position[0].ptr(),
+        input_position.size(),
+        Dimension
+    );
+
     Eigen::MatrixXd mapped_torques(nb_of_barycentric_points, 3);
-    Eigen::MatrixXd global_torques(number_of_nodes, 3);
     
     for(int i = 0; i < input_mapped_forces.size(); ++i) {
         for(int j = 0; j < 3; ++j) {
-            mapped_torques(i, j) = input_mapped_forces[i][j+3];
+            mapped_torques(i, j) = float(input_mapped_forces[i][j+3]);
         }
     } 
 
-    for(int node_index_ = 0; node_index_ < domain_world_coordinates.rows(); ++node_index_) {
-        const auto node = domain_world_coordinates.row(node_index_);
-        float torque_x, torque_y, torque_z = 0;
-        for(int mapped_point_index = 0; mapped_point_index < nb_of_barycentric_points; ++mapped_point_index) {
-            const auto & bp = barycentric_points[mapped_point_index];
-            const auto & element_index = bp.element_index; 
-            const auto elem = d_topology->element(element_index); 
-            const auto nodes = elem.nodes();
-            bool the_point_is_in_the_element = false; 
-            for(int temp = 0; temp < 8; ++temp) {
-                if(nodes.row(temp) == node) {
-                    the_point_is_in_the_element = true;
-                }
-            }
-            if(the_point_is_in_the_element) {
-                torque_x += mapped_torques(mapped_point_index, 0);
-                torque_y += mapped_torques(mapped_point_index, 1);
-                torque_z += mapped_torques(mapped_point_index, 2);
-            }
-        }
-        global_torques(node_index_, 0) = torque_x;
-        global_torques(node_index_, 1) = torque_y;
-        global_torques(node_index_, 2) = torque_z;
-    }  
+    const auto prod = p_J.transpose() * mapped_torques; 
 
-
-    Eigen::MatrixXd cross_product_result(number_of_nodes, 3);
-    for(int i = 0; i < domain_world_coordinates.rows(); ++i) {
-        Eigen::Vector3d v = global_torques.row(i).transpose();
-        Eigen::Vector3d w = domain_world_coordinates.row(i).transpose();
-        cross_product_result.row(i) =  v.cross(w).transpose();
-    }
-
-    /* std::cout << domain_world_coordinates.rows() << std::endl; */
+    Eigen::MatrixXd torques_to_linear_forces(number_of_nodes, 3);
+    for(int i = 0; i < positions.rows(); ++i) {
+        Eigen::Vector3d v = prod.row(i).transpose();
+        Eigen::Vector3d w = positions.row(i).transpose();
+        torques_to_linear_forces.row(i) =  v.cross(w).transpose();
+    } 
 
     if constexpr (is_rigid_types_v<MappedDataTypes>) { 
-        forces.noalias() += p_J.transpose() * mapped_forces - cross_product_result;  
+        // Inverse mapping using the transposed of the Jacobian matrix and converting torques to linear forces
+        forces.noalias() += p_J.transpose() * mapped_forces - torques_to_linear_forces;  
     } else {
         // Inverse mapping using the transposed of the Jacobian matrix
         forces.noalias() += p_J.transpose() * mapped_forces;

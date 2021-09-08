@@ -155,6 +155,9 @@ public:
      *       with respect to the position vector of the mechanical state.
      */
     void initializeFromIndices();
+
+    inline auto get_positions() -> const auto & {return d_position;};
+
 private:
     // Data members
 
