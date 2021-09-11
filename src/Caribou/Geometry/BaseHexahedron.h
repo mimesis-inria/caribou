@@ -140,12 +140,14 @@ struct BaseHexahedron : public Element<Derived> {
         qr.compute(m);
 
         Matrix<3, 3> Q = qr.householderQ(); */
+        
         /* Matrix<3, 3> R = qr.householderR();
         Matrix<3, 3> t_Q = Q.transpose();
         Matrix<3, 3> res = Q*t_Q;
         std::cout << "This is the original Matrix: \n" << m << std::endl;
         std::cout << "This is its Orthogonal component: \n" << Q << std::endl;
         std::cout << "The dot product: \n" << res << std::endl; */
+
         return m;
     }
 

@@ -3,6 +3,8 @@
 #include <Caribou/constants.h>
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Topology/CaribouTopology.h>
+#include <Caribou/Mechanics/Elasticity/Strain.h>
+
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/Mapping.h>
@@ -39,6 +41,12 @@ public:
     using MappedDataVecCoord = sofa::core::objectmodel::Data<typename MappedDataTypes::VecCoord>;
     using MappedDataVecDeriv = sofa::core::objectmodel::Data<typename MappedDataTypes::VecDeriv>;
     using MappedDataMapMapSparseMatrix = sofa::core::objectmodel::Data<typename MappedDataTypes::MatrixDeriv>;
+
+    using Mat3x3   = Eigen::Matrix<double, 3, 3>;
+    using Vect3x1   = Eigen::Vector3d;
+    static constexpr INTEGER_TYPE NumberOfNodesPerElement = caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime;
+
+    using LocalCoordinates = typename Element::LocalCoordinates;
 
     static constexpr auto Dimension = DataTypes::Coord::spatial_dimensions;
     using Scalar = typename DataTypes::Real;
