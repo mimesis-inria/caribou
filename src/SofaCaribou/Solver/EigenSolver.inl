@@ -181,7 +181,9 @@ void EigenSolver<EigenMatrix_t>::setSystemLHVector(sofa::core::MultiVecDerivId x
 
     // Copy the vectors of the mechanical objects into a global eigen vector.
     p_x.resize(p_A.rowSize());
-    mop.multiVector2BaseVector(p_x_id, &p_x, &p_accessor);
+    if (not x_id.isNull()) {
+        mop.multiVector2BaseVector(p_x_id, &p_x, &p_accessor);
+    }
 
     Timer::stepEnd("EigenSolver::AssembleSolutionVector");
 }
@@ -250,6 +252,11 @@ auto EigenSolver<EigenMatrix_t>::canCreate(Derived*, sofa::core::objectmodel::Ba
     // No backend specified
     arg->setAttribute("backend", Derived::BackendName());
     return true;
+}
+
+template<class EigenMatrix_t>
+bool EigenSolver<EigenMatrix_t>::addMInvJt(sofa::defaulttype::BaseMatrix * result, sofa::defaulttype::BaseMatrix * J, SReal fact) {
+
 }
 
 } // namespace SofaCaribou::solver

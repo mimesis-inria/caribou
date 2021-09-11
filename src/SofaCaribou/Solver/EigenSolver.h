@@ -85,6 +85,14 @@ public:
     void solveSystem() override;
 
     /**
+     * Multiply the inverse of the system matrix by the transpose of the given matrix J
+     * @param result the variable where the result will be added
+     * @param J the matrix J to use
+     * @param fact integrator parameter
+     */
+    bool addMInvJt(sofa::defaulttype::BaseMatrix* result, sofa::defaulttype::BaseMatrix* J, SReal fact) override;
+
+    /**
      * States if the system matrix is symmetric. Note that this value isn't set automatically, the user must
      * explicitly specify it using set_symmetric(true). When it is true, some optimizations will be enabled.
      */
