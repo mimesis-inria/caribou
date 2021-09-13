@@ -5,10 +5,18 @@
 // Various utilities to perform numerical operations on SOFA's BaseVector.
 // These utilities are responsible to automatically find the type of vector
 // and perform the optimal operations on them.
-
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 namespace sofa::defaulttype {
-class BaseVector;
+    class BaseVector;
 }
+#else
+namespace sofa::linearalgebra {
+    class BaseVector;
+}
+namespace sofa::defaulttype {
+    using BaseVector = sofa::linearalgebra::BaseVector;
+}
+#endif // (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 
 namespace SofaCaribou::Algebra {
 

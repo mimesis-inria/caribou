@@ -2,10 +2,21 @@
 
 #include <SofaCaribou/config.h>
 
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 namespace sofa::defaulttype {
-class BaseMatrix;
-class BaseVector;
+    class BaseMatrix;
+    class BaseVector;
 }
+#else
+namespace sofa::linearalgebra {
+    class BaseVector;
+    class BaseMatrix;
+}
+namespace sofa::defaulttype {
+    using BaseVector = sofa::linearalgebra::BaseVector;
+    using BaseMatrix = sofa::linearalgebra::BaseMatrix;
+}
+#endif // (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 
 namespace SofaCaribou::solver {
 
