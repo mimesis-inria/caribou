@@ -31,21 +31,21 @@ def createScene(root):
     for indice in indices_tab:
         forces_ += " 0 " + val_force + " 0 "
 
+    for i, method in enumerate(['Frame', 'SVD', 'APD']):
+        hexa = root.addChild("hexa")
+        hexa.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=False)
+        hexa.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
 
-    hexa = root.addChild("hexa")
-    hexa.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
-    hexa.addObject('ConjugateGradientSolver', maximum_number_of_iterations=cg_iterations, residual_tolerance_threshold=1e-5, preconditioning_method=cg_precond, printLog=False)
-
-    hexa.addObject('RegularGridTopology', template="Vec3d", name='mesh', min=[0, -1.5, -1.50], max=[20, 1.5, 1.5], n=[10, 2, 2])
-    hexa.addObject('MechanicalObject', name="hexa_mo", template="Vec3d", src='@./mesh')
-    hexa.addObject('CaribouTopology', name='topo', template='Hexahedron', indices='@./mesh.hexahedra', position='@./mesh.position')    
-    hexa.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
-    hexa.addObject('HyperelasticForcefield', template="Hexahedron", printLog=True)
-    hexa.addObject('FixedConstraint', name="FixedConstraint", indices="0 10 20 30 40")
-    #hexa.addObject('ConstantForceField', indices=indices_tab, forces=forces_)
+        hexa.addObject('RegularGridTopology', template="Vec3d", name='mesh', min=[0, -1.5, -1.50 + (i*10)], max=[20, 1.5, 1.5 + (i*10)], n=[10, 2, 2])
+        hexa.addObject('MechanicalObject', name="hexa_mo", template="Vec3d", src='@./mesh')
+        hexa.addObject('CaribouTopology', name='topo', template='Hexahedron', indices='@./mesh.hexahedra', position='@./mesh.position')
+        hexa.addObject('SaintVenantKirchhoffMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
+        hexa.addObject('HyperelasticForcefield', template="Hexahedron", printLog=True)
+        hexa.addObject('FixedConstraint', name="FixedConstraint", indices="0 10 20 30 40")
+        #hexa.addObject('ConstantForceField', indices=indices_tab, forces=forces_)
 
 
-    beam = hexa.addChild("beam")
-    beam.addObject('MechanicalObject', name="beam_mo", template='Rigid3d', position="  10 0 0 0 0 0 1 ")#  15 0 0 0 0 0 1  -5 1.25 1.25 0 0 1 0  -2.5 1.25 1.25 0 0 1 0   0 1.25 1.25 0 0 1 0  2.5 1.25 1.25 0 0 1 0   5 1.25 1.25 0 0 1 0 ")
-    beam.addObject('UniformMass', totalMass="1", showAxisSizeFactor="2")
-    beam.addObject('CaribouBarycentricMapping', topology='@../topo', template='Hexahedron,Rigid3d')
+        beam = hexa.addChild("beam")
+        beam.addObject('MechanicalObject', name="beam_mo", template='Rigid3d', showObject=True, showObjectScale=3, position=[10, 0, (i*10), 0, 0, 0, 1,])#  15 0 0 0 0 0 1  -5 1.25 1.25 0 0 1 0  -2.5 1.25 1.25 0 0 1 0   0 1.25 1.25 0 0 1 0  2.5 1.25 1.25 0 0 1 0   5 1.25 1.25 0 0 1 0 ")
+        # beam.addObject('UniformMass', totalMass="1", showAxisSizeFactor="2")
+        beam.addObject('CaribouBarycentricMapping', topology='@../topo', template='Hexahedron,Rigid3d', rotation_extraction_method=method)
