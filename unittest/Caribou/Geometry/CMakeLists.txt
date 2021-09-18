@@ -16,6 +16,8 @@ target_link_libraries(${PROJECT_NAME} Caribou::Geometry Caribou::Config)
 
 if (NOT WIN32)
     target_link_libraries(${PROJECT_NAME} pthread)
+elseif(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
 endif()
 
 list(APPEND target_rpath

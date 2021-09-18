@@ -1,0 +1,150 @@
+name: Windows
+
+on:
+  pull_request:
+    branches:
+      - master
+  schedule:
+    # Runs every day at 23:15
+    - cron:  '15 23 * * *'
+
+jobs:
+  build:
+    name: Building with ${{ matrix.sofa_version }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sofa_version: [ master ]
+        include:
+          - sofa_version: master
+            PYTHON_VERSION: 3.8
+    env:
+      SOFA_VERSION: ${{ matrix.sofa_version }}
+      SOFA_ROOT: ${{ format('{0}/sofa', github.workspace) }}
+      PYBIND11_ROOT: ${{ format('{0}/pybind11', github.workspace) }}
+      QT_ROOT: ${{ format('{0}/qt', github.workspace) }}
+      PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+      BOOST_ROOT: ${{ format('{0}/boost', github.workspace) }}
+      EIGEN_ROOT: ${{ format('{0}/eigen', github.workspace) }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - run: |
+          git config --global user.email "caribou@github.com"
+          git config --global user.name "Caribou Github"
+          git fetch origin
+          git rebase origin/master
+
+#     Python
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.PYTHON_VERSION }}
+
+#     Eigen3
+      - name: Install Eigen
+        shell: bash
+        run: |
+          git clone --depth 1 -b 3.4 https://gitlab.com/libeigen/eigen.git eigen_src
+          cmake -S eigen_src -B eigen_src/build -DCMAKE_BUILD_TYPE=Release -DEIGEN_BUILD_DOC=OFF -DCMAKE_INSTALL_PREFIX="$EIGEN_ROOT"
+          cmake --build eigen_src/build --target install
+
+#     PYBIND11
+      - name: Install pybind11
+        shell: bash
+        run: |
+          git clone --depth 1 -b v2.6  https://github.com/pybind/pybind11.git pybind11_src
+          cmake -S pybind11_src -B pybind11_src/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release -DPYBIND11_FINDPYTHON=ON
+          cmake --install pybind11_src/build --prefix $PYBIND11_ROOT
+          rm -rf pybind11_src
+
+#     BOOST
+      - name: Cache Boost
+        id: cache-Boost
+        uses: actions/cache@v1
+        with:
+          path: ${{ format('{0}/boost', github.workspace) }}
+          key: boost-1.69.0-windows
+
+      - name: Install Boost
+        run: |
+          $BOOST_MAJOR = 1
+          $BOOST_MINOR = 69
+          $BOOST_PATCH = 0
+          Invoke-WebRequest "https://boost.teeks99.com/bin/$($BOOST_MAJOR).$($BOOST_MINOR).$($BOOST_PATCH)/boost_$($BOOST_MAJOR)_$($BOOST_MINOR)_$($BOOST_PATCH)-msvc-14.1-64.exe" -OutFile boostinstaller.exe
+          ./boostinstaller.exe /NORESTART /VERYSILENT /DIR="$($BOOST_ROOT)" | Out-Null
+          rm -Force boostinstaller.exe
+
+#     SOFA
+      - name: Download SOFA Release
+        shell: bash
+        run:  |
+          if [ "$SOFA_VERSION" = "master" ]; then
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_BRANCH=master,CI_SCOPE=standard/lastSuccessfulBuild/artifact/Windows/*zip*/Windows.zip"
+              unzip sofa.zip -d temp
+              mv temp/Windows/`ls temp/Windows` sofa.zip
+              rm -rf temp
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
+              rm -rf temp
+          else
+              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Win64.zip"
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
+              rm -rm temp
+          fi
+
+          # Patch SP3 absolute path
+          sed -i 's/C:\/pybind11\/[0-9].[0-9].[0-9]\/install\/include;//' $SOFA_ROOT/plugins/SofaPython3/lib/cmake/SofaPython3/PluginTargets.cmake
+
+#     SOFA DEPENDENCY PACK
+      - name: Download SOFA Dependency pack
+        shell: bash
+        run: |
+          curl --output sofa_dependency.zip -L "https://www.sofa-framework.org/download/WinDepPack/VS-2017/latest"
+          unzip sofa_dependency.zip -d temp
+          mv temp/`ls temp` $SOFA_ROOT/windows_dependency
+          rm -rf temp
+
+#     QT
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ${{ format('{0}/qt', github.workspace) }}
+          key: qt-5.12.6-windows
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: '5.12.6'
+          dir: ${{ format('{0}/qt', github.workspace) }}
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          modules: 'qtcharts qtwebengine'
+
+#     CARIBOU
+      - name: Build caribou
+        shell: bash
+        run:
+          cmake -DCMAKE_BUILD_TYPE=Release
+                -Dpybind11_DIR=$PYBIND11_ROOT
+                -DEigen3_ROOT=$EIGEN_ROOT
+                -DCMAKE_INCLUDE_PATH=$SOFA_ROOT/windows_dependency/include
+                -DCMAKE_LIBRARY_PATH=$SOFA_ROOT/windows_dependency/lib/win64
+                -DQt5_ROOT=$QT_ROOT\5.12.5\msvc2017_64
+                -DCMAKE_INSTALL_PREFIX=$SOFA_ROOT/plugins/SofaCaribou
+                -DCARIBOU_WITH_PYTHON_3=OFF
+                .
+          && cmake --build . --config Release
+          && cmake --install .
+
+#     ARCHIVE
+      - name: Archive production
+        uses: actions/upload-artifact@v2
+        with:
+          name: caribou_win64_${{ matrix.sofa_version }}
+          path: ${{github.workspace}}/sofa/plugins/SofaCaribou

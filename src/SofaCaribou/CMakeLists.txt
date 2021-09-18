@@ -214,10 +214,12 @@ caribou_add_target_to_component (
     HEADER_SRC_PREFIX  "${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
-find_package(SofaPython3 QUIET)
-if (CARIBOU_WITH_SOFA AND SofaPython3_FOUND AND CARIBOU_WITH_PYTHON_3)
-    add_subdirectory(Python)
-    set(CARIBOU_WITH_SP3 ON)
+if (CARIBOU_WITH_PYTHON_3)
+    find_package(SofaPython3 QUIET)
+    if (CARIBOU_WITH_SOFA AND SofaPython3_FOUND)
+        add_subdirectory(Python)
+        set(CARIBOU_WITH_SP3 ON)
+    endif()
 endif()
 
 install (
