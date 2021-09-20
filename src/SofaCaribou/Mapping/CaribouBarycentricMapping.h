@@ -5,7 +5,6 @@
 #include <SofaCaribou/Topology/CaribouTopology.h>
 #include <Caribou/Mechanics/Elasticity/Strain.h>
 
-
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/Mapping.h>
 DISABLE_ALL_WARNINGS_END
@@ -89,6 +88,9 @@ private:
     std::unique_ptr<caribou::topology::BarycentricContainer<Domain>> p_barycentric_container;
 
     Eigen::SparseMatrix<Scalar> p_J; ///< Mapping matrix
+
+    std::vector<Mat3x3> initial_bases;
+
 };
 
 } // namespace SofaCaribou::mapping

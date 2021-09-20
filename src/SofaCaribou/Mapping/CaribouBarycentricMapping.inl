@@ -95,6 +95,8 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::init() {
         }
     }
 
+
+
     // Create the barycentric container
 
     auto mapped_rest_positions =
@@ -123,10 +125,14 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::init() {
     entries.reserve(this->getFromModel()->getSize());
     const auto * domain = d_topology->domain();
     const auto & barycentric_points = p_barycentric_container->barycentric_points();
+    initial_bases.clear();
+    initial_bases.reserve(barycentric_points.size());
     for (std::size_t i = 0; i < barycentric_points.size(); ++i) {
         const auto & bp = barycentric_points[i];
         const auto & node_indices = domain->element_indices(bp.element_index);
         const auto e = domain->element(bp.element_index);
+        const auto base = e.local_base(); 
+        initial_bases.push_back(base);
         const auto L = e.L(bp.local_coordinates); // Shape functions at barycentric coordinates
         for (Eigen::Index j = 0; j < node_indices.rows(); ++j) {
             const auto & node_index = node_indices[j];
@@ -181,6 +187,7 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
         }
     } 
     
+    /* ------ APD Algorithm ---------
     sofa::helper::ReadAccessor<DataVecCoord> sofa_x = data_input_position;
     sofa::helper::ReadAccessor<DataVecCoord> sofa_x0 = this->getFromModel()->readRestPositions();
 
@@ -190,7 +197,7 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
     const auto nb_nodes = sofa_x.size();
     const Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     const Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
-
+    */
     
     if constexpr (is_rigid_types_v<MappedDataTypes>) {
         for (std::size_t i = 0; i <nb_of_barycentric_points; ++i) {
@@ -202,7 +209,32 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
 
             const auto new_positions = elem.world_coordinates(local_coordinates);            
             
+            // ---------- Igor's Algorithm -----------
 
+            Eigen::Quaterniond q = Eigen::Quaterniond(mapped_rotations(i, 0), 
+                                                        mapped_rotations(i, 1), 
+                                                        mapped_rotations(i, 2), 
+                                                        mapped_rotations(i, 3));
+            const auto element_intial_local_base = initial_bases[i]; 
+            const auto element_actual_local_base = elem.local_base();
+
+            Mat3x3 rot = q.toRotationMatrix(); 
+
+            Mat3x3 OT = element_intial_local_base.inverse() * rot; 
+
+            Mat3x3 actual_rotation = element_actual_local_base * OT;
+            /* if(element_intial_local_base == element_actual_local_base) {
+                std::cout << "Trueee" << std::endl;
+            }
+ */
+            Eigen::HouseholderQR<Mat3x3> qr(actual_rotation.rows(), actual_rotation.cols());
+            qr.compute(actual_rotation);
+            actual_rotation = qr.householderQ();
+            q = actual_rotation; 
+
+
+            /* ---------- APD Algorithm ------------
+            
             // Computing the deformation tensor at the local coordinates
 
             const auto J = elem.jacobian(local_coordinates);
@@ -232,18 +264,17 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
                 }
             }
 
+            
             // Compute the deformation tensor for the element "elem" at the point of the beam number 'i" which is inside the element "elem"
             const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
 
-            
             // APD Algorithm to extract the rotation
             
             Eigen::Quaterniond q = Eigen::Quaterniond(mapped_rotations(i, 0), 
                                                         mapped_rotations(i, 1), 
                                                         mapped_rotations(i, 2), 
                                                         mapped_rotations(i, 3));
-
-    
+                                                        
             for(int it=0; it < 100; ++it) {
                 Mat3x3 rotation = q.toRotationMatrix();
                 Mat3x3 tRxF= rotation.transpose() * F;
@@ -258,14 +289,14 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
                 double h11 = tRxF(2, 2) + tRxF(0, 0); 
                 double h22 = tRxF(1, 1) + tRxF(0, 0);
                 // The matrix is symetric
-                double h10 = - 0.5 *(tRxF(1, 0) + tRxF(0, 1));
-                double h21= - 0.5 *(tRxF(1, 2) + tRxF(2, 1));
-                double h20= - 0.5 *(tRxF(2, 0) + tRxF(0, 2));
+                double h01 = - 0.5 *(tRxF(1, 0) + tRxF(0, 1));
+                double h12= - 0.5 *(tRxF(1, 2) + tRxF(2, 1));
+                double h02= - 0.5 *(tRxF(2, 0) + tRxF(0, 2));
 
                 Mat3x3 H; // The Hessian matrix
-                H << h00, h10, h20,   
-                    h10, h11, h21,   
-                    h20, h21, h22;
+                H << h00, h01, h02,   
+                     h01, h11, h12,   
+                     h02, h12, h22;   
 
                 double det_H = H.determinant();
 
@@ -273,23 +304,29 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
                 if(abs(det_H) < 1.0e-9 ) {
                     delta_omega = -Grad; // use Gradent decent
                 } else {
-                    delta_omega =  H.inverse() *Grad;
+                    delta_omega =  - H.inverse()*Grad;
                 }
-                
+
                 double norm_delta_omega = delta_omega.norm(); // norm of delta_omega
                 
-                std::clamp(norm_delta_omega, -3.1415, 3.1415); // clamping delta_omega between -pi and pi                    
+                //std::clamp(norm_delta_omega, -3.1415, 3.1415); // clamping delta_omega's norm between -pi and pi 
                 
+                if( Grad(0)*delta_omega(0) + Grad(1)*delta_omega(1) + Grad(2)*delta_omega(2) > 0) {
+                    delta_omega = -0.125*Grad;
+                }
                 // CayLay mapping for exponential mapping approximation 
                 Vect3x1 delta_omega_sur_2 = 0.5*delta_omega;
                 double quat_index0 = (1 - delta_omega_sur_2.squaredNorm()) / (1 + delta_omega_sur_2.squaredNorm());
                 Vect3x1 quat_indexfrom1to3 = (1/(1 + delta_omega_sur_2.squaredNorm()))*delta_omega;
                 
-                Eigen::Quaterniond quat_increment(quat_indexfrom1to3(0), quat_indexfrom1to3(1), quat_indexfrom1to3(2), quat_index0);
+                Eigen::Quaterniond quat_increment(quat_index0, quat_indexfrom1to3(0), quat_indexfrom1to3(1), quat_indexfrom1to3(2));
+                quat_increment.normalized();
                 q = q*quat_increment;
-            } 
-
-            
+                //rotation = q.toRotationMatrix() - F;
+                //q = rotation;
+                //q.normalized();
+                //std::cout << "Voici le quat increment: " << quat_increment.w() << " " << quat_increment.x() << " " << quat_increment.y() << " " << quat_increment.z() << std::endl;
+            }  */
             
             // Coordinates part of the DOFs
             for (std::size_t j = 0; j < Dimension; ++j) {
@@ -297,16 +334,16 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
             }
 
             // Rotation part of the DOFs
-            mapped_positions(i, Dimension+0) = q.w();
-            mapped_positions(i, Dimension+1) = q.x();
-            mapped_positions(i, Dimension+2) = q.y(); 
-            mapped_positions(i, Dimension+3) = q.z();
-
+            mapped_positions(i, Dimension+0) = q.x();
+            mapped_positions(i, Dimension+1) = q.y();
+            mapped_positions(i, Dimension+2) = q.z(); 
+            mapped_positions(i, Dimension+3) = q.w();
         }
     } else {
         // Interpolate the parent positions onto the mapped nodes
         p_barycentric_container->interpolate(positions, mapped_positions);
     } 
+
 }
 
 

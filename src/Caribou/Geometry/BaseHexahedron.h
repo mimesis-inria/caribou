@@ -22,6 +22,7 @@ struct BaseHexahedron : public Element<Derived> {
     using WorldCoordinates = typename Base::WorldCoordinates;
 
     using GaussNode = typename Base::GaussNode;
+    using Mat3x3   = Eigen::Matrix<double, 3, 3>;
 
     template <UNSIGNED_INTEGER_TYPE Dim>
     using Vector = typename Base::template Vector<Dim>;
@@ -150,6 +151,16 @@ struct BaseHexahedron : public Element<Derived> {
 
         return m;
     }
+
+    /* inline auto get_local_base() -> Mat3x3 {
+        const auto ex = this->world_coordinates({1, 0, 0}); 
+        const auto ey = this->world_coordinates({0, 1, 0}); 
+        const auto ez = this->world_coordinates({0, 0, 1});
+
+        Mat3x3 base; 
+        base << ex, ey, ez;
+        return base; 
+    } */
 
     /**
      * Test if the cube intersects the given 3D segment (in world coordinates)

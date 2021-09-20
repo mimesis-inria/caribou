@@ -4,6 +4,7 @@
 #include <Caribou/traits.h>
 #include <Caribou/macros.h>
 #include <Eigen/Dense>
+#include <Eigen/QR>
 #include <vector>
 
 #include <iostream>
@@ -34,6 +35,7 @@ struct Element {
 
     template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = Eigen::ColMajor>
     using Matrix = Eigen::Matrix<Scalar, Rows, Cols, Options>;
+    using Mat3x3   = Eigen::Matrix<double, 3, 3>;
 
     template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = Eigen::ColMajor>
     using MatrixI = Eigen::Matrix<Scalar, Rows, Cols, Options>;
@@ -80,6 +82,16 @@ struct Element {
             return 0;
         }
     }
+
+    inline auto local_base() const -> Mat3x3 {
+        const auto ex = world_coordinates({1, 0, 0}); 
+        const auto ey = world_coordinates({0, 1, 0}); 
+        const auto ez = world_coordinates({0, 0, 1});
+
+        Mat3x3 base; 
+        base << ex, ey, ez;
+        return base; 
+    } 
 
     /**
      * Get the list of node indices of the boundary elements.
