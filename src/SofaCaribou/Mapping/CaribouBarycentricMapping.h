@@ -7,6 +7,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/Mapping.h>
+#include <sofa/helper/OptionsGroup.h>
 DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::mapping {
@@ -41,7 +42,7 @@ public:
     using MappedDataVecDeriv = sofa::core::objectmodel::Data<typename MappedDataTypes::VecDeriv>;
     using MappedDataMapMapSparseMatrix = sofa::core::objectmodel::Data<typename MappedDataTypes::MatrixDeriv>;
 
-    using Mat3x3   = Eigen::Matrix<double, 3, 3>;
+    using Mat3x3   = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>;
     using Vect3x1   = Eigen::Vector3d;
     static constexpr INTEGER_TYPE NumberOfNodesPerElement = caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime;
 
@@ -55,6 +56,24 @@ public:
 
     template <typename ObjectType>
     using Link = sofa::core::objectmodel::SingleLink<CaribouBarycentricMapping<Element, MappedDataTypes>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
+
+    template <typename T>
+    using Data = sofa::core::objectmodel::Data<T>;
+
+    /// Rotation extraction methods
+    enum RotationExtractionMethod {
+        /// An orthogonal frame is built by projecting the mapping point onto the element's faces.
+        Frame = 0,
+
+        /// The rotation is extracted from the deformation tensor evaluated at the mapped point
+        /// using the Singular Value Decomposition (SVD) method.
+        SVD = 1,
+
+        /// The rotation is extracted from the deformation tensor using the Analytic Polar
+        /// Decomposition (APD) method described in "Fast Corotated FEM using Operator Splitting"
+        /// T. Kugelstadt et al. 2018.
+        APD = 2,
+    };
 
     // Constructor
     CaribouBarycentricMapping();
@@ -84,12 +103,14 @@ private:
     // Data members
     Link<SofaCaribou::topology::CaribouTopology<Element>> d_topology;
 
+    Data< sofa::helper::OptionsGroup > d_rotation_extraction_method;
+
     // Private members
     std::unique_ptr<caribou::topology::BarycentricContainer<Domain>> p_barycentric_container;
 
     Eigen::SparseMatrix<Scalar> p_J; ///< Mapping matrix
 
-    std::vector<Mat3x3> initial_bases;
+    std::vector<Mat3x3> initial_intersections;
 
 };
 

@@ -93,6 +93,48 @@ struct Element {
         return base; 
     } 
 
+    inline auto intersections_frame_faces(const LocalCoordinates & local_point, Mat3x3 initial_rotation) const -> Mat3x3
+    {
+        
+        
+        const auto u = initial_rotation.row(0); 
+
+        const auto v = initial_rotation.row(1); 
+        
+        const auto w = initial_rotation.row(2); 
+
+        // Position of the point inside the hexahedron where the frame should be computed
+        const auto p = this->world_coordinates( local_point );
+        
+        const auto inter_u = LocalCoordinates(u + p); 
+        const auto inter_v = LocalCoordinates(v + p); 
+        const auto inter_w = LocalCoordinates(w + p);
+
+        Mat3x3 m; 
+        m << inter_u, inter_v, inter_w; 
+        return m;
+
+    }
+
+    inline auto frame_new_rotation(LocalCoordinates & local_point, Mat3x3 m) -> Mat3x3 {
+        
+        // Position of the point inside the hexahedron where the frame should be computed
+        const auto p = this->world_coordinates( local_point );
+        
+        const auto inter_u = this->world_coordinates(m.row(0));
+        const auto inter_v = this->world_coordinates(m.row(1));
+        const auto inter_w = this->world_coordinates(m.row(2));
+
+        const auto u = inter_u - p;
+        const auto v = inter_v - p; 
+        const auto w = inter_w - p; 
+
+        Mat3x3 rot; 
+        rot << u, v, w; 
+
+        return rot; 
+
+    }
     /**
      * Get the list of node indices of the boundary elements.
      *

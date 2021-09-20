@@ -152,6 +152,11 @@ struct BaseHexahedron : public Element<Derived> {
         return m;
     }
 
+
+
+
+
+
     /* inline auto get_local_base() -> Mat3x3 {
         const auto ex = this->world_coordinates({1, 0, 0}); 
         const auto ey = this->world_coordinates({0, 1, 0}); 

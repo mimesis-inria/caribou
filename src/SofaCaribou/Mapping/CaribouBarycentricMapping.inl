@@ -30,7 +30,21 @@ template <typename T> static constexpr auto is_rigid_types_v = is_rigid_types<T>
 template<typename Element, typename MappedDataTypes>
 CaribouBarycentricMapping<Element, MappedDataTypes>::CaribouBarycentricMapping()
 : d_topology(initLink("topology", "Topology that contains the embedding (parent) elements."))
-{  
+, d_rotation_extraction_method(initData(&d_rotation_extraction_method,
+    "rotation_extraction_method",
+    R"(
+        Rotation extraction methods are:
+            Frame:          An orthogonal frame is built by projecting the mapping point onto the element's faces. (default)
+            SVD:            The rotation is extracted from the deformation tensor evaluated at the mapped point using the
+                            Singular Value Decomposition (SVD) method.
+            APD:            The rotation is extracted from the deformation tensor using the Analytic Polar Decomposition (APD)
+                            method described in "Fast Corotated FEM using Operator Splitting" T. Kugelstadt et al. 2018.
+    )",
+    true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+{
+    auto rotation_extraction_method = sofa::helper::getWriteOnlyAccessor(d_rotation_extraction_method);
+    rotation_extraction_method->setNames(3, "Frame", "SVD", "APD");
+    rotation_extraction_method->setSelectedItem("Frame");
 }
 
 template<typename Element, typename MappedDataTypes>
@@ -118,6 +132,10 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::init() {
         return;
     }
 
+    // Mapped (embedded) nodes at rest
+    auto initial_mapped_positions = this->getToModel()->readRestPositions();
+
+
     // Precompute the mapping matrix (derivative of the mapping function w.r.t rest position).
     p_J.setZero(); // Let's clear it just in case init was called previously
     p_J.resize(this->getToModel()->getSize(), this->getFromModel()->getSize());
@@ -125,14 +143,10 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::init() {
     entries.reserve(this->getFromModel()->getSize());
     const auto * domain = d_topology->domain();
     const auto & barycentric_points = p_barycentric_container->barycentric_points();
-    initial_bases.clear();
-    initial_bases.reserve(barycentric_points.size());
     for (std::size_t i = 0; i < barycentric_points.size(); ++i) {
         const auto & bp = barycentric_points[i];
         const auto & node_indices = domain->element_indices(bp.element_index);
         const auto e = domain->element(bp.element_index);
-        const auto base = e.local_base(); 
-        initial_bases.push_back(base);
         const auto L = e.L(bp.local_coordinates); // Shape functions at barycentric coordinates
         for (Eigen::Index j = 0; j < node_indices.rows(); ++j) {
             const auto & node_index = node_indices[j];
@@ -154,6 +168,9 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
     if (not p_barycentric_container or not p_barycentric_container->outside_nodes().empty()) {
         return;
     }
+
+    // Rotation extraction method
+    const auto & rotation_extraction_method = d_rotation_extraction_method.getValue().getSelectedId();
 
     const auto & barycentric_points = p_barycentric_container->barycentric_points();
     const auto nb_of_barycentric_points = barycentric_points.size();
@@ -179,7 +196,9 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
                 MappedDimension
                 /* Eigen::Stride<MapTotalSize, 1>(MapTotalSize, 1) */
         );
+
     
+
     Eigen::MatrixXd mapped_rotations(output_mapped_position.size(), 4);
     for(int i = 0; i < output_mapped_position.size(); ++i) {
         for(int j = 0; j < 4; ++j) {
@@ -187,157 +206,144 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
         }
     } 
     
-    /* ------ APD Algorithm ---------
+    //------ APD Algorithm ---------
     sofa::helper::ReadAccessor<DataVecCoord> sofa_x = data_input_position;
     sofa::helper::ReadAccessor<DataVecCoord> sofa_x0 = this->getFromModel()->readRestPositions();
+
+
+    sofa::helper::ReadAccessor<MappedDataVecCoord> sofa_x1 = this->getToModel()->readPositions();
 
     if (sofa_x.size() != sofa_x0.size() )
         return;
 
     const auto nb_nodes = sofa_x.size();
+    const auto nb_nodes_mapped = sofa_x1.size();
     const Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     const Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
-    */
-    
+    //const Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, MappedDimension, Eigen::RowMajor>>    X1      (sofa_x1.ref().data()->data(), nb_nodes_mapped, MappedDimension);
+   
     if constexpr (is_rigid_types_v<MappedDataTypes>) {
-        for (std::size_t i = 0; i <nb_of_barycentric_points; ++i) {
-            const auto & bp = barycentric_points[i];
+        for (std::size_t bp_index = 0; bp_index <nb_of_barycentric_points; ++bp_index) {
+            const auto & bp = barycentric_points[bp_index];
             
             const auto & element_index = bp.element_index;
             const auto & local_coordinates = bp.local_coordinates;
             const auto elem = d_topology->element(element_index, data_input_position);
 
-            const auto new_positions = elem.world_coordinates(local_coordinates);            
-            
-            // ---------- Igor's Algorithm -----------
+            const auto new_positions = elem.world_coordinates(local_coordinates);
 
-            Eigen::Quaterniond q = Eigen::Quaterniond(mapped_rotations(i, 0), 
-                                                        mapped_rotations(i, 1), 
-                                                        mapped_rotations(i, 2), 
-                                                        mapped_rotations(i, 3));
-            const auto element_intial_local_base = initial_bases[i]; 
-            const auto element_actual_local_base = elem.local_base();
+            const Eigen::Quaterniond q0 (
+                    mapped_positions(bp_index, Dimension+0),
+                    mapped_positions(bp_index, Dimension+1),
+                    mapped_positions(bp_index, Dimension+2),
+                    mapped_positions(bp_index, Dimension+3)
+                    );
 
-            Mat3x3 rot = q.toRotationMatrix(); 
+            Eigen::Quaterniond q;
+            if (rotation_extraction_method == RotationExtractionMethod::Frame) {
+                const auto R = elem.frame(local_coordinates);
+                q = R;
+            } else {
+                // For the SVD or APD methods, the deformation tensor needs to be
+                // computed at the local coordinates of the mapped point position
+                const auto J = elem.jacobian(local_coordinates);
+                const Mat3x3 Jinv = J.inverse();
+                const auto detJ = std::abs(J.determinant());
+                // Derivatives of the shape functions at the local coordinate with respoect to global coordinates x, y and z;
+                Eigen::Matrix<double, NumberOfNodesPerElement, Dimension> dN_dx = (Jinv.transpose() * elem.dL(local_coordinates).transpose()).transpose();
 
-            Mat3x3 OT = element_intial_local_base.inverse() * rot; 
+                // Get the element node indices
+                auto node_indices = d_topology->domain()->element_indices(element_index);
 
-            Mat3x3 actual_rotation = element_actual_local_base * OT;
-            /* if(element_intial_local_base == element_actual_local_base) {
-                std::cout << "Trueee" << std::endl;
-            }
- */
-            Eigen::HouseholderQR<Mat3x3> qr(actual_rotation.rows(), actual_rotation.cols());
-            qr.compute(actual_rotation);
-            actual_rotation = qr.householderQ();
-            q = actual_rotation; 
+                // Fetch the initial and current positions of the element's nodes
+                Eigen::Matrix<Scalar, NumberOfNodesPerElement, Dimension> initial_nodes_position;
+                Eigen::Matrix<Scalar, NumberOfNodesPerElement, Dimension> current_nodes_position;
 
-
-            /* ---------- APD Algorithm ------------
-            
-            // Computing the deformation tensor at the local coordinates
-
-            const auto J = elem.jacobian(local_coordinates);
-            const Mat3x3 Jinv = J.inverse();
-            const auto detJ = std::abs(J.determinant());
-            // Derivatives of the shape functions at the local coordinate with respoect to global coordinates x, y and z;
-            Eigen::Matrix<double, NumberOfNodesPerElement, Dimension> dN_dx = (Jinv.transpose() * elem.dL(local_coordinates).transpose()).transpose();
-            
-            // Get the element node indices 
-            auto node_indices = d_topology->domain()->element_indices(element_index);
-
-            // Fetch the initial and current positions of the element's nodes
-            Eigen::Matrix<Scalar, NumberOfNodesPerElement, Dimension> initial_nodes_position;
-            Eigen::Matrix<Scalar, NumberOfNodesPerElement, Dimension> current_nodes_position;
-
-            for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-                initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
-                current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
-            }
-
-            // Compute the nodal displacement for the element: elem
-            Eigen::Matrix<Scalar, NumberOfNodesPerElement, Dimension> U;
-            for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-                const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
-                for (size_t j = 0; j < Dimension; ++j) {
-                    U(i, j) = u[j];
+                for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+                    initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
+                    current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
                 }
-            }
 
-            
-            // Compute the deformation tensor for the element "elem" at the point of the beam number 'i" which is inside the element "elem"
-            const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
+                // Compute the nodal displacement for the element: elem
+                Eigen::Matrix<Scalar, NumberOfNodesPerElement, Dimension> U;
+                for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+                    const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
+                    for (size_t j = 0; j < Dimension; ++j) {
+                        U(i, j) = u[j];
+                    }
+                }
 
-            // APD Algorithm to extract the rotation
-            
-            Eigen::Quaterniond q = Eigen::Quaterniond(mapped_rotations(i, 0), 
-                                                        mapped_rotations(i, 1), 
-                                                        mapped_rotations(i, 2), 
-                                                        mapped_rotations(i, 3));
-                                                        
-            for(int it=0; it < 100; ++it) {
-                Mat3x3 rotation = q.toRotationMatrix();
-                Mat3x3 tRxF= rotation.transpose() * F;
+                // Compute the deformation tensor for the element "elem" at the point of the beam number 'i" which is inside the element "elem"
+                const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
 
-                // Compute the gradient of the APD as an optimization problème, see the paper: Fast Corotated FEM using Operator Splitting 
-                Vect3x1 Grad(tRxF(2, 1) - tRxF(1, 2), tRxF(0, 2) - tRxF(2, 0), tRxF(1, 0) - tRxF(0, 1));
-
-                // Compute the hessian of the APD as an optimization problème, see the paper: Fast Corotated FEM using Operator Splitting
-
-                // Diagonal
-                double h00 = tRxF(1, 1) + tRxF(2, 2); 
-                double h11 = tRxF(2, 2) + tRxF(0, 0); 
-                double h22 = tRxF(1, 1) + tRxF(0, 0);
-                // The matrix is symetric
-                double h01 = - 0.5 *(tRxF(1, 0) + tRxF(0, 1));
-                double h12= - 0.5 *(tRxF(1, 2) + tRxF(2, 1));
-                double h02= - 0.5 *(tRxF(2, 0) + tRxF(0, 2));
-
-                Mat3x3 H; // The Hessian matrix
-                H << h00, h01, h02,   
-                     h01, h11, h12,   
-                     h02, h12, h22;   
-
-                double det_H = H.determinant();
-
-                Vect3x1 delta_omega; 
-                if(abs(det_H) < 1.0e-9 ) {
-                    delta_omega = -Grad; // use Gradent decent
+                if (rotation_extraction_method == RotationExtractionMethod::SVD) {
+                    // SVD Method
+                    Eigen::JacobiSVD<Mat3x3> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
+                    const Mat3x3 R = svd.matrixU() * /*svd.singularValues().asDiagonal() **/ svd.matrixV().transpose();
+                    q = R;
                 } else {
-                    delta_omega =  - H.inverse()*Grad;
-                }
+                    // APD Method
+                    q = Eigen::Quaterniond(mapped_rotations(static_cast<Eigen::Index>(bp_index), 0),
+                                           mapped_rotations(static_cast<Eigen::Index>(bp_index), 1),
+                                           mapped_rotations(static_cast<Eigen::Index>(bp_index), 2),
+                                           mapped_rotations(static_cast<Eigen::Index>(bp_index), 3));
+                    for(int it=0; it < 100; ++it) {
+                        Mat3x3 rotation = q.toRotationMatrix();
+                        Mat3x3 tRxF= rotation.transpose() * F;
 
-                double norm_delta_omega = delta_omega.norm(); // norm of delta_omega
-                
-                //std::clamp(norm_delta_omega, -3.1415, 3.1415); // clamping delta_omega's norm between -pi and pi 
-                
-                if( Grad(0)*delta_omega(0) + Grad(1)*delta_omega(1) + Grad(2)*delta_omega(2) > 0) {
-                    delta_omega = -0.125*Grad;
+                        // Compute the gradient of the APD as an optimization problème, see the paper: Fast Corotated FEM using Operator Splitting
+                        Vect3x1 Grad(tRxF(2, 1) - tRxF(1, 2), tRxF(0, 2) - tRxF(2, 0), tRxF(1, 0) - tRxF(0, 1));
+
+                        // Compute the hessian of the APD as an optimization problème, see the paper: Fast Corotated FEM using Operator Splitting
+
+                        // Diagonal
+                        double h00 = tRxF(1, 1) + tRxF(2, 2);
+                        double h11 = tRxF(2, 2) + tRxF(0, 0);
+                        double h22 = tRxF(1, 1) + tRxF(0, 0);
+
+                        // The matrix is symetric
+                        double h10 = - 0.5 *(tRxF(1, 0) + tRxF(0, 1));
+                        double h21= - 0.5 *(tRxF(1, 2) + tRxF(2, 1));
+                        double h20= - 0.5 *(tRxF(2, 0) + tRxF(0, 2));
+
+                        Mat3x3 H; // The Hessian matrix
+                        H << h00, h10, h20,
+                             h10, h11, h21,
+                             h20, h21, h22;
+
+                        double det_H = H.determinant();
+
+                        Vect3x1 delta_omega;
+                        if(abs(det_H) < 1.0e-9 ) {
+                            delta_omega = -Grad; // use Gradent decent
+                        } else {
+                            delta_omega =  H.inverse() *Grad;
+                        }
+
+                        double norm_delta_omega = delta_omega.norm(); // norm of delta_omega
+                        std::clamp(norm_delta_omega, -3.1415, 3.1415); // clamping delta_omega between -pi and pi
+
+                        // CayLay mapping for exponential mapping approximation
+                        Vect3x1 delta_omega_sur_2 = 0.5*delta_omega;
+                        double quat_index0 = (1 - delta_omega_sur_2.squaredNorm()) / (1 + delta_omega_sur_2.squaredNorm());
+                        Vect3x1 quat_indexfrom1to3 = (1/(1 + delta_omega_sur_2.squaredNorm()))*delta_omega;
+
+                        Eigen::Quaterniond quat_increment(quat_indexfrom1to3(0), quat_indexfrom1to3(1), quat_indexfrom1to3(2), quat_index0);
+                        q = q*quat_increment;
+                    }
                 }
-                // CayLay mapping for exponential mapping approximation 
-                Vect3x1 delta_omega_sur_2 = 0.5*delta_omega;
-                double quat_index0 = (1 - delta_omega_sur_2.squaredNorm()) / (1 + delta_omega_sur_2.squaredNorm());
-                Vect3x1 quat_indexfrom1to3 = (1/(1 + delta_omega_sur_2.squaredNorm()))*delta_omega;
-                
-                Eigen::Quaterniond quat_increment(quat_index0, quat_indexfrom1to3(0), quat_indexfrom1to3(1), quat_indexfrom1to3(2));
-                quat_increment.normalized();
-                q = q*quat_increment;
-                //rotation = q.toRotationMatrix() - F;
-                //q = rotation;
-                //q.normalized();
-                //std::cout << "Voici le quat increment: " << quat_increment.w() << " " << quat_increment.x() << " " << quat_increment.y() << " " << quat_increment.z() << std::endl;
-            }  */
-            
+            }
+
             // Coordinates part of the DOFs
             for (std::size_t j = 0; j < Dimension; ++j) {
-                mapped_positions(i, j) = new_positions[j]; 
+                mapped_positions(bp_index, j) = new_positions[j];
             }
 
             // Rotation part of the DOFs
-            mapped_positions(i, Dimension+0) = q.x();
-            mapped_positions(i, Dimension+1) = q.y();
-            mapped_positions(i, Dimension+2) = q.z(); 
-            mapped_positions(i, Dimension+3) = q.w();
+            mapped_positions(bp_index, Dimension+0) = q0.w(); //(q*q0).w();
+            mapped_positions(bp_index, Dimension+1) = q0.x(); //(q*q0).x();
+            mapped_positions(bp_index, Dimension+2) = q0.y(); //(q*q0).y();
+            mapped_positions(bp_index, Dimension+3) = q0.z(); //(q*q0).z();
         }
     } else {
         // Interpolate the parent positions onto the mapped nodes
