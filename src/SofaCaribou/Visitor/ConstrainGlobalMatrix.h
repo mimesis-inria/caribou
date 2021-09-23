@@ -32,10 +32,10 @@ public:
     ConstrainGlobalMatrix(const MechanicalParams* mparams, const MultiMatrixAccessor* matrix )
         : Base(mparams), p_multi_matrix(matrix) {}
 
-    CARIBOU_API
+    
     Result fwdProjectiveConstraintSet(sofa::simulation::Node * node, sofa::core::behavior::BaseProjectiveConstraintSet * c) override;
 
-    CARIBOU_API
+    
     bool stopAtMechanicalMapping(sofa::simulation::Node* node, sofa::core::BaseMapping* map) override;
 
     const char* getClassName() const override { return "ConstrainGlobalMatrix"; }

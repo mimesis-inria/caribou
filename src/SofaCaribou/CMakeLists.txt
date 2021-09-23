@@ -1,5 +1,7 @@
 project(SofaCaribou)
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 set(HEADER_FILES
     config.h.in
     Algebra/BaseVectorOperations.h

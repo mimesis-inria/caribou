@@ -50,14 +50,14 @@ public:
     CaribouBarycentricMapping();
 
     // Public virtual methods
-    CARIBOU_API void init    () override;
-    CARIBOU_API void apply   (const sofa::core::MechanicalParams* mparams, MappedDataVecCoord & output_mapped_position, const DataVecCoord& input_position) override;
-    CARIBOU_API void applyJ  (const sofa::core::MechanicalParams* mparams, MappedDataVecDeriv & output_mapped_velocity, const DataVecDeriv& input_velocity) override;
-    CARIBOU_API void applyJT (const sofa::core::MechanicalParams* mparams, DataVecDeriv & output_force, const MappedDataVecDeriv & input_mapped_force) override;
-    CARIBOU_API void applyJT (const sofa::core::ConstraintParams* cparams, DataMapMapSparseMatrix & output_jacobian, const MappedDataMapMapSparseMatrix & input_jacobian) override;
-    CARIBOU_API void draw    (const sofa::core::visual::VisualParams* vparams) override;
+     void init    () override;
+     void apply   (const sofa::core::MechanicalParams* mparams, MappedDataVecCoord & output_mapped_position, const DataVecCoord& input_position) override;
+     void applyJ  (const sofa::core::MechanicalParams* mparams, MappedDataVecDeriv & output_mapped_velocity, const DataVecDeriv& input_velocity) override;
+     void applyJT (const sofa::core::MechanicalParams* mparams, DataVecDeriv & output_force, const MappedDataVecDeriv & input_mapped_force) override;
+     void applyJT (const sofa::core::ConstraintParams* cparams, DataMapMapSparseMatrix & output_jacobian, const MappedDataMapMapSparseMatrix & input_jacobian) override;
+     void draw    (const sofa::core::visual::VisualParams* vparams) override;
 
-    [[nodiscard]] CARIBOU_API auto
+    [[nodiscard]]  auto
     getTemplateName() const -> std::string override {
         return templateName(this);
     }
@@ -67,7 +67,7 @@ public:
     }
 
     template <typename Derived>
-    CARIBOU_API
+    
     static auto canCreate(Derived * o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
 
 private:

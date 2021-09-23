@@ -32,10 +32,10 @@ public:
     AssembleGlobalMatrix(const MechanicalParams* mparams, const MultiMatrixAccessor* matrix )
     : Base(mparams), p_multi_matrix(matrix) {}
 
-    CARIBOU_API
+    
     Result fwdForceField(sofa::simulation::Node* node, sofa::core::behavior::BaseForceField* ff) override;
 
-    CARIBOU_API
+    
     bool stopAtMechanicalMapping(sofa::simulation::Node* node, sofa::core::BaseMapping* map) override;
 
     const char* getClassName() const override { return "AssembleGlobalMatrix"; }

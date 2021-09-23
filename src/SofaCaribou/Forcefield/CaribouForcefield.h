@@ -59,14 +59,14 @@ public:
     static constexpr INTEGER_TYPE NumberOfGaussNodesPerElement = caribou::geometry::traits<Element>::NumberOfGaussNodesAtCompileTime;
 
     // Public methods
-    CARIBOU_API
+    
     CaribouForcefield();
 
-    CARIBOU_API
+    
     void init() override;
 
     template <typename Derived>
-    CARIBOU_API
+    
     static auto canCreate(Derived * o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
 
     [[nodiscard]] auto
@@ -76,10 +76,10 @@ public:
 
     static auto templateName(const CaribouForcefield<Element>* = nullptr) -> std::string;
 
-    CARIBOU_API
+    
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;
 
-    CARIBOU_API
+    
     void draw(const sofa::core::visual::VisualParams* vparams) override;
 
     /** Get the number of elements contained in this field **/

@@ -87,29 +87,29 @@ public:
 
     // Public methods
 
-    CARIBOU_API
+    
     HexahedronElasticForce();
 
-    CARIBOU_API
+    
     void init() override;
 
-    CARIBOU_API
+    
     void reinit() override;
 
-    CARIBOU_API
+    
     void addForce(
             const MechanicalParams* mparams,
             Data<VecDeriv>& d_f,
             const Data<VecCoord>& d_x,
             const Data<VecDeriv>& d_v) override;
 
-    CARIBOU_API
+    
     void addDForce(
             const MechanicalParams* /*mparams*/,
             Data<VecDeriv>& /*d_df*/,
             const Data<VecDeriv>& /*d_dx*/) override;
 
-    CARIBOU_API
+    
     void draw(const sofa::core::visual::VisualParams* vparams) override;
 
     SReal getPotentialEnergy(
@@ -117,10 +117,10 @@ public:
             const Data<VecCoord>& /* d_x */) const override
     {return 0;}
 
-    CARIBOU_API
+    
     void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
-    CARIBOU_API
+    
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;
 
     template <typename T>
@@ -172,15 +172,15 @@ public:
     }
 
     /** Get the complete tangent stiffness matrix */
-    CARIBOU_API
+    
     const Eigen::SparseMatrix<Real> & K();
 
     /** Get the eigen values of the tangent stiffness matrix */
-    CARIBOU_API
+    
     const Vector<Eigen::Dynamic> & eigenvalues();
 
     /** Get the condition number of the tangent stiffness matrix */
-    CARIBOU_API
+    
     Real cond();
 
 private:
