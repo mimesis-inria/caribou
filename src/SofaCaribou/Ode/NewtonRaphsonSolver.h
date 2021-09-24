@@ -164,6 +164,7 @@ private:
                                               sofa::core::MultiVecDerivId & v_id,
                                               sofa::core::MultiVecDerivId & dx_id) = 0;
 
+protected:
     /** Check that the linked linear solver is not null and that it implements the SofaCaribou::solver::LinearSolver interface */
     CARIBOU_API
     bool has_valid_linear_solver () const;
