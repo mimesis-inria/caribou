@@ -17,11 +17,11 @@ class LegacyStaticODESolver : public sofa::core::behavior::OdeSolver
 public:
     SOFA_CLASS(LegacyStaticODESolver, sofa::core::behavior::OdeSolver);
 
-    CARIBOU_API
+    
     LegacyStaticODESolver();
 
 public:
-    CARIBOU_API
+    
     void solve (const sofa::core::ExecParams* params /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
 
     /**

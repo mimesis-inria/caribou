@@ -1,5 +1,7 @@
 project(SofaCaribou.Benchmark)
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 set(HEADER_FILES
     Forcefield/RecomputeOrStore/HyperelasticForcefieldRecomputeF.h
     Forcefield/RecomputeOrStore/HyperelasticForcefieldStoreF.h
