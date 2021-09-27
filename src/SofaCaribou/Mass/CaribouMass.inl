@@ -5,6 +5,7 @@
 #include <Eigen/Cholesky>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/helper/AdvancedTimer.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/behavior/Mass.inl>
