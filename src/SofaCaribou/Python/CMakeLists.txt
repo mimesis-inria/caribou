@@ -7,6 +7,9 @@ set(HEADER_FILES
     Ode/LegacyStaticODESolver.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
+    Solver/LDLTSolver.h
+    Solver/LLTSolver.h
+    Solver/LUSolver.h
     Topology/CaribouTopology.h
     Topology/FictitiousGrid.h
 )
@@ -19,6 +22,9 @@ set(SOURCE_FILES
     Ode/LegacyStaticODESolver.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
+    Solver/LDLTSolver.cpp
+    Solver/LLTSolver.cpp
+    Solver/LUSolver.cpp
     Topology/CaribouTopology.cpp
     Topology/FictitiousGrid.cpp
 )
@@ -33,17 +39,18 @@ set(PYTHON_TEST_FILES
 )
 
 find_package(SofaPython3 REQUIRED)
+find_package(MKL REQUIRED)
 caribou_add_python_module(SofaCaribou
-                          TARGET_NAME       ${PROJECT_NAME}
-                          TARGET_ALIAS      Caribou::Python.SofaCaribou
-                          TARGET_DEPENDS    Caribou::Geometry Caribou::Python.Config SofaCaribou SofaPython3::Bindings.Sofa.Core
-                          COMPONENT_NAME    SofaCaribou
-                          PACKAGE_NAME      SofaCaribou
-                          DESTINATION       SofaCaribou
-                          SOURCE_FILES      ${SOURCE_FILES}
-                          PUBLIC_HEADERS    ${HEADER_FILES}
-                          PYTHON_FILES      ${PYTHON_FILES}
-                          PYTHON_TEST_FILES ${PYTHON_TEST_FILES}
+                          TARGET_NAME                       ${PROJECT_NAME}
+                          TARGET_ALIAS                      Caribou::Python.SofaCaribou
+                          TARGET_DEPENDS                    Caribou::Geometry Caribou::Python.Config SofaCaribou SofaPython3::Bindings.Sofa.Core
+                          COMPONENT_NAME                    SofaCaribou
+                          PACKAGE_NAME                      SofaCaribou
+                          DESTINATION                       SofaCaribou
+                          SOURCE_FILES                      ${SOURCE_FILES}
+                          PUBLIC_HEADERS                    ${HEADER_FILES}
+                          PYTHON_FILES                      ${PYTHON_FILES}
+                          PYTHON_TEST_FILES                 ${PYTHON_TEST_FILES}
                           )
 
 list(APPEND target_rpath

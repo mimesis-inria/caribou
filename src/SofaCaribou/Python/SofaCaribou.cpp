@@ -6,6 +6,9 @@
 #include <SofaCaribou/Python/Forcefield/HexahedronElasticForce.h>
 #include <SofaCaribou/Python/Forcefield/HyperelasticForcefield.h>
 #include <SofaCaribou/Python/Solver/ConjugateGradientSolver.h>
+#include <SofaCaribou/Python/Solver/LDLTSolver.h>
+#include <SofaCaribou/Python/Solver/LLTSolver.h>
+#include <SofaCaribou/Python/Solver/LUSolver.h>
 #include <SofaCaribou/Python/Topology/CaribouTopology.h>
 #include <SofaCaribou/Python/Topology/FictitiousGrid.h>
 
@@ -32,6 +35,10 @@ PYBIND11_MODULE(SofaCaribou, m) {
 
     // Solver bindings
     SofaCaribou::solver::python::addConjugateGradientSolver(m);
+    SofaCaribou::solver::python::addLDLTSolver(m);
+    SofaCaribou::solver::python::addLLTSolver(m);
+    SofaCaribou::solver::python::addLUSolver(m);
+
 
     // Container bindings
     pybind11::bind_vector<std::vector<FLOATING_POINT_TYPE>>(m, "VectorFloat");
