@@ -32,25 +32,25 @@ public:
     using Matrix = typename Base::Matrix;
     using Vector = typename Base::Vector;
 
-    CARIBOU_API
+    
     LLTSolver();
 
     /** @see LinearSolver::analyze_pattern */
-    CARIBOU_API
+    
     bool analyze_pattern() override;
 
     /** @see LinearSolver::factorize */
-    CARIBOU_API
+    
     bool factorize() override;
 
     /**
      * @see SofaCaribou::solver::LinearSolver::solve
      */
-    CARIBOU_API
+    
     bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) override;
 
     /// Get the backend name of the class derived from the EigenSolver_t template parameter
-    CARIBOU_API
+    
     static std::string BackendName();
 private:
     /// Solver backend used (Eigen or Pardiso)

@@ -70,25 +70,25 @@ public:
 
     // Public methods
 
-    CARIBOU_API
+    
     TractionForcefield();
 
-    CARIBOU_API
+    
     void init() override;
 
-    CARIBOU_API
+    
     void reset() override;
 
-    CARIBOU_API
+    
     void addForce(const sofa::core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& d_v) override;
 
-    CARIBOU_API
+    
     void addDForce(const sofa::core::MechanicalParams* /*mparams*/, Data<VecDeriv>& /*d_df*/, const Data<VecDeriv>& /*d_dx*/) override {}
 
-    CARIBOU_API
+    
     void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override {}
 
-    CARIBOU_API
+    
     void handleEvent(sofa::core::objectmodel::Event* event) override;
 
     SReal getPotentialEnergy(const sofa::core::MechanicalParams* /*mparams*/, const Data<VecDeriv>&  /* x */) const override

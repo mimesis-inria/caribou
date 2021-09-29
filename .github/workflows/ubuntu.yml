@@ -27,6 +27,8 @@ jobs:
           fetch-depth: 0
 
       - run: |
+          git config --global user.email "caribou@github.com"
+          git config --global user.name "Caribou Github"
           git fetch origin
           git rebase origin/master
 
@@ -189,3 +191,74 @@ jobs:
         run: |
             export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
             python3 $CARIBOU_ROOT/bin/pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
+
+
+  deploy:
+    name: Deploy ${{ matrix.sofa_version }}
+    needs: [test]
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        sofa_version: [ v20.06.01, v20.12.03, v21.06.00, master ]
+    env:
+      SOFA_VERSION: ${{ matrix.sofa_version }}
+
+    steps:
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: caribou_${{ matrix.sofa_version }}
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y_%m_%d')"
+
+      - name: Get SOFA major/minor
+        id: sofa_version
+        run: |
+          if [ "$SOFA_VERSION" = "master" ]; then
+              echo "::set-output name=value::master"
+          else
+              echo "::set-output name=value::${SOFA_VERSION%.*}"
+          fi
+
+      - name: Create artifact directory
+        uses: appleboy/ssh-action@master
+        env:
+          ARTIFACT_TARGET: ${{ format('{0}/linux/{1}', secrets.ARTIFACT_TARGET, steps.sofa_version.outputs.value) }}
+        with:
+          host: ${{ secrets.ARTIFACT_HOST }}
+          username: ${{ secrets.ARTIFACT_USERNAME }}
+          key: ${{ secrets.ARTIFACT_KEY }}
+          port: ${{ secrets.ARTIFACT_PORT }}
+          envs: ARTIFACT_TARGET
+          script: mkdir -p $ARTIFACT_TARGET
+
+      - name: Deploy artifact
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.ARTIFACT_HOST }}
+          username: ${{ secrets.ARTIFACT_USERNAME }}
+          port: ${{ secrets.ARTIFACT_PORT }}
+          key: ${{ secrets.ARTIFACT_KEY }}
+          source: "SofaCaribou.tar.gz"
+          target: ${{ format('{0}/linux/{1}/SofaCaribou_{2}', secrets.ARTIFACT_TARGET, steps.sofa_version.outputs.value, steps.date.outputs.date) }}
+          debug: true
+
+      - name: Tag as latest
+        uses: appleboy/ssh-action@master
+        env:
+          ARTIFACT_TARGET: ${{ format('{0}/linux/{1}/SofaCaribou_{2}', secrets.ARTIFACT_TARGET, steps.sofa_version.outputs.value, steps.date.outputs.date) }}
+          ARTIFACT_LATEST: ${{ format('{0}/linux/{1}/SofaCaribou_latest.tar.gz', secrets.ARTIFACT_TARGET, steps.sofa_version.outputs.value) }}
+        with:
+          host: ${{ secrets.ARTIFACT_HOST }}
+          username: ${{ secrets.ARTIFACT_USERNAME }}
+          key: ${{ secrets.ARTIFACT_KEY }}
+          port: ${{ secrets.ARTIFACT_PORT }}
+          envs: ARTIFACT_TARGET,ARTIFACT_LATEST
+          script: |
+            mv $ARTIFACT_TARGET/SofaCaribou.tar.gz $ARTIFACT_TARGET.tar.gz
+            rm -rf $ARTIFACT_TARGET
+            rm -f $ARTIFACT_LATEST
+            ln -s $ARTIFACT_TARGET.tar.gz $ARTIFACT_LATEST

@@ -100,14 +100,14 @@ public:
     >::type;
 
     // Public methods
-    CARIBOU_API
+    
     CaribouMass();
 
-    CARIBOU_API
+    
     void init() override;
 
     template <typename Derived>
-    CARIBOU_API
+    
     static auto canCreate(Derived * o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
 
     template <typename DerivedElement>
@@ -154,24 +154,24 @@ public:
         return p_topology;
     }
 
-    CARIBOU_API
+    
     void addForce(const sofa::core::MechanicalParams * mparams, DataVecDeriv & f, const DataVecCoord & x, const DataVecDeriv & v) override;
 
-    CARIBOU_API
+    
     void addMToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal mFact, unsigned int & offset) override;
 
-    CARIBOU_API
+    
     void addMToMatrix(const sofa::core::MechanicalParams * mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override {
         Inherit1::addMToMatrix(mparams, matrix);
     }
 
-    CARIBOU_API
+    
     void addGravityToV(const sofa::core::MechanicalParams * /* mparams */, DataVecDeriv& /* d_v */) override;
 
-    CARIBOU_API
+    
     void accFromF(const sofa::core::MechanicalParams * mparams, DataVecDeriv & d_a, const DataVecDeriv & d_f) override;
 
-    CARIBOU_API
+    
     void addMDx(const sofa::core::MechanicalParams * mparams, DataVecDeriv & d_f, const DataVecDeriv & d_dx, SReal factor) override;
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
@@ -179,14 +179,14 @@ public:
      * @return True if the mass matrix is lumped, false otherwise. The lumping is done by placing integration point
      * directly onto the nodes of each elements.
      */
-    CARIBOU_API
+    
     bool isDiagonal() override {return d_lumped.getValue();}
 #else
     /**
      * @return True if the mass matrix is lumped, false otherwise. The lumping is done by placing integration point
      * directly onto the nodes of each elements.
      */
-    CARIBOU_API
+    
     bool isDiagonal() const override {return d_lumped.getValue();}
 #endif
     /**
@@ -197,7 +197,7 @@ public:
      * changes. By default, it will use the mechanical state vector "restPosition". If another state vector
      * should be used as the x, use instead the assemble_mass_matrix(x) method.
      */
-    CARIBOU_API
+    
     void assemble_mass_matrix();
 
     /**
@@ -209,7 +209,7 @@ public:
      * A reference to the assembled consistent mass matrix M as a column major sparse matrix can be later
      *  obtained using the method M().
      */
-    CARIBOU_API
+    
     void assemble_mass_matrix(const sofa::core::objectmodel::Data<VecCoord> & x0);
 
     /**
@@ -222,11 +222,11 @@ public:
      *  obtained using the method M().
      */
     template <typename Derived>
-    CARIBOU_API
+    
     void assemble_mass_matrix(const Eigen::MatrixBase<Derived> & x0);
 
     /** Get the set of Gauss integration nodes of an element */
-    CARIBOU_API
+    
     inline auto gauss_nodes_of(std::size_t element_id) const -> const auto & {
         return p_elements_quadrature_nodes[element_id];
     }
