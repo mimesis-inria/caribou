@@ -109,8 +109,14 @@ public:
     /** Get a readonly reference to the global assembled system matrix. */
     auto A() const -> const SofaCaribou::Algebra::EigenMatrix<Matrix> * { return p_A_ptr; }
 
+    /** Get a readonly reference to the right-hand side vector. */
+    auto b() const -> const SofaCaribou::Algebra::EigenVector<Vector> * { return &p_b;}
+
     /** Get a readonly reference to the right-hand side vector identifier */
     auto b_id() const -> const sofa::core::MultiVecDerivId & { return p_b_id; }
+
+    /** Get a readonly reference to the left-hand side unknown vector. */
+    auto x() const -> const SofaCaribou::Algebra::EigenVector<Vector> * { return &p_x;}
 
     /** Get a readonly reference to the left-hand side unknown vector identifier */
     auto x_id() const -> const sofa::core::MultiVecDerivId & { return p_x_id; }
