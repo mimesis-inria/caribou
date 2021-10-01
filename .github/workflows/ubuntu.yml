@@ -193,10 +193,12 @@ jobs:
             python3 $CARIBOU_ROOT/bin/pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
 
 
+
   deploy:
     name: Deploy ${{ matrix.sofa_version }}
     needs: [test]
     runs-on: ubuntu-20.04
+    if: github.event_name == 'schedule'
     strategy:
       matrix:
         sofa_version: [ v20.06.01, v20.12.03, v21.06.00, master ]
