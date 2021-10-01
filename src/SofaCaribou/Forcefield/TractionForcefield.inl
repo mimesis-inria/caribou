@@ -7,6 +7,9 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
 #include <sofa/helper/AdvancedTimer.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION >= 210600)
+#include <sofa/helper/ScopedAdvancedTimer.h>
+#endif
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION <= 201299)
