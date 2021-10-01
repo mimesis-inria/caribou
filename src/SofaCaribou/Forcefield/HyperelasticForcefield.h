@@ -69,34 +69,34 @@ public:
 
     // Public methods
 
-    CARIBOU_API
+    
     HyperelasticForcefield();
 
-    CARIBOU_API
+    
     void init() override;
 
-    CARIBOU_API
+    
     void addForce(const sofa::core::MechanicalParams* mparams, sofa::core::MultiVecDerivId fId ) override;
 
-    CARIBOU_API
+    
     void addForce(
         const sofa::core::MechanicalParams* mparams,
         sofa::core::objectmodel::Data<VecDeriv>& d_f,
         const sofa::core::objectmodel::Data<VecCoord>& d_x,
         const sofa::core::objectmodel::Data<VecDeriv>& d_v) override;
 
-    CARIBOU_API
+    
     void addDForce(
         const sofa::core::MechanicalParams* /*mparams*/,
         sofa::core::objectmodel::Data<VecDeriv>& /*d_df*/,
         const sofa::core::objectmodel::Data<VecDeriv>& /*d_dx*/) override;
 
-    CARIBOU_API
+    
     SReal getPotentialEnergy(
         const sofa::core::MechanicalParams* /* mparams */,
         const sofa::core::objectmodel::Data<VecCoord>& /* d_x */) const override;
 
-    CARIBOU_API
+    
     void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
     /** Get the set of Gauss integration nodes of an element */
@@ -148,11 +148,11 @@ public:
     }
 
     /** Get the eigen values of the tangent stiffness matrix */
-    CARIBOU_API
+    
     auto eigenvalues() -> const Vector<Eigen::Dynamic> &;
 
     /** Get the condition number of the tangent stiffness matrix */
-    CARIBOU_API
+    
     auto cond() -> Real;
 
     /**

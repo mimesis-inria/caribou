@@ -1,5 +1,7 @@
 project(SofaCaribou.Python)
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 set(HEADER_FILES
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h

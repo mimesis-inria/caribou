@@ -101,28 +101,28 @@ public:
     template <typename T>
     using Data = sofa::core::objectmodel::Data<T>;
 
-    CARIBOU_API
+    
     BackwardEulerODESolver();
 
-    CARIBOU_API
+    
     void solve (const sofa::core::ExecParams* params, SReal dt, sofa::core::MultiVecCoordId x_id, sofa::core::MultiVecDerivId v_id) override;
 private:
 
     /** @see NewtonRaphsonSolver::assemble_rhs_vector */
-    CARIBOU_API
+    
     void assemble_rhs_vector(const sofa::core::MechanicalParams & mechanical_parameters,
                              const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
                              sofa::core::MultiVecDerivId & f_id,
                              sofa::defaulttype::BaseVector * f) final;
 
     /** @see NewtonRaphsonSolver::assemble_system_matrix */
-    CARIBOU_API
+    
     void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
                                 sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
                                 sofa::defaulttype::BaseMatrix * A) final;
 
     /** @see NewtonRaphsonSolver::propagate_position_increment */
-    CARIBOU_API
+    
     void propagate_solution_increment(const sofa::core::MechanicalParams & mechanical_parameters,
                                       const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
                                       const sofa::defaulttype::BaseVector * dx,

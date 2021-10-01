@@ -38,18 +38,18 @@ public:
             return !map->areForcesMapped();
     }
 
-    CARIBOU_API
+    
     Result fwdMechanicalState(VisitorContext *ctx, sofa::core::behavior::BaseMechanicalState *mm) override;
 
-    CARIBOU_API
+    
     Result fwdMappedMechanicalState(VisitorContext *ctx, sofa::core::behavior::BaseMechanicalState *mm) override;
 
-    CARIBOU_API
+    
     void copy(sofa::core::behavior::BaseMechanicalState * state) const ;
 
     const char *getClassName() const override { return "MultiVecEqualVisitor"; }
 
-    CARIBOU_API
+    
     std::string getInfos() const override;
 
 private:

@@ -76,7 +76,7 @@ public:
      *
      * \note Only used by SOFA ODE solvers and the Caribou's LegacyStaticODESolver.
      */
-    CARIBOU_API
+    
     void setSystemMBKMatrix(const sofa::core::MechanicalParams* mparams) final;
 
     /**
@@ -86,7 +86,7 @@ public:
      *
      * \note Only used by SOFA ODE solvers and the Caribou's LegacyStaticODESolver.
      */
-    CARIBOU_API
+    
     void setSystemRHVector(sofa::core::MultiVecDerivId b_id) final;
 
     /**
@@ -96,7 +96,7 @@ public:
      *
      * \note Only used by SOFA ODE solvers and the Caribou's LegacyStaticODESolver.
      */
-    CARIBOU_API
+    
     void setSystemLHVector(sofa::core::MultiVecDerivId x_id) final;
 
     /**
@@ -105,11 +105,11 @@ public:
      *
      * \note Only used by SOFA ODE solvers and the Caribou's LegacyStaticODESolver.
      */
-    CARIBOU_API
+    
     void solveSystem() final;
 
     /** @see SofaCaribou::solver::LinearSolver::is_iterative */
-    CARIBOU_API
+    
     bool is_iterative() const override {
         return true;
     }
@@ -151,15 +151,15 @@ protected:
     void solve(sofa::core::behavior::MultiVecDeriv & b, sofa::core::behavior::MultiVecDeriv & x);
 
     /** @see LinearSolver::analyze_pattern */
-    CARIBOU_API
+    
     bool analyze_pattern() override;
 
     /** @see LinearSolver::factorize */
-    CARIBOU_API
+    
     bool factorize() override;
 
     /** @see SofaCaribou::solver::LinearSolver::solve */
-    CARIBOU_API
+    
     bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) override;
 
     /**
