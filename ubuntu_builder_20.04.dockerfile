@@ -2,20 +2,29 @@ FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND noninteractive
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN apt-get -qq update \
-&&  apt-get -qq --no-install-recommends install software-properties-common \
-&&  add-apt-repository -y ppa:deadsnakes \
-&&  add-apt-repository -y ppa:mhier/libboost-latest \
-&&  apt-get -qq update
+RUN apt-get -qq update && apt-get -qq upgrade
 
-RUN apt-get -qq --no-install-recommends install libpython3.7 python3.7 python3-pip libpython3.7-dev pybind11-dev \
+RUN apt-get -qq --no-install-recommends install libpython3.8 python3.8 python3-pip libpython3.8-dev \
 &&  apt-get -qq --no-install-recommends install qtbase5-dev libqt5charts5-dev libqt5opengl5-dev qtwebengine5-dev libopengl0 libeigen3-dev libglew-dev zlib1g-dev \
-&&  apt-get -qq --no-install-recommends install libboost1.67-dev libboost-system1.67-dev libboost-filesystem1.67-dev libboost-program-options1.67-dev libboost-thread1.67-dev \
+&&  apt-get -qq --no-install-recommends install libboost1.71-dev libboost-system1.71-dev libboost-filesystem1.71-dev libboost-program-options1.71-dev libboost-thread1.71-dev \
 &&  apt-get -qq --no-install-recommends install libmkl-dev libmkl-interface-dev libmkl-threading-dev libmkl-computational-dev \
-&&  apt-get -qq --no-install-recommends install g++ cmake ccache ninja-build curl unzip git \
-&&  python3.7 -m pip install numpy \
+&&  apt-get -qq --no-install-recommends install g++ ccache ninja-build curl unzip git \
+&&  python3.8 -m pip install numpy \
 &&  apt-get clean
 
+# Install CMake
+ADD https://github.com/Kitware/CMake/releases/download/v3.20.1/cmake-3.20.1-linux-x86_64.sh /tmp
+RUN chmod a+x /tmp/cmake-3.20.1-linux-x86_64.sh \
+&&  /tmp/cmake-3.20.1-linux-x86_64.sh --skip-license --prefix=/usr/local \
+&&  rm /tmp/cmake-3.20.1-linux-x86_64.sh
+
+# Install pybind11
+RUN git clone --depth 1 -b v2.4  https://github.com/pybind/pybind11.git /tmp/pybind11 \
+&&  cmake -GNinja -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release \
+&& cmake --install /tmp/pybind11/build \
+&& rm -rf /tmp/pybind11
+
+# Install VTK
 RUN git clone --depth 1 --branch v9.0.1 https://gitlab.kitware.com/vtk/vtk.git /tmp/vtk \
 &&  cd /tmp/vtk \
 &&  git submodule update --init \

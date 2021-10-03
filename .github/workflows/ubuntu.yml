@@ -12,14 +12,28 @@ jobs:
   build:
     name: Building with ${{ matrix.sofa_version }}
     runs-on: ubuntu-20.04
-    container: jnbrunet/caribou-ubuntu-1804-builder:latest
+    container: ${{ matrix.CONTAINER }}
     strategy:
       fail-fast: false
       matrix:
         sofa_version: [ v20.06.01, v20.12.03, v21.06.00, master ]
+        include:
+          - sofa_version: master
+            CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
+            PYTHON_VERSION: 3.8
+          - sofa_version: v21.06.00
+            CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
+            PYTHON_VERSION: 3.7
+          - sofa_version: v20.12.03
+            CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
+            PYTHON_VERSION: 3.7
+          - sofa_version: v20.06.01
+            CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
+            PYTHON_VERSION: 3.7
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
+      PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
 
     steps:
       - uses: actions/checkout@v2
@@ -35,7 +49,7 @@ jobs:
       - name: Download SOFA Release
         run:  |
           if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_BRANCH=master,CI_SCOPE=standard/artifact/Linux/*zip*/Linux.zip"
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_BRANCH=master,CI_SCOPE=standard/lastSuccessfulBuild/artifact/Linux/*zip*/Linux.zip"
               unzip sofa.zip -d temp
               mv temp/Linux/`ls temp/Linux` sofa.zip 
               rm -rf temp
@@ -75,19 +89,21 @@ jobs:
           CCACHE_COMPRESS: true
           CCACHE_COMPRESSLEVEL: 6
           CCACHE_MAXSIZE: "500M"
+          PYTHONEXE: ${{ format('/usr/bin/python{0}', matrix.PYTHON_VERSION) }}
         run:
           export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
           export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
           ccache -z &&
           cmake
-          -DPYTHON_EXECUTABLE=/usr/bin/python3.7
+          -GNinja
+          -DPYTHON_EXECUTABLE=$PYTHONEXE
           -DCMAKE_C_COMPILER_LAUNCHER=ccache
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCARIBOU_BUILD_TESTS=ON
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_INSTALL_PREFIX=SofaCaribou
           .
-          && make && make install
+          && cmake --build . && cmake --install .
           && tar czvf SofaCaribou.tar.gz SofaCaribou
           && echo ${CCACHE_BASEDIR}
           && ccache -s
@@ -107,16 +123,25 @@ jobs:
       fail-fast: false
       matrix:
         sofa_version: [ v20.06.01, v20.12.03, v21.06.00, master ]
+        include:
+          - sofa_version: master
+            PYTHON_VERSION: 3.8
+          - sofa_version: v21.06.00
+            PYTHON_VERSION: 3.7
+          - sofa_version: v20.12.03
+            PYTHON_VERSION: 3.7
+          - sofa_version: v20.06.01
+            PYTHON_VERSION: 3.7
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
       CARIBOU_ROOT: /opt/sofa/plugins/SofaCaribou
 
     steps:
-      - name: Set up Python 3.7
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.7'
+          python-version: ${{ matrix.PYTHON_VERSION }}
 
       - name: Install dependencies
         run: |
@@ -128,7 +153,7 @@ jobs:
       - name: Install SOFA
         run: |
           if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_BRANCH=master,CI_SCOPE=standard/artifact/Linux/*zip*/Linux.zip"
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_BRANCH=master,CI_SCOPE=standard/lastSuccessfulBuild/artifact/Linux/*zip*/Linux.zip"
               unzip sofa.zip -d temp
               mv temp/Linux/`ls temp/Linux` sofa.zip 
               rm -rf temp
