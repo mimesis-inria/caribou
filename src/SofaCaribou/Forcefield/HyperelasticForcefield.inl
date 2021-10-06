@@ -61,9 +61,17 @@ void HyperelasticForcefield<Element>::init()
     std::ifstream infile(file_name);
     
     std::string line;
+<<<<<<< HEAD
     p_nodes_to_plot.clear();
     p_element_nodes_to_plot.clear();
     while(std::getline(infile, line)) {
+=======
+    int i = 0;
+    p_nodes_to_plot.clear();
+    p_element_nodes_to_plot.clear();
+    while(std::getline(infile, line)) {
+        //std::istringstream iss(line);
+>>>>>>> 462f642e3a76fb6b8d19bd208200b410293bd1e5
         std::replace(line.begin(), line.end(), ',', ' ');
         std::stringstream ss(line);
         float x, y, z; 
@@ -75,6 +83,11 @@ void HyperelasticForcefield<Element>::init()
         const auto local_point = element.local_coordinates(point.cast<FLOATING_POINT_TYPE>());
         p_nodes_to_plot.push_back(local_point);
         p_element_nodes_to_plot.push_back(element);
+<<<<<<< HEAD
+=======
+
+        ++i;
+>>>>>>> 462f642e3a76fb6b8d19bd208200b410293bd1e5
     }
 
     
