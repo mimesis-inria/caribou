@@ -47,7 +47,7 @@ def createScene(root):
     meca.addObject('QuadSetTopologyContainer', name='quad_container', quads='@top_roi.quadInROI')
     meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1/increments, topology='@quad_container', printLog=True)
 
-    """ i += 1
+    i += 1
     tx = 20*i
     meca = root.addChild("caribou_hyperelastic_tetra")
     meca.addObject('StaticODESolver', newton_iterations=newton_iterations, correction_tolerance_threshold=1e-8, residual_tolerance_threshold=1e-8, printLog=True)
@@ -86,4 +86,4 @@ def createScene(root):
     meca.addObject('BoxROI', name='top_roi', box=[-7.5+tx, -7.5, 79.9, 7.5+tx, 7.5, 80.1])
     meca.addObject('TriangleSetTopologyContainer', name='triangle_container', triangles='@top_roi.trianglesInROI')
     meca.addObject('TractionForcefield', traction=[0, -30, 0], slope=1/increments, topology='@triangle_container', printLog=True)
-    """
+   

@@ -78,7 +78,13 @@ namespace caribou::topology {
         static constexpr INTEGER_TYPE Dimension = geometry::traits<Element>::Dimension;
         using ElementType = Element;
         using NodeIndexType = NodeIndex;
+        
 
+        template <INTEGER_TYPE Dim>
+        using Vector = Eigen::Matrix<float, Dim, 1>;
+
+        using LocalCoordinates = Vector<3>;
+        using WorldCoordinates = Vector<3>;
         /*!
          * The type of container that stores the node indices of all the elements of the domain.
          *
@@ -149,6 +155,8 @@ namespace caribou::topology {
          template<typename EigenMatrix>
         inline auto element(const UNSIGNED_INTEGER_TYPE & element_id, const Eigen::DenseBase<EigenMatrix> & positions) const -> Element;
 
+
+        inline auto element_from_world_coordinates(const WorldCoordinates & point_world_coordinates) const -> Element;
         /*!
         * Construct an element of the domain using the positions vector of the associated mesh.
         * @param element_id The id of the element in this domain.
@@ -315,6 +323,17 @@ namespace caribou::topology {
         }
 
         return Element(node_positions);
+    }
+
+    template <typename Element, typename NodeIndex>
+    inline auto Domain<Element, NodeIndex>::element_from_world_coordinates(const WorldCoordinates & point_world_coordinates) const -> Element {
+        const auto number_of_elements = this->number_of_elements();
+        for(int i = 0; i < number_of_elements; ++i) {
+            const auto elem = element(i);
+            if(elem.contains_world_coordinates(point_world_coordinates)) {
+                return elem;
+            }
+        }
     }
 
     template <typename Element, typename NodeIndex>

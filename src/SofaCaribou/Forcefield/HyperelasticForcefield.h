@@ -36,12 +36,17 @@ public:
     using Deriv     = typename DataTypes::Deriv;
     using Real      = typename DataTypes::Real;
 
+    using Coordinates_vector = Eigen::Matrix<float, 3, 1>;
+
+    using LocalCoordinates = Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1>;
+
+
     static constexpr INTEGER_TYPE Dimension = caribou::geometry::traits<Element>::Dimension;
     static constexpr INTEGER_TYPE NumberOfNodesPerElement = caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime;
     static constexpr INTEGER_TYPE NumberOfGaussNodesPerElement = caribou::geometry::traits<Element>::NumberOfGaussNodesAtCompileTime;
 
     template<int nRows, int nColumns>
-    using Matrix = typename Inherit::template Matrix<nRows, nColumns>;
+    using Matrix = typename Inherit::template Matrix<nRows, nColumns>;    
 
     template<int nRows>
     using Vector = typename Inherit::template Vector<nRows>;
@@ -67,6 +72,7 @@ public:
             std::vector<GaussNode>
     >::type;
 
+    
     // Public methods
 
     CARIBOU_API
@@ -207,10 +213,15 @@ private:
     Link<material::HyperelasticMaterial<DataTypes>> d_material;
     sofa::core::objectmodel::Data<bool> d_enable_multithreading;
 
+    sofa::core::objectmodel::Data<std::string> d_file_nodes;
+
     // Private variables
     std::vector<GaussContainer> p_elements_quadrature_nodes;
     Eigen::SparseMatrix<Real> p_K;
     Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
+
+    std::vector<LocalCoordinates> p_nodes_to_plot;
+    std::vector<Element> p_element_nodes_to_plot;
 
     /// Identifier of the multi-vector x used in the last call to the method addForce. This will be used to recompute
     /// the stiffness matrix K using the method update_stiffness() without any parameters.

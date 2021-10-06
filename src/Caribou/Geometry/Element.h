@@ -37,6 +37,8 @@ struct Element {
     using Matrix = Eigen::Matrix<Scalar, Rows, Cols, Options>;
     using Mat3x3   = Eigen::Matrix<double, 3, 3>;
 
+    using Coordinates_vector = Eigen::Matrix<float, 3, 1>;
+
     template <INTEGER_TYPE Rows, INTEGER_TYPE Cols, int Options = Eigen::ColMajor>
     using MatrixI = Eigen::Matrix<Scalar, Rows, Cols, Options>;
 
@@ -325,6 +327,16 @@ struct Element {
      */
     inline auto contains_local(const LocalCoordinates & xi, const FLOATING_POINT_TYPE & eps = 1e-10) const -> bool {
         return self().get_contains_local(xi, eps);
+    }
+
+    /**
+     * Return true if the element contains the point located at the given world coordinates.
+     * @param world_coordinate World coordinates of a point
+     * @param eps If the given point is located barely outside the element, which is, less than this eps value, returns true.
+     */
+    inline auto contains_world_coordinates(const Coordinates_vector & xi, const FLOATING_POINT_TYPE & eps = 1e-10) const -> bool {
+        const LocalCoordinates local_xi = local_coordinates(xi.cast<FLOATING_POINT_TYPE>());
+        return self().get_contains_local(local_xi, eps);
     }
 
     /**

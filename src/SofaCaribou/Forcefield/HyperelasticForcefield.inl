@@ -4,6 +4,7 @@
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.h>
 #include <SofaCaribou/Forcefield/CaribouForcefield.inl>
 #include <SofaCaribou/Topology/CaribouTopology.h>
+#include <fstream>
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
@@ -28,6 +29,9 @@ HyperelasticForcefield<Element>::HyperelasticForcefield()
     "Enable the multithreading computation of the stiffness matrix. Only use this if you have a "
     "very large number of elements, otherwise performance might be worse than single threading."
     "When enabled, use the environment variable OMP_NUM_THREADS=N to use N threads."))
+, d_file_nodes(initData(&d_file_nodes,
+    "file_nodes", 
+    "file that contains the FEBio model nodes", true, false))
 {
 }
 
@@ -53,6 +57,27 @@ void HyperelasticForcefield<Element>::init()
         }
     }
 
+    const auto file_name = d_file_nodes.getValue();
+    std::ifstream infile(file_name);
+    
+    std::string line;
+    p_nodes_to_plot.clear();
+    p_element_nodes_to_plot.clear();
+    while(std::getline(infile, line)) {
+        std::replace(line.begin(), line.end(), ',', ' ');
+        std::stringstream ss(line);
+        float x, y, z; 
+        ss >> x; 
+        ss >> y; 
+        ss >> z; 
+        const Coordinates_vector point(x, y, z);
+        const auto element = this->topology()->domain()->element_from_world_coordinates(point);
+        const auto local_point = element.local_coordinates(point.cast<FLOATING_POINT_TYPE>());
+        p_nodes_to_plot.push_back(local_point);
+        p_element_nodes_to_plot.push_back(element);
+    }
+
+    
     // Compute and store the shape functions and their derivatives for every integration points
     initialize_elements();
 
@@ -95,6 +120,8 @@ void HyperelasticForcefield<Element>::addForce(
     material->before_update();
 
     ReadAccessor<Data<VecCoord>> sofa_x = d_x;
+    sofa::helper::ReadAccessor<VecCoord> sofa_x0 = this->mstate->readRestPositions();
+
     WriteAccessor<Data<VecDeriv>> sofa_f = d_f;
 
     if (sofa_x.size() != sofa_f.size())
@@ -109,6 +136,8 @@ void HyperelasticForcefield<Element>::addForce(
         return;
 
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
+
     Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addForce");
@@ -164,6 +193,43 @@ void HyperelasticForcefield<Element>::addForce(
             for (size_t j = 0; j < Dimension; ++j) {
                 sofa_f[node_indices[i]][j] -= nodal_forces(i,j);
             }
+        }
+    }
+
+    if(p_nodes_to_plot.size() == p_element_nodes_to_plot.size()) {
+        for(int i = 0; i < p_element_nodes_to_plot.size(); ++i) {
+            const auto element = p_element_nodes_to_plot[i];
+
+            const auto local_point = p_nodes_to_plot[i];
+
+            const auto J = element.jacobian(local_point);
+            const auto Jinv = J.inverse();
+            const auto detJ = std::abs(J.determinant());
+
+            Eigen::Matrix<double, NumberOfNodesPerElement, Dimension> dN_dx = (Jinv.transpose() * element.dL(local_point).transpose()).transpose();
+
+            auto node_indices = this->topology()->domain()->element_indices(i);
+
+            // Fetch the initial and current positions of the element's nodes
+            Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> initial_nodes_position;
+            Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> current_nodes_position;
+
+            for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+                initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
+                current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
+            }
+
+            // Compute the nodal displacement for the element: elem
+            Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> U;
+            for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+                const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
+                for (size_t j = 0; j < Dimension; ++j) {
+                    U(i, j) = u[j];
+                }
+            }
+
+            const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
+            std::cout << i << ": " << F << std::endl;
         }
     }
 

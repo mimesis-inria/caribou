@@ -206,21 +206,16 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::apply(const sofa::core
         }
     } 
     
-    //------ APD Algorithm ---------
+    
     sofa::helper::ReadAccessor<DataVecCoord> sofa_x = data_input_position;
     sofa::helper::ReadAccessor<DataVecCoord> sofa_x0 = this->getFromModel()->readRestPositions();
-
-
-    sofa::helper::ReadAccessor<MappedDataVecCoord> sofa_x1 = this->getToModel()->readPositions();
 
     if (sofa_x.size() != sofa_x0.size() )
         return;
 
     const auto nb_nodes = sofa_x.size();
-    const auto nb_nodes_mapped = sofa_x1.size();
     const Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     const Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
-    //const Eigen::Map<const Eigen::Matrix<Scalar, Eigen::Dynamic, MappedDimension, Eigen::RowMajor>>    X1      (sofa_x1.ref().data()->data(), nb_nodes_mapped, MappedDimension);
    
     if constexpr (is_rigid_types_v<MappedDataTypes>) {
         for (std::size_t bp_index = 0; bp_index <nb_of_barycentric_points; ++bp_index) {
