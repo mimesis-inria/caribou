@@ -4,6 +4,7 @@
 #include <SofaCaribou/Forcefield/HyperelasticForcefield.h>
 #include <SofaCaribou/Forcefield/CaribouForcefield.inl>
 #include <SofaCaribou/Topology/CaribouTopology.h>
+#include <fstream>
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
@@ -28,6 +29,9 @@ HyperelasticForcefield<Element>::HyperelasticForcefield()
     "Enable the multithreading computation of the stiffness matrix. Only use this if you have a "
     "very large number of elements, otherwise performance might be worse than single threading."
     "When enabled, use the environment variable OMP_NUM_THREADS=N to use N threads."))
+, d_file_nodes(initData(&d_file_nodes,
+    "file_nodes", 
+    "file that contains the FEBio model nodes", true, false))
 {
 }
 
@@ -53,6 +57,31 @@ void HyperelasticForcefield<Element>::init()
         }
     }
 
+    const auto file_name = d_file_nodes.getValue();
+    std::ifstream infile(file_name);
+    
+    std::string line;
+    int i = 0;
+    p_nodes_to_plot.clear();
+    p_element_nodes_to_plot.clear();
+    while(std::getline(infile, line)) {
+        //std::istringstream iss(line);
+        std::replace(line.begin(), line.end(), ',', ' ');
+        std::stringstream ss(line);
+        float x, y, z; 
+        ss >> x; 
+        ss >> y; 
+        ss >> z; 
+        const Coordinates_vector point(x, y, z);
+        const auto element = this->topology()->domain()->element_from_world_coordinates(point);
+        const auto local_point = element.local_coordinates(point.cast<FLOATING_POINT_TYPE>());
+        p_nodes_to_plot.push_back(local_point);
+        p_element_nodes_to_plot.push_back(element);
+
+        ++i;
+    }
+
+    
     // Compute and store the shape functions and their derivatives for every integration points
     initialize_elements();
 
