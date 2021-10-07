@@ -41,7 +41,15 @@ set(PYTHON_TEST_FILES
 )
 
 find_package(SofaPython3 REQUIRED)
-find_package(MKL REQUIRED)
+
+if (CARIBOU_WITH_MKL)
+    set(MKL_STATIC ON)
+    if (NOT CARIBOU_WITH_OPENMP)
+        set(MKL_THREADING_VENDOR SEQUENTIAL)
+    endif()
+    find_package(MKL REQUIRED QUIET)
+endif()
+
 caribou_add_python_module(SofaCaribou
                           TARGET_NAME                       ${PROJECT_NAME}
                           TARGET_ALIAS                      Caribou::Python.SofaCaribou

@@ -13,17 +13,17 @@ namespace SofaCaribou::solver::python {
 template <typename EigenMatrix>
 void bind_ConjugateGradientSolver(pybind11::module & m) {
     namespace py = pybind11;
-    using SOLVER = ConjugateGradientSolver<EigenMatrix>;
-    py::class_<SOLVER, sofa::core::objectmodel::BaseObject, sofapython3::py_shared_ptr<SOLVER>> c(m, "ConjugateGradientSolver");
+    using SolverType = ConjugateGradientSolver<EigenMatrix>;
+    py::class_<SolverType, sofa::core::objectmodel::BaseObject, sofapython3::py_shared_ptr<SolverType>> c(m, "ConjugateGradientSolver");
 
-    c.def("A", [](SOLVER & solver){return solver.A()->matrix();});
+    c.def("A", [](const SolverType & solver){return solver.A()->matrix();});
 
-    c.def("x", [](SOLVER & solver){return solver.x()->vector();});
+    c.def("x", [](const SolverType & solver){return solver.x()->vector();});
 
-    c.def("b", [](SOLVER & solver){return solver.b()->vector();});
+    c.def("b", [](const SolverType & solver){return solver.b()->vector();});
 
 
-    c.def("assemble", [](SOLVER & solver, double m, double b, double k) {
+    c.def("assemble", [](SolverType & solver, double m, double b, double k) {
         sofa::core::MechanicalParams mparams;
         mparams.setMFactor(m);
         mparams.setBFactor(b);
@@ -31,8 +31,8 @@ void bind_ConjugateGradientSolver(pybind11::module & m) {
         solver.assemble(&mparams);
     }, py::arg("m") = static_cast<double>(1), py::arg("b") = static_cast<double>(1), py::arg("k") = static_cast<double>(1));
 
-    sofapython3::PythonFactory::registerType<SOLVER>([](sofa::core::objectmodel::Base* o) {
-        return py::cast(dynamic_cast<SOLVER*>(o));
+    sofapython3::PythonFactory::registerType<SolverType>([](sofa::core::objectmodel::Base* o) {
+        return py::cast(dynamic_cast<SolverType*>(o));
     });
 }
 
