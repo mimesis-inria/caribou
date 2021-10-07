@@ -27,6 +27,8 @@ TEST(StaticODESolver, InitWithoutSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
     getSimulation()->init(root.get());
     getSimulation()->unload(root);
@@ -39,6 +41,8 @@ TEST(StaticODESolver, InitSofaSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
     createObject(root, "CGLinearSolver");
     createObject(root, "CGLinearSolver");
@@ -54,6 +58,8 @@ TEST(StaticODESolver, InitCaribouSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
     createObject(root, "CGLinearSolver");
     createObject(root, "LDLTSolver");
@@ -69,6 +75,8 @@ TEST(StaticODESolver, InitMultipleCaribouSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
     createObject(root, "LDLTSolver", {{"name", "first_solver"}});
     createObject(root, "LDLTSolver", {{"name", "second_solver"}});
@@ -83,6 +91,8 @@ TEST(StaticODESolver, Beam) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
 #if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
 #else

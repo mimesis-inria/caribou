@@ -22,6 +22,10 @@ RUN chmod a+x /tmp/cmake-3.20.1-linux-x86_64.sh \
 &&  /tmp/cmake-3.20.1-linux-x86_64.sh --skip-license --prefix=/usr/local \
 &&  rm /tmp/cmake-3.20.1-linux-x86_64.sh
 
+# Install Ninja 1.10
+ADD https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-linux.zip /tmp
+RUN unzip /tmp/ninja-linux.zip -d /usr/bin
+
 # Install pybind11
 RUN git clone --depth 1 -b v2.4  https://github.com/pybind/pybind11.git /tmp/pybind11 \
 &&  cmake -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release \
