@@ -61,17 +61,11 @@ void HyperelasticForcefield<Element>::init()
     std::ifstream infile(file_name);
     
     std::string line;
-<<<<<<< HEAD
-    p_nodes_to_plot.clear();
-    p_element_nodes_to_plot.clear();
-    while(std::getline(infile, line)) {
-=======
     int i = 0;
     p_nodes_to_plot.clear();
     p_element_nodes_to_plot.clear();
     while(std::getline(infile, line)) {
         //std::istringstream iss(line);
->>>>>>> 462f642e3a76fb6b8d19bd208200b410293bd1e5
         std::replace(line.begin(), line.end(), ',', ' ');
         std::stringstream ss(line);
         float x, y, z; 
@@ -83,11 +77,8 @@ void HyperelasticForcefield<Element>::init()
         const auto local_point = element.local_coordinates(point.cast<FLOATING_POINT_TYPE>());
         p_nodes_to_plot.push_back(local_point);
         p_element_nodes_to_plot.push_back(element);
-<<<<<<< HEAD
-=======
 
         ++i;
->>>>>>> 462f642e3a76fb6b8d19bd208200b410293bd1e5
     }
 
     
@@ -241,8 +232,34 @@ void HyperelasticForcefield<Element>::addForce(
                 }
             }
 
+            // Identity matrix
+            const auto Id = Matrix<Dimension, Dimension>::Identity();
+
+            // Deformation tensor at local point
             const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
-            std::cout << i << ": " << F << std::endl;
+
+            // Right Cauchy-Green strain tensor at local point
+            const Mat33 C = F.transpose() * F;
+
+            // Second Piola-Kirchhoff stress tensor at local point
+            const Mat33 S = material->PK2_stress(F.determinant(), C);
+
+            // The Green-Lagrange strain tensor
+            const Mat33 E = 0.5*(C - Id);
+
+            // FEBio Effective Lagrange Strain
+            const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
+
+            //std::cout << i << " et S: " << S.norm() << std::endl;
+
+            //std::cout << i << " et E: " << E.norm() << std::endl;
+
+            // Strain energy 
+            const Real W = material->strain_energy_density(F.determinant(), C);
+
+            std::cout << i << " et W: " << W << std::endl;
+
+
         }
     }
 
