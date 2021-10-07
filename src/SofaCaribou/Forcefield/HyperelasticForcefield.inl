@@ -246,6 +246,8 @@ void HyperelasticForcefield<Element>::addForce(
             // FEBio Effective Lagrange Strain
             //const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
 
+            //const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
+
             //std::cout << i << " et S: " << S.norm() << std::endl;
 
             //std::cout << i << " et E: " << E.norm() << std::endl;
@@ -265,7 +267,6 @@ void HyperelasticForcefield<Element>::addForce(
             
             //std::string data_file_name = "../../../scenes/data_curves/" + std::to_string(i) + ".txt";
             
-
 
         }
     }
