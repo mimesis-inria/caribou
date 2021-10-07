@@ -61,6 +61,10 @@ void HyperelasticForcefield<Element>::init()
     std::ifstream infile(file_name);
     
     std::string line;
+<<<<<<< HEAD
+=======
+    int i = 0;
+>>>>>>> 9c01ad9c31f20a3882e3f7f36fa15d160e8b308b
     p_nodes_to_plot.clear();
     p_element_nodes_to_plot.clear();
     while(std::getline(infile, line)) {
@@ -76,6 +80,11 @@ void HyperelasticForcefield<Element>::init()
         const auto local_point = element.local_coordinates(point.cast<FLOATING_POINT_TYPE>());
         p_nodes_to_plot.push_back(local_point);
         p_element_nodes_to_plot.push_back(element);
+<<<<<<< HEAD
+=======
+
+        ++i;
+>>>>>>> 9c01ad9c31f20a3882e3f7f36fa15d160e8b308b
     }
 
     
@@ -244,13 +253,18 @@ void HyperelasticForcefield<Element>::addForce(
             const Mat33 E = 0.5*(C - Id);
 
             // FEBio Effective Lagrange Strain
+<<<<<<< HEAD
             //const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
+=======
+            const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
+>>>>>>> 9c01ad9c31f20a3882e3f7f36fa15d160e8b308b
 
             //std::cout << i << " et S: " << S.norm() << std::endl;
 
             //std::cout << i << " et E: " << E.norm() << std::endl;
 
             // Strain energy 
+<<<<<<< HEAD
             //const Real W = material->strain_energy_density(F.determinant(), C);
 
             //std::cout << i << " et W: " << W << std::endl;
@@ -265,6 +279,11 @@ void HyperelasticForcefield<Element>::addForce(
             
             //std::string data_file_name = "../../../scenes/data_curves/" + std::to_string(i) + ".txt";
             
+=======
+            const Real W = material->strain_energy_density(F.determinant(), C);
+
+            std::cout << i << " et W: " << W << std::endl;
+>>>>>>> 9c01ad9c31f20a3882e3f7f36fa15d160e8b308b
 
 
         }
