@@ -64,7 +64,6 @@ void HyperelasticForcefield<Element>::init()
     p_nodes_to_plot.clear();
     p_element_nodes_to_plot.clear();
     while(std::getline(infile, line)) {
-        //std::istringstream iss(line);
         std::replace(line.begin(), line.end(), ',', ' ');
         std::stringstream ss(line);
         float x, y, z; 
@@ -205,6 +204,7 @@ void HyperelasticForcefield<Element>::addForce(
 
             const auto J = element.jacobian(local_point);
             const auto Jinv = J.inverse();
+            const auto detJ = std::abs(J.determinant());
 
             Eigen::Matrix<double, NumberOfNodesPerElement, Dimension> dN_dx = (Jinv.transpose() * element.dL(local_point).transpose()).transpose();
 
@@ -228,11 +228,8 @@ void HyperelasticForcefield<Element>::addForce(
                 }
             }
 
-            // Identity matrix
-            const auto Id = Matrix<Dimension, Dimension>::Identity();
-
-            // Deformation tensor at local point
             const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
+            std::cout << i << ": " << F << std::endl;
 
             // Right Cauchy-Green strain tensor at local point
             const Mat33 C = F.transpose() * F;
@@ -267,7 +264,6 @@ void HyperelasticForcefield<Element>::addForce(
             
             //std::string data_file_name = "../../../scenes/data_curves/" + std::to_string(i) + ".txt";
             
-
         }
     }
 
