@@ -64,6 +64,7 @@ void HyperelasticForcefield<Element>::init()
     p_nodes_to_plot.clear();
     p_element_nodes_to_plot.clear();
     while(std::getline(infile, line)) {
+        //std::istringstream iss(line);
         std::replace(line.begin(), line.end(), ',', ' ');
         std::stringstream ss(line);
         float x, y, z; 
@@ -204,7 +205,6 @@ void HyperelasticForcefield<Element>::addForce(
 
             const auto J = element.jacobian(local_point);
             const auto Jinv = J.inverse();
-            const auto detJ = std::abs(J.determinant());
 
             Eigen::Matrix<double, NumberOfNodesPerElement, Dimension> dN_dx = (Jinv.transpose() * element.dL(local_point).transpose()).transpose();
 
@@ -228,10 +228,46 @@ void HyperelasticForcefield<Element>::addForce(
                 }
             }
 
-            const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
-            std::cout << i << ": " << F << std::endl;
+            // Identity matrix
+            const auto Id = Matrix<Dimension, Dimension>::Identity();
 
+            // Deformation tensor at local point
+            const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
+
+            // Right Cauchy-Green strain tensor at local point
+            const Mat33 C = F.transpose() * F;
+
+            // Second Piola-Kirchhoff stress tensor at local point
+            const Mat33 S = material->PK2_stress(F.determinant(), C);
+
+            // The Green-Lagrange strain tensor
+            const Mat33 E = 0.5*(C - Id);
+
+            // FEBio Effective Lagrange Strain
+            //const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
+
+            //const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
+
+            //std::cout << i << " et S: " << S.norm() << std::endl;
+
+            //std::cout << i << " et E: " << E.norm() << std::endl;
+
+            // Strain energy 
+            //const Real W = material->strain_energy_density(F.determinant(), C);
+
+            //std::cout << i << " et W: " << W << std::endl;
+
+            // Principal Lagrange strain: "1 Principal Lagrange strain" in FEBIO
+            //const auto strain_eivals = E..eigenvalues();
+            //const auto strain_max_eival = strain_eivals.maxCoeff();
+
+            // Principal Stress: "1 Principal stress" in FEBIO
+            //const auto stress_eivals = S.eigenvalues();
+            //const auto stress_max_eival = stress_eivals.maxCoeff();  
             
+            //std::string data_file_name = "../../../scenes/data_curves/" + std::to_string(i) + ".txt";
+            
+
         }
     }
 
