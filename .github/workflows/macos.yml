@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ v20.06.01, v20.12.03, v21.06.00, master ]
+        sofa_version: [ v20.06.01, v20.12.03, v21.06.01, master ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -60,14 +60,14 @@ jobs:
       - name: Download boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
-          if [ "$SOFA_VERSION" = "v21.06.00" ]; then
+          if [ "$SOFA_VERSION" = "v21.06.01" ]; then
             curl --output boost.tar.gz -L "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz"
           else
             curl --output boost.tar.gz -L "https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz"
           fi
           tar xzf boost.tar.gz
       - name: Patch boost
-        if: ${{ steps.cache-boost.outputs.cache-hit != 'true' &&  matrix.sofa_version != 'v21.06.00' }}
+        if: ${{ steps.cache-boost.outputs.cache-hit != 'true' &&  matrix.sofa_version != 'v21.06.01' }}
         run: |
             curl --output a.patch -L "https://github.com/boostorg/build/commit/b3a59d265929a213f02a451bb63cea75d668a4d9.patch?full_index=1"
             git apply -v --directory=boost_1_67_0/tools/build a.patch
@@ -76,7 +76,7 @@ jobs:
       - name: Build boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
-          if [ "$SOFA_VERSION" = "v21.06.00" ]; then
+          if [ "$SOFA_VERSION" = "v21.06.01" ]; then
             cd boost_1_76_0
             ./bootstrap.sh --prefix=/opt/boost --without-libraries=python,mpi,log --without-icu --libdir=/opt/boost/lib
             ./b2 cxxflags=-std=c++11 link=shared threading=multi,single --layout=tagged -d0 -q variant=release architecture=x86 install
