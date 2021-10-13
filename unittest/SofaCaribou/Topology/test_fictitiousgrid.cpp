@@ -22,6 +22,8 @@ class FictitiousGrid : public sofa::helper::testing::BaseTest {
 #if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
         createObject(root, "RequiredPlugin", {{"pluginName", "SofaGeneralLoader"}});
 #endif
+        createObject(root, "DefaultAnimationLoop");
+        createObject(root, "DefaultVisualManagerLoop");
     }
     void TearDown() override {
         root.reset();

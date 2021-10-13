@@ -107,7 +107,7 @@ jobs:
       - name: Download SOFA Release
         run:  |
           if [ "$SOFA_VERSION" = "master" ]; then
-              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_BRANCH=master,CI_SCOPE=standard/artifact/MacOS/*zip*/MacOS.zip"
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_BRANCH=master,CI_SCOPE=standard/lastSuccessfulBuild/artifact/MacOS/*zip*/MacOS.zip"
           else
               curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_MacOS.zip"
           fi

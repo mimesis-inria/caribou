@@ -1331,6 +1331,8 @@ TEST(CaribouTopology, HexahedronLinearAttachDomain) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
 
     // Add the CaribouTopology component
     auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron<Linear>> *> (
@@ -1382,6 +1384,8 @@ TEST(CaribouTopology, HexahedronLinearFromIndices) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
 
     // Add a mechanical object required for the creation of an internal mesh
     auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
@@ -1460,6 +1464,8 @@ TEST(CaribouTopology, HexahedronQuadraticAttachDomain) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
 
     // Add the CaribouTopology component
     auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron<Quadratic>> *> (
@@ -1511,6 +1517,8 @@ TEST(CaribouTopology, HexahedronQuadraticFromIndices) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
 
     // Add a mechanical object required for the creation of an internal mesh
     auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(

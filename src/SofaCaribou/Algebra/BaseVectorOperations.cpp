@@ -3,7 +3,11 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 #include <sofa/defaulttype/BaseVector.h>
+#else
+#include <sofa/linearalgebra/BaseVector.h>
+#endif // #if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 #include <SofaBaseLinearSolver/FullVector.h>
 DISABLE_ALL_WARNINGS_END
 

@@ -6,6 +6,9 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION >= 210600)
+#include <sofa/helper/ScopedAdvancedTimer.h>
+#endif
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/behavior/Mass.inl>
 DISABLE_ALL_WARNINGS_END
