@@ -3,6 +3,7 @@
 # OPTIONS
 set(CARIBOU_WITH_OPENMP "@CARIBOU_WITH_OPENMP@")
 set(CARIBOU_WITH_SP3    "@CARIBOU_WITH_SP3@")
+set(CARIBOU_WITH_MKL    "@CARIBOU_WITH_MKL@")
 
 # Caribou
 find_package(Caribou COMPONENTS Algebra Geometry Topology Mechanics REQUIRED)
@@ -12,6 +13,16 @@ list(APPEND CMAKE_MODULE_PATH "${Caribou_DIR}")
 if (CARIBOU_WITH_SP3)
 find_package(Caribou COMPONENTS Python REQUIRED)
 endif()
+
+# MKL support
+if (CARIBOU_WITH_MKL)
+    set(MKL_STATIC ON)
+    if (NOT CARIBOU_WITH_OPENMP)
+        set(MKL_THREADING_VENDOR SEQUENTIAL)
+    endif()
+    find_package(MKL REQUIRED QUIET)
+endif()
+
 
 # Sofa's packages
 find_package(SOFA COMPONENTS SofaFramework SofaBaseLinearSolver SofaBaseTopology SofaEigen2Solver QUIET MODULE REQUIRED)

@@ -1,7 +1,5 @@
 #include "ConjugateGradientSolver.h"
 
-#include <SofaCaribou/Solver/ConjugateGradientSolver.h>
-
 namespace py = pybind11;
 
 namespace SofaCaribou::solver::python {

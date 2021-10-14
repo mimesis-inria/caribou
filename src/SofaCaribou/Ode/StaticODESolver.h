@@ -44,7 +44,7 @@ public:
     template <typename T>
     using Data = sofa::core::objectmodel::Data<T>;
 
-private:
+protected:
 
     /** @see NewtonRaphsonSolver::assemble_rhs_vector */
     void assemble_rhs_vector(const sofa::core::MechanicalParams & mechanical_parameters,
