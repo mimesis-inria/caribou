@@ -17,6 +17,7 @@ enable_testing()
 
 find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver SofaMiscForceField QUIET REQUIRED)
 find_package(Caribou COMPONENTS Topology REQUIRED)
+find_package(Threads REQUIRED)
 
 if (CARIBOU_WITH_VTK)
     list(APPEND SOURCE_FILES Topology/test_cariboutopology.cpp)
