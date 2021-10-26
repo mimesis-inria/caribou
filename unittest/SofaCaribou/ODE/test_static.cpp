@@ -44,8 +44,8 @@ TEST(StaticODESolver, InitSofaSolver) {
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
-    createObject(root, "CGLinearSolver");
-    createObject(root, "CGLinearSolver");
+    createObject(root, "CGLinearSolver", {{"iterations", "25"}, {"tolerance", "1e-05"}, {"threshold", "1e-05"}});
+    createObject(root, "CGLinearSolver", {{"iterations", "25"}, {"tolerance", "1e-05"}, {"threshold", "1e-05"}});
     getSimulation()->init(root.get());
     getSimulation()->unload(root);
 }
@@ -61,7 +61,7 @@ TEST(StaticODESolver, InitCaribouSolver) {
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
-    createObject(root, "CGLinearSolver");
+    createObject(root, "CGLinearSolver", {{"iterations", "25"}, {"tolerance", "1e-05"}, {"threshold", "1e-05"}});
     createObject(root, "LDLTSolver");
     getSimulation()->init(root.get());
     getSimulation()->unload(root);

@@ -22,7 +22,7 @@ jobs:
             CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
             PYTHON_VERSION: 3.8
           - sofa_version: v21.06.01
-            CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
+            CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
             PYTHON_VERSION: 3.7
           - sofa_version: v20.12.03
             CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
@@ -120,7 +120,7 @@ jobs:
           - sofa_version: master
             PYTHON_VERSION: 3.8
           - sofa_version: v21.06.01
-            PYTHON_VERSION: 3.8
+            PYTHON_VERSION: 3.7
           - sofa_version: v20.12.03
             PYTHON_VERSION: 3.7
           - sofa_version: v20.06.01
@@ -177,7 +177,7 @@ jobs:
         if: ${{ always() }}
         run: |
           export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
-          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Geometry_Test.py
+          python $CARIBOU_ROOT/bin/pytest/Caribou_Geometry_Test.py
 
 
       - name: Caribou.unittests.Topology
@@ -190,7 +190,7 @@ jobs:
         if: ${{ always() }}
         run: |
           export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
-          python3 $CARIBOU_ROOT/bin/pytest/Caribou_Topology_Test.py
+          python $CARIBOU_ROOT/bin/pytest/Caribou_Topology_Test.py
 
       - name: Caribou.unittests.Mechanics
         if: ${{ always() }}
@@ -208,7 +208,7 @@ jobs:
         if: ${{ matrix.sofa_version == 'v20.12.03' || matrix.sofa_version == 'v21.06.01' }}
         run: |
             export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
-            python3 $CARIBOU_ROOT/bin/pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
+            python $CARIBOU_ROOT/bin/pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
 
 
 
