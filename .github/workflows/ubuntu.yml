@@ -16,12 +16,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ v20.06.01, v20.12.03, v21.06.01, master ]
+        sofa_version: [ v20.06.01, v20.12.03, v21.06.02, master ]
         include:
           - sofa_version: master
             CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
             PYTHON_VERSION: 3.8
-          - sofa_version: v21.06.01
+          - sofa_version: v21.06.02
             CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
             PYTHON_VERSION: 3.7
           - sofa_version: v20.12.03
@@ -115,16 +115,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ v20.06.01, v20.12.03, v21.06.01, master ]
+        sofa_version: [ v20.06.01, v20.12.03, v21.06.02, master ]
         include:
           - sofa_version: master
             PYTHON_VERSION: 3.8
-          - sofa_version: v21.06.01
+            sofa_version_int: 211200
+          - sofa_version: v21.06.02
             PYTHON_VERSION: 3.7
+            sofa_version_int: 210602
           - sofa_version: v20.12.03
             PYTHON_VERSION: 3.7
+            sofa_version_int: 201203
           - sofa_version: v20.06.01
             PYTHON_VERSION: 3.7
+            sofa_version_int: 200601
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -205,7 +209,7 @@ jobs:
             $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
 
       - name: SofaCaribou.PyTest
-        if: ${{ matrix.sofa_version == 'v20.12.03' || matrix.sofa_version == 'v21.06.01' }}
+        if: ${{ matrix.sofa_version_int >= '201200' }}
         run: |
             export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
             python $CARIBOU_ROOT/bin/pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
@@ -219,7 +223,7 @@ jobs:
     if: github.event_name == 'schedule'
     strategy:
       matrix:
-        sofa_version: [ v20.06.01, v20.12.03, v21.06.01, master ]
+        sofa_version: [ v20.06.01, v20.12.03, v21.06.02, master ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
 
