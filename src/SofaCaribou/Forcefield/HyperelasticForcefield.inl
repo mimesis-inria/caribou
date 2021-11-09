@@ -77,10 +77,19 @@ void HyperelasticForcefield<Element>::init()
         p_element_nodes_to_plot.push_back(element);
     }
 
+    for(int i = 0; i < p_element_nodes_to_plot.size(); ++i) { 
+
+        std::string data_file_name = "/home/sidaty/Desktop/Vascularization/Curves_validation/data_curves/" + std::to_string(i) + ".txt";
+
+        // Create and open a text file if not exists
+        std::ofstream stress_strain_file(data_file_name, std::ofstream::out | std::ofstream::trunc);
+        
+        stress_strain_file.close();
+    }
     
     // Compute and store the shape functions and their derivatives for every integration points
     initialize_elements();
-
+    
     // Assemble the initial stiffness matrix
     assemble_stiffness();
 }
@@ -204,7 +213,6 @@ void HyperelasticForcefield<Element>::addForce(
 
             const auto J = element.jacobian(local_point);
             const auto Jinv = J.inverse();
-            const auto detJ = std::abs(J.determinant());
 
             Eigen::Matrix<double, NumberOfNodesPerElement, Dimension> dN_dx = (Jinv.transpose() * element.dL(local_point).transpose()).transpose();
 
@@ -229,7 +237,7 @@ void HyperelasticForcefield<Element>::addForce(
             }
 
             const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
-            std::cout << i << ": " << F << std::endl;
+            /* std::cout << i << ": " << F << std::endl; */
 
             // Right Cauchy-Green strain tensor at local point
             const Mat33 C = F.transpose() * F;
@@ -237,32 +245,30 @@ void HyperelasticForcefield<Element>::addForce(
             // Second Piola-Kirchhoff stress tensor at local point
             const Mat33 S = material->PK2_stress(F.determinant(), C);
 
+            // Identity matrix
+            const auto Id = Matrix<Dimension, Dimension>::Identity();
+
             // The Green-Lagrange strain tensor
             const Mat33 E = 0.5*(C - Id);
 
-            // FEBio Effective Lagrange Strain
-            //const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
-
-            //const auto Eeff = 1.5*((-1/3)*E.trace()*Id)*((-1/3)*E.trace()*Id);
-
-            //std::cout << i << " et S: " << S.norm() << std::endl;
-
-            //std::cout << i << " et E: " << E.norm() << std::endl;
-
-            // Strain energy 
-            //const Real W = material->strain_energy_density(F.determinant(), C);
-
-            //std::cout << i << " et W: " << W << std::endl;
-
             // Principal Lagrange strain: "1 Principal Lagrange strain" in FEBIO
-            //const auto strain_eivals = E..eigenvalues();
-            //const auto strain_max_eival = strain_eivals.maxCoeff();
+            const Eigen::Matrix<std::complex<double>, 3, 1> strain_eivals = E.eigenvalues();
+            const auto strain_max_eival = strain_eivals.real().maxCoeff();
 
             // Principal Stress: "1 Principal stress" in FEBIO
-            //const auto stress_eivals = S.eigenvalues();
-            //const auto stress_max_eival = stress_eivals.maxCoeff();  
-            
-            //std::string data_file_name = "../../../scenes/data_curves/" + std::to_string(i) + ".txt";
+            const Eigen::Matrix<std::complex<double>, 3, 1> stress_eivals = S.eigenvalues();
+            const auto stress_max_eival = stress_eivals.real().maxCoeff();
+
+            std::string data_file_name = "/home/sidaty/Desktop/Vascularization/Curves_validation/data_curves/" + std::to_string(i) + ".txt";
+
+            // Create and open a text file if not exists
+            std::ofstream stress_strain_file(data_file_name, std::fstream::app);
+
+            // Write to the file
+            stress_strain_file << /* "\n" <<  */strain_max_eival << " " << stress_max_eival << "\n";
+
+            // Close the file
+            stress_strain_file.close();
             
         }
     }
