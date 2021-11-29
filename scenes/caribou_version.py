@@ -8,7 +8,7 @@ increments=100
 
 cg_precond = 'Diagonal'
 
-poissonRatio = 0.49
+poissonRatio = 0.499
 youngModulus = 3500
 mu = youngModulus / (2.0 * (1.0 + poissonRatio))
 l = youngModulus * poissonRatio / ((1.0 + poissonRatio) * (1.0 - 2.0 * poissonRatio))
@@ -22,22 +22,20 @@ def createScene(root):
     root.addObject('RequiredPlugin', name='SofaGeneralSimpleFem')
     root.addObject('RequiredPlugin', name='SofaBoundaryCondition')
     root.addObject('RequiredPlugin', name='SofaCaribou')
-    root.gravity= [0, 0, 0]
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showCollisionModels hideMappings showForceFields')
-    root.addObject('EulerImplicitSolver', rayleighStiffness="0",  rayleighMass="0.1", vdamping="3")
-    root.addObject('CGLinearSolver',  threshold="0.000000001", tolerance="0.0000000001", iterations="100", printLog="false")
+    root.addObject('EulerImplicitSolver', rayleighStiffness="0",  rayleighMass="0.1")
+    root.addObject('CGLinearSolver',  threshold="0.000000001", tolerance="0.0000000001", iterations="10", printLog="false")
 
     surx = 80
-    sury = 20
-    surz = 20
+    sury = 15
+    surz = 15
 
     hexa = root.addChild("hexa")
     hexa.addObject('RegularGridTopology', template="Vec3d", name='mesh', min=[-1.5, -0.5, 0], max=[3, 1, 1], n=[surx, sury, surz])
     hexa.addObject('MechanicalObject', name="hexa_mo", template="Vec3d", src='@./mesh')
-    hexa.addObject('UniformMass', totalMass="20", showAxisSizeFactor="1")
     hexa.addObject('CaribouTopology', name='topo', template='Hexahedron', indices='@./mesh.hexahedra', position='@./mesh.position')
     hexa.addObject('NeoHookeanMaterial', young_modulus=youngModulus, poisson_ratio=poissonRatio)
-    hexa.addObject('HyperelasticForcefield', template="Hexahedron", printLog=True, file_nodes="/home/sidaty/Desktop/Vascularization/MeshDifferenceSurfaceintersection/nodes.txt")
+    hexa.addObject('HyperelasticForcefield', template="Hexahedron", printLog=True, file_nodes="/home/sidaty/Desktop/MeshDifferenceSurfaceIntersection/nodes.txt")
     
     fixed = ''
     forces_indices = ''

@@ -22,5 +22,5 @@ def compute(mu, lmbda, rad, length):
     u, v, w = smp.lambdify([x, y, z], u), smp.lambdify([x, y, z], v), smp.lambdify([x, y, z], w)
 
     return smp.lambdify([x, y, z], P), \
-           smp.lambdify([x, y, z], f), \
+           smp.lambdify([x, y, z], f), \ 
            (lambda x_, y_, z_: np.array([u(x_, y_, z_), v(x_, y_, z_), w(x_, y_, z_)]).reshape(3,))

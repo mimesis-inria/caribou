@@ -79,14 +79,14 @@ void HyperelasticForcefield<Element>::init()
 
     for(int i = 0; i < p_element_nodes_to_plot.size(); ++i) { 
 
-        std::string data_file_name = "/home/sidaty/Desktop/Vascularization/Curves_validation/data_curves/" + std::to_string(i) + ".txt";
-
+        std::string data_file_name = "/home/sidaty/Desktop/Curves_validation/data_curves/" + std::to_string(i) + ".txt";
         // Create and open a text file if not exists
         std::ofstream stress_strain_file(data_file_name, std::ofstream::out | std::ofstream::trunc);
         
         stress_strain_file.close();
     }
     
+        
     // Compute and store the shape functions and their derivatives for every integration points
     initialize_elements();
     
@@ -182,6 +182,7 @@ void HyperelasticForcefield<Element>::addForce(
             const Mat33 F = current_nodes_position.transpose()*dN_dx;
             const auto J = F.determinant();
 
+
             // Right Cauchy-Green strain tensor at gauss node
             const Mat33 C = F.transpose() * F;
 
@@ -259,7 +260,7 @@ void HyperelasticForcefield<Element>::addForce(
             const Eigen::Matrix<std::complex<double>, 3, 1> stress_eivals = S.eigenvalues();
             const auto stress_max_eival = stress_eivals.real().maxCoeff();
 
-            std::string data_file_name = "/home/sidaty/Desktop/Vascularization/Curves_validation/data_curves/" + std::to_string(i) + ".txt";
+            std::string data_file_name = "/home/sidaty/Desktop/Curves_validation/data_curves/" + std::to_string(i) + ".txt";
 
             // Create and open a text file if not exists
             std::ofstream stress_strain_file(data_file_name, std::fstream::app);
