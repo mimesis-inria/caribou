@@ -5,6 +5,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
+#include <sofa/core/ConstraintParams.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/ConstraintSolver.h>
 #include <sofa/helper/AdvancedTimer.h>
