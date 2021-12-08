@@ -32,6 +32,7 @@ find_path (
 
 if (SOFA_MODULE_DIR)
     get_filename_component(SOFA_ROOT "${SOFA_MODULE_DIR}/../.." ABSOLUTE)
+    list(APPEND CMAKE_PREFIX_PATH ${SOFA_ROOT})
 endif()
 
 if (NOT SOFA_FIND_COMPONENTS)
