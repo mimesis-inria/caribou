@@ -1,7 +1,11 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 #include <sofa/helper/testing/BaseTest.h>
+#else
+#include <sofa/testing/BaseTest.h>
+#endif
 #include <sofa/simulation/Node.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <SofaBaseMechanics/MechanicalObject.h>
@@ -23,7 +27,9 @@ using namespace SofaCaribou::mass;
 using namespace caribou::geometry;
 using namespace caribou;
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+using namespace sofa::helper::testing;
+#else
 using namespace sofa::testing;
 #endif
 
