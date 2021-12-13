@@ -25,10 +25,6 @@ DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
 namespace sofa { using Index = unsigned int; }
-namespace sofa::type {
-    template <std::size_t N, typename Real>
-    using Vec = sofa::defaulttype::Vec<N, Real>;
-}
 #endif
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
@@ -37,6 +33,9 @@ template <typename T> using vector = ::sofa::helper::vector<T>;
 using Vector3 = ::sofa::defaulttype::Vector3;
 using RGBAColor = ::sofa::helper::types::RGBAColor;
 template <typename Real> using TBoundingBox = ::sofa::defaulttype::TBoundingBox<Real> ;
+template <std::size_t N, typename Real>
+using Vec = sofa::defaulttype::Vec<N, Real>;
+
 }
 #endif
 
