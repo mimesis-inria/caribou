@@ -1,6 +1,7 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 #include <sofa/helper/testing/BaseTest.h>
 #else
