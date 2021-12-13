@@ -4,6 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
+#include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <sofa/core/topology/BaseTopology.h>

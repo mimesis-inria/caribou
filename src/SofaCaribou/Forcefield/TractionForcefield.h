@@ -6,8 +6,11 @@
 #include <SofaCaribou/Forcefield/CaribouForcefield.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/core/behavior/MechanicalState.h>
 DISABLE_ALL_WARNINGS_END
+
+
 
 namespace SofaCaribou::forcefield {
 
