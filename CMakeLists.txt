@@ -227,8 +227,15 @@ endif()
 install(
     FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/caribouTools.cmake"
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindSOFA.cmake"
     DESTINATION lib/cmake/Caribou
     COMPONENT headers
 )
 
+install(
+        FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/caribouTools.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindSOFA.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindMKL.cmake"
+        DESTINATION lib/cmake/SofaCaribou
+        COMPONENT headers
+)
