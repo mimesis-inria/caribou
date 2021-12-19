@@ -1,9 +1,18 @@
+#include <SofaCaribou/config.h>
+
+DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 #include <sofa/helper/testing/BaseTest.h>
+#else
+#include <sofa/testing/BaseTest.h>
+#endif
 #include <SofaBaseMechanics/MechanicalObject.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
 #include <sofa/simulation/Node.h>
+DISABLE_ALL_WARNINGS_BEGIN
 
 #include <SofaCaribou/Topology/CaribouTopology[Quad].h>
 #include <SofaCaribou/Topology/CaribouTopology[Tetrahedron].h>
@@ -19,7 +28,9 @@ using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace sofa::helper::logging;
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+using namespace sofa::helper::testing;
+#else
 using namespace sofa::testing;
 #endif
 

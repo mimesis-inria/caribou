@@ -4,6 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
+#include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
