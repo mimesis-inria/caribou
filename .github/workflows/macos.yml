@@ -92,7 +92,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: /opt/qt
-          key: qt-5.12.6-macos-10.15
+          key: ${{ format('qt-5.12.6-macos-10.15-{0}', github.head_ref) }}
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
