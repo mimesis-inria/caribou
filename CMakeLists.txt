@@ -53,6 +53,7 @@ option(CARIBOU_USE_FLOAT "Use float precision for floating point values." OFF)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
 
 # SOFA option
+find_package(Threads QUIET)
 find_package(SOFA COMPONENTS SofaFramework QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
 if (CARIBOU_WITH_SOFA)
