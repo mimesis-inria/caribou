@@ -65,36 +65,6 @@ def createScene(root):
     fenics_node.addObject('SaintVenantKirchhoffMaterial_FEniCS', young_modulus="3000", poisson_ratio="0.3")
     fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 
-    # import meshio
-    # beam_p1 = meshio.read("./meshes/beam_p2.vtu")
-
-    # sofa_node = root.addChild("tetra_node_SOFA")
-    # sofa_node.addObject('StaticSolver', newton_iterations="2", relative_correction_tolerance_threshold="1e-15", relative_residual_tolerance_threshold="1e-10", printLog="1")
-    # sofa_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
-    # sofa_node.addObject('MechanicalObject', name="mo", position=beam_p1.points.tolist())
-    # sofa_node.addObject('CaribouTopology', name='topology', template='Tetrahedron10', indices=beam_p1.cells_dict['tetra10'].tolist())
-    # sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
-    # sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
-    # sofa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-    # sofa_node.addObject('ConstantForceField', force="0 -10 0", indices="@top_roi.indices")
-    # sofa_node.addObject('SaintVenantKirchhoffMaterial', young_modulus="3000", poisson_ratio="0.3")
-    # sofa_node.addObject('HyperelasticForcefield', printLog=True)
-
-
-    # fenics_node = root.addChild("tetra_node_FEniCS")
-    # fenics_node.addObject('StaticSolver', newton_iterations="2", relative_correction_tolerance_threshold="1e-15", relative_residual_tolerance_threshold="1e-10", printLog="1")
-    # fenics_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
-    # fenics_node.addObject('MechanicalObject', name="mo", position=beam_p1.points.tolist())
-    # fenics_node.addObject('CaribouTopology', name='topology', template='Tetrahedron10', indices=beam_p1.cells_dict['tetra10'].tolist())
-    # fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
-    # fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
-    # fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-    # fenics_node.addObject('ConstantForceField', force="0 -10 0", indices="@top_roi.indices")
-    # fenics_node.addObject('SaintVenantKirchhoffMaterial_FEniCS', young_modulus="3000", poisson_ratio="0.3")
-    # fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
-
-
-
     return root
 
 
