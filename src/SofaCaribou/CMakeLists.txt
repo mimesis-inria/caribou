@@ -182,7 +182,7 @@ caribou_add_target_to_component (
 )
 
 find_package(SofaPython3 QUIET)
-if (CARIBOU_WITH_SOFA AND SofaPython3_FOUND)
+if (CARIBOU_WITH_SOFA AND SofaPython3_FOUND AND CARIBOU_WITH_PYTHON_3)
     add_subdirectory(Python)
     set(CARIBOU_WITH_SP3 ON)
 endif()

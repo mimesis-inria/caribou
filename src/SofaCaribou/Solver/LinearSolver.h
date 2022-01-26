@@ -2,7 +2,7 @@
 
 #include <SofaCaribou/config.h>
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 namespace sofa::defaulttype {
     class BaseMatrix;
     class BaseVector;
