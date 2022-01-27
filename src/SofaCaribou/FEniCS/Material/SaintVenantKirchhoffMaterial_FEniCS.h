@@ -1,18 +1,21 @@
 #pragma once
 
 #include <SofaCaribou/Material/HyperelasticMaterial.h>
+//#include <SofaCaribou/Material/SaintVenantKirchhoff_Tetra.h>
+#include <iostream>
+
 
 namespace SofaCaribou::material {
 
 template<class DataTypes>
-class SaintVenantKirchhoffMaterial : public HyperelasticMaterial<DataTypes> {
+class SaintVenantKirchhoffMaterial_FEniCS : public HyperelasticMaterial<DataTypes> {
     static constexpr auto Dimension = DataTypes::spatial_dimensions;
     using Coord = typename DataTypes::Coord;
     using Real  = typename Coord::value_type;
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(SaintVenantKirchhoffMaterial, DataTypes), SOFA_TEMPLATE(HyperelasticMaterial, DataTypes));
+    SOFA_CLASS(SOFA_TEMPLATE(SaintVenantKirchhoffMaterial_FEniCS, DataTypes), SOFA_TEMPLATE(HyperelasticMaterial, DataTypes));
 
-    SaintVenantKirchhoffMaterial()
+    SaintVenantKirchhoffMaterial_FEniCS()
         : d_young_modulus(initData(&d_young_modulus,
             Real(1000), "young_modulus",
             "Young's modulus of the material",
@@ -75,17 +78,22 @@ public:
         return C;
     }
 
+
+//    template<typename Element>
+//    void test(){
+//        std::cout << "test";
+
+//    }
 //    Eigen::Matrix<Real, 4, 3>
 //    calculate_nodal_forces(Eigen::Matrix<Real, 4, Dimension> & nodal_forces, Eigen::Matrix<Real, 4, Dimension> & coefficients, Eigen::Matrix<Real, 4, Dimension> & current_nodes_position) const override{
-//    const Real young_modulus = d_young_modulus.getValue();
-//    const Real poisson_ratio = d_poisson_ratio.getValue();
-////    const ufc_scalar_t constants[2] = {young_modulus, poisson_ratio};
-//    // Get the single cell integral
-////    const ufc_integral *integral =
-////        form_SaintVenantKirchhoff_Tetra_F->integrals(ufc_integral_type::cell)[0];
-////    integral->tabulate_tensor(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
-////        return nodal_forces;
+////    std::cout << "nodal forces" << nodal_forces << "\n";
+//    std::cout << "coefficients" << coefficients << "\n";
+////    std::cout << "position" << current_nodes_position << "\n";
+//    integral->tabulate_tensor(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
+//    std::cout << "final nodal forces" << nodal_forces << "\n";
+//        return nodal_forces;
 //    }
+
 
 
 private:
@@ -97,6 +105,10 @@ private:
     // Data members
     sofa::core::objectmodel::Data<Real> d_young_modulus;
     sofa::core::objectmodel::Data<Real> d_poisson_ratio;
+//    const ufc_scalar_t constants[2] = {d_young_modulus.getValue(), d_poisson_ratio.getValue()};
+//    // Get the single cell integral
+//    const ufc_integral *integral =
+//        form_SaintVenantKirchhoff_Tetra_F->integrals(ufc_integral_type::cell)[0];
 };
 
 } // namespace SofaCaribou::material

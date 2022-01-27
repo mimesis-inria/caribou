@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SofaCaribou/config.h>
-#include <SofaCaribou/Forcefield/HyperelasticForcefield.h>
+#include <SofaCaribou//FEniCS/Forcefield/HyperelasticForcefield_FEniCS.h>
 #include <SofaCaribou/Forcefield/CaribouForcefield.inl>
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
@@ -15,12 +15,17 @@ DISABLE_ALL_WARNINGS_END
 #include <omp.h>
 
 #include <iostream>
+//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra.h>
+//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h>
+//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.h>
+
 #endif
 
 namespace SofaCaribou::forcefield {
 
 template <typename Element>
-HyperelasticForcefield<Element>::HyperelasticForcefield()
+HyperelasticForcefield_FEniCS<Element>::HyperelasticForcefield_FEniCS()
 : d_material(initLink(
     "material",
     "Material used to compute the hyperelastic force field."))
@@ -34,7 +39,7 @@ HyperelasticForcefield<Element>::HyperelasticForcefield()
 }
 
 template <typename Element>
-void HyperelasticForcefield<Element>::init()
+void HyperelasticForcefield_FEniCS<Element>::init()
 {
     using sofa::core::topology::BaseMeshTopology;
     using sofa::core::objectmodel::BaseContext;
@@ -63,7 +68,7 @@ void HyperelasticForcefield<Element>::init()
 }
 
 template<typename Element>
-void HyperelasticForcefield<Element>::addForce(const sofa::core::MechanicalParams *mparams, sofa::core::MultiVecDerivId fId) {
+void HyperelasticForcefield_FEniCS<Element>::addForce(const sofa::core::MechanicalParams *mparams, sofa::core::MultiVecDerivId fId) {
     if (mparams) {
         // Stores the identifier of the x position vector for later use in the stiffness matrix assembly.
         p_X_id = mparams->x();
@@ -73,7 +78,7 @@ void HyperelasticForcefield<Element>::addForce(const sofa::core::MechanicalParam
 }
 
 template <typename Element>
-void HyperelasticForcefield<Element>::addForce(
+void HyperelasticForcefield_FEniCS<Element>::addForce(
     const sofa::core::MechanicalParams* mparams,
     sofa::core::objectmodel::Data<VecDeriv>& d_f,
     const sofa::core::objectmodel::Data<VecCoord>& d_x,
@@ -97,6 +102,7 @@ void HyperelasticForcefield<Element>::addForce(
     material->before_update();
 
     ReadAccessor<Data<VecCoord>> sofa_x = d_x;
+    ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
     WriteAccessor<Data<VecDeriv>> sofa_f = d_f;
 
     if (sofa_x.size() != sofa_f.size())
@@ -111,9 +117,21 @@ void HyperelasticForcefield<Element>::addForce(
         return;
 
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
-    Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
 
-    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addForce");
+    // Compute the displacement with respect to the rest position
+    const auto u =  X - X0;
+//    const ufcx_integral *integral =
+//        form_SaintVenantKirchhoff_Tetra_F->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =
+//        form_SaintVenantKirchhoff_Tetra_Order2_F->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =
+//        form_SaintVenantKirchhoff_Hexa_F->integrals(ufcx_integral_type::cell)[0];
+    const ufcx_integral *integral =
+        form_SaintVenantKirchhoff_Hexa_Order2_F->integrals(ufcx_integral_type::cell)[0];
+    const double constants[2] = {3000, 0.3};
+
+    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::addForce");
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
@@ -122,47 +140,27 @@ void HyperelasticForcefield<Element>::addForce(
 
         // Fetch the initial and current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+        Matrix<NumberOfNodesPerElement, Dimension> coefficients;
+
 
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-            current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
+            current_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
+            coefficients.row(i).noalias() = u.row(node_indices[i]);
+
         }
-//        std::cout << "current node positions: " << current_nodes_position;
 
         // Compute the nodal forces
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
 
-        for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
+//        if (element_id==0) std::cout <<"coefficients: " << coefficients;
+//        if (element_id==0) std::cout <<"positions: " << X;
+        integral->tabulate_tensor_float64(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
+//        if (element_id == 0) std::cout << "final nodal forces" << nodal_forces << "\n";
 
-            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-            const auto & detJ = gauss_node.jacobian_determinant;
+        std::cout << "final nodal forces" << nodal_forces << "\n";
 
-            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const auto & dN_dx = gauss_node.dN_dx;
 
-            // Gauss quadrature node weight
-            const auto & w = gauss_node.weight;
-
-            // Deformation tensor at gauss node
-            const Mat33 F = current_nodes_position.transpose()*dN_dx;
-            const auto J = F.determinant();
-
-            // Right Cauchy-Green strain tensor at gauss node
-            const Mat33 C = F.transpose() * F;
-
-            // Second Piola-Kirchhoff stress tensor at gauss node
-            const Mat33 S = material->PK2_stress(J, C);
-
-            // Elastic forces w.r.t the gauss node applied on each nodes
-            for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-                const auto dx = dN_dx.row(i).transpose();
-                const Vector<Dimension> f_ = (detJ * w) * F*S*dx;
-                for (size_t j = 0; j < Dimension; ++j) {
-                    nodal_forces(i, j) += f_[j];
-                }
-            }
-        }
-        if (element_id == 0) std::cout << "final nodal forces" << nodal_forces << "\n";
 
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
@@ -171,7 +169,7 @@ void HyperelasticForcefield<Element>::addForce(
         }
     }
 
-    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::addForce");
+    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::addForce");
 
     // This is the only I found to detect when a stiffness matrix reassembly is needed for calls to addDForce
     K_is_up_to_date = false;
@@ -179,7 +177,7 @@ void HyperelasticForcefield<Element>::addForce(
 }
 
 template <typename Element>
-void HyperelasticForcefield<Element>::addDForce(
+void HyperelasticForcefield_FEniCS<Element>::addDForce(
     const sofa::core::MechanicalParams* mparams,
     sofa::core::objectmodel::Data<VecDeriv>& d_df,
     const sofa::core::objectmodel::Data<VecDeriv>& d_dx)
@@ -197,7 +195,7 @@ void HyperelasticForcefield<Element>::addDForce(
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, 1>> DX   (&(sofa_dx[0][0]), sofa_dx.size()*3);
     Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, 1>>       DF   (&(sofa_df[0][0]), sofa_df.size()*3);
 
-    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addDForce");
+    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::addDForce");
 
     for (int k = 0; k < p_K.outerSize(); ++k) {
         for (typename Eigen::SparseMatrix<Real>::InnerIterator it(p_K, k); it; ++it) {
@@ -213,11 +211,11 @@ void HyperelasticForcefield<Element>::addDForce(
         }
     }
 
-    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::addDForce");
+    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::addDForce");
 }
 
 template <typename Element>
-void HyperelasticForcefield<Element>::addKToMatrix(
+void HyperelasticForcefield_FEniCS<Element>::addKToMatrix(
     sofa::defaulttype::BaseMatrix * matrix,
     SReal kFact, unsigned int & offset)
 {
@@ -225,7 +223,7 @@ void HyperelasticForcefield<Element>::addKToMatrix(
         assemble_stiffness();
     }
 
-    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addKToMatrix");
+    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::addKToMatrix");
 
     // K is symmetric, so we only stored "one side" of the matrix.
     // But to accelerate the computation, coefficients were not
@@ -250,11 +248,11 @@ void HyperelasticForcefield<Element>::addKToMatrix(
         }
     }
 
-    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::addKToMatrix");
+    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::addKToMatrix");
 }
 
 template <typename Element>
-SReal HyperelasticForcefield<Element>::getPotentialEnergy (
+SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
     const sofa::core::MechanicalParams* mparams,
     const sofa::core::objectmodel::Data<VecCoord>& d_x) const {
     using namespace sofa::core::objectmodel;
@@ -289,7 +287,7 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
 
     SReal Psi = 0.;
 
-    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::getPotentialEnergy");
+    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::getPotentialEnergy");
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
         // Fetch the node indices of the element
@@ -338,17 +336,17 @@ SReal HyperelasticForcefield<Element>::getPotentialEnergy (
         }
     }
 
-    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::getPotentialEnergy");
+    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::getPotentialEnergy");
 
     return Psi;
 }
 
 template <typename Element>
-void HyperelasticForcefield<Element>::initialize_elements()
+void HyperelasticForcefield_FEniCS<Element>::initialize_elements()
 {
     using namespace sofa::core::objectmodel;
 
-    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::initialize_elements");
+    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::initialize_elements");
 
     if (!this->mstate)
         return;
@@ -388,29 +386,33 @@ void HyperelasticForcefield<Element>::initialize_elements()
     }
     msg_info() << "Total volume of the geometry is " << v;
 
-    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::initialize_elements");
+    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::initialize_elements");
 }
 
 template <typename Element>
-void HyperelasticForcefield<Element>::assemble_stiffness()
+void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness()
 {
     assemble_stiffness(*this->mstate->read (p_X_id.getId(this->mstate)));
 }
 
 template<typename Element>
-void HyperelasticForcefield<Element>::assemble_stiffness(const sofa::core::objectmodel::Data<VecCoord> & x) {
+void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const sofa::core::objectmodel::Data<VecCoord> & x) {
     using namespace sofa::core::objectmodel;
 
     const sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x= x;
+    const sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
+
     const auto nb_nodes = sofa_x.size();
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
 
-    assemble_stiffness(X);
+
+    assemble_stiffness(X, X0);
 }
 
 template<typename Element>
 template<typename Derived>
-void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase<Derived> & x) {
+void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::MatrixBase<Derived> & x, const Eigen::MatrixBase<Derived> & x0) {
     const auto material = d_material.get();
 
     [[maybe_unused]]
@@ -422,7 +424,6 @@ void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase
     // Update material parameters in case the user changed it
     material->before_update();
 
-    static const auto Id = Mat33::Identity();
     const auto nb_elements = this->number_of_elements();
     const auto nb_nodes = x.rows();
     const auto nDofs = nb_nodes*Dimension;
@@ -433,7 +434,21 @@ void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase
     std::vector<Eigen::Triplet<Real>> triplets;
     triplets.reserve(nDofs*24*2);
 
-    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::update_stiffness");
+    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::update_stiffness");
+
+    const double constants[2] = {3000, 0.3};
+    const auto u =  x - x0;
+
+
+    // Get the single cell integral
+//    const ufcx_integral *integral =
+//        form_SaintVenantKirchhoff_Tetra_J->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =
+//        form_SaintVenantKirchhoff_Tetra_Order2_J->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =
+//        form_SaintVenantKirchhoff_Hexa_J->integrals(ufcx_integral_type::cell)[0];
+    const ufcx_integral *integral =
+        form_SaintVenantKirchhoff_Hexa_Order2_J->integrals(ufcx_integral_type::cell)[0];
 #pragma omp parallel for if (enable_multithreading)
     for (int element_id = 0; element_id < static_cast<int>(nb_elements); ++element_id) {
         // Fetch the node indices of the element
@@ -441,80 +456,24 @@ void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase
 
         // Fetch the current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+        Matrix<NumberOfNodesPerElement, Dimension> coefficients;
+
 
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-            current_nodes_position.row(i).noalias() = x.row(node_indices[i]).template cast<Real>();
-        }
+            current_nodes_position.row(i).noalias() = x0.row(node_indices[i]).template cast<Real>();
+            coefficients.row(i).noalias() = u.row(node_indices[i]).template cast<Real>();
 
+        }
+//        if (element_id==0) std::cout <<"coefficients: " << coefficients;
+//        if (element_id==0) std::cout <<"positions: " << current_nodes_position;
+        // Compute the nodal forces
+        Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
+        nodal_forces.fill(0);
         using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodesPerElement*Dimension, NumberOfNodesPerElement*Dimension, Eigen::RowMajor>;
         Stiffness Ke = Stiffness::Zero();
+        integral->tabulate_tensor_float64(Ke.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
 
-        for (const auto & gauss_node : gauss_nodes_of(element_id)) {
-            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-            const auto detJ = gauss_node.jacobian_determinant;
-
-            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const auto dN_dx = gauss_node.dN_dx;
-
-            // Gauss quadrature node weight
-            const auto w = gauss_node.weight;
-
-            // Deformation tensor at gauss node
-            const Mat33 F = current_nodes_position.transpose()*dN_dx;
-            const auto J = F.determinant();
-
-            // Right Cauchy-Green strain tensor at gauss node
-            const Mat33 C = F.transpose() * F;
-
-            // Second Piola-Kirchhoff stress tensor at gauss node
-            const auto S = material->PK2_stress(J, C);
-
-            // Jacobian of the Second Piola-Kirchhoff stress tensor at gauss node
-            const auto D = material->PK2_stress_jacobian(J, C);
-
-            // Computation of the tangent-stiffness matrix
-            for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-                // Derivatives of the ith shape function at the gauss node with respect to global coordinates x,y and z
-                const Vec3 dxi = dN_dx.row(i).transpose();
-
-                Matrix<6,3> Bi;
-                Bi <<
-                   F(0,0)*dxi[0],                 F(1,0)*dxi[0],                 F(2,0)*dxi[0],
-                        F(0,1)*dxi[1],                 F(1,1)*dxi[1],                 F(2,1)*dxi[1],
-                        F(0,2)*dxi[2],                 F(1,2)*dxi[2],                 F(2,2)*dxi[2],
-                        F(0,0)*dxi[1] + F(0,1)*dxi[0], F(1,0)*dxi[1] + F(1,1)*dxi[0], F(2,0)*dxi[1] + F(2,1)*dxi[0],
-                        F(0,1)*dxi[2] + F(0,2)*dxi[1], F(1,1)*dxi[2] + F(1,2)*dxi[1], F(2,1)*dxi[2] + F(2,2)*dxi[1],
-                        F(0,0)*dxi[2] + F(0,2)*dxi[0], F(1,0)*dxi[2] + F(1,2)*dxi[0], F(2,0)*dxi[2] + F(2,2)*dxi[0];
-
-                // The 3x3 sub-matrix Kii is symmetric, we only store its upper triangular part
-                Mat33 Kii = (dxi.dot(S*dxi)*Id + Bi.transpose()*D*Bi) * detJ * w;
-                Ke.template block<Dimension, Dimension>(i*Dimension, i*Dimension)
-                        .template triangularView<Eigen::Upper>()
-                        += Kii;
-
-                // We now loop only on the upper triangular part of the
-                // element stiffness matrix Ke since it is symmetric
-                for (std::size_t j = i+1; j < NumberOfNodesPerElement; ++j) {
-                    // Derivatives of the jth shape function at the gauss node with respect to global coordinates x,y and z
-                    const Vec3 dxj = dN_dx.row(j).transpose();
-
-                    Matrix<6,3> Bj;
-                    Bj <<
-                       F(0,0)*dxj[0],                 F(1,0)*dxj[0],                 F(2,0)*dxj[0],
-                            F(0,1)*dxj[1],                 F(1,1)*dxj[1],                 F(2,1)*dxj[1],
-                            F(0,2)*dxj[2],                 F(1,2)*dxj[2],                 F(2,2)*dxj[2],
-                            F(0,0)*dxj[1] + F(0,1)*dxj[0], F(1,0)*dxj[1] + F(1,1)*dxj[0], F(2,0)*dxj[1] + F(2,1)*dxj[0],
-                            F(0,1)*dxj[2] + F(0,2)*dxj[1], F(1,1)*dxj[2] + F(1,2)*dxj[1], F(2,1)*dxj[2] + F(2,2)*dxj[1],
-                            F(0,0)*dxj[2] + F(0,2)*dxj[0], F(1,0)*dxj[2] + F(1,2)*dxj[0], F(2,0)*dxj[2] + F(2,2)*dxj[0];
-
-                    // The 3x3 sub-matrix Kij is NOT symmetric, we store its full part
-                    Mat33 Kij = (dxi.dot(S*dxj)*Id + Bi.transpose()*D*Bj) * detJ * w;
-                    Ke.template block<Dimension, Dimension>(i*Dimension, j*Dimension)
-                            .noalias() += Kij;
-                }
-            }
-        }
-//        if (element_id == 0) std::cout << "Ke: " << Ke << "\n";
+//        std::cout << "Ke: " << Ke << "\n";
 
 #pragma omp critical
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
@@ -539,14 +498,14 @@ void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase
     }
     p_K.setFromTriplets(triplets.begin(), triplets.end());
     std::cout << p_K.row(0) << "\n";
-    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::update_stiffness");
+    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::update_stiffness");
 
     K_is_up_to_date = true;
     eigenvalues_are_up_to_date = false;
 }
 
 template <typename Element>
-auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*element_id*/, const Element & element) const -> GaussContainer {
+auto HyperelasticForcefield_FEniCS<Element>::get_gauss_nodes(const std::size_t & /*element_id*/, const Element & element) const -> GaussContainer {
     GaussContainer gauss_nodes {};
     if constexpr (NumberOfGaussNodesPerElement == caribou::Dynamic) {
         gauss_nodes.resize(element.number_of_gauss_nodes());
@@ -564,16 +523,18 @@ auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*elem
         const Matrix<NumberOfNodesPerElement, Dimension> dN_dx =
             (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
 
+
         GaussNode & gauss_node = gauss_nodes[gauss_node_id];
         gauss_node.weight               = g.weight;
         gauss_node.jacobian_determinant = detJ;
         gauss_node.dN_dx                = dN_dx;
     }
+
     return gauss_nodes;
 }
 
 template <typename Element>
-auto HyperelasticForcefield<Element>::eigenvalues() -> const Vector<Eigen::Dynamic> & {
+auto HyperelasticForcefield_FEniCS<Element>::eigenvalues() -> const Vector<Eigen::Dynamic> & {
     if (not eigenvalues_are_up_to_date) {
 #ifdef EIGEN_USE_LAPACKE
         Eigen::Matrix<Real, Eigen::Dynamic, Eigen::Dynamic> k (K());
@@ -593,7 +554,7 @@ auto HyperelasticForcefield<Element>::eigenvalues() -> const Vector<Eigen::Dynam
 }
 
 template <typename Element>
-auto HyperelasticForcefield<Element>::cond() -> Real {
+auto HyperelasticForcefield_FEniCS<Element>::cond() -> Real {
     const auto & values = eigenvalues();
     const auto min = values.minCoeff();
     const auto max = values.maxCoeff();
