@@ -5,6 +5,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(HEADER_FILES
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
+    FEniCS/HyperelasticForcefield_FEniCS.h
     Mass/CaribouMass.h
     Ode/LegacyStaticODESolver.h
     Ode/StaticODESolver.h
@@ -20,6 +21,7 @@ set(SOURCE_FILES
     SofaCaribou.cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield.cpp
+    FEniCS/HyperelasticForcefield_FEniCS.cpp
     Mass/CaribouMass.cpp
     Ode/LegacyStaticODESolver.cpp
     Ode/StaticODESolver.cpp

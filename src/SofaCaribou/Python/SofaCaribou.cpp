@@ -5,6 +5,7 @@
 #include <SofaCaribou/Python/Mass/CaribouMass.h>
 #include <SofaCaribou/Python/Forcefield/HexahedronElasticForce.h>
 #include <SofaCaribou/Python/Forcefield/HyperelasticForcefield.h>
+#include <SofaCaribou/Python/FEniCS/HyperelasticForcefield_FEniCS.h>
 #include <SofaCaribou/Python/Solver/ConjugateGradientSolver.h>
 #include <SofaCaribou/Python/Solver/LDLTSolver.h>
 #include <SofaCaribou/Python/Solver/LLTSolver.h>
@@ -32,7 +33,7 @@ PYBIND11_MODULE(SofaCaribou, m) {
     // Forcefield bindings
     SofaCaribou::forcefield::python::addHexahedronElasticForce(m);
     SofaCaribou::forcefield::python::addHyperElasticForcefield(m);
-
+    SofaCaribou::forcefield::python::addHyperElasticForcefield_FEniCS(m);
     // Solver bindings
     SofaCaribou::solver::python::addConjugateGradientSolver(m);
     SofaCaribou::solver::python::addLDLTSolver(m);
