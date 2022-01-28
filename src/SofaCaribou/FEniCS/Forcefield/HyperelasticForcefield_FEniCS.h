@@ -4,7 +4,7 @@
 #include <array>
 
 #include <SofaCaribou/config.h>
-#include <SofaCaribou/Material/HyperelasticMaterial.h>
+#include <SofaCaribou/FEniCS/Material/HyperelasticMaterial_FEniCS.h>
 #include <SofaCaribou/Forcefield/CaribouForcefield.h>
 
 #include <Caribou/config.h>
@@ -208,7 +208,7 @@ private:
     virtual auto get_gauss_nodes(const std::size_t & element_id, const Element & element) const -> GaussContainer;
 
     // Data members
-    Link<material::HyperelasticMaterial<DataTypes>> d_material;
+    Link<material::HyperelasticMaterial_FEniCS<Element, DataTypes>> d_material;
     sofa::core::objectmodel::Data<bool> d_enable_multithreading;
 
     // Private variables

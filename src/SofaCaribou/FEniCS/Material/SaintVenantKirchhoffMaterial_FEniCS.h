@@ -1,19 +1,25 @@
 #pragma once
 
-#include <SofaCaribou/Material/HyperelasticMaterial.h>
-//#include <SofaCaribou/Material/SaintVenantKirchhoff_Tetra.h>
+#include <SofaCaribou/FEniCS/Material/HyperelasticMaterial_FEniCS.h>
+#include <Caribou/Geometry/Tetrahedron.h>
+#include <Caribou/Geometry/Hexahedron.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.h>
 #include <iostream>
 
 
 namespace SofaCaribou::material {
 
-template<class DataTypes>
-class SaintVenantKirchhoffMaterial_FEniCS : public HyperelasticMaterial<DataTypes> {
+template<typename Element, typename DataTypes>
+class SaintVenantKirchhoffMaterial_FEniCS : public HyperelasticMaterial_FEniCS<Element, DataTypes> {
     static constexpr auto Dimension = DataTypes::spatial_dimensions;
+    static constexpr INTEGER_TYPE NumberOfNodesPerElement = caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime;
     using Coord = typename DataTypes::Coord;
     using Real  = typename Coord::value_type;
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(SaintVenantKirchhoffMaterial_FEniCS, DataTypes), SOFA_TEMPLATE(HyperelasticMaterial, DataTypes));
+    SOFA_CLASS(SOFA_TEMPLATE2(SaintVenantKirchhoffMaterial_FEniCS, Element, DataTypes), SOFA_TEMPLATE2(HyperelasticMaterial_FEniCS, Element, DataTypes));
 
     SaintVenantKirchhoffMaterial_FEniCS()
         : d_young_modulus(initData(&d_young_modulus,
@@ -79,20 +85,16 @@ public:
     }
 
 
-//    template<typename Element>
-//    void test(){
-//        std::cout << "test";
-
-//    }
-//    Eigen::Matrix<Real, 4, 3>
-//    calculate_nodal_forces(Eigen::Matrix<Real, 4, Dimension> & nodal_forces, Eigen::Matrix<Real, 4, Dimension> & coefficients, Eigen::Matrix<Real, 4, Dimension> & current_nodes_position) const override{
-////    std::cout << "nodal forces" << nodal_forces << "\n";
+    void
+    calculate_nodal_forces(Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> nodal_forces, Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> coefficients, Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> current_nodes_position) const override{
+//    std::cout << "nodal forces" << nodal_forces << "\n";
 //    std::cout << "coefficients" << coefficients << "\n";
-////    std::cout << "position" << current_nodes_position << "\n";
+//    std::cout << "position" << current_nodes_position << "\n";
 //    integral->tabulate_tensor(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
 //    std::cout << "final nodal forces" << nodal_forces << "\n";
-//        return nodal_forces;
-//    }
+      std::cout << "Teeeeeeeeeeeeeeeeeeeeeeeeeeest";
+      std::cout << NumberOfNodesPerElement << "/n";
+    }
 
 
 

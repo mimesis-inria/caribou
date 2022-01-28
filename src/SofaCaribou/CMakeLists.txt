@@ -34,6 +34,7 @@ set(HEADER_FILES
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
+    FEniCS/Material/HyperelasticMaterial_FEniCS.h
     FEniCS/Material/SaintVenantKirchhoffMaterial_FEniCS.h
     FEniCS/Material/SaintVenantKirchhoff_Tetra.h
     FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h

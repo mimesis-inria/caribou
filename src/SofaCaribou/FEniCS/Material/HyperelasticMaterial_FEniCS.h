@@ -5,6 +5,8 @@
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/behavior/MechanicalState.h>
+#include <Caribou/Geometry/Element.h>
+
 DISABLE_ALL_WARNINGS_END
 
 #include <Eigen/Eigen>
@@ -12,14 +14,16 @@ DISABLE_ALL_WARNINGS_END
 
 namespace SofaCaribou::material {
 
-template<class DataTypes>
-class HyperelasticMaterial : public sofa::core::objectmodel::BaseObject {
+template<typename Element, typename DataTypes>
+class HyperelasticMaterial_FEniCS : public sofa::core::objectmodel::BaseObject {
     static constexpr auto Dimension = DataTypes::spatial_dimensions;
+    static constexpr INTEGER_TYPE NumberOfNodesPerElement = caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime;
+
     using Coord = typename DataTypes::Coord;
     using Real  = typename Coord::value_type;
 public:
 
-    SOFA_CLASS(SOFA_TEMPLATE(HyperelasticMaterial, DataTypes), sofa::core::objectmodel::BaseObject);
+    SOFA_CLASS(SOFA_TEMPLATE2(HyperelasticMaterial_FEniCS, Element, DataTypes), sofa::core::objectmodel::BaseObject);
 
     /**
      * This is called just before the material is updated on every points (usually just before a Newton step).
@@ -57,21 +61,25 @@ public:
     virtual Eigen::Matrix<Real, 6, 6>
     PK2_stress_jacobian(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const = 0;
 
+    virtual void
+    calculate_nodal_forces(Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> nodal_forces, Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> coefficients, Eigen::Matrix<Real, NumberOfNodesPerElement, Dimension> current_nodes_position) const = 0;
+
+
     // Sofa's scene methods
 
     /** Return the data type (ex. Vec3D) as the template name  */
-    static std::string templateName(const HyperelasticMaterial<DataTypes>* = nullptr) {
+    static std::string templateName(const HyperelasticMaterial_FEniCS<Element, DataTypes>* = nullptr) {
         return DataTypes::Name();
     }
 
     /**
-     * Check if we can create a HyperelasticMaterial<DataTypes> with the given
+     * Check if we can create a HyperelasticMaterial_FEniCS<DataTypes> with the given
      * template argument (from the scene parser).
      *
      * If no template argument was specified to the component, try to find a
      * mechanical state in the current context to deduce the data type.
      */
-    static bool canCreate(HyperelasticMaterial<DataTypes>* o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) {
+    static bool canCreate(HyperelasticMaterial_FEniCS<Element, DataTypes>* o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) {
         std::string requested_data_type = arg->getAttribute( "template", "");
         std::string this_data_type = templateName(o);
 

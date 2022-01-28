@@ -19,6 +19,7 @@ DISABLE_ALL_WARNINGS_END
 //#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h>
 //#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa.h>
 #include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoffMaterial_FEniCS.h>
 
 #endif
 
@@ -47,7 +48,7 @@ void HyperelasticForcefield_FEniCS<Element>::init()
 
     // No material set, try to find one in the current context
     if (not d_material.get()) {
-        auto materials = this->getContext()->template getObjects<material::HyperelasticMaterial<DataTypes>>(BaseContext::Local);
+        auto materials = this->getContext()->template getObjects<material::HyperelasticMaterial_FEniCS<Element, DataTypes>>(BaseContext::Local);
         if (materials.empty()) {
             msg_warning() << "Could not find an hyperelastic material in the current context.";
         } else if (materials.size() > 1) {
@@ -155,7 +156,11 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 
 //        if (element_id==0) std::cout <<"coefficients: " << coefficients;
 //        if (element_id==0) std::cout <<"positions: " << X;
+        
+        
         integral->tabulate_tensor_float64(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
+        material->calculate_nodal_forces(nodal_forces, coefficients, current_nodes_position);
+
 //        if (element_id == 0) std::cout << "final nodal forces" << nodal_forces << "\n";
 
         std::cout << "final nodal forces" << nodal_forces << "\n";
