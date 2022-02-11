@@ -2,49 +2,48 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Base/BaseRectangularQuad.h>
-#include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Quad8.h>
 #include <Eigen/Core>
 #include <array>
 
 namespace caribou::geometry {
 
 template<UNSIGNED_INTEGER_TYPE Dimension>
-struct RectangularQuad;
-
+struct RectangularQuad8;
 
 template<UNSIGNED_INTEGER_TYPE _Dimension>
-struct traits<RectangularQuad <_Dimension>> {
+struct traits<RectangularQuad8 <_Dimension>> {
     static constexpr UNSIGNED_INTEGER_TYPE CanonicalDimension = 2;
     static constexpr UNSIGNED_INTEGER_TYPE Dimension = _Dimension;
-    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 4;
-    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 4;
+    static constexpr INTEGER_TYPE NumberOfNodesAtCompileTime = 8;
+    static constexpr INTEGER_TYPE NumberOfGaussNodesAtCompileTime = 8;
 
-    using BoundaryElementType = Segment<_Dimension>;
+    using BoundaryElementType = Segment3<_Dimension>;
     static constexpr INTEGER_TYPE NumberOfBoundaryElementsAtCompileTime = 4;
 };
 
 /**
- * Linear Rectangular Quad
+ * Quadratic Rectangular Quad
  *
  * \verbatim
- *        v
- *        ^
- *        |
- *  3-----------2
- *  |     |     |
- *  |     |     |
- *  |     +---- | --> u
- *  |           |
- *  |           |
- *  0-----------1
+ *       v
+ *       ^
+ *       |
+ * 3-----6-----2
+ * |     |     |
+ * |     |     |
+ * 7     +---- 5 --> u
+ * |           |
+ * |           |
+ * 0-----4-----1
  * \endverbatim
  *
  * @tparam _Dimension The world coordinates dimension
  */
 template<UNSIGNED_INTEGER_TYPE _Dimension>
-struct RectangularQuad : public BaseRectangularQuad<RectangularQuad <_Dimension>> {
+struct RectangularQuad8 : public BaseRectangularQuad<RectangularQuad8 <_Dimension>> {
     // Types
-    using Base = BaseRectangularQuad<RectangularQuad <_Dimension>>;
+    using Base = BaseRectangularQuad<RectangularQuad8 <_Dimension>>;
     using LocalCoordinates = typename Base::LocalCoordinates;
     using WorldCoordinates = typename Base::WorldCoordinates;
 
@@ -62,7 +61,7 @@ struct RectangularQuad : public BaseRectangularQuad<RectangularQuad <_Dimension>
     static constexpr auto NumberOfNodesAtCompileTime = Base::NumberOfNodesAtCompileTime;
     static constexpr auto NumberOfGaussNodesAtCompileTime = Base::NumberOfGaussNodesAtCompileTime;
 
-    static constexpr auto canonical_nodes = Quad<Dimension>::canonical_nodes;
+    static constexpr auto canonical_nodes = Quad8<Dimension>::canonical_nodes;
 
     using Size = typename Base::Size;
     using Rotation = typename Base::Rotation;
@@ -71,35 +70,42 @@ struct RectangularQuad : public BaseRectangularQuad<RectangularQuad <_Dimension>
     using Base::Base;
 
     // Constructor from a regular quad
-    explicit RectangularQuad(const Quad<Dimension> & quad) {
+    explicit RectangularQuad8(const Quad8<Dimension> & quad) {
         this->p_center = quad.center();
         this->p_H = Size((quad.node(1)-quad.node(0)).norm(), (quad.node(3)-quad.node(0)).norm());
         this->p_R = quad.frame({0, 0});
-    };
+    }
 
     /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit RectangularQuad(Eigen::EigenBase<EigenType> & nodes)
-    : RectangularQuad(Quad<Dimension>(nodes)) {}
+    explicit RectangularQuad8(Eigen::EigenBase<EigenType> & nodes)
+        : RectangularQuad8(Quad8<Dimension>(nodes)) {}
 
     /** Constructor from an Eigen matrix containing the positions of the quad's nodes */
     template<typename EigenType, REQUIRES(EigenType::RowsAtCompileTime == NumberOfNodesAtCompileTime)>
-    explicit RectangularQuad(const Eigen::EigenBase<EigenType> & nodes)
-    : RectangularQuad(Quad<Dimension>(nodes)) {}
+    explicit RectangularQuad8(const Eigen::EigenBase<EigenType> & nodes)
+        : RectangularQuad8(Quad8<Dimension>(nodes)) {}
 
 private:
     // Implementations
-    friend struct Element<RectangularQuad <_Dimension>>;
-    friend struct BaseQuad<RectangularQuad <_Dimension>>;
-    inline auto get_L(const LocalCoordinates & xi) const -> Vector<NumberOfNodesAtCompileTime> {
+    friend struct Element<RectangularQuad8 <_Dimension>>;
+    friend struct BaseQuad<RectangularQuad8 <_Dimension>>;
+    inline auto get_L(const LocalCoordinates & xi) const {
         const auto  & u = xi[0];
         const auto  & v = xi[1];
-        return {
-            static_cast<FLOATING_POINT_TYPE>(1 / 4. * (1 - u) * (1 - v)),
-            static_cast<FLOATING_POINT_TYPE>(1 / 4. * (1 + u) * (1 - v)),
-            static_cast<FLOATING_POINT_TYPE>(1 / 4. * (1 + u) * (1 + v)),
-            static_cast<FLOATING_POINT_TYPE>(1 / 4. * (1 - u) * (1 + v))
-        };
+
+        Vector<NumberOfNodesAtCompileTime> m;
+        m[4] = 1/2.*(1 - u*u)*(1 - v); // Node 4
+        m[5] = 1/2.*(1 - v*v)*(1 + u); // Node 5
+        m[6] = 1/2.*(1 - u*u)*(1 + v); // Node 6
+        m[7] = 1/2.*(1 - v*v)*(1 - u); // Node 7
+
+        m[0] = 1/4.*(1 - u)*(1 - v) - 1/2.*(m[4] + m[7]); // Node 0
+        m[1] = 1/4.*(1 + u)*(1 - v) - 1/2.*(m[4] + m[5]); // Node 1
+        m[2] = 1/4.*(1 + u)*(1 + v) - 1/2.*(m[5] + m[6]); // Node 2
+        m[3] = 1/4.*(1 - u)*(1 + v) - 1/2.*(m[6] + m[7]); // Node 3
+
+        return m;
     };
 
     inline auto get_dL(const LocalCoordinates & xi) const {
@@ -107,11 +113,16 @@ private:
         const auto & v = xi[1];
 
         Matrix<NumberOfNodesAtCompileTime, CanonicalDimension> m;
-        //         dL/du                dL/dv
-        m << -1 / 4. * (1 - v),   -1 / 4. * (1 - u),   // Node 0
-             +1 / 4. * (1 - v),   -1 / 4. * (1 + u),   // Node 1
-             +1 / 4. * (1 + v),   +1 / 4. * (1 + u),   // Node 2
-             -1 / 4. * (1 + v),   +1 / 4. * (1 - u);   // Node 3
+        //                          dL/du                                                        dL/dv
+        m <<   -1/4.*(1 - v) - 1/2.*(-u*(1 - v) + -1/2.*(1 - v*v))  ,      -1/4.*(1 - u) - 1/2.*(-1/2.*(1 - u*u) + -v*(1 - u)),   // Node 0
+                1/4.*(1 - v) - 1/2.*(-u*(1 - v) +  1/2.*(1 - v*v))  ,      -1/4.*(1 + u) - 1/2.*(-1/2.*(1 - u*u) + -v*(1 + u)),   // Node 1
+                1/4.*(1 + v) - 1/2.*(-u*(1 + v) +  1/2.*(1 - v*v))  ,       1/4.*(1 + u) - 1/2.*( 1/2.*(1 - u*u) + -v*(1 + u)),   // Node 2
+               -1/4.*(1 + v) - 1/2.*(-u*(1 + v) + -1/2.*(1 - v*v))  ,       1/4.*(1 - u) - 1/2.*( 1/2.*(1 - u*u) + -v*(1 - u)),   // Node 3
+                                  -u*(1 - v)                        ,                       -1/2.*(1 - u*u)                   ,   // Node 4
+                               1/2.*(1 - v*v)                       ,                         -v*(1 + u)                      ,   // Node 5
+                                  -u*(1 + v)                        ,                        1/2.*(1 - u*u)                   ,   // Node 6
+                               -1/2.*(1 - v*v)                      ,                         -v*(1 - u);                         // Node 7
+
         return m;
     };
 
@@ -122,7 +133,7 @@ private:
 
     inline auto get_nodes() const {
         Matrix<NumberOfNodesAtCompileTime, Dimension> nodes;
-        for (Eigen::Index node_id = 0; node_id < NumberOfNodesAtCompileTime; ++node_id) {
+        for (UNSIGNED_INTEGER_TYPE node_id = 0; node_id < NumberOfNodesAtCompileTime; ++node_id) {
             nodes.row(node_id) = get_node(node_id);
         }
         return nodes;
@@ -140,11 +151,11 @@ private:
     }
 
     inline auto get_boundary_elements_nodes() const -> const auto & {
-        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 2>, 4> indices = {{
-            {0, 1}, // Edge 0
-            {1, 2}, // Edge 1
-            {2, 3}, // Edge 2
-            {3, 0}  // Edge 3
+        static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 4> indices = {{
+            {0, 1, 4}, // Edge 0
+            {1, 2, 5}, // Edge 1
+            {2, 3, 6}, // Edge 2
+            {3, 0, 7}  // Edge 3
         }};
         return indices;
     }

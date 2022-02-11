@@ -2,15 +2,15 @@
 
 #include <Eigen/Dense>
 #include <Caribou/constants.h>
-#include <Caribou/Geometry/Tetrahedron.h>
+#include <Caribou/Geometry/Tetrahedron10.h>
 
-TEST(Tetrahedron, Linear) {
+TEST(Tetrahedron, Quadratic) {
     using namespace caribou;
 
     {
-        using Tetrahedron = caribou::geometry::Tetrahedron;
-        using Triangle = caribou::geometry::Triangle<3>;
-        using Edge = caribou::geometry::Segment<3>;
+        using Tetrahedron = caribou::geometry::Tetrahedron10;
+        using Triangle = caribou::geometry::Triangle6<3>;
+        using Edge = caribou::geometry::Segment3<3>;
         using LocalCoordinates = Tetrahedron::LocalCoordinates;
         using WorldCoordinates = Tetrahedron::WorldCoordinates;
 
@@ -22,10 +22,12 @@ TEST(Tetrahedron, Linear) {
         );
 
         // Interpolation
-        Eigen::Matrix<FLOATING_POINT_TYPE, 4, 1> values (p1(t.node(0)), p1(t.node(1)), p1(t.node(2)), p1(t.node(3)));
+        Eigen::Matrix<FLOATING_POINT_TYPE, 10, 1> values;
+        values << p2(t.node(0)), p2(t.node(1)), p2(t.node(2)), p2(t.node(3)), p2(t.node(4)),
+                  p2(t.node(5)), p2(t.node(6)), p2(t.node(7)), p2(t.node(8)), p2(t.node(9));
         for (const auto & gauss_node : t.gauss_nodes()) {
             const auto x = gauss_node.position;
-            EXPECT_DOUBLE_EQ(t.interpolate(x, values), p1(t.world_coordinates(x)));
+            EXPECT_DOUBLE_EQ(t.interpolate(x, values), p2(t.world_coordinates(x)));
         }
 
         // Inverse transformation
@@ -43,7 +45,7 @@ TEST(Tetrahedron, Linear) {
 
             for (UNSIGNED_INTEGER_TYPE face_id = 0; face_id < t.number_of_boundary_elements(); ++face_id) {
                 Triangle face = t.boundary_element(face_id);
-                for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < face.number_of_gauss_nodes();++gauss_node_id) {
+                for (UNSIGNED_INTEGER_TYPE gauss_node_id = 0; gauss_node_id < face.number_of_gauss_nodes(); ++gauss_node_id) {
                     inside_points.push_back(t.local_coordinates(face.world_coordinates(face.gauss_node(gauss_node_id).position)));
                 }
                 for (UNSIGNED_INTEGER_TYPE edge_id = 0; edge_id < face.number_of_boundary_elements(); ++edge_id) {
