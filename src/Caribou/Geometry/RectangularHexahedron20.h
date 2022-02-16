@@ -2,8 +2,8 @@
 
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Base/BaseRectangularHexahedron.h>
-#include <Caribou/Geometry/Hexahedron.h>
-#include <Caribou/Geometry/RectangularQuad.h>
+#include <Caribou/Geometry/Hexahedron20.h>
+#include <Caribou/Geometry/RectangularQuad8.h>
 #include <Eigen/Core>
 
 namespace caribou::geometry {
