@@ -32,7 +32,7 @@ public:
     SOFA_CLASS(TetrahedronElasticForce, SOFA_TEMPLATE(ForceField, Vec3Types));
 
     // Type definitions
-    using Tetrahedron = caribou::geometry::Tetrahedron<caribou::Linear>;
+    using Tetrahedron = caribou::geometry::Tetrahedron;
     using Inherit  = ForceField<Vec3Types>;
     using DataTypes = typename Inherit::DataTypes;
     using VecCoord = typename DataTypes::VecCoord;

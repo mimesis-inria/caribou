@@ -43,7 +43,7 @@ public:
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
 
-    using Hexahedron = caribou::geometry::Hexahedron<caribou::Linear>;
+    using Hexahedron = caribou::geometry::Hexahedron;
     static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodesAtCompileTime;
 
 

@@ -3,6 +3,7 @@
 #include <Caribou/config.h>
 #include <Caribou/Geometry/Base/BaseTriangle.h>
 #include <Caribou/Geometry/Segment3.h>
+#include <Caribou/Geometry/Triangle.h>
 #include <Eigen/Core>
 #include <array>
 
