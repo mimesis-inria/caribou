@@ -13,10 +13,13 @@ print(f'Adding {site_packages_dir} to sys.path')
 import Caribou
 from Caribou.Topology import Mesh
 from Caribou.Topology import Grid3D
-from Caribou.Geometry import Segment
-from Caribou.Geometry import Triangle
-from Caribou.Geometry import Tetrahedron
-from Caribou.Geometry import Hexahedron
+from Caribou.Geometry import Segment, Segment3
+from Caribou.Geometry import Triangle, Triangle6
+from Caribou.Geometry import Tetrahedron, Tetrahedron10
+from Caribou.Geometry import Hexahedron, Hexahedron20
+
+meshfolder = os.path.dirname(__file__), '..', 'meshes'
+meshfolder = "/Users/jnbrunet/sources/caribou/unittest/Caribou/Topology/meshes"
 
 
 class TestMesh(unittest.TestCase):
@@ -48,8 +51,8 @@ class TestDomain(unittest.TestCase):
         return self.assertTrue(np.allclose(A, B, rtol, atol, equal_nan), f"Matrices are not almost equal, with \nA={A} \nand\nB={B}")
 
     def test_segment_domain(self):
-        for order, element_type, meshfile in [(Caribou.Linear, 'line', '1D_linear.vtk'), (Caribou.Quadratic, 'line3', '1D_quadratic.vtk')]:
-            m = meshio.read(os.path.join(os.path.dirname(__file__), '..', 'meshes', meshfile))
+        for element, element_type, meshfile in [(Segment, 'line', '1D_linear.vtk'), (Segment3, 'line3', '1D_quadratic.vtk')]:
+            m = meshio.read(os.path.join(meshfolder, meshfile))
             mesh = Mesh(m.points[:, 0])
 
             if type(m.cells) == dict:
@@ -58,25 +61,25 @@ class TestDomain(unittest.TestCase):
                 cells = m.cells_dict[element_type]
 
             # Creation with name
-            domain = mesh.add_domain("segments", Segment(Caribou._1D, order), cells)
+            domain = mesh.add_domain("segments", element(Caribou._1D), cells)
             self.assertEqual(domain.number_of_elements(), 10)
             self.assertMatrixEqual(domain.element_indices(0), cells[0])
             self.assertMatrixEqual(domain.element_indices(9), cells[9])
 
             # Creation without name
-            domain = mesh.add_domain(Segment(Caribou._1D, order), cells)
+            domain = mesh.add_domain(element(Caribou._1D), cells)
             self.assertEqual(domain.number_of_elements(), 10)
             self.assertMatrixEqual(domain.element_indices(0), cells[0])
             self.assertMatrixEqual(domain.element_indices(9), cells[9])
 
     def test_triangle_domain(self):
-        for dimension, order, element_type, meshfile in [
-            (Caribou._2D, Caribou.Linear, 'triangle', '2D_triangle_linear.vtk'),
-            (Caribou._3D, Caribou.Linear, 'triangle', '3D_triangle_linear.vtk'),
-            (Caribou._2D, Caribou.Quadratic, 'triangle6', '2D_triangle_quadratic.vtk'),
-            (Caribou._3D, Caribou.Quadratic, 'triangle6', '3D_triangle_quadratic.vtk'),
+        for dimension, element, element_type, meshfile in [
+            (Caribou._2D, Triangle,  'triangle',  '2D_triangle_linear.vtk'),
+            (Caribou._3D, Triangle,  'triangle',  '3D_triangle_linear.vtk'),
+            (Caribou._2D, Triangle6, 'triangle6', '2D_triangle_quadratic.vtk'),
+            (Caribou._3D, Triangle6, 'triangle6', '3D_triangle_quadratic.vtk'),
         ]:
-            m = meshio.read(os.path.join(os.path.dirname(__file__), '..', 'meshes', meshfile))
+            m = meshio.read(os.path.join(meshfolder, meshfile))
             if dimension == Caribou._2D:
                 mesh = Mesh(m.points[:, 0:2])
             else:
@@ -87,12 +90,12 @@ class TestDomain(unittest.TestCase):
             else:
                 cells = m.cells_dict[element_type]
 
-            domain = mesh.add_domain("triangles", Triangle(dimension, order), cells)
+            domain = mesh.add_domain("triangles", element(dimension), cells)
             self.assertEqual(domain.number_of_elements(), 32)
             self.assertMatrixEqual(domain.element_indices(0), cells[0])
             self.assertMatrixEqual(domain.element_indices(31), cells[-1])
 
-        m = meshio.read(os.path.join(os.path.dirname(__file__), '..', 'meshes', '2D_triangle_quadratic.vtk'))
+        m = meshio.read(os.path.join(meshfolder, '2D_triangle_quadratic.vtk'))
         mesh = Mesh(m.points[:, 0:2])
 
         if type(m.cells) == dict:
@@ -102,7 +105,7 @@ class TestDomain(unittest.TestCase):
 
         self.assertMatrixAlmostEqual(mesh.position(0), m.points[0][0:2])
         self.assertMatrixAlmostEqual(mesh.position(len(m.points)-1), m.points[-1][0:2])
-        mesh.add_domain("triangles", Triangle(Caribou._2D, Caribou.Quadratic), cells)
+        mesh.add_domain("triangles", Triangle6(Caribou._2D), cells)
         domain = mesh.domain("triangles")
         numerical_solution = 0.
         for element_id in range(domain.number_of_elements()):
@@ -118,7 +121,7 @@ class TestDomain(unittest.TestCase):
         self.assertAlmostEqual(numerical_solution, analytic_solution, delta=1e-10)
 
     def test_barycentric_mapping(self):
-        m = meshio.read(os.path.join(os.path.dirname(__file__), '..', 'meshes', '3D_tetrahedron_quadratic.vtk'))
+        m = meshio.read(os.path.join(meshfolder, '3D_tetrahedron_quadratic.vtk'))
         mesh = Mesh(m.points)
 
         if type(m.cells) == dict:
@@ -126,7 +129,7 @@ class TestDomain(unittest.TestCase):
         else:
             cells = m.cells_dict['tetra10']
 
-        domain = mesh.add_domain("triangles", Tetrahedron(Caribou.Quadratic), cells)
+        domain = mesh.add_domain("triangles", Tetrahedron10(), cells)
 
         gauss_points_global_coordinates = []
         for element_id in range(domain.number_of_elements()):
@@ -138,7 +141,7 @@ class TestDomain(unittest.TestCase):
         self.assertMatrixAlmostEqual(gauss_points_global_coordinates, interpolated_positions, rtol=0, atol=1e-3)
 
     def test_deformed_liver_tetra(self):
-        m = meshio.read(os.path.join(os.path.dirname(__file__), '..', 'meshes', 'deformed_liver_volume_tetrahedrons.vtu'))
+        m = meshio.read(os.path.join(meshfolder, 'deformed_liver_volume_tetrahedrons.vtu'))
         mesh = Mesh(m.points)
 
         if type(m.cells) == dict:
@@ -146,7 +149,7 @@ class TestDomain(unittest.TestCase):
         else:
             cells = m.cells_dict['tetra']
 
-        domain = mesh.add_domain("tetra", Tetrahedron(Caribou.Linear), cells)
+        domain = mesh.add_domain("tetra", Tetrahedron(), cells)
 
         undeformed_markers = np.array([[265.83,  -155.11, -1539.04],
                                        [260.11,  -126.47, -1540.98],
@@ -184,7 +187,7 @@ class TestDomain(unittest.TestCase):
         self.assertMatrixAlmostEqual(interpolated_displacements, (deformed_markers - undeformed_markers))
 
     def test_deformed_liver_hexa(self):
-        m = meshio.read(os.path.join(os.path.dirname(__file__), '..', 'meshes', 'deformed_liver_volume_hexahedrons.vtu'))
+        m = meshio.read(os.path.join(meshfolder, 'deformed_liver_volume_hexahedrons.vtu'))
         mesh = Mesh(m.points)
 
         if type(m.cells) == dict:
@@ -192,7 +195,7 @@ class TestDomain(unittest.TestCase):
         else:
             cells = m.cells_dict['hexahedron']
 
-        domain = mesh.add_domain("hexa", Hexahedron(Caribou.Linear), cells)
+        domain = mesh.add_domain("hexa", Hexahedron(), cells)
 
         undeformed_markers = np.array([[265.83,  -155.11, -1539.04],
                                        [260.11,  -126.47, -1540.98],
