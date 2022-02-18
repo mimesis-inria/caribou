@@ -117,7 +117,7 @@ void HyperelasticForcefield<Element>::addForce(
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
         // Fetch the node indices of the element
-        auto node_indices = this->topology()->domain()->element_indices(element_id);
+        const auto& node_indices = this->topology()->domain()->element_indices(element_id);
 
         // Fetch the initial and current positions of the element's nodes
         Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
@@ -138,14 +138,14 @@ void HyperelasticForcefield<Element>::addForce(
             const auto & w = gauss_node.weight;
 
             // Deformation tensor at gauss node
-            const Mat33 F = current_nodes_position.transpose()*dN_dx;
-            const auto J = F.determinant();
+            const Mat33& F = current_nodes_position.transpose()*dN_dx;
+            const auto& J = F.determinant();
 
             // Right Cauchy-Green strain tensor at gauss node
-            const Mat33 C = F.transpose() * F;
+            const Mat33& C = F.transpose() * F;
 
             // Second Piola-Kirchhoff stress tensor at gauss node
-            const Mat33 S = material->PK2_stress(J, C);
+            const Mat33& S = material->PK2_stress(J, C);
 
             // Elastic forces w.r.t the gauss node applied on each nodes
             for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
