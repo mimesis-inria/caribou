@@ -126,10 +126,6 @@ void HyperelasticForcefield<Element>::addForce(
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
 
-        // Compute the nodal forces
-        Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
-        nodal_forces.fill(0);
-
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
 
             // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
@@ -153,21 +149,14 @@ void HyperelasticForcefield<Element>::addForce(
 
             // Elastic forces w.r.t the gauss node applied on each nodes
             for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-                const auto dx = dN_dx.row(i).transpose();
+                const auto& dx = dN_dx.row(i).transpose();
                 const Vector<Dimension> f_ = (detJ * w) * F*S*dx;
                 for (size_t j = 0; j < Dimension; ++j) {
-                    nodal_forces(i, j) += f_[j];
+                    forces(node_indices[i],j) -= f_[j];
                 }
             }
         }
-
-        for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-            for (size_t j = 0; j < Dimension; ++j) {
-                sofa_f[node_indices[i]][j] -= nodal_forces(i,j);
-            }
-        }
     }
-
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::addForce");
 
     // This is the only I found to detect when a stiffness matrix reassembly is needed for calls to addDForce
