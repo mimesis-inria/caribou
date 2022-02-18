@@ -152,7 +152,7 @@ void HyperelasticForcefield<Element>::addForce(
                 const auto & dx = dN_dx.row(i).transpose();
                 const Vector<Dimension> f_ = (detJ * w) * F*S*dx;
                 for (size_t j = 0; j < Dimension; ++j) {
-                    forces(node_indices[i],j) -= f_[j];
+                    forces(node_indices[i], j) -= f_[j];
                 }
             }
         }
