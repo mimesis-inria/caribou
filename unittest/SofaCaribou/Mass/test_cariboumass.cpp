@@ -59,6 +59,7 @@ TEST(CaribouMass, LinearTetrahedron) {
     auto caribou_mass = dynamic_cast<CaribouMass<Tetrahedron<Linear>> *> (
         createObject(root, "CaribouMass", {{"name", "caribou_mass"}, {"topology", "@topology"}, {"density", "2"}}).get()
     );
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 220600)
     auto sofa_mass = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec3Types::Real> *> (
             createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "false"}}).get()
     );
@@ -66,7 +67,15 @@ TEST(CaribouMass, LinearTetrahedron) {
     auto sofa_mass_diagonal = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec3Types::Real> *> (
             createObject(root, "MeshMatrixMass", {{"name", "sofa_mass_diagonal"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "true"}}).get()
     );
+#else // version is >= v22.06
+    auto sofa_mass = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types> *> (
+            createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "false"}}).get()
+    );
 
+    auto sofa_mass_diagonal = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types> *> (
+            createObject(root, "MeshMatrixMass", {{"name", "sofa_mass_diagonal"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "true"}}).get()
+    );
+#endif
     getSimulation()->init(root.get());
 
     // Get M from caribou
@@ -172,9 +181,16 @@ TEST(CaribouMass, LinearHexahedron) {
     auto caribou_mass = dynamic_cast<const CaribouMass<Hexahedron<Linear>> *> (
             createObject(root, "CaribouMass", {{"name", "caribou_mass"}, {"topology", "@topology"}, {"density", "2"}}).get()
     );
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 220600)
     auto sofa_mass = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec3Types::Real> *> (
             createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}}).get()
     );
+#else // version is >= v22.06
+    auto sofa_mass = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types> *> (
+            createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}}).get()
+    );
+#endif
 
     getSimulation()->init(root.get());
 
