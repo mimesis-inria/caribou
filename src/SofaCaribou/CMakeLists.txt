@@ -91,6 +91,7 @@ set(SOURCE_FILES
     Ode/NewtonRaphsonSolver.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
+    Solver/EigenSolver.cpp
     Solver/LDLTSolver.cpp
     Solver/LLTSolver.cpp
     Solver/LUSolver.cpp
