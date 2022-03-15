@@ -121,14 +121,11 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 
     // Compute the displacement with respect to the rest position
     const auto u =  X - X0;
-//    const ufcx_integral *integral =
-//        form_SaintVenantKirchhoff_Tetra_F->integrals(ufcx_integral_type::cell)[0];
-//    const ufcx_integral *integral =
-//        form_SaintVenantKirchhoff_Tetra_Order2_F->integrals(ufcx_integral_type::cell)[0];
-//    const ufcx_integral *integral =
-//        form_SaintVenantKirchhoff_Hexa_F->integrals(ufcx_integral_type::cell)[0];
-    const ufcx_integral *integral =
-        form_SaintVenantKirchhoff_Hexa_Order2_F->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =form_SaintVenantKirchhoff_Tetra_F->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =form_SaintVenantKirchhoff_Tetra_Order2_F->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_F->integrals(ufcx_integral_type::cell)[0];
+    const ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_Order2_F->integrals(ufcx_integral_type::cell)[0];
+    
     const double constants[2] = {3000, 0.3};
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::addForce");
@@ -153,12 +150,8 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
 
-//        if (element_id==0) std::cout <<"coefficients: " << coefficients;
-//        if (element_id==0) std::cout <<"positions: " << X;
         integral->tabulate_tensor_float64(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
-//        if (element_id == 0) std::cout << "final nodal forces" << nodal_forces << "\n";
 
-        std::cout << "final nodal forces" << nodal_forces << "\n";
 
 
 
@@ -464,16 +457,13 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
             coefficients.row(i).noalias() = u.row(node_indices[i]).template cast<Real>();
 
         }
-//        if (element_id==0) std::cout <<"coefficients: " << coefficients;
-//        if (element_id==0) std::cout <<"positions: " << current_nodes_position;
-        // Compute the nodal forces
+        
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
         using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodesPerElement*Dimension, NumberOfNodesPerElement*Dimension, Eigen::RowMajor>;
         Stiffness Ke = Stiffness::Zero();
         integral->tabulate_tensor_float64(Ke.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
 
-//        std::cout << "Ke: " << Ke << "\n";
 
 #pragma omp critical
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
@@ -497,7 +487,6 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
         }
     }
     p_K.setFromTriplets(triplets.begin(), triplets.end());
-    std::cout << p_K.row(0) << "\n";
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::update_stiffness");
 
     K_is_up_to_date = true;
