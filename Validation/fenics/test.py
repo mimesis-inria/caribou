@@ -32,7 +32,7 @@ def createScene(node):
     node.addObject('SparseLDLSolver', template='CompressedRowSparseMatrixMat3x3d')
     node.addObject('MechanicalObject', name='mo', position='@grid.position')
     node.addObject('HexahedronSetTopologyContainer', name='mechanical_topology', src='@grid')
-    node.addObject('SaintVenantKirchhoffMaterial_FEniCS', young_modulus=3000, poisson_ratio=0)
+    node.addObject('SaintVenantKirchhoffMaterial', young_modulus=3000, poisson_ratio=0.3)
     node.addObject('HyperelasticForcefield_FEniCS', name='ff', topology='@mechanical_topology')
     node.addObject('BoxROI', name='base_roi', box=[-radius - eps, -radius - eps, -length / 2 - eps, radius + eps, radius + eps, -length / 2 + eps])
     node.addObject('BoxROI', name='top_roi', box=[-radius - eps, -radius - eps, +length / 2 - eps, radius + eps, radius + eps, +length / 2 + eps], quad='@mechanical_topology.quads')
@@ -58,12 +58,12 @@ class TestHyperelasticForcefield(unittest.TestCase):
 
         # Manually trigger the matrix assembly using a different position vector
         x2 = x*10
-        root.ff.assemble_stiffness(x2)
+        root.ff.assemble_stiffness(x2, x)
         K2 = csr_matrix(root.ff.K(), copy=False)
         self.assertMatrixNotEqual(K1, K2)
 
         # Manually trigger the matrix assembly using the same position vector
-        root.ff.assemble_stiffness(x)
+        root.ff.assemble_stiffness(x, x)
         K3 = csr_matrix(root.ff.K(), copy=False)
         self.assertMatrixEqual(K1, K3)
 

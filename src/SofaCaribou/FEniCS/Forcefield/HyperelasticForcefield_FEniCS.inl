@@ -15,9 +15,9 @@ DISABLE_ALL_WARNINGS_END
 #include <omp.h>
 
 #include <iostream>
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra.h>
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h>
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h>
+#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa.h>
 #include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.h>
 
 #endif
@@ -123,8 +123,8 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
     const auto u =  X - X0;
 //    const ufcx_integral *integral =form_SaintVenantKirchhoff_Tetra_F->integrals(ufcx_integral_type::cell)[0];
 //    const ufcx_integral *integral =form_SaintVenantKirchhoff_Tetra_Order2_F->integrals(ufcx_integral_type::cell)[0];
-//    const ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_F->integrals(ufcx_integral_type::cell)[0];
-    const ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_Order2_F->integrals(ufcx_integral_type::cell)[0];
+    const ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_F->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_Order2_F->integrals(ufcx_integral_type::cell)[0];
     
     const double constants[2] = {3000, 0.3};
 
@@ -438,10 +438,10 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
 //        form_SaintVenantKirchhoff_Tetra_J->integrals(ufcx_integral_type::cell)[0];
 //    const ufcx_integral *integral =
 //        form_SaintVenantKirchhoff_Tetra_Order2_J->integrals(ufcx_integral_type::cell)[0];
-//    const ufcx_integral *integral =
-//        form_SaintVenantKirchhoff_Hexa_J->integrals(ufcx_integral_type::cell)[0];
     const ufcx_integral *integral =
-        form_SaintVenantKirchhoff_Hexa_Order2_J->integrals(ufcx_integral_type::cell)[0];
+        form_SaintVenantKirchhoff_Hexa_J->integrals(ufcx_integral_type::cell)[0];
+//    const ufcx_integral *integral =
+//        form_SaintVenantKirchhoff_Hexa_Order2_J->integrals(ufcx_integral_type::cell)[0];
 #pragma omp parallel for if (enable_multithreading)
     for (int element_id = 0; element_id < static_cast<int>(nb_elements); ++element_id) {
         // Fetch the node indices of the element
