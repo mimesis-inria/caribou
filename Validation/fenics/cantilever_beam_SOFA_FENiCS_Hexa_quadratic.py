@@ -1,5 +1,8 @@
+from re import template
 import numpy as np
 import meshio
+from pymesh import Material
+
 
 import Sofa
 import SofaCaribou
@@ -19,7 +22,7 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject('VisualStyle', displayFlags="showForceFields showBehaviorModels")
         root.addObject('RequiredPlugin', pluginName="SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine")
 
-        beam_q2 = meshio.read("/home/sidaty/Desktop/external_plugins/caribou/Validation/meshes/beam_q2.vtu")
+        beam_q2 = meshio.read("../meshes/beam_q2.vtu")
 
         # TODO improve the manual permutation for matching the redefinition of the hexahedron
         # TODO redefine the visualization of the hexaedron
@@ -49,8 +52,8 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
         fenics_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
-        fenics_node.addObject('SaintVenantKirchhoffMaterial_FEniCS', young_modulus="3000", poisson_ratio="0.3")
-        fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
+        fenics_node.addObject('SaintVenantKirchhoffMaterial_FEniCS', template="Hexahedron20",  name="mat",  young_modulus="3000", poisson_ratio="0.3")
+        fenics_node.addObject('HyperelasticForcefield_FEniCS', material="@mat", printLog=True)
 
         return root
 

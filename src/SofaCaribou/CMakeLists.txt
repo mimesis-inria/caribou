@@ -34,11 +34,24 @@ set(HEADER_FILES
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
-    FEniCS/Material/SaintVenantKirchhoffMaterial_FEniCS.h
-    FEniCS/Material/SaintVenantKirchhoff_Tetra.h
-    FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h
-    FEniCS/Material/SaintVenantKirchhoff_Hexa.h
-    FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.h
+    FEniCS/Material/HyperelasticMaterial_FEniCS.h
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS.h
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron].h
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].h
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS.h
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron].h
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].h
+    # StVk FEniCS Generated code
+    FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.h
+    FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.h
+    FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Hexa.h
+    FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Hexa_Order2.h
+    # NeoHooke FEniCS Generated code
+    FEniCS/Material/FEniCS_Generated_code/NeoHooke_Tetra.h
+    FEniCS/Material/FEniCS_Generated_code/NeoHooke_Tetra_Order2.h
+    FEniCS/Material/FEniCS_Generated_code/NeoHooke_Hexa.h
+    FEniCS/Material/FEniCS_Generated_code/NeoHooke_Hexa_Order2.h
+    ##################################
     Ode/BackwardEulerODESolver.h
     Ode/LegacyStaticODESolver.h
     Ode/NewtonRaphsonSolver.h
@@ -99,10 +112,21 @@ set(SOURCE_FILES
     Mass/CaribouMass[Tetrahedron].cpp
     Mass/CaribouMass[Hexahedron].cpp
     Material/HyperelasticMaterial.cpp
-    FEniCS/Material/SaintVenantKirchhoff_Tetra.c
-    FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.c
-    FEniCS/Material/SaintVenantKirchhoff_Hexa.c
-    FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.c
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron].cpp
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].cpp
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron].cpp
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].cpp
+    # StVk FEniCS Generated code
+    FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.c
+    FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.c
+    FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Hexa.c
+    FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Hexa_Order2.c
+    # NeoHooke FEniCS Generated code
+    FEniCS/Material/FEniCS_Generated_code/NeoHooke_Tetra.c
+    FEniCS/Material/FEniCS_Generated_code/NeoHooke_Tetra_Order2.c
+    FEniCS/Material/FEniCS_Generated_code/NeoHooke_Hexa.c
+    FEniCS/Material/FEniCS_Generated_code/NeoHooke_Hexa_Order2.c
+    ##################################
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp
     Ode/NewtonRaphsonSolver.cpp

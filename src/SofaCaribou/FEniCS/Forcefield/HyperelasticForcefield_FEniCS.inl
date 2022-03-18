@@ -5,6 +5,9 @@
 #include <SofaCaribou/Forcefield/CaribouForcefield.inl>
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
+
+
+
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/core/MechanicalParams.h>
@@ -15,10 +18,6 @@ DISABLE_ALL_WARNINGS_END
 #include <omp.h>
 
 #include <iostream>
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra.h>
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h>
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa.h>
-#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.h>
 
 #endif
 
@@ -47,7 +46,7 @@ void HyperelasticForcefield_FEniCS<Element>::init()
 
     // No material set, try to find one in the current context
     if (not d_material.get()) {
-        auto materials = this->getContext()->template getObjects<material::HyperelasticMaterial<DataTypes>>(BaseContext::Local);
+        auto materials = this->getContext()->template getObjects<material::HyperelasticMaterial_FEniCS<Element, DataTypes>>(BaseContext::Local);
         if (materials.empty()) {
             msg_warning() << "Could not find an hyperelastic material in the current context.";
         } else if (materials.size() > 1) {
@@ -59,9 +58,6 @@ void HyperelasticForcefield_FEniCS<Element>::init()
             msg_info() << "Automatically found the material '" << d_material.get()->getPathName() << "'.";
         }
     }
-
-    // Compute and store the shape functions and their derivatives for every integration points
-    initialize_elements();
 
     // Assemble the initial stiffness matrix
     assemble_stiffness();
@@ -98,9 +94,6 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         return;
     }
 
-    // Update material parameters in case the user changed it
-    material->before_update();
-
     ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
     WriteAccessor<Data<VecDeriv>> sofa_f = d_f;
@@ -113,20 +106,21 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
     if (nb_nodes == 0 || nb_elements == 0)
         return;
 
-    if (p_elements_quadrature_nodes.size() != nb_elements)
-        return;
 
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
 
     // Compute the displacement with respect to the rest position
     const auto u =  X - X0;
-//    const ufcx_integral *integral =form_SaintVenantKirchhoff_Tetra_F->integrals(ufcx_integral_type::cell)[0];
-//    const ufcx_integral *integral =form_SaintVenantKirchhoff_Tetra_Order2_F->integrals(ufcx_integral_type::cell)[0];
-//    const ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_F->integrals(ufcx_integral_type::cell)[0];
-    const ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_Order2_F->integrals(ufcx_integral_type::cell)[0];
-    
-    const double constants[2] = {3000, 0.3};
+
+    // Get FEniCS F 
+    const ufcx_integral *integral = material->FEniCS_F();
+
+    // Get constants from the material
+    const double constants[2] = {   
+                                    material->getConstants()(0, 0), // Young Modulus
+                                    material->getConstants()(0, 1)  // Poisson ratio
+                                };
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::addForce");
 
@@ -151,9 +145,6 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         nodal_forces.fill(0);
 
         integral->tabulate_tensor_float64(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
-
-
-
 
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
@@ -272,115 +263,20 @@ SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
     if (nb_nodes == 0 || nb_elements == 0)
         return 0;
 
-    if (p_elements_quadrature_nodes.size() != nb_elements)
-        return 0;
-
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
 
     SReal Psi = 0.;
 
-    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::getPotentialEnergy");
+    /* sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::getPotentialEnergy");
 
-    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-        // Fetch the node indices of the element
-        auto node_indices = this->topology()->domain()->element_indices(element_id);
-
-        // Fetch the initial and current positions of the element's nodes
-        Matrix<NumberOfNodesPerElement, Dimension> initial_nodes_position;
-        Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
-
-        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-            initial_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
-            current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
-        }
-
-        // Compute the nodal displacement
-        Matrix<NumberOfNodesPerElement, Dimension> U {};
-        for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
-            const auto u = sofa_x[node_indices[i]] - sofa_x0[node_indices[i]];
-            for (size_t j = 0; j < Dimension; ++j) {
-                U(i, j) = u[j];
-            }
-        }
-
-        // Compute the nodal forces
-
-        for (const GaussNode & gauss_node : p_elements_quadrature_nodes[element_id]) {
-
-            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-            const auto & detJ = gauss_node.jacobian_determinant;
-
-            // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-            const auto & dN_dx = gauss_node.dN_dx;
-
-            // Gauss quadrature node weight
-            const auto & w = gauss_node.weight;
-
-            // Deformation tensor at gauss node
-            const auto & F = caribou::mechanics::elasticity::strain::F(dN_dx, U);
-            const auto J = F.determinant();
-
-            // Strain tensor at gauss node
-            const Mat33 C = F.transpose() * F;
-
-            // Add the potential energy at gauss node
-            Psi += (detJ * w) *  material->strain_energy_density(J, C);
-        }
-    }
+     --- Update Phi with FEniCS code here ---
 
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::getPotentialEnergy");
-
+     */
     return Psi;
 }
 
-template <typename Element>
-void HyperelasticForcefield_FEniCS<Element>::initialize_elements()
-{
-    using namespace sofa::core::objectmodel;
-
-    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::initialize_elements");
-
-    if (!this->mstate)
-        return;
-
-    // Resize the container of elements'quadrature nodes
-    const auto nb_elements = this->number_of_elements();
-    if (p_elements_quadrature_nodes.size() != nb_elements) {
-        p_elements_quadrature_nodes.resize(nb_elements);
-    }
-
-    // Translate the Sofa's mechanical state vector to Eigen vector type
-    sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
-    const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), sofa_x0.size(), Dimension);
-
-    // Loop on each element and compute the shape functions and their derivatives for every of their integration points
-    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-
-        // Get an Element instance from the Domain
-        const auto initial_element = this->topology()->element(element_id);
-
-        // Fill in the Gauss integration nodes for this element
-        p_elements_quadrature_nodes[element_id] = get_gauss_nodes(element_id, initial_element);
-    }
-
-    // Compute the volume
-    Real v = 0.;
-    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
-        for (const auto & gauss_node : gauss_nodes_of(element_id)) {
-            // Jacobian of the gauss node's transformation mapping from the elementary space to the world space
-            const auto detJ = gauss_node.jacobian_determinant;
-
-            // Gauss quadrature node weight
-            const auto w = gauss_node.weight;
-
-            v += detJ*w;
-        }
-    }
-    msg_info() << "Total volume of the geometry is " << v;
-
-    sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::initialize_elements");
-}
 
 template <typename Element>
 void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness()
@@ -414,9 +310,6 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
         return;
     }
 
-    // Update material parameters in case the user changed it
-    material->before_update();
-
     const auto nb_elements = this->number_of_elements();
     const auto nb_nodes = x.rows();
     const auto nDofs = nb_nodes*Dimension;
@@ -432,16 +325,7 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
     const double constants[2] = {3000, 0.3};
     const auto u =  x - x0;
 
-
-    // Get the single cell integral
-//    const ufcx_integral *integral =
-//        form_SaintVenantKirchhoff_Tetra_J->integrals(ufcx_integral_type::cell)[0];
-//    const ufcx_integral *integral =
-//        form_SaintVenantKirchhoff_Tetra_Order2_J->integrals(ufcx_integral_type::cell)[0];
-//    const ufcx_integral *integral =
-//        form_SaintVenantKirchhoff_Hexa_J->integrals(ufcx_integral_type::cell)[0];
-    const ufcx_integral *integral =
-        form_SaintVenantKirchhoff_Hexa_Order2_J->integrals(ufcx_integral_type::cell)[0];
+    const ufcx_integral *integral = material->FEniCS_J();
 #pragma omp parallel for if (enable_multithreading)
     for (int element_id = 0; element_id < static_cast<int>(nb_elements); ++element_id) {
         // Fetch the node indices of the element
@@ -493,34 +377,7 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
     eigenvalues_are_up_to_date = false;
 }
 
-template <typename Element>
-auto HyperelasticForcefield_FEniCS<Element>::get_gauss_nodes(const std::size_t & /*element_id*/, const Element & element) const -> GaussContainer {
-    GaussContainer gauss_nodes {};
-    if constexpr (NumberOfGaussNodesPerElement == caribou::Dynamic) {
-        gauss_nodes.resize(element.number_of_gauss_nodes());
-    }
 
-    const auto nb_of_gauss_nodes = gauss_nodes.size();
-    for (std::size_t gauss_node_id = 0; gauss_node_id < nb_of_gauss_nodes; ++gauss_node_id) {
-        const auto & g = element.gauss_node(gauss_node_id);
-
-        const auto J = element.jacobian(g.position);
-        const Mat33 Jinv = J.inverse();
-        const auto detJ = std::abs(J.determinant());
-
-        // Derivatives of the shape functions at the gauss node with respect to global coordinates x,y and z
-        const Matrix<NumberOfNodesPerElement, Dimension> dN_dx =
-            (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
-
-
-        GaussNode & gauss_node = gauss_nodes[gauss_node_id];
-        gauss_node.weight               = g.weight;
-        gauss_node.jacobian_determinant = detJ;
-        gauss_node.dN_dx                = dN_dx;
-    }
-
-    return gauss_nodes;
-}
 
 template <typename Element>
 auto HyperelasticForcefield_FEniCS<Element>::eigenvalues() -> const Vector<Eigen::Dynamic> & {

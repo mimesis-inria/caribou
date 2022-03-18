@@ -1,3 +1,4 @@
+from re import template
 import numpy as np
 import meshio
 
@@ -30,7 +31,7 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         sofa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
         sofa_node.addObject('ConstantForceField', force="0 -1000 0", indices="@top_roi.indices")
-        sofa_node.addObject('SaintVenantKirchhoffMaterial', young_modulus="3000", poisson_ratio="0.3")
+        sofa_node.addObject('NeoHookeanMaterial',  young_modulus="3000", poisson_ratio="0.3")
         sofa_node.addObject('HyperelasticForcefield', printLog=True)
 
 
@@ -43,7 +44,7 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
         fenics_node.addObject('ConstantForceField', force="0 -1000 0", indices="@top_roi.indices")
-        fenics_node.addObject('SaintVenantKirchhoffMaterial_FEniCS', young_modulus="3000", poisson_ratio="0.3")
+        fenics_node.addObject('NeoHookeanMaterial_FEniCS', template="Tetrahedron", young_modulus="3000", poisson_ratio="0.3")
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
     
 
