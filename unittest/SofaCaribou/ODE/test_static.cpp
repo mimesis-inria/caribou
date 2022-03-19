@@ -145,14 +145,73 @@ TEST(StaticODESolver, Beam) {
             {1.000000000000000e+00, 3.526942203674829e-03, 8.307813177405512e-04, 4.667215114394798e-05, 1.646730071539153e-07}  // Step 5
     }};
 
+    // Make sure callbacks work and are in the good order
+    using E = SofaCaribou::ode::NewtonRaphsonSolver::Event;
+    using NR = SofaCaribou::ode::NewtonRaphsonSolver;
+    constexpr unsigned int nb_events = 8;
+    std::array<unsigned int, nb_events> event_count = {};
+
+    solver->register_callback(E::ITERATION_BEGIN, [&event_count](const NR & /*solver*/) {
+        auto c = ++event_count[static_cast<unsigned int>(E::ITERATION_BEGIN)];
+        EXPECT_EQ(c, event_count[static_cast<unsigned int>(E::MATRIX_ASSEMBLED)] + 1);
+    });
+
+    solver->register_callback(E::MATRIX_ASSEMBLED, [&event_count](const NR & /*solver*/) {
+        auto c = ++event_count[static_cast<unsigned int>(E::MATRIX_ASSEMBLED)];
+        EXPECT_EQ(c, event_count[static_cast<unsigned int>(E::ITERATION_BEGIN)]);
+    });
+
+    solver->register_callback(E::MATRIX_ANALYZED, [&event_count](const NR & solver) {
+        auto c = ++event_count[static_cast<unsigned int>(E::MATRIX_ANALYZED)];
+        EXPECT_EQ(c, solver.current_iteration()+1);
+    });
+
+    solver->register_callback(E::MATRIX_FACTORIZED, [&event_count](const NR & /*solver*/) {
+        auto c = ++event_count[static_cast<unsigned int>(E::MATRIX_FACTORIZED)];
+        EXPECT_EQ(c, event_count[static_cast<unsigned int>(E::INCREMENT_SOLVED)] + 1);
+    });
+
+    solver->register_callback(E::INCREMENT_SOLVED, [&event_count](const NR & /*solver*/) {
+        auto c = ++event_count[static_cast<unsigned int>(E::INCREMENT_SOLVED)];
+        EXPECT_EQ(c, event_count[static_cast<unsigned int>(E::INCREMENT_PROPAGATED)] + 1);
+    });
+
+    solver->register_callback(E::INCREMENT_PROPAGATED, [&event_count](const NR & solver) {
+        auto c = ++event_count[static_cast<unsigned int>(E::INCREMENT_PROPAGATED)];
+        EXPECT_EQ(c, event_count[static_cast<unsigned int>(E::RESIDUAL_UPDATED)] + 1);
+    });
+
+    solver->register_callback(E::RESIDUAL_UPDATED, [&event_count](const NR & /*solver*/) {
+        auto c = ++event_count[static_cast<unsigned int>(E::RESIDUAL_UPDATED)];
+        EXPECT_EQ(c, event_count[static_cast<unsigned int>(E::ITERATION_END)] + 1);
+    });
+
+    solver->register_callback(E::ITERATION_END, [&event_count](const NR & /*solver*/) {
+        auto c = ++event_count[static_cast<unsigned int>(E::ITERATION_END)];
+        EXPECT_EQ(c, event_count[static_cast<unsigned int>(E::ITERATION_BEGIN)]);
+    });
+
     getSimulation()->init(root.get());
 
     for (unsigned int step_id = 0; step_id < force_residuals.size(); ++step_id) {
+        for (unsigned int event_id = 0; event_id < nb_events; ++event_id) {
+            event_count[event_id] = 0;
+        }
+
         getSimulation()->animate(root.get(), 1);
+
         EXPECT_EQ(solver->squared_residuals().size(), force_residuals[step_id].size());
         for (unsigned int newton_step_id = 0; newton_step_id < solver->squared_residuals().size(); ++newton_step_id) {
             double residual = solver->squared_residuals()[newton_step_id] / solver->squared_residuals()[0];
             EXPECT_NEAR(sqrt(residual), force_residuals[step_id][newton_step_id], 1e-10);
+        }
+
+        for (unsigned int event_id = 0; event_id < nb_events; ++event_id) {
+            if (event_id == static_cast<unsigned int>(E::MATRIX_ANALYZED)) {
+                EXPECT_EQ(event_count[event_id], 1);
+            } else {
+                EXPECT_EQ(event_count[event_id], solver->squared_residuals().size());
+            }
         }
     }
 
