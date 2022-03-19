@@ -4,7 +4,7 @@ import meshio
 import numpy as np
 
 ELEMENT_TYPE = "Tetrahedron"
-ELEMENT_APPROXIMATION_DEGREE = 1
+ELEMENT_APPROXIMATION_DEGREE = 2
 MATERIAL_MODEL = "NeoHookean"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 # TODO redefine the visualization of the hexaedron
@@ -67,7 +67,7 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject(material, young_modulus="3000", poisson_ratio="0.3")
         sofa_node.addObject('HyperelasticForcefield', printLog=True)
 
-        fenics_node = root.addChild("sofa_node")
+        fenics_node = root.addChild("fenics_node")
         fenics_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
                               relative_residual_tolerance_threshold="1e-10", printLog="1")
         fenics_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
