@@ -6,6 +6,7 @@ set(HEADER_FILES
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
     FEniCS/HyperelasticForcefield_FEniCS.h
+#    AceGEN/HyperelasticForcefield_ACEgen.h
     Mass/CaribouMass.h
     Ode/LegacyStaticODESolver.h
     Ode/StaticODESolver.h
@@ -22,6 +23,7 @@ set(SOURCE_FILES
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield.cpp
     FEniCS/HyperelasticForcefield_FEniCS.cpp
+#    ACEgen/HyperelasticForcefield_ACEgen.cpp
     Mass/CaribouMass.cpp
     Ode/LegacyStaticODESolver.cpp
     Ode/StaticODESolver.cpp

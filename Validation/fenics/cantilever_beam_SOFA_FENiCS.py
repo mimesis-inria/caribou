@@ -3,8 +3,8 @@ import SofaCaribou
 import meshio
 import numpy as np
 
-ELEMENT_TYPE = "Tetrahedron"
-ELEMENT_APPROXIMATION_DEGREE = 2
+ELEMENT_TYPE = "Hexahedron"
+ELEMENT_APPROXIMATION_DEGREE = 1
 MATERIAL_MODEL = "NeoHookean"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 # TODO redefine the visualization of the hexaedron
@@ -81,6 +81,20 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject(material + '_FEniCS', template=element, young_modulus="3000",
                               poisson_ratio="0.3")
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
+
+        acegen = root.addChild("acegen")
+        acegen.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
+                         relative_residual_tolerance_threshold="1e-10", printLog="1")
+        acegen.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
+        self.acegen_mo = acegen.addObject('MechanicalObject', name="mo", position=mesh.points.tolist())
+        acegen.addObject('CaribouTopology', name='topology', template=element,
+                         indices=indices.tolist())
+        acegen.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
+        acegen.addObject('FixedConstraint', indices="@fixed_roi.indices")
+        acegen.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
+        acegen.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
+        acegen.addObject(material, young_modulus="3000", poisson_ratio="0.3")
+        acegen.addObject('HyperelasticForcefield_ACEgen', printLog=True)
 
         return root
 

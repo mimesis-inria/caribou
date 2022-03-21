@@ -3,6 +3,7 @@ project(SofaCaribou)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/FEniCS/Material)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ACEgen/Material)
 
 set(HEADER_FILES
     config.h.in
@@ -21,6 +22,8 @@ set(HEADER_FILES
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS.h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron].h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron].h
+    ACEgen//Forcefield/HyperelasticForcefield_ACEgen.h
+    ACEgen//Forcefield/HyperelasticForcefield_ACEgen[Hexahedron].h
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForcefield.h
     Forcefield/TractionForcefield[Quad].h
@@ -41,6 +44,9 @@ set(HEADER_FILES
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS.h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron].h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].h
+#    ACEgen/Material/HyperelasticMaterial_ACEgen.h
+#    ACEgen/Material/NeoHookean/NeoHookeanMaterial_ACEgen.h
+#    ACEgen/Material/NeoHookean/NeoHookeanMaterial_ACEgen[Hexahedron].h
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.h
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.h
@@ -81,6 +87,7 @@ set(TEMPLATE_FILES
     Forcefield/CaribouForcefield.inl
     Forcefield/HyperelasticForcefield.inl
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS.inl
+    ACEgen/Forcefield/HyperelasticForcefield_ACEgen.inl
     Forcefield/TractionForcefield.inl
     Mapping/CaribouBarycentricMapping.inl
     Mass/CaribouMass.inl
@@ -104,6 +111,7 @@ set(SOURCE_FILES
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron].cpp
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron].cpp
+    ACEgen/Forcefield/HyperelasticForcefield_ACEgen[Hexahedron].cpp
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
     Forcefield/TractionForcefield[Triangle].cpp
@@ -116,6 +124,7 @@ set(SOURCE_FILES
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].cpp
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron].cpp
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].cpp
+#    ACEgen/Material/NeoHookean/NeoHookeanMaterial_ACEgen[Hexahedron].cpp
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.c
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.c
@@ -126,6 +135,7 @@ set(SOURCE_FILES
     FEniCS/Material/FEniCS_Generated_code/NeoHooke_Tetra_Order2.c
     FEniCS/Material/FEniCS_Generated_code/NeoHooke_Hexa.c
     FEniCS/Material/FEniCS_Generated_code/NeoHooke_Hexa_Order2.c
+    ACEgen/Material/ACEgen_Generated_code/NeoHooke_Hexa.c
     ##################################
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp
