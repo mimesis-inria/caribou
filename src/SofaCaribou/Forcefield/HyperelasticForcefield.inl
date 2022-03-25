@@ -162,7 +162,6 @@ void HyperelasticForcefield<Element>::addForce(
                 }
             }
         }
-
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
                 sofa_f[node_indices[i]][j] -= nodal_forces(i,j);

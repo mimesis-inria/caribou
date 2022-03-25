@@ -139,8 +139,7 @@ void HyperelasticForcefield_ACEgen<Element>::addForce(
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
 
-        tabulate_tensor_NeoHookeR(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr, nullptr);
-
+        tabulate_tensor_NeoHookeR(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
 
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
@@ -341,7 +340,7 @@ void HyperelasticForcefield_ACEgen<Element>::assemble_stiffness(const Eigen::Mat
         nodal_forces.fill(0);
         using Stiffness = Eigen::Matrix<FLOATING_POINT_TYPE, NumberOfNodesPerElement*Dimension, NumberOfNodesPerElement*Dimension, Eigen::RowMajor>;
         Stiffness Ke = Stiffness::Zero();
-        tabulate_tensor_NeoHookeK(Ke.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr, nullptr);
+        tabulate_tensor_NeoHookeK(Ke.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
 
 
 #pragma omp critical

@@ -153,6 +153,7 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         }
     }
 
+
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::addForce");
 
     // This is the only I found to detect when a stiffness matrix reassembly is needed for calls to addDForce

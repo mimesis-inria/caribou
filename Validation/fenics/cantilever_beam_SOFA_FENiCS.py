@@ -3,6 +3,7 @@ import SofaCaribou
 import meshio
 import numpy as np
 
+# TODO ACEgen has only been implemented for linear hexahedron with NeoHooke material model
 ELEMENT_TYPE = "Hexahedron"
 ELEMENT_APPROXIMATION_DEGREE = 1
 MATERIAL_MODEL = "NeoHookean"
@@ -82,45 +83,46 @@ class ControlFrame(Sofa.Core.Controller):
                               poisson_ratio="0.3")
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 
-        acegen = root.addChild("acegen")
-        acegen.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
-                         relative_residual_tolerance_threshold="1e-10", printLog="1")
-        acegen.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
-        self.acegen_mo = acegen.addObject('MechanicalObject', name="mo", position=mesh.points.tolist())
-        acegen.addObject('CaribouTopology', name='topology', template=element,
-                         indices=indices.tolist())
-        acegen.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
-        acegen.addObject('FixedConstraint', indices="@fixed_roi.indices")
-        acegen.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-        acegen.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
-        acegen.addObject(material, young_modulus="3000", poisson_ratio="0.3")
-        acegen.addObject('HyperelasticForcefield_ACEgen', printLog=True)
+        acegen_node = root.addChild("acegen_node")
+        acegen_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
+                              relative_residual_tolerance_threshold="1e-10", printLog="1")
+        acegen_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
+        self.acegen_mo = acegen_node.addObject('MechanicalObject', name="mo", position=mesh.points.tolist())
+        acegen_node.addObject('CaribouTopology', name='topology', template=element,
+                              indices=indices.tolist())
+        acegen_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
+        acegen_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
+        acegen_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
+        acegen_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
+        acegen_node.addObject(material, young_modulus="3000", poisson_ratio="0.3")
+        acegen_node.addObject('HyperelasticForcefield_ACEgen', printLog=True)
 
         return root
 
     def onSimulationInitDoneEvent(self, event):
         self.sofa_rest_position = np.array(self.sofa_mo.position.value.copy().tolist())
-        self.fenics_rest_position = np.array(self.fenics_mo.position.value.copy().tolist())
-
-    def onAnimateBeginEvent(self, event):
-
-        pass
 
     def onAnimateEndEvent(self, event):
         sofa_current_positions = np.array(self.sofa_mo.position.value.copy().tolist())
         fenics_current_positions = np.array(self.fenics_mo.position.value.copy().tolist())
+        acegen_current_positions = np.array(self.acegen_mo.position.value.copy().tolist())
+        self.calculate_relative_error("FEniCS", self.sofa_rest_position, sofa_current_positions,
+                                      fenics_current_positions)
+        self.calculate_relative_error("ACEgen", self.sofa_rest_position, sofa_current_positions,
+                                      acegen_current_positions)
 
+    def calculate_relative_error(self, name, sofa_rest_position, sofa_position, position):
         errors = []
-        for sofa_current_point, fenics_current_point, sofa_initial_point in zip(sofa_current_positions,
-                                                                                fenics_current_positions,
-                                                                                self.sofa_rest_position):
+        for sofa_current_point, fenics_current_point, sofa_initial_point in zip(sofa_position,
+                                                                                position,
+                                                                                sofa_rest_position):
             if np.linalg.norm(sofa_current_point - sofa_initial_point) != 0:
                 errors.append(np.linalg.norm(sofa_current_point - fenics_current_point) / np.linalg.norm(
                     sofa_current_point - sofa_initial_point))
 
         mean_error = np.mean(np.array(errors))
 
-        print(f"Relative Mean Error: {100 * mean_error} %")
+        print(f"Relative Mean Error {name}: {100 * mean_error} %")
 
 
 def createScene(node):
