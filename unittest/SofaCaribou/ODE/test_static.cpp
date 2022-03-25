@@ -47,6 +47,9 @@ TEST(StaticODESolver, InitSofaSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
+    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBaseLinearSolver"}});
+#endif
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
@@ -64,6 +67,9 @@ TEST(StaticODESolver, InitCaribouSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
+#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
+    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBaseLinearSolver"}});
+#endif
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});

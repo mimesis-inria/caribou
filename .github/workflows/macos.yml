@@ -137,7 +137,7 @@ jobs:
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
           modules: 'qtcharts qtwebengine'
           aqtversion: '==2.0.5'
-          # setup-python: true
+          setup-python: false
 
 
 #     SOFA
