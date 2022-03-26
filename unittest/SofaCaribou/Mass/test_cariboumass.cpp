@@ -47,6 +47,10 @@ TEST(CaribouMass, LinearTetrahedron) {
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
 #endif
 
+    // Some component to avoid warnings
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
+
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
@@ -170,6 +174,10 @@ TEST(CaribouMass, LinearHexahedron) {
 #else
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
 #endif
+
+    // Some component to avoid warnings
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
 
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 

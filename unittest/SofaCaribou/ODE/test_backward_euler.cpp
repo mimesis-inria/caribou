@@ -55,6 +55,11 @@ TEST(BackwardEulerODESolver, Beam) {
 #if (defined(SOFA_VERSION) && SOFA_VERSION > 201299)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
 #endif
+
+    // Some component to avoid warnings
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
+
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto meca = createChild(root, "meca");
