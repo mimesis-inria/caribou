@@ -31,7 +31,7 @@ lmbda = young * poisson / ((1 + poisson) * (1 - 2 * poisson))
 psi = (lmbda / 2) * tr(E) ** 2 + mu * tr(E * E)
 
 # Total potential energy
-Pi = psi * dx
+Pi = psi * dx(degree=2)
 
 # First variation of Pi (directional derivative about u in the direction of v)
 F = derivative(Pi, u, v)

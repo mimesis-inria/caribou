@@ -3,9 +3,9 @@ import SofaCaribou
 import meshio
 import numpy as np
 
-ELEMENT_TYPE = "Tetrahedron"
+ELEMENT_TYPE = "Hexahedron"
 ELEMENT_APPROXIMATION_DEGREE = 2
-MATERIAL_MODEL = "NeoHookean"
+MATERIAL_MODEL = "SaintVenantKirchhoff"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 # TODO redefine the visualization of the hexaedron
 
