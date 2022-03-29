@@ -30,8 +30,10 @@ elif ELEMENT_TYPE == "Hexahedron" and ELEMENT_APPROXIMATION_DEGREE == 2:
     indices = np.empty(mesh.cells_dict['hexahedron20'].shape)
     indices = mesh.cells_dict['hexahedron20'][:,
               [4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10]]
+
+
 else:
-    raise ValueError('The element or the approximation order is not implemented yet.')
+    raise ValueError('The element or the approximation degree is not implemented yet.')
 
 if MATERIAL_MODEL == "SaintVenantKirchhoff" or MATERIAL_MODEL == "NeoHookean":
     material = MATERIAL_MODEL + "Material"
