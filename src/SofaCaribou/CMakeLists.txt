@@ -35,7 +35,9 @@ set(HEADER_FILES
     Mapping/CaribouBarycentricMapping[Tetrahedron10].h
     Mass/CaribouMass.h
     Mass/CaribouMass[Tetrahedron].h
+    Mass/CaribouMass[Tetrahedron10].h
     Mass/CaribouMass[Hexahedron].h
+    Mass/CaribouMass[Hexahedron20].h
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
@@ -108,7 +110,9 @@ set(SOURCE_FILES
     Mapping/CaribouBarycentricMapping[Tetrahedron].cpp
     Mapping/CaribouBarycentricMapping[Tetrahedron10].cpp
     Mass/CaribouMass[Tetrahedron].cpp
+    Mass/CaribouMass[Tetrahedron10].cpp
     Mass/CaribouMass[Hexahedron].cpp
+    Mass/CaribouMass[Hexahedron20].cpp
     Material/HyperelasticMaterial.cpp
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp
