@@ -20,6 +20,7 @@ void bind_hyperelastic_forcefield_FEniCS(pybind11::module &m, const std::string 
     pybind11::class_<HyperelasticForcefield_FEniCS<Element>, sofa::core::objectmodel::BaseObject, sofapython3::py_shared_ptr<HyperelasticForcefield_FEniCS<Element>>> c(m, name.c_str());
 
     c.def("K", &HyperelasticForcefield_FEniCS<Element>::K);
+    c.def("energy", &HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy);
     c.def("cond", &HyperelasticForcefield_FEniCS<Element>::cond);
     c.def("eigenvalues", &HyperelasticForcefield_FEniCS<Element>::eigenvalues);
     c.def("assemble_stiffness", [](HyperelasticForcefield_FEniCS<Element> & self, const Eigen::Matrix<double, Eigen::Dynamic, HyperelasticForcefield_FEniCS<Element>::Dimension, Eigen::RowMajor> & x, const Eigen::Matrix<double, Eigen::Dynamic, HyperelasticForcefield_FEniCS<Element>::Dimension, Eigen::RowMajor> & x0) {

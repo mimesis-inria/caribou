@@ -34,6 +34,8 @@ public:
     virtual auto FEniCS_F() -> ufcx_integral* {}
     // Retrieve FEniCS J tensor
     virtual auto FEniCS_J() -> ufcx_integral* {}
+    // Retrieve FEniCS Pi tensor
+    virtual auto FEniCS_Pi() -> ufcx_integral* {}
 
 
     [[nodiscard]]  auto

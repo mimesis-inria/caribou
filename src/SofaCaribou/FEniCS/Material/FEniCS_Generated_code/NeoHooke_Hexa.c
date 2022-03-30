@@ -12,7 +12,10 @@
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['NeoHooke_Hexa.py'],
+//   'ufl_file': ['NeoHooke_Hexa.py',
+//                'NeoHooke_Hexa_Order2.py',
+//                'NeoHooke_Tetra.py',
+//                'NeoHooke_Tetra_Order2.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -2971,6 +2974,241 @@ ufcx_integral integral_6d00f7e6dd1add74319cd9d03d5ea6ad2d7d03a9 =
 
 // End of code for integral integral_6d00f7e6dd1add74319cd9d03d5ea6ad2d7d03a9
 
+// Code for integral integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06
+
+void tabulate_tensor_integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06(double* restrict A,
+                                    const double* restrict w,
+                                    const double* restrict c,
+                                    const double* restrict coordinate_dofs,
+                                    const int* restrict entity_local_index,
+                                    const uint8_t* restrict quadrature_permutation)
+{
+  // Quadrature rules
+  static const double weights_8eb[8] = { 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125 };
+  // Precomputed values of basis functions and precomputations
+  // FE* dimensions: [permutation][entities][points][dofs]
+  static const double FE19_C1_D010_Q8eb[1][1][8][8] =
+    { { { { -0.622008467928146, -0.1666666666666665, 0.6220084679281462, 0.1666666666666667, -0.1666666666666665, -0.04465819873852037, 0.1666666666666667, 0.04465819873852041 },
+          { -0.1666666666666667, -0.04465819873852053, 0.1666666666666668, 0.04465819873852037, -0.622008467928146, -0.1666666666666667, 0.6220084679281462, 0.1666666666666666 },
+          { -0.622008467928146, -0.1666666666666665, 0.6220084679281462, 0.1666666666666667, -0.1666666666666665, -0.04465819873852037, 0.1666666666666667, 0.04465819873852041 },
+          { -0.1666666666666667, -0.04465819873852053, 0.1666666666666668, 0.04465819873852037, -0.622008467928146, -0.1666666666666667, 0.6220084679281462, 0.1666666666666666 },
+          { -0.1666666666666666, -0.6220084679281461, 0.1666666666666666, 0.6220084679281461, -0.04465819873852048, -0.1666666666666667, 0.04465819873852037, 0.1666666666666666 },
+          { -0.04465819873852049, -0.1666666666666668, 0.04465819873852053, 0.1666666666666668, -0.1666666666666666, -0.6220084679281461, 0.1666666666666668, 0.6220084679281463 },
+          { -0.1666666666666666, -0.6220084679281461, 0.1666666666666666, 0.6220084679281461, -0.04465819873852048, -0.1666666666666667, 0.04465819873852037, 0.1666666666666666 },
+          { -0.04465819873852049, -0.1666666666666668, 0.04465819873852053, 0.1666666666666668, -0.1666666666666666, -0.6220084679281461, 0.1666666666666668, 0.6220084679281463 } } } };
+  static const double FE19_C2_D001_Q8eb[1][1][8][8] =
+    { { { { -0.622008467928146, -0.1666666666666665, -0.1666666666666666, -0.04465819873852039, 0.6220084679281462, 0.1666666666666667, 0.1666666666666667, 0.04465819873852044 },
+          { -0.622008467928146, -0.1666666666666665, -0.1666666666666666, -0.04465819873852039, 0.6220084679281462, 0.1666666666666667, 0.1666666666666667, 0.04465819873852044 },
+          { -0.1666666666666667, -0.04465819873852053, -0.6220084679281461, -0.1666666666666667, 0.1666666666666667, 0.04465819873852042, 0.6220084679281462, 0.1666666666666667 },
+          { -0.1666666666666667, -0.04465819873852053, -0.6220084679281461, -0.1666666666666667, 0.1666666666666667, 0.04465819873852042, 0.6220084679281462, 0.1666666666666667 },
+          { -0.1666666666666666, -0.6220084679281461, -0.04465819873852056, -0.1666666666666667, 0.1666666666666667, 0.6220084679281462, 0.04465819873852039, 0.1666666666666667 },
+          { -0.1666666666666666, -0.6220084679281461, -0.04465819873852056, -0.1666666666666667, 0.1666666666666667, 0.6220084679281462, 0.04465819873852039, 0.1666666666666667 },
+          { -0.04465819873852046, -0.1666666666666667, -0.1666666666666667, -0.6220084679281461, 0.04465819873852062, 0.1666666666666668, 0.1666666666666668, 0.6220084679281465 },
+          { -0.04465819873852046, -0.1666666666666667, -0.1666666666666667, -0.6220084679281461, 0.04465819873852062, 0.1666666666666668, 0.1666666666666668, 0.6220084679281465 } } } };
+  static const double FE9_C0_D100_Q8eb[1][1][8][8] =
+    { { { { -0.6220084679281462, 0.6220084679281465, -0.1666666666666667, 0.1666666666666666, -0.1666666666666669, 0.1666666666666667, -0.04465819873852034, 0.04465819873852041 },
+          { -0.166666666666667, 0.1666666666666669, -0.04465819873852045, 0.04465819873852031, -0.6220084679281463, 0.6220084679281462, -0.1666666666666666, 0.1666666666666667 },
+          { -0.1666666666666666, 0.1666666666666669, -0.6220084679281462, 0.6220084679281462, -0.04465819873852066, 0.04465819873852046, -0.1666666666666666, 0.1666666666666666 },
+          { -0.04465819873852075, 0.0446581987385207, -0.1666666666666666, 0.1666666666666665, -0.1666666666666668, 0.1666666666666666, -0.6220084679281461, 0.6220084679281462 },
+          { -0.6220084679281462, 0.6220084679281465, -0.1666666666666667, 0.1666666666666666, -0.1666666666666669, 0.1666666666666667, -0.04465819873852034, 0.04465819873852041 },
+          { -0.166666666666667, 0.1666666666666669, -0.04465819873852045, 0.04465819873852031, -0.6220084679281463, 0.6220084679281462, -0.1666666666666666, 0.1666666666666667 },
+          { -0.1666666666666666, 0.1666666666666669, -0.6220084679281462, 0.6220084679281462, -0.04465819873852066, 0.04465819873852046, -0.1666666666666666, 0.1666666666666666 },
+          { -0.04465819873852075, 0.0446581987385207, -0.1666666666666666, 0.1666666666666665, -0.1666666666666668, 0.1666666666666666, -0.6220084679281461, 0.6220084679281462 } } } };
+  // Pre-definitions of modified terminals to enable unit-stride access
+  double _w_0_0[8];
+  double _w_0_2[8];
+  double _w_0_1[8];
+  for (int ic = 0; ic < 8; ++ic)
+  {
+    _w_0_0[ic] = w[ic * 3];
+    _w_0_2[ic] = w[ic * 3 + 2];
+    _w_0_1[ic] = w[ic * 3 + 1];
+  }
+  // Quadrature loop independent computations for quadrature rule 8eb
+  double sp_8eb[4];
+  sp_8eb[0] = c[0] / (2 * (1 + c[1]));
+  sp_8eb[1] = c[0] * c[1];
+  sp_8eb[2] = (1 + c[1]) * (1 + -1 * (2 * c[1]));
+  sp_8eb[3] = sp_8eb[1] / sp_8eb[2];
+  for (int iq = 0; iq < 8; ++iq)
+  {
+    // Quadrature loop body setup for quadrature rule 8eb
+    // Varying computations for quadrature rule 8eb
+    double w0_d100_c0 = 0.0;
+    const double J_c4 = coordinate_dofs[1] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c8 = coordinate_dofs[2] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    const double J_c5 = coordinate_dofs[1] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    const double J_c7 = coordinate_dofs[2] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c0 = coordinate_dofs[0] * FE9_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE9_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE9_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE9_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE9_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE9_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE9_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE9_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c1 = coordinate_dofs[0] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c6 = coordinate_dofs[2] * FE9_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE9_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE9_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE9_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE9_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE9_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE9_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE9_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c3 = coordinate_dofs[1] * FE9_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE9_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE9_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE9_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE9_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE9_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE9_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE9_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c2 = coordinate_dofs[0] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    double w0_d010_c0 = 0.0;
+    double w0_d001_c0 = 0.0;
+    double w0_d100_c2 = 0.0;
+    double w0_d010_c2 = 0.0;
+    double w0_d001_c2 = 0.0;
+    double w0_d100_c1 = 0.0;
+    double w0_d010_c1 = 0.0;
+    double w0_d001_c1 = 0.0;
+    for (int ic = 0; ic < 8; ++ic)
+    {
+      w0_d100_c0 += _w_0_0[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c0 += _w_0_0[ic] * FE19_C1_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c0 += _w_0_0[ic] * FE19_C2_D001_Q8eb[0][0][iq][ic];
+      w0_d100_c2 += _w_0_2[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c2 += _w_0_2[ic] * FE19_C1_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c2 += _w_0_2[ic] * FE19_C2_D001_Q8eb[0][0][iq][ic];
+      w0_d100_c1 += _w_0_1[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c1 += _w_0_1[ic] * FE19_C1_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c1 += _w_0_1[ic] * FE19_C2_D001_Q8eb[0][0][iq][ic];
+    }
+    double sv_8eb[127];
+    sv_8eb[0] = J_c4 * J_c8;
+    sv_8eb[1] = J_c5 * J_c7;
+    sv_8eb[2] = sv_8eb[0] + -1 * sv_8eb[1];
+    sv_8eb[3] = J_c0 * sv_8eb[2];
+    sv_8eb[4] = J_c5 * J_c6;
+    sv_8eb[5] = J_c3 * J_c8;
+    sv_8eb[6] = sv_8eb[4] + -1 * sv_8eb[5];
+    sv_8eb[7] = J_c1 * sv_8eb[6];
+    sv_8eb[8] = sv_8eb[3] + sv_8eb[7];
+    sv_8eb[9] = J_c3 * J_c7;
+    sv_8eb[10] = J_c4 * J_c6;
+    sv_8eb[11] = sv_8eb[9] + -1 * sv_8eb[10];
+    sv_8eb[12] = J_c2 * sv_8eb[11];
+    sv_8eb[13] = sv_8eb[8] + sv_8eb[12];
+    sv_8eb[14] = sv_8eb[2] / sv_8eb[13];
+    sv_8eb[15] = w0_d100_c0 * sv_8eb[14];
+    sv_8eb[16] = J_c3 * (-1 * J_c8);
+    sv_8eb[17] = sv_8eb[4] + sv_8eb[16];
+    sv_8eb[18] = sv_8eb[17] / sv_8eb[13];
+    sv_8eb[19] = w0_d010_c0 * sv_8eb[18];
+    sv_8eb[20] = sv_8eb[15] + sv_8eb[19];
+    sv_8eb[21] = sv_8eb[11] / sv_8eb[13];
+    sv_8eb[22] = w0_d001_c0 * sv_8eb[21];
+    sv_8eb[23] = sv_8eb[20] + sv_8eb[22];
+    sv_8eb[24] = J_c1 * J_c5;
+    sv_8eb[25] = J_c2 * J_c4;
+    sv_8eb[26] = sv_8eb[24] + -1 * sv_8eb[25];
+    sv_8eb[27] = sv_8eb[26] / sv_8eb[13];
+    sv_8eb[28] = w0_d100_c2 * sv_8eb[27];
+    sv_8eb[29] = J_c2 * J_c3;
+    sv_8eb[30] = J_c0 * J_c5;
+    sv_8eb[31] = sv_8eb[29] + -1 * sv_8eb[30];
+    sv_8eb[32] = sv_8eb[31] / sv_8eb[13];
+    sv_8eb[33] = w0_d010_c2 * sv_8eb[32];
+    sv_8eb[34] = sv_8eb[28] + sv_8eb[33];
+    sv_8eb[35] = J_c0 * J_c4;
+    sv_8eb[36] = J_c1 * J_c3;
+    sv_8eb[37] = sv_8eb[35] + -1 * sv_8eb[36];
+    sv_8eb[38] = sv_8eb[37] / sv_8eb[13];
+    sv_8eb[39] = w0_d001_c2 * sv_8eb[38];
+    sv_8eb[40] = sv_8eb[34] + sv_8eb[39];
+    sv_8eb[41] = J_c2 * J_c7;
+    sv_8eb[42] = J_c8 * (-1 * J_c1);
+    sv_8eb[43] = sv_8eb[41] + sv_8eb[42];
+    sv_8eb[44] = sv_8eb[43] / sv_8eb[13];
+    sv_8eb[45] = w0_d100_c1 * sv_8eb[44];
+    sv_8eb[46] = J_c0 * J_c8;
+    sv_8eb[47] = J_c6 * (-1 * J_c2);
+    sv_8eb[48] = sv_8eb[46] + sv_8eb[47];
+    sv_8eb[49] = sv_8eb[48] / sv_8eb[13];
+    sv_8eb[50] = w0_d010_c1 * sv_8eb[49];
+    sv_8eb[51] = sv_8eb[45] + sv_8eb[50];
+    sv_8eb[52] = J_c1 * J_c6;
+    sv_8eb[53] = J_c0 * J_c7;
+    sv_8eb[54] = sv_8eb[52] + -1 * sv_8eb[53];
+    sv_8eb[55] = sv_8eb[54] / sv_8eb[13];
+    sv_8eb[56] = w0_d001_c1 * sv_8eb[55];
+    sv_8eb[57] = sv_8eb[51] + sv_8eb[56];
+    sv_8eb[58] = (1 + sv_8eb[40]) * (1 + sv_8eb[57]);
+    sv_8eb[59] = w0_d100_c1 * sv_8eb[27];
+    sv_8eb[60] = w0_d010_c1 * sv_8eb[32];
+    sv_8eb[61] = sv_8eb[59] + sv_8eb[60];
+    sv_8eb[62] = w0_d001_c1 * sv_8eb[38];
+    sv_8eb[63] = sv_8eb[61] + sv_8eb[62];
+    sv_8eb[64] = w0_d100_c2 * sv_8eb[44];
+    sv_8eb[65] = w0_d010_c2 * sv_8eb[49];
+    sv_8eb[66] = sv_8eb[64] + sv_8eb[65];
+    sv_8eb[67] = w0_d001_c2 * sv_8eb[55];
+    sv_8eb[68] = sv_8eb[66] + sv_8eb[67];
+    sv_8eb[69] = sv_8eb[63] * sv_8eb[68];
+    sv_8eb[70] = sv_8eb[58] + -1 * sv_8eb[69];
+    sv_8eb[71] = (1 + sv_8eb[23]) * sv_8eb[70];
+    sv_8eb[72] = w0_d100_c2 * sv_8eb[14];
+    sv_8eb[73] = w0_d010_c2 * sv_8eb[18];
+    sv_8eb[74] = sv_8eb[72] + sv_8eb[73];
+    sv_8eb[75] = w0_d001_c2 * sv_8eb[21];
+    sv_8eb[76] = sv_8eb[74] + sv_8eb[75];
+    sv_8eb[77] = sv_8eb[63] * sv_8eb[76];
+    sv_8eb[78] = w0_d100_c1 * sv_8eb[14];
+    sv_8eb[79] = w0_d010_c1 * sv_8eb[18];
+    sv_8eb[80] = sv_8eb[78] + sv_8eb[79];
+    sv_8eb[81] = w0_d001_c1 * sv_8eb[21];
+    sv_8eb[82] = sv_8eb[80] + sv_8eb[81];
+    sv_8eb[83] = (1 + sv_8eb[40]) * sv_8eb[82];
+    sv_8eb[84] = sv_8eb[77] + -1 * sv_8eb[83];
+    sv_8eb[85] = w0_d100_c0 * sv_8eb[44];
+    sv_8eb[86] = w0_d010_c0 * sv_8eb[49];
+    sv_8eb[87] = sv_8eb[85] + sv_8eb[86];
+    sv_8eb[88] = w0_d001_c0 * sv_8eb[55];
+    sv_8eb[89] = sv_8eb[87] + sv_8eb[88];
+    sv_8eb[90] = sv_8eb[84] * sv_8eb[89];
+    sv_8eb[91] = sv_8eb[71] + sv_8eb[90];
+    sv_8eb[92] = sv_8eb[82] * sv_8eb[68];
+    sv_8eb[93] = (1 + sv_8eb[57]) * sv_8eb[76];
+    sv_8eb[94] = sv_8eb[92] + -1 * sv_8eb[93];
+    sv_8eb[95] = w0_d100_c0 * sv_8eb[27];
+    sv_8eb[96] = w0_d010_c0 * sv_8eb[32];
+    sv_8eb[97] = sv_8eb[95] + sv_8eb[96];
+    sv_8eb[98] = w0_d001_c0 * sv_8eb[38];
+    sv_8eb[99] = sv_8eb[97] + sv_8eb[98];
+    sv_8eb[100] = sv_8eb[94] * sv_8eb[99];
+    sv_8eb[101] = sv_8eb[91] + sv_8eb[100];
+    sv_8eb[102] = log(sv_8eb[101]);
+    sv_8eb[103] = sp_8eb[0] * sv_8eb[102];
+    sv_8eb[104] = (1 + sv_8eb[23]) * (1 + sv_8eb[23]);
+    sv_8eb[105] = sv_8eb[82] * sv_8eb[82];
+    sv_8eb[106] = sv_8eb[104] + sv_8eb[105];
+    sv_8eb[107] = sv_8eb[76] * sv_8eb[76];
+    sv_8eb[108] = sv_8eb[106] + sv_8eb[107];
+    sv_8eb[109] = (1 + sv_8eb[57]) * (1 + sv_8eb[57]);
+    sv_8eb[110] = sv_8eb[89] * sv_8eb[89];
+    sv_8eb[111] = sv_8eb[109] + sv_8eb[110];
+    sv_8eb[112] = sv_8eb[68] * sv_8eb[68];
+    sv_8eb[113] = sv_8eb[111] + sv_8eb[112];
+    sv_8eb[114] = sv_8eb[108] + sv_8eb[113];
+    sv_8eb[115] = sv_8eb[99] * sv_8eb[99];
+    sv_8eb[116] = sv_8eb[63] * sv_8eb[63];
+    sv_8eb[117] = sv_8eb[115] + sv_8eb[116];
+    sv_8eb[118] = (1 + sv_8eb[40]) * (1 + sv_8eb[40]);
+    sv_8eb[119] = sv_8eb[117] + sv_8eb[118];
+    sv_8eb[120] = sv_8eb[114] + sv_8eb[119];
+    sv_8eb[121] = (-3 + sv_8eb[120]) * (sp_8eb[0] / 2);
+    sv_8eb[122] = -1 * sv_8eb[103] + sv_8eb[121];
+    sv_8eb[123] = (sp_8eb[3] / 2) * pow(sv_8eb[102], 2);
+    sv_8eb[124] = sv_8eb[122] + sv_8eb[123];
+    sv_8eb[125] = fabs(sv_8eb[13]);
+    sv_8eb[126] = sv_8eb[124] * sv_8eb[125];
+    const double fw0 = sv_8eb[126] * weights_8eb[iq];
+    A[0] += fw0;
+  }
+}
+
+bool enabled_coefficients_integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06[1] = { false };
+
+ufcx_integral integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06 =
+{
+  .enabled_coefficients = enabled_coefficients_integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06,
+  .needs_facet_permutations = false,
+  .coordinate_element = &element_ef1a1915f47c055271e11d5e56ee2bc57ebf935e,
+};
+
+// End of code for integral integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06
+
 // Code for form form_3ffee4268a9a458c71af12bf104d0bc9ee2e76c8
 
 int original_coefficient_position_form_3ffee4268a9a458c71af12bf104d0bc9ee2e76c8[1] = { 0 };
@@ -3207,3 +3445,105 @@ return NULL;
 }
 
 // End of code for form form_cf557be0ce3c8b98a6b728de3d39ec3a45a52ab4
+
+// Code for form form_b0447500910ca17980063561845c91f47d3de2df
+
+int original_coefficient_position_form_b0447500910ca17980063561845c91f47d3de2df[1] = { 0 };
+ufcx_dofmap* dofmaps_form_b0447500910ca17980063561845c91f47d3de2df[1] = { &dofmap_36a6e75bd43876b54b708372cec0c664cc09cec0 };
+ufcx_finite_element* finite_elements_form_b0447500910ca17980063561845c91f47d3de2df[1] = { &element_36a6e75bd43876b54b708372cec0c664cc09cec0 };
+
+// Return a list of the coefficient names.
+const char** coefficient_name_form_b0447500910ca17980063561845c91f47d3de2df(void)
+{
+static const char* names[1] = { "u" };
+return names;
+}
+
+// Return a list of the constant names.
+const char** constant_name_form_b0447500910ca17980063561845c91f47d3de2df(void)
+{
+static const char* names[2] = { "young", "poisson" };
+return names;
+}
+
+int* integral_ids_form_b0447500910ca17980063561845c91f47d3de2df(ufcx_integral_type integral_type)
+{
+static int integral_ids_cell_form_b0447500910ca17980063561845c91f47d3de2df[1] = { -1 };
+switch (integral_type)
+{
+case cell:
+  return integral_ids_cell_form_b0447500910ca17980063561845c91f47d3de2df;
+default:
+  return NULL;
+}
+}
+
+int num_integrals_form_b0447500910ca17980063561845c91f47d3de2df(ufcx_integral_type integral_type)
+{
+switch (integral_type)
+{
+case cell:
+  return 1;
+case interior_facet:
+  return 0;
+case exterior_facet:
+  return 0;
+default:
+  return 0;
+}
+}
+
+ufcx_integral** integrals_form_b0447500910ca17980063561845c91f47d3de2df(ufcx_integral_type integral_type)
+{
+static ufcx_integral* integrals_cell_form_b0447500910ca17980063561845c91f47d3de2df[1] = { &integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06 };
+switch (integral_type)
+{
+case cell:
+  return integrals_cell_form_b0447500910ca17980063561845c91f47d3de2df;
+default:
+  return NULL;
+}
+}
+
+ufcx_form form_b0447500910ca17980063561845c91f47d3de2df =
+{
+
+  .signature = "ac90a8bfc031be1e5fb1eb8668fa0f4919890d125fbbe9474761bc2ef561d3f0b9c6a50f48fab3f11af117d58f83a28f902ccf02543e4de26617d8d9a1eab446",
+  .rank = 0,
+  .num_coefficients = 1,
+  .num_constants = 2,
+  .original_coefficient_position = original_coefficient_position_form_b0447500910ca17980063561845c91f47d3de2df,
+
+  .coefficient_name_map = coefficient_name_form_b0447500910ca17980063561845c91f47d3de2df,
+  .constant_name_map = constant_name_form_b0447500910ca17980063561845c91f47d3de2df,
+
+  .finite_elements = finite_elements_form_b0447500910ca17980063561845c91f47d3de2df,
+  .dofmaps = dofmaps_form_b0447500910ca17980063561845c91f47d3de2df,
+
+  .integral_ids = integral_ids_form_b0447500910ca17980063561845c91f47d3de2df,
+  .num_integrals = num_integrals_form_b0447500910ca17980063561845c91f47d3de2df,
+
+  .integrals = integrals_form_b0447500910ca17980063561845c91f47d3de2df
+};
+
+// Alias name
+ufcx_form* form_NeoHooke_Hexa_Pi = &form_b0447500910ca17980063561845c91f47d3de2df;
+
+ufcx_function_space* functionspace_form_NeoHooke_Hexa_Pi(const char* function_name)
+{
+static ufcx_function_space functionspace_u =
+{
+.finite_element = &element_36a6e75bd43876b54b708372cec0c664cc09cec0,
+.dofmap = &dofmap_36a6e75bd43876b54b708372cec0c664cc09cec0,
+.geometry_family = "Q",
+.geometry_degree = 1,
+.geometry_basix_cell = 5,
+.geometry_basix_variant = 0
+};
+if (strcmp(function_name, "u") == 0)
+  return &functionspace_u;
+return NULL;
+
+}
+
+// End of code for form form_b0447500910ca17980063561845c91f47d3de2df

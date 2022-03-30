@@ -18,13 +18,16 @@ ufcx_integral* NeoHookeanMaterial_FEniCS<Hexahedron<caribou::Linear >, sofa::def
         ufcx_integral *integral =form_NeoHooke_Hexa_F->integrals(ufcx_integral_type::cell)[0];
         return integral;
     }
-
 template <>
 ufcx_integral* NeoHookeanMaterial_FEniCS<Hexahedron<caribou::Linear >, sofa::defaulttype::Vec3Types>::FEniCS_J()  {
         ufcx_integral *integral =form_NeoHooke_Hexa_J->integrals(ufcx_integral_type::cell)[0];
         return integral;
     }
-
+template <>
+ufcx_integral* NeoHookeanMaterial_FEniCS<Hexahedron<caribou::Linear >, sofa::defaulttype::Vec3Types>::FEniCS_Pi()  {
+        ufcx_integral *integral =form_NeoHooke_Hexa_Pi->integrals(ufcx_integral_type::cell)[0];
+        return integral;
+    }
 
 
 
@@ -37,6 +40,11 @@ ufcx_integral* NeoHookeanMaterial_FEniCS<Hexahedron<caribou::Quadratic >, sofa::
 template <>
 ufcx_integral* NeoHookeanMaterial_FEniCS<Hexahedron<caribou::Quadratic >, sofa::defaulttype::Vec3Types>::FEniCS_J()  {
         ufcx_integral *integral = form_NeoHooke_Hexa_Order2_J->integrals(ufcx_integral_type::cell)[0];
+        return integral;
+    }
+template <>
+ufcx_integral* NeoHookeanMaterial_FEniCS<Hexahedron<caribou::Quadratic >, sofa::defaulttype::Vec3Types>::FEniCS_Pi()  {
+        ufcx_integral *integral = form_NeoHooke_Hexa_Order2_Pi->integrals(ufcx_integral_type::cell)[0];
         return integral;
     }
 

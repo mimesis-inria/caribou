@@ -268,12 +268,46 @@ SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
 
     SReal Psi = 0.;
 
-    /* sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::getPotentialEnergy");
+    // Compute the displacement with respect to the rest position
+    const auto u =  X - X0;
 
-     --- Update Phi with FEniCS code here ---
+    // Get FEniCS F
+    const ufcx_integral *integral = material->FEniCS_Pi();
+
+    // Get constants from the material
+    const double constants[2] = {
+                                    material->getConstants()(0, 0), // Young Modulus
+                                    material->getConstants()(0, 1)  // Poisson ratio
+                                };
+
+    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::getPotentialEnergy");
+
+
+    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
+
+        // Fetch the node indices of the element
+        auto node_indices = this->topology()->domain()->element_indices(element_id);
+
+        // Fetch the initial and current positions of the element's nodes
+        Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+        Matrix<NumberOfNodesPerElement, Dimension> coefficients;
+
+
+        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+            current_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
+            coefficients.row(i).noalias() = u.row(node_indices[i]);
+
+        }
+
+        // Compute the nodal forces
+        Matrix<1, 1> element_energy;
+        element_energy.fill(0);
+
+        integral->tabulate_tensor_float64(element_energy.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
+        Psi += element_energy[0];
+    }
 
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::getPotentialEnergy");
-     */
     return Psi;
 }
 
@@ -322,7 +356,10 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::update_stiffness");
 
-    const double constants[2] = {3000, 0.3};
+    const double constants[2] = {
+                                    material->getConstants()(0, 0), // Young Modulus
+                                    material->getConstants()(0, 1)  // Poisson ratio
+                                };
     const auto u =  x - x0;
 
     const ufcx_integral *integral = material->FEniCS_J();

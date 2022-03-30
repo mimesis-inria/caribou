@@ -42,6 +42,7 @@ public:
 
     auto FEniCS_F() -> ufcx_integral* {}
     auto FEniCS_J() -> ufcx_integral* {}
+    auto FEniCS_Pi() -> ufcx_integral* {}
     
 
 private:

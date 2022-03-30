@@ -12,7 +12,10 @@
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['SaintVenantKirchhoff_Tetra.py'],
+//   'ufl_file': ['SaintVenantKirchhoff_Hexa.py',
+//                'SaintVenantKirchhoff_Hexa_Order2.py',
+//                'SaintVenantKirchhoff_Tetra.py',
+//                'SaintVenantKirchhoff_Tetra_Order2.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -33,11 +36,13 @@ extern ufcx_dofmap dofmap_0c86aaf55b684e1a3e1ffec43b7d412b0cdaa9f8;
 
 extern ufcx_dofmap dofmap_fdc35eb42643dc1e9633ac8e9bbbb5d2c8cdeb83;
 
-extern ufcx_integral integral_7a73e57c209bf76dfdf0083865f3bc87692883a2;
+extern ufcx_integral integral_079c5945205438b3b9863617152cc131ca47ff65;
 
-extern ufcx_integral integral_012e07873562769d82e2328f472f84e336d11df5;
+extern ufcx_integral integral_82328a4621a3a8fe83d1f17a026cbffe0987525b;
 
-extern ufcx_form form_f2e997cbcef6ab4bddc7bd3f311736f5c3bd9e2d;
+extern ufcx_integral integral_d53980e29f7e23c439758b547f8a258b38294307;
+
+extern ufcx_form form_e04627801e6dcc2b3e5861fcb18a6f5bf3e27307;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.
@@ -50,7 +55,7 @@ extern ufcx_form* form_SaintVenantKirchhoff_Tetra_F;
 //
 ufcx_function_space* functionspace_form_SaintVenantKirchhoff_Tetra_F(const char* function_name);
 
-extern ufcx_form form_474ae4f62522724bcf51896bb22c8bb6249bff95;
+extern ufcx_form form_7f00772b8b789f3a50b2da41ed98cd4712f88573;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.
@@ -62,6 +67,19 @@ extern ufcx_form* form_SaintVenantKirchhoff_Tetra_J;
 // i.e. name of the Python variable.
 //
 ufcx_function_space* functionspace_form_SaintVenantKirchhoff_Tetra_J(const char* function_name);
+
+extern ufcx_form form_7b281100e23555aaffdb906d3e3b4f66287a8548;
+
+// Helper used to create form using name which was given to the
+// form in the UFL file.
+// This helper is called in user c++ code.
+//
+extern ufcx_form* form_SaintVenantKirchhoff_Tetra_Pi;
+
+// Helper used to create function space using function name
+// i.e. name of the Python variable.
+//
+ufcx_function_space* functionspace_form_SaintVenantKirchhoff_Tetra_Pi(const char* function_name);
 
 #ifdef __cplusplus
 }

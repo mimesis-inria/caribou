@@ -12,7 +12,10 @@
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['NeoHooke_Hexa.py'],
+//   'ufl_file': ['NeoHooke_Hexa.py',
+//                'NeoHooke_Hexa_Order2.py',
+//                'NeoHooke_Tetra.py',
+//                'NeoHooke_Tetra_Order2.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -45,6 +48,8 @@ extern ufcx_integral integral_0872abcc642237aedf50191768b01dda57127af8;
 
 extern ufcx_integral integral_6d00f7e6dd1add74319cd9d03d5ea6ad2d7d03a9;
 
+extern ufcx_integral integral_52e2cafb057e6b1bff1c62690ae686bcc1cd4b06;
+
 extern ufcx_form form_3ffee4268a9a458c71af12bf104d0bc9ee2e76c8;
 
 // Helper used to create form using name which was given to the
@@ -70,6 +75,19 @@ extern ufcx_form* form_NeoHooke_Hexa_J;
 // i.e. name of the Python variable.
 //
 ufcx_function_space* functionspace_form_NeoHooke_Hexa_J(const char* function_name);
+
+extern ufcx_form form_b0447500910ca17980063561845c91f47d3de2df;
+
+// Helper used to create form using name which was given to the
+// form in the UFL file.
+// This helper is called in user c++ code.
+//
+extern ufcx_form* form_NeoHooke_Hexa_Pi;
+
+// Helper used to create function space using function name
+// i.e. name of the Python variable.
+//
+ufcx_function_space* functionspace_form_NeoHooke_Hexa_Pi(const char* function_name);
 
 #ifdef __cplusplus
 }

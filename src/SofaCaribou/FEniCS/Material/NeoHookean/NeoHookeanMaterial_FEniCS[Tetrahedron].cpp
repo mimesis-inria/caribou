@@ -26,6 +26,11 @@ ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Linear >, sofa::de
         ufcx_integral *integral = form_NeoHooke_Tetra_J->integrals(ufcx_integral_type::cell)[0];
         return integral;
     }
+template<>
+ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Linear >, sofa::defaulttype::Vec3Types>::FEniCS_Pi() {
+        ufcx_integral *integral = form_NeoHooke_Tetra_Pi->integrals(ufcx_integral_type::cell)[0];
+        return integral;
+    }
 
 
 
@@ -39,6 +44,11 @@ ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Quadratic >, sofa:
 template <>
 ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Quadratic >, sofa::defaulttype::Vec3Types>::FEniCS_J()  {
         ufcx_integral *integral = form_NeoHooke_Tetra_Order2_J->integrals(ufcx_integral_type::cell)[0];
+        return integral;
+    }
+template <>
+ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Quadratic >, sofa::defaulttype::Vec3Types>::FEniCS_Pi()  {
+        ufcx_integral *integral = form_NeoHooke_Tetra_Order2_Pi->integrals(ufcx_integral_type::cell)[0];
         return integral;
     }
 } // namespace SofaCaribou::material

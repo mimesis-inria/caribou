@@ -12,7 +12,10 @@
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['SaintVenantKirchhoff_Hexa.py'],
+//   'ufl_file': ['SaintVenantKirchhoff_Hexa.py',
+//                'SaintVenantKirchhoff_Hexa_Order2.py',
+//                'SaintVenantKirchhoff_Tetra.py',
+//                'SaintVenantKirchhoff_Tetra_Order2.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -3671,6 +3674,253 @@ ufcx_integral integral_3e0300da97560a0d0699c706ed0427ee9fe0e4a5 =
 
 // End of code for integral integral_3e0300da97560a0d0699c706ed0427ee9fe0e4a5
 
+// Code for integral integral_644a733e024311a3beafa887eca722fb69a78ac8
+
+void tabulate_tensor_integral_644a733e024311a3beafa887eca722fb69a78ac8(double* restrict A,
+                                    const double* restrict w,
+                                    const double* restrict c,
+                                    const double* restrict coordinate_dofs,
+                                    const int* restrict entity_local_index,
+                                    const uint8_t* restrict quadrature_permutation)
+{
+  // Quadrature rules
+  static const double weights_8eb[8] = { 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125 };
+  // Precomputed values of basis functions and precomputations
+  // FE* dimensions: [permutation][entities][points][dofs]
+  static const double FE19_C1_D010_Q8eb[1][1][8][8] =
+    { { { { -0.622008467928146, -0.1666666666666665, 0.6220084679281462, 0.1666666666666667, -0.1666666666666665, -0.04465819873852037, 0.1666666666666667, 0.04465819873852041 },
+          { -0.1666666666666667, -0.04465819873852053, 0.1666666666666668, 0.04465819873852037, -0.622008467928146, -0.1666666666666667, 0.6220084679281462, 0.1666666666666666 },
+          { -0.622008467928146, -0.1666666666666665, 0.6220084679281462, 0.1666666666666667, -0.1666666666666665, -0.04465819873852037, 0.1666666666666667, 0.04465819873852041 },
+          { -0.1666666666666667, -0.04465819873852053, 0.1666666666666668, 0.04465819873852037, -0.622008467928146, -0.1666666666666667, 0.6220084679281462, 0.1666666666666666 },
+          { -0.1666666666666666, -0.6220084679281461, 0.1666666666666666, 0.6220084679281461, -0.04465819873852048, -0.1666666666666667, 0.04465819873852037, 0.1666666666666666 },
+          { -0.04465819873852049, -0.1666666666666668, 0.04465819873852053, 0.1666666666666668, -0.1666666666666666, -0.6220084679281461, 0.1666666666666668, 0.6220084679281463 },
+          { -0.1666666666666666, -0.6220084679281461, 0.1666666666666666, 0.6220084679281461, -0.04465819873852048, -0.1666666666666667, 0.04465819873852037, 0.1666666666666666 },
+          { -0.04465819873852049, -0.1666666666666668, 0.04465819873852053, 0.1666666666666668, -0.1666666666666666, -0.6220084679281461, 0.1666666666666668, 0.6220084679281463 } } } };
+  static const double FE19_C2_D001_Q8eb[1][1][8][8] =
+    { { { { -0.622008467928146, -0.1666666666666665, -0.1666666666666666, -0.04465819873852039, 0.6220084679281462, 0.1666666666666667, 0.1666666666666667, 0.04465819873852044 },
+          { -0.622008467928146, -0.1666666666666665, -0.1666666666666666, -0.04465819873852039, 0.6220084679281462, 0.1666666666666667, 0.1666666666666667, 0.04465819873852044 },
+          { -0.1666666666666667, -0.04465819873852053, -0.6220084679281461, -0.1666666666666667, 0.1666666666666667, 0.04465819873852042, 0.6220084679281462, 0.1666666666666667 },
+          { -0.1666666666666667, -0.04465819873852053, -0.6220084679281461, -0.1666666666666667, 0.1666666666666667, 0.04465819873852042, 0.6220084679281462, 0.1666666666666667 },
+          { -0.1666666666666666, -0.6220084679281461, -0.04465819873852056, -0.1666666666666667, 0.1666666666666667, 0.6220084679281462, 0.04465819873852039, 0.1666666666666667 },
+          { -0.1666666666666666, -0.6220084679281461, -0.04465819873852056, -0.1666666666666667, 0.1666666666666667, 0.6220084679281462, 0.04465819873852039, 0.1666666666666667 },
+          { -0.04465819873852046, -0.1666666666666667, -0.1666666666666667, -0.6220084679281461, 0.04465819873852062, 0.1666666666666668, 0.1666666666666668, 0.6220084679281465 },
+          { -0.04465819873852046, -0.1666666666666667, -0.1666666666666667, -0.6220084679281461, 0.04465819873852062, 0.1666666666666668, 0.1666666666666668, 0.6220084679281465 } } } };
+  static const double FE9_C0_D100_Q8eb[1][1][8][8] =
+    { { { { -0.6220084679281462, 0.6220084679281465, -0.1666666666666667, 0.1666666666666666, -0.1666666666666669, 0.1666666666666667, -0.04465819873852034, 0.04465819873852041 },
+          { -0.166666666666667, 0.1666666666666669, -0.04465819873852045, 0.04465819873852031, -0.6220084679281463, 0.6220084679281462, -0.1666666666666666, 0.1666666666666667 },
+          { -0.1666666666666666, 0.1666666666666669, -0.6220084679281462, 0.6220084679281462, -0.04465819873852066, 0.04465819873852046, -0.1666666666666666, 0.1666666666666666 },
+          { -0.04465819873852075, 0.0446581987385207, -0.1666666666666666, 0.1666666666666665, -0.1666666666666668, 0.1666666666666666, -0.6220084679281461, 0.6220084679281462 },
+          { -0.6220084679281462, 0.6220084679281465, -0.1666666666666667, 0.1666666666666666, -0.1666666666666669, 0.1666666666666667, -0.04465819873852034, 0.04465819873852041 },
+          { -0.166666666666667, 0.1666666666666669, -0.04465819873852045, 0.04465819873852031, -0.6220084679281463, 0.6220084679281462, -0.1666666666666666, 0.1666666666666667 },
+          { -0.1666666666666666, 0.1666666666666669, -0.6220084679281462, 0.6220084679281462, -0.04465819873852066, 0.04465819873852046, -0.1666666666666666, 0.1666666666666666 },
+          { -0.04465819873852075, 0.0446581987385207, -0.1666666666666666, 0.1666666666666665, -0.1666666666666668, 0.1666666666666666, -0.6220084679281461, 0.6220084679281462 } } } };
+  // Pre-definitions of modified terminals to enable unit-stride access
+  double _w_0_0[8];
+  double _w_0_1[8];
+  double _w_0_2[8];
+  for (int ic = 0; ic < 8; ++ic)
+  {
+    _w_0_0[ic] = w[ic * 3];
+    _w_0_1[ic] = w[ic * 3 + 1];
+    _w_0_2[ic] = w[ic * 3 + 2];
+  }
+  // Quadrature loop independent computations for quadrature rule 8eb
+  double sp_8eb[4];
+  sp_8eb[0] = c[0] / (2 * (1 + c[1]));
+  sp_8eb[1] = c[0] * c[1];
+  sp_8eb[2] = (1 + c[1]) * (1 + -1 * (2 * c[1]));
+  sp_8eb[3] = sp_8eb[1] / sp_8eb[2];
+  for (int iq = 0; iq < 8; ++iq)
+  {
+    // Quadrature loop body setup for quadrature rule 8eb
+    // Varying computations for quadrature rule 8eb
+    double w0_d100_c0 = 0.0;
+    const double J_c4 = coordinate_dofs[1] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c8 = coordinate_dofs[2] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    const double J_c5 = coordinate_dofs[1] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    const double J_c7 = coordinate_dofs[2] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c0 = coordinate_dofs[0] * FE9_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE9_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE9_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE9_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE9_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE9_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE9_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE9_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c1 = coordinate_dofs[0] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c6 = coordinate_dofs[2] * FE9_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE9_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE9_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE9_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE9_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE9_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE9_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE9_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c3 = coordinate_dofs[1] * FE9_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE9_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE9_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE9_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE9_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE9_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE9_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE9_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c2 = coordinate_dofs[0] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    double w0_d010_c0 = 0.0;
+    double w0_d001_c0 = 0.0;
+    double w0_d100_c1 = 0.0;
+    double w0_d010_c1 = 0.0;
+    double w0_d001_c1 = 0.0;
+    double w0_d100_c2 = 0.0;
+    double w0_d010_c2 = 0.0;
+    double w0_d001_c2 = 0.0;
+    for (int ic = 0; ic < 8; ++ic)
+    {
+      w0_d100_c0 += _w_0_0[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c0 += _w_0_0[ic] * FE19_C1_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c0 += _w_0_0[ic] * FE19_C2_D001_Q8eb[0][0][iq][ic];
+      w0_d100_c1 += _w_0_1[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c1 += _w_0_1[ic] * FE19_C1_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c1 += _w_0_1[ic] * FE19_C2_D001_Q8eb[0][0][iq][ic];
+      w0_d100_c2 += _w_0_2[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c2 += _w_0_2[ic] * FE19_C1_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c2 += _w_0_2[ic] * FE19_C2_D001_Q8eb[0][0][iq][ic];
+    }
+    double sv_8eb[139];
+    sv_8eb[0] = J_c4 * J_c8;
+    sv_8eb[1] = J_c5 * J_c7;
+    sv_8eb[2] = sv_8eb[0] + -1 * sv_8eb[1];
+    sv_8eb[3] = J_c0 * sv_8eb[2];
+    sv_8eb[4] = J_c5 * J_c6;
+    sv_8eb[5] = J_c3 * J_c8;
+    sv_8eb[6] = sv_8eb[4] + -1 * sv_8eb[5];
+    sv_8eb[7] = J_c1 * sv_8eb[6];
+    sv_8eb[8] = sv_8eb[3] + sv_8eb[7];
+    sv_8eb[9] = J_c3 * J_c7;
+    sv_8eb[10] = J_c4 * J_c6;
+    sv_8eb[11] = sv_8eb[9] + -1 * sv_8eb[10];
+    sv_8eb[12] = J_c2 * sv_8eb[11];
+    sv_8eb[13] = sv_8eb[8] + sv_8eb[12];
+    sv_8eb[14] = sv_8eb[2] / sv_8eb[13];
+    sv_8eb[15] = w0_d100_c0 * sv_8eb[14];
+    sv_8eb[16] = J_c3 * (-1 * J_c8);
+    sv_8eb[17] = sv_8eb[4] + sv_8eb[16];
+    sv_8eb[18] = sv_8eb[17] / sv_8eb[13];
+    sv_8eb[19] = w0_d010_c0 * sv_8eb[18];
+    sv_8eb[20] = sv_8eb[15] + sv_8eb[19];
+    sv_8eb[21] = sv_8eb[11] / sv_8eb[13];
+    sv_8eb[22] = w0_d001_c0 * sv_8eb[21];
+    sv_8eb[23] = sv_8eb[20] + sv_8eb[22];
+    sv_8eb[24] = (1 + sv_8eb[23]) * (1 + sv_8eb[23]);
+    sv_8eb[25] = w0_d100_c1 * sv_8eb[14];
+    sv_8eb[26] = w0_d010_c1 * sv_8eb[18];
+    sv_8eb[27] = sv_8eb[25] + sv_8eb[26];
+    sv_8eb[28] = w0_d001_c1 * sv_8eb[21];
+    sv_8eb[29] = sv_8eb[27] + sv_8eb[28];
+    sv_8eb[30] = sv_8eb[29] * sv_8eb[29];
+    sv_8eb[31] = sv_8eb[24] + sv_8eb[30];
+    sv_8eb[32] = w0_d100_c2 * sv_8eb[14];
+    sv_8eb[33] = w0_d010_c2 * sv_8eb[18];
+    sv_8eb[34] = sv_8eb[32] + sv_8eb[33];
+    sv_8eb[35] = w0_d001_c2 * sv_8eb[21];
+    sv_8eb[36] = sv_8eb[34] + sv_8eb[35];
+    sv_8eb[37] = sv_8eb[36] * sv_8eb[36];
+    sv_8eb[38] = sv_8eb[31] + sv_8eb[37];
+    sv_8eb[39] = (0.5 * (-1 + sv_8eb[38])) * (0.5 * (-1 + sv_8eb[38]));
+    sv_8eb[40] = J_c2 * J_c7;
+    sv_8eb[41] = J_c8 * (-1 * J_c1);
+    sv_8eb[42] = sv_8eb[40] + sv_8eb[41];
+    sv_8eb[43] = sv_8eb[42] / sv_8eb[13];
+    sv_8eb[44] = w0_d100_c1 * sv_8eb[43];
+    sv_8eb[45] = J_c0 * J_c8;
+    sv_8eb[46] = J_c6 * (-1 * J_c2);
+    sv_8eb[47] = sv_8eb[45] + sv_8eb[46];
+    sv_8eb[48] = sv_8eb[47] / sv_8eb[13];
+    sv_8eb[49] = w0_d010_c1 * sv_8eb[48];
+    sv_8eb[50] = sv_8eb[44] + sv_8eb[49];
+    sv_8eb[51] = J_c1 * J_c6;
+    sv_8eb[52] = J_c0 * J_c7;
+    sv_8eb[53] = sv_8eb[51] + -1 * sv_8eb[52];
+    sv_8eb[54] = sv_8eb[53] / sv_8eb[13];
+    sv_8eb[55] = w0_d001_c1 * sv_8eb[54];
+    sv_8eb[56] = sv_8eb[50] + sv_8eb[55];
+    sv_8eb[57] = (1 + sv_8eb[56]) * sv_8eb[29];
+    sv_8eb[58] = w0_d100_c0 * sv_8eb[43];
+    sv_8eb[59] = w0_d010_c0 * sv_8eb[48];
+    sv_8eb[60] = sv_8eb[58] + sv_8eb[59];
+    sv_8eb[61] = w0_d001_c0 * sv_8eb[54];
+    sv_8eb[62] = sv_8eb[60] + sv_8eb[61];
+    sv_8eb[63] = (1 + sv_8eb[23]) * sv_8eb[62];
+    sv_8eb[64] = sv_8eb[57] + sv_8eb[63];
+    sv_8eb[65] = w0_d100_c2 * sv_8eb[43];
+    sv_8eb[66] = w0_d010_c2 * sv_8eb[48];
+    sv_8eb[67] = sv_8eb[65] + sv_8eb[66];
+    sv_8eb[68] = w0_d001_c2 * sv_8eb[54];
+    sv_8eb[69] = sv_8eb[67] + sv_8eb[68];
+    sv_8eb[70] = sv_8eb[36] * sv_8eb[69];
+    sv_8eb[71] = sv_8eb[64] + sv_8eb[70];
+    sv_8eb[72] = (0.5 * sv_8eb[71]) * (0.5 * sv_8eb[71]);
+    sv_8eb[73] = sv_8eb[39] + sv_8eb[72];
+    sv_8eb[74] = J_c1 * J_c5;
+    sv_8eb[75] = J_c2 * J_c4;
+    sv_8eb[76] = sv_8eb[74] + -1 * sv_8eb[75];
+    sv_8eb[77] = sv_8eb[76] / sv_8eb[13];
+    sv_8eb[78] = w0_d100_c0 * sv_8eb[77];
+    sv_8eb[79] = J_c2 * J_c3;
+    sv_8eb[80] = J_c0 * J_c5;
+    sv_8eb[81] = sv_8eb[79] + -1 * sv_8eb[80];
+    sv_8eb[82] = sv_8eb[81] / sv_8eb[13];
+    sv_8eb[83] = w0_d010_c0 * sv_8eb[82];
+    sv_8eb[84] = sv_8eb[78] + sv_8eb[83];
+    sv_8eb[85] = J_c0 * J_c4;
+    sv_8eb[86] = J_c1 * J_c3;
+    sv_8eb[87] = sv_8eb[85] + -1 * sv_8eb[86];
+    sv_8eb[88] = sv_8eb[87] / sv_8eb[13];
+    sv_8eb[89] = w0_d001_c0 * sv_8eb[88];
+    sv_8eb[90] = sv_8eb[84] + sv_8eb[89];
+    sv_8eb[91] = (1 + sv_8eb[23]) * sv_8eb[90];
+    sv_8eb[92] = w0_d100_c1 * sv_8eb[77];
+    sv_8eb[93] = w0_d010_c1 * sv_8eb[82];
+    sv_8eb[94] = sv_8eb[92] + sv_8eb[93];
+    sv_8eb[95] = w0_d001_c1 * sv_8eb[88];
+    sv_8eb[96] = sv_8eb[94] + sv_8eb[95];
+    sv_8eb[97] = sv_8eb[96] * sv_8eb[29];
+    sv_8eb[98] = sv_8eb[91] + sv_8eb[97];
+    sv_8eb[99] = w0_d100_c2 * sv_8eb[77];
+    sv_8eb[100] = w0_d010_c2 * sv_8eb[82];
+    sv_8eb[101] = sv_8eb[99] + sv_8eb[100];
+    sv_8eb[102] = w0_d001_c2 * sv_8eb[88];
+    sv_8eb[103] = sv_8eb[101] + sv_8eb[102];
+    sv_8eb[104] = (1 + sv_8eb[103]) * sv_8eb[36];
+    sv_8eb[105] = sv_8eb[98] + sv_8eb[104];
+    sv_8eb[106] = (0.5 * sv_8eb[105]) * (0.5 * sv_8eb[105]);
+    sv_8eb[107] = sv_8eb[73] + sv_8eb[106];
+    sv_8eb[108] = (1 + sv_8eb[56]) * (1 + sv_8eb[56]);
+    sv_8eb[109] = sv_8eb[62] * sv_8eb[62];
+    sv_8eb[110] = sv_8eb[108] + sv_8eb[109];
+    sv_8eb[111] = sv_8eb[69] * sv_8eb[69];
+    sv_8eb[112] = sv_8eb[110] + sv_8eb[111];
+    sv_8eb[113] = (0.5 * (-1 + sv_8eb[112])) * (0.5 * (-1 + sv_8eb[112]));
+    sv_8eb[114] = sv_8eb[113] + sv_8eb[72];
+    sv_8eb[115] = (1 + sv_8eb[56]) * sv_8eb[96];
+    sv_8eb[116] = sv_8eb[90] * sv_8eb[62];
+    sv_8eb[117] = sv_8eb[115] + sv_8eb[116];
+    sv_8eb[118] = (1 + sv_8eb[103]) * sv_8eb[69];
+    sv_8eb[119] = sv_8eb[117] + sv_8eb[118];
+    sv_8eb[120] = (0.5 * sv_8eb[119]) * (0.5 * sv_8eb[119]);
+    sv_8eb[121] = sv_8eb[114] + sv_8eb[120];
+    sv_8eb[122] = sv_8eb[107] + sv_8eb[121];
+    sv_8eb[123] = sv_8eb[106] + sv_8eb[120];
+    sv_8eb[124] = sv_8eb[90] * sv_8eb[90];
+    sv_8eb[125] = sv_8eb[96] * sv_8eb[96];
+    sv_8eb[126] = sv_8eb[124] + sv_8eb[125];
+    sv_8eb[127] = (1 + sv_8eb[103]) * (1 + sv_8eb[103]);
+    sv_8eb[128] = sv_8eb[126] + sv_8eb[127];
+    sv_8eb[129] = (0.5 * (-1 + sv_8eb[128])) * (0.5 * (-1 + sv_8eb[128]));
+    sv_8eb[130] = sv_8eb[123] + sv_8eb[129];
+    sv_8eb[131] = sv_8eb[122] + sv_8eb[130];
+    sv_8eb[132] = sv_8eb[131] * sp_8eb[0];
+    sv_8eb[133] = 0.5 * (-1 + sv_8eb[38]) + 0.5 * (-1 + sv_8eb[112]);
+    sv_8eb[134] = sv_8eb[133] + 0.5 * (-1 + sv_8eb[128]);
+    sv_8eb[135] = (sp_8eb[3] / 2) * pow(sv_8eb[134], 2);
+    sv_8eb[136] = sv_8eb[132] + sv_8eb[135];
+    sv_8eb[137] = fabs(sv_8eb[13]);
+    sv_8eb[138] = sv_8eb[136] * sv_8eb[137];
+    const double fw0 = sv_8eb[138] * weights_8eb[iq];
+    A[0] += fw0;
+  }
+}
+
+bool enabled_coefficients_integral_644a733e024311a3beafa887eca722fb69a78ac8[1] = { false };
+
+ufcx_integral integral_644a733e024311a3beafa887eca722fb69a78ac8 =
+{
+  .enabled_coefficients = enabled_coefficients_integral_644a733e024311a3beafa887eca722fb69a78ac8,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_644a733e024311a3beafa887eca722fb69a78ac8,
+  .needs_facet_permutations = false,
+  .coordinate_element = &element_0505aba2807d483e35646e41e0f604583cb9bd89,
+};
+
+// End of code for integral integral_644a733e024311a3beafa887eca722fb69a78ac8
+
 // Code for form form_c3b98274fcbeb1e4b68fecda59abbdb25f87aab2
 
 int original_coefficient_position_form_c3b98274fcbeb1e4b68fecda59abbdb25f87aab2[1] = { 0 };
@@ -3907,3 +4157,105 @@ return NULL;
 }
 
 // End of code for form form_51957849584a51d1435906a34a0fcc5e9384541f
+
+// Code for form form_f871446c4bb265e40185c5bcc02f6e82b727d4cf
+
+int original_coefficient_position_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf[1] = { 0 };
+ufcx_dofmap* dofmaps_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf[1] = { &dofmap_71c1428ea3f31db04d84ad087545af02f593328e };
+ufcx_finite_element* finite_elements_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf[1] = { &element_71c1428ea3f31db04d84ad087545af02f593328e };
+
+// Return a list of the coefficient names.
+const char** coefficient_name_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf(void)
+{
+static const char* names[1] = { "u" };
+return names;
+}
+
+// Return a list of the constant names.
+const char** constant_name_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf(void)
+{
+static const char* names[2] = { "young", "poisson" };
+return names;
+}
+
+int* integral_ids_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf(ufcx_integral_type integral_type)
+{
+static int integral_ids_cell_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf[1] = { -1 };
+switch (integral_type)
+{
+case cell:
+  return integral_ids_cell_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf;
+default:
+  return NULL;
+}
+}
+
+int num_integrals_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf(ufcx_integral_type integral_type)
+{
+switch (integral_type)
+{
+case cell:
+  return 1;
+case interior_facet:
+  return 0;
+case exterior_facet:
+  return 0;
+default:
+  return 0;
+}
+}
+
+ufcx_integral** integrals_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf(ufcx_integral_type integral_type)
+{
+static ufcx_integral* integrals_cell_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf[1] = { &integral_644a733e024311a3beafa887eca722fb69a78ac8 };
+switch (integral_type)
+{
+case cell:
+  return integrals_cell_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf;
+default:
+  return NULL;
+}
+}
+
+ufcx_form form_f871446c4bb265e40185c5bcc02f6e82b727d4cf =
+{
+
+  .signature = "0f49de39577269132fbfe1bb44f14c3762062863817095c5fcefe66fe07d916757a112d7c980107bb6b3b7218aac5cc283aa36c8f3ec6f279183e0df546a881f",
+  .rank = 0,
+  .num_coefficients = 1,
+  .num_constants = 2,
+  .original_coefficient_position = original_coefficient_position_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf,
+
+  .coefficient_name_map = coefficient_name_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf,
+  .constant_name_map = constant_name_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf,
+
+  .finite_elements = finite_elements_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf,
+  .dofmaps = dofmaps_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf,
+
+  .integral_ids = integral_ids_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf,
+  .num_integrals = num_integrals_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf,
+
+  .integrals = integrals_form_f871446c4bb265e40185c5bcc02f6e82b727d4cf
+};
+
+// Alias name
+ufcx_form* form_SaintVenantKirchhoff_Hexa_Pi = &form_f871446c4bb265e40185c5bcc02f6e82b727d4cf;
+
+ufcx_function_space* functionspace_form_SaintVenantKirchhoff_Hexa_Pi(const char* function_name)
+{
+static ufcx_function_space functionspace_u =
+{
+.finite_element = &element_71c1428ea3f31db04d84ad087545af02f593328e,
+.dofmap = &dofmap_71c1428ea3f31db04d84ad087545af02f593328e,
+.geometry_family = "Q",
+.geometry_degree = 1,
+.geometry_basix_cell = 5,
+.geometry_basix_variant = 0
+};
+if (strcmp(function_name, "u") == 0)
+  return &functionspace_u;
+return NULL;
+
+}
+
+// End of code for form form_f871446c4bb265e40185c5bcc02f6e82b727d4cf

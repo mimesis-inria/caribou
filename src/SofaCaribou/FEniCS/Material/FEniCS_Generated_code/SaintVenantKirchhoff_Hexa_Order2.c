@@ -12,7 +12,10 @@
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['SaintVenantKirchhoff_Hexa_Order2.py'],
+//   'ufl_file': ['SaintVenantKirchhoff_Hexa.py',
+//                'SaintVenantKirchhoff_Hexa_Order2.py',
+//                'SaintVenantKirchhoff_Tetra.py',
+//                'SaintVenantKirchhoff_Tetra_Order2.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -117,7 +120,7 @@ ufcx_finite_element element_975b941e38bef61f1602304ba357d33ef4142bd8 =
   .basix_family = 1,
   .basix_cell = 5,
   .discontinuous = false,
-  .lagrange_variant = 1,
+  .lagrange_variant = 0,
   .dpc_variant = -1,
   .num_sub_elements = 0,
   .sub_elements = NULL
@@ -151,7 +154,7 @@ ufcx_finite_element element_3bce2c4fc0f55f0145ef075bfaaab27023a406ca =
   .basix_family = 1,
   .basix_cell = 5,
   .discontinuous = false,
-  .lagrange_variant = 1,
+  .lagrange_variant = 0,
   .dpc_variant = -1,
   .num_sub_elements = 3,
   .sub_elements = sub_elements_element_3bce2c4fc0f55f0145ef075bfaaab27023a406ca
@@ -1157,9 +1160,9 @@ ufcx_dofmap dofmap_3bce2c4fc0f55f0145ef075bfaaab27023a406ca =
 
 // End of code for dofmap dofmap_3bce2c4fc0f55f0145ef075bfaaab27023a406ca
 
-// Code for integral integral_91d8c78dc330436542327d33c8afb15015d4989d
+// Code for integral integral_a6b298f21ede26166a0d44d19fb2356c9b2dd570
 
-void tabulate_tensor_integral_91d8c78dc330436542327d33c8afb15015d4989d(double* restrict A,
+void tabulate_tensor_integral_a6b298f21ede26166a0d44d19fb2356c9b2dd570(double* restrict A,
                                     const double* restrict w,
                                     const double* restrict c,
                                     const double* restrict coordinate_dofs,
@@ -1792,21 +1795,21 @@ void tabulate_tensor_integral_91d8c78dc330436542327d33c8afb15015d4989d(double* r
   }
 }
 
-bool enabled_coefficients_integral_91d8c78dc330436542327d33c8afb15015d4989d[1] = { false };
+bool enabled_coefficients_integral_a6b298f21ede26166a0d44d19fb2356c9b2dd570[1] = { false };
 
-ufcx_integral integral_91d8c78dc330436542327d33c8afb15015d4989d =
+ufcx_integral integral_a6b298f21ede26166a0d44d19fb2356c9b2dd570 =
 {
-  .enabled_coefficients = enabled_coefficients_integral_91d8c78dc330436542327d33c8afb15015d4989d,
-  .tabulate_tensor_float64 = tabulate_tensor_integral_91d8c78dc330436542327d33c8afb15015d4989d,
+  .enabled_coefficients = enabled_coefficients_integral_a6b298f21ede26166a0d44d19fb2356c9b2dd570,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_a6b298f21ede26166a0d44d19fb2356c9b2dd570,
   .needs_facet_permutations = false,
   .coordinate_element = &element_3bce2c4fc0f55f0145ef075bfaaab27023a406ca,
 };
 
-// End of code for integral integral_91d8c78dc330436542327d33c8afb15015d4989d
+// End of code for integral integral_a6b298f21ede26166a0d44d19fb2356c9b2dd570
 
-// Code for integral integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377
+// Code for integral integral_56752cb3a7429362d5d9b05e2be1ebca857469fa
 
-void tabulate_tensor_integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377(double* restrict A,
+void tabulate_tensor_integral_56752cb3a7429362d5d9b05e2be1ebca857469fa(double* restrict A,
                                     const double* restrict w,
                                     const double* restrict c,
                                     const double* restrict coordinate_dofs,
@@ -3891,51 +3894,325 @@ void tabulate_tensor_integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377(double* r
   }
 }
 
-bool enabled_coefficients_integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377[1] = { false };
+bool enabled_coefficients_integral_56752cb3a7429362d5d9b05e2be1ebca857469fa[1] = { false };
 
-ufcx_integral integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377 =
+ufcx_integral integral_56752cb3a7429362d5d9b05e2be1ebca857469fa =
 {
-  .enabled_coefficients = enabled_coefficients_integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377,
-  .tabulate_tensor_float64 = tabulate_tensor_integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377,
+  .enabled_coefficients = enabled_coefficients_integral_56752cb3a7429362d5d9b05e2be1ebca857469fa,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_56752cb3a7429362d5d9b05e2be1ebca857469fa,
   .needs_facet_permutations = false,
   .coordinate_element = &element_3bce2c4fc0f55f0145ef075bfaaab27023a406ca,
 };
 
-// End of code for integral integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377
+// End of code for integral integral_56752cb3a7429362d5d9b05e2be1ebca857469fa
 
-// Code for form form_06085c87ed59245afe178be1f43609e24c824160
+// Code for integral integral_794d5e6dc195c06d55c8d153d06632822ee878fd
 
-int original_coefficient_position_form_06085c87ed59245afe178be1f43609e24c824160[1] = { 0 };
-ufcx_dofmap* dofmaps_form_06085c87ed59245afe178be1f43609e24c824160[2] = { &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
-ufcx_finite_element* finite_elements_form_06085c87ed59245afe178be1f43609e24c824160[2] = { &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
+void tabulate_tensor_integral_794d5e6dc195c06d55c8d153d06632822ee878fd(double* restrict A,
+                                    const double* restrict w,
+                                    const double* restrict c,
+                                    const double* restrict coordinate_dofs,
+                                    const int* restrict entity_local_index,
+                                    const uint8_t* restrict quadrature_permutation)
+{
+  // Quadrature rules
+  static const double weights_8eb[8] = { 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125 };
+  // Precomputed values of basis functions and precomputations
+  // FE* dimensions: [permutation][entities][points][dofs]
+  static const double FE19_C0_D100_Q8eb[1][1][8][8] =
+    { { { { -0.622008467928146, 0.6220084679281462, -0.1666666666666665, 0.1666666666666667, -0.1666666666666666, 0.1666666666666667, -0.04465819873852037, 0.04465819873852041 },
+          { -0.1666666666666665, 0.1666666666666667, -0.04465819873852053, 0.04465819873852037, -0.622008467928146, 0.6220084679281462, -0.1666666666666667, 0.1666666666666666 },
+          { -0.1666666666666666, 0.1666666666666666, -0.6220084679281461, 0.6220084679281461, -0.0446581987385205, 0.04465819873852034, -0.1666666666666667, 0.1666666666666666 },
+          { -0.04465819873852032, 0.04465819873852045, -0.1666666666666668, 0.1666666666666668, -0.1666666666666666, 0.1666666666666667, -0.6220084679281461, 0.6220084679281463 },
+          { -0.622008467928146, 0.6220084679281462, -0.1666666666666665, 0.1666666666666667, -0.1666666666666666, 0.1666666666666667, -0.04465819873852037, 0.04465819873852041 },
+          { -0.1666666666666665, 0.1666666666666667, -0.04465819873852053, 0.04465819873852037, -0.622008467928146, 0.6220084679281462, -0.1666666666666667, 0.1666666666666666 },
+          { -0.1666666666666666, 0.1666666666666666, -0.6220084679281461, 0.6220084679281461, -0.0446581987385205, 0.04465819873852034, -0.1666666666666667, 0.1666666666666666 },
+          { -0.04465819873852032, 0.04465819873852045, -0.1666666666666668, 0.1666666666666668, -0.1666666666666666, 0.1666666666666667, -0.6220084679281461, 0.6220084679281463 } } } };
+  static const double FE19_C1_D010_Q8eb[1][1][8][8] =
+    { { { { -0.622008467928146, -0.1666666666666665, 0.6220084679281462, 0.1666666666666667, -0.1666666666666665, -0.04465819873852037, 0.1666666666666667, 0.04465819873852041 },
+          { -0.1666666666666667, -0.04465819873852053, 0.1666666666666668, 0.04465819873852037, -0.622008467928146, -0.1666666666666667, 0.6220084679281462, 0.1666666666666666 },
+          { -0.622008467928146, -0.1666666666666665, 0.6220084679281462, 0.1666666666666667, -0.1666666666666665, -0.04465819873852037, 0.1666666666666667, 0.04465819873852041 },
+          { -0.1666666666666667, -0.04465819873852053, 0.1666666666666668, 0.04465819873852037, -0.622008467928146, -0.1666666666666667, 0.6220084679281462, 0.1666666666666666 },
+          { -0.1666666666666666, -0.6220084679281461, 0.1666666666666666, 0.6220084679281461, -0.04465819873852048, -0.1666666666666667, 0.04465819873852037, 0.1666666666666666 },
+          { -0.04465819873852049, -0.1666666666666668, 0.04465819873852053, 0.1666666666666668, -0.1666666666666666, -0.6220084679281461, 0.1666666666666668, 0.6220084679281463 },
+          { -0.1666666666666666, -0.6220084679281461, 0.1666666666666666, 0.6220084679281461, -0.04465819873852048, -0.1666666666666667, 0.04465819873852037, 0.1666666666666666 },
+          { -0.04465819873852049, -0.1666666666666668, 0.04465819873852053, 0.1666666666666668, -0.1666666666666666, -0.6220084679281461, 0.1666666666666668, 0.6220084679281463 } } } };
+  static const double FE19_C2_D001_Q8eb[1][1][8][8] =
+    { { { { -0.622008467928146, -0.1666666666666665, -0.1666666666666666, -0.04465819873852039, 0.6220084679281462, 0.1666666666666667, 0.1666666666666667, 0.04465819873852044 },
+          { -0.622008467928146, -0.1666666666666665, -0.1666666666666666, -0.04465819873852039, 0.6220084679281462, 0.1666666666666667, 0.1666666666666667, 0.04465819873852044 },
+          { -0.1666666666666667, -0.04465819873852053, -0.6220084679281461, -0.1666666666666667, 0.1666666666666667, 0.04465819873852042, 0.6220084679281462, 0.1666666666666667 },
+          { -0.1666666666666667, -0.04465819873852053, -0.6220084679281461, -0.1666666666666667, 0.1666666666666667, 0.04465819873852042, 0.6220084679281462, 0.1666666666666667 },
+          { -0.1666666666666666, -0.6220084679281461, -0.04465819873852056, -0.1666666666666667, 0.1666666666666667, 0.6220084679281462, 0.04465819873852039, 0.1666666666666667 },
+          { -0.1666666666666666, -0.6220084679281461, -0.04465819873852056, -0.1666666666666667, 0.1666666666666667, 0.6220084679281462, 0.04465819873852039, 0.1666666666666667 },
+          { -0.04465819873852046, -0.1666666666666667, -0.1666666666666667, -0.6220084679281461, 0.04465819873852062, 0.1666666666666668, 0.1666666666666668, 0.6220084679281465 },
+          { -0.04465819873852046, -0.1666666666666667, -0.1666666666666667, -0.6220084679281461, 0.04465819873852062, 0.1666666666666668, 0.1666666666666668, 0.6220084679281465 } } } };
+  static const double FE9_C0_D001_Q8eb[1][1][8][20] =
+    { { { { -0.9106836025229579, 0.0446581987385187, 0.04465819873851808, 0.08931639747703676, -1.244016935856291, -0.6220084679281447, -0.6220084679281469, -0.2440169358562912, -0.7886751345948116, -0.7886751345948169, 2.15470053837925, -0.2113248654051826, 0.5773502691896252, -0.2113248654051807, 0.5773502691896275, 0.1547005383792509, 0.7886751345948109, 0.7886751345948134, 0.2113248654051857, 0.2113248654051859 },
+          { 1.244016935856286, 0.6220084679281461, 0.6220084679281465, 0.244016935856293, 0.9106836025229577, -0.04465819873852164, -0.04465819873851797, -0.08931639747704204, -0.7886751345948123, -0.7886751345948084, -2.154700538379247, -0.2113248654051883, -0.5773502691896243, -0.2113248654051883, -0.5773502691896295, -0.1547005383792505, 0.7886751345948149, 0.788675134594811, 0.2113248654051877, 0.2113248654051881 },
+          { 0.04465819873852173, 0.08931639747703843, -0.9106836025229625, 0.04465819873851694, -0.6220084679281448, -0.2440169358562909, -1.244016935856294, -0.6220084679281449, -0.211324865405185, -0.7886751345948162, 0.5773502691896233, -0.211324865405184, 0.1547005383792503, -0.7886751345948066, 2.154700538379256, 0.5773502691896248, 0.2113248654051857, 0.788675134594815, 0.2113248654051857, 0.7886751345948115 },
+          { 0.6220084679281432, 0.2440169358562945, 1.24401693585629, 0.622008467928145, -0.04465819873852056, -0.08931639747704212, 0.9106836025229618, -0.04465819873852166, -0.2113248654051901, -0.7886751345948084, -0.5773502691896217, -0.2113248654051877, -0.15470053837925, -0.7886751345948106, -2.154700538379255, -0.5773502691896246, 0.2113248654051878, 0.7886751345948103, 0.2113248654051883, 0.7886751345948134 },
+          { 0.04465819873851956, -0.9106836025229645, 0.08931639747703837, 0.04465819873851508, -0.622008467928145, -1.244016935856291, -0.2440169358562918, -0.6220084679281453, -0.7886751345948056, -0.211324865405193, 0.5773502691896271, -0.7886751345948069, 2.154700538379251, -0.2113248654051798, 0.1547005383792515, 0.5773502691896255, 0.7886751345948113, 0.2113248654051863, 0.7886751345948116, 0.2113248654051861 },
+          { 0.6220084679281406, 1.244016935856295, 0.2440169358562947, 0.6220084679281476, -0.04465819873852089, 0.9106836025229589, -0.08931639747703857, -0.04465819873852155, -0.7886751345948156, -0.2113248654051846, -0.5773502691896217, -0.7886751345948142, -2.154700538379251, -0.2113248654051908, -0.1547005383792553, -0.5773502691896244, 0.7886751345948131, 0.2113248654051856, 0.7886751345948133, 0.2113248654051879 },
+          { 0.08931639747703674, 0.04465819873851448, 0.04465819873851805, -0.910683602522962, -0.2440169358562898, -0.6220084679281414, -0.622008467928147, -1.244016935856292, -0.2113248654051768, -0.2113248654051919, 0.154700538379254, -0.7886751345948098, 0.5773502691896213, -0.7886751345948086, 0.5773502691896284, 2.154700538379251, 0.2113248654051817, 0.211324865405187, 0.7886751345948116, 0.7886751345948122 },
+          { 0.2440169358562956, 0.6220084679281523, 0.6220084679281445, 1.244016935856291, -0.08931639747704334, -0.04465819873852614, -0.04465819873851752, 0.9106836025229583, -0.2113248654051983, -0.211324865405185, -0.1547005383792515, -0.7886751345948135, -0.5773502691896203, -0.78867513459481, -0.5773502691896302, -2.15470053837925, 0.2113248654051942, 0.2113248654051849, 0.7886751345948138, 0.7886751345948128 } } } };
+  static const double FE9_C0_D010_Q8eb[1][1][8][20] =
+    { { { { -0.9106836025229622, 0.04465819873851926, -1.244016935856292, -0.6220084679281475, 0.04465819873852006, 0.08931639747704345, -0.6220084679281478, -0.2440169358562917, -0.7886751345948113, 2.154700538379248, -0.7886751345948119, 0.5773502691896275, -0.21132486540519, 0.7886751345948162, 0.7886751345948153, 0.2113248654051861, -0.2113248654051899, 0.5773502691896282, 0.1547005383792515, 0.2113248654051862 },
+          { 0.04465819873851767, 0.0893163974770374, -0.6220084679281492, -0.2440169358562967, -0.9106836025229577, 0.04465819873852339, -1.244016935856294, -0.6220084679281447, -0.2113248654051838, 0.5773502691896222, -0.7886751345948136, 0.1547005383792562, -0.2113248654051891, 0.2113248654051947, 0.7886751345948162, 0.2113248654051859, -0.7886751345948168, 2.154700538379255, 0.5773502691896246, 0.7886751345948111 },
+          { 1.244016935856287, 0.6220084679281476, 0.9106836025229588, -0.0446581987385179, 0.6220084679281461, 0.2440169358562924, -0.04465819873852064, -0.08931639747704176, -0.7886751345948131, -2.154700538379243, -0.7886751345948119, -0.5773502691896302, -0.2113248654051865, 0.7886751345948091, 0.7886751345948124, 0.2113248654051883, -0.2113248654051868, -0.577350269189626, -0.1547005383792517, 0.2113248654051882 },
+          { 0.6220084679281447, 0.2440169358562972, -0.04465819873852123, -0.0893163974770364, 1.244016935856291, 0.6220084679281459, 0.9106836025229575, -0.04465819873852203, -0.2113248654051916, -0.5773502691896164, -0.7886751345948119, -0.1547005383792596, -0.211324865405188, 0.2113248654051823, 0.7886751345948146, 0.2113248654051886, -0.7886751345948123, -2.154700538379251, -0.5773502691896244, 0.7886751345948144 },
+          { 0.04465819873851243, -0.910683602522964, -0.622008467928145, -1.244016935856295, 0.08931639747704129, 0.04465819873852506, -0.2440169358562942, -0.6220084679281456, -0.7886751345948044, 0.5773502691896213, -0.2113248654051837, 2.154700538379256, -0.7886751345948181, 0.788675134594816, 0.2113248654051894, 0.7886751345948121, -0.2113248654051927, 0.1547005383792538, 0.5773502691896255, 0.2113248654051865 },
+          { 0.08931639747703107, 0.04465819873851401, -0.2440169358562925, -0.6220084679281521, 0.04465819873852231, -0.9106836025229518, -0.622008467928146, -1.244016935856291, -0.2113248654051768, 0.1547005383792457, -0.211324865405181, 0.5773502691896333, -0.7886751345948201, 0.211324865405194, 0.2113248654051872, 0.7886751345948128, -0.7886751345948207, 0.5773502691896262, 2.15470053837925, 0.7886751345948113 },
+          { 0.6220084679281442, 1.244016935856296, -0.04465819873852167, 0.9106836025229621, 0.2440169358562934, 0.6220084679281468, -0.08931639747704059, -0.04465819873852137, -0.788675134594816, -0.5773502691896173, -0.211324865405186, -2.154700538379257, -0.7886751345948126, 0.7886751345948093, 0.2113248654051864, 0.7886751345948139, -0.2113248654051882, -0.1547005383792525, -0.5773502691896257, 0.2113248654051885 },
+          { 0.2440169358562979, 0.6220084679281536, -0.08931639747704473, -0.04465819873851468, 0.6220084679281452, 1.244016935856288, -0.04465819873852281, 0.9106836025229575, -0.2113248654051972, -0.1547005383792407, -0.2113248654051912, -0.5773502691896366, -0.7886751345948093, 0.2113248654051831, 0.2113248654051909, 0.7886751345948134, -0.7886751345948088, -0.5773502691896253, -2.15470053837925, 0.7886751345948146 } } } };
+  static const double FE9_C0_D100_Q8eb[1][1][8][20] =
+    { { { { -0.9106836025229592, -1.244016935856296, 0.04465819873852039, -0.622008467928148, 0.04465819873852042, -0.622008467928144, 0.08931639747704034, -0.2440169358562919, 2.154700538379255, -0.7886751345948155, -0.7886751345948114, 0.7886751345948149, 0.78867513459481, 0.5773502691896293, -0.2113248654051867, 0.2113248654051863, 0.5773502691896237, -0.2113248654051861, 0.2113248654051869, 0.1547005383792515 },
+          { 0.04465819873851887, -0.6220084679281496, 0.08931639747703865, -0.2440169358562957, -0.910683602522958, -1.244016935856289, 0.0446581987385207, -0.6220084679281453, 0.5773502691896313, -0.2113248654051891, -0.7886751345948099, 0.2113248654051902, 0.7886751345948089, 0.1547005383792576, -0.2113248654051875, 0.2113248654051867, 2.154700538379248, -0.7886751345948131, 0.7886751345948119, 0.5773502691896251 },
+          { 0.04465819873851989, -0.6220084679281527, -0.9106836025229582, -1.244016935856294, 0.08931639747704093, -0.2440169358562905, 0.04465819873851884, -0.6220084679281458, 0.5773502691896337, -0.788675134594816, -0.2113248654051857, 0.7886751345948149, 0.2113248654051846, 2.154700538379254, -0.7886751345948112, 0.7886751345948122, 0.1547005383792496, -0.2113248654051852, 0.2113248654051869, 0.5773502691896255 },
+          { 0.08931639747704015, -0.2440169358562999, 0.04465819873851637, -0.6220084679281523, 0.04465819873852089, -0.6220084679281447, -0.9106836025229593, -1.244016935856292, 0.1547005383792581, -0.2113248654051913, -0.2113248654051841, 0.211324865405192, 0.2113248654051859, 0.5773502691896359, -0.7886751345948119, 0.7886751345948126, 0.5773502691896244, -0.7886751345948122, 0.7886751345948119, 2.154700538379251 },
+          { 1.244016935856287, 0.9106836025229587, 0.6220084679281478, -0.04465819873851801, 0.6220084679281456, -0.04465819873852064, 0.2440169358562913, -0.08931639747704212, -2.15470053837925, -0.7886751345948069, -0.7886751345948114, 0.7886751345948109, 0.7886751345948135, -0.5773502691896304, -0.2113248654051864, 0.2113248654051885, -0.5773502691896255, -0.2113248654051864, 0.2113248654051874, -0.1547005383792506 },
+          { 0.6220084679281412, -0.04465819873852178, 0.2440169358562981, -0.08931639747703729, 1.244016935856291, 0.9106836025229587, 0.6220084679281452, -0.0446581987385222, -0.5773502691896231, -0.2113248654051856, -0.7886751345948112, 0.2113248654051857, 0.7886751345948138, -0.1547005383792603, -0.2113248654051874, 0.211324865405189, -2.154700538379251, -0.788675134594812, 0.7886751345948139, -0.5773502691896242 },
+          { 0.6220084679281392, -0.04465819873851964, 1.244016935856293, 0.9106836025229602, 0.2440169358562936, -0.08931639747703804, 0.6220084679281465, -0.04465819873852178, -0.5773502691896242, -0.7886751345948069, -0.2113248654051831, 0.7886751345948126, 0.2113248654051848, -2.154700538379255, -0.7886751345948139, 0.7886751345948144, -0.1547005383792556, -0.2113248654051883, 0.2113248654051874, -0.5773502691896242 },
+          { 0.2440169358562866, -0.08931639747703868, 0.6220084679281537, -0.04465819873851429, 0.622008467928146, -0.0446581987385184, 1.244016935856293, 0.9106836025229571, -0.1547005383792485, -0.2113248654051841, -0.2113248654051837, 0.211324865405184, 0.2113248654051844, -0.5773502691896384, -0.7886751345948159, 0.7886751345948149, -0.5773502691896284, -0.7886751345948146, 0.7886751345948139, -2.154700538379249 } } } };
+  // Pre-definitions of modified terminals to enable unit-stride access
+  double _w_0_0[20];
+  double _w_0_1[20];
+  double _w_0_2[20];
+  for (int ic = 0; ic < 20; ++ic)
+  {
+    _w_0_0[ic] = w[ic * 3];
+    _w_0_1[ic] = w[ic * 3 + 1];
+    _w_0_2[ic] = w[ic * 3 + 2];
+  }
+  // Quadrature loop independent computations for quadrature rule 8eb
+  double sp_8eb[4];
+  sp_8eb[0] = c[0] / (2 * (1 + c[1]));
+  sp_8eb[1] = c[0] * c[1];
+  sp_8eb[2] = (1 + c[1]) * (1 + -1 * (2 * c[1]));
+  sp_8eb[3] = sp_8eb[1] / sp_8eb[2];
+  for (int iq = 0; iq < 8; ++iq)
+  {
+    // Quadrature loop body setup for quadrature rule 8eb
+    // Varying computations for quadrature rule 8eb
+    double w0_d100_c0 = 0.0;
+    const double J_c4 = coordinate_dofs[1] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c8 = coordinate_dofs[2] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    const double J_c5 = coordinate_dofs[1] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    const double J_c7 = coordinate_dofs[2] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c0 = coordinate_dofs[0] * FE19_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE19_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE19_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE19_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE19_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE19_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE19_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE19_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c1 = coordinate_dofs[0] * FE19_C1_D010_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE19_C1_D010_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE19_C1_D010_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE19_C1_D010_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE19_C1_D010_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE19_C1_D010_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE19_C1_D010_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE19_C1_D010_Q8eb[0][0][iq][7];
+    const double J_c6 = coordinate_dofs[2] * FE19_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[5] * FE19_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[8] * FE19_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[11] * FE19_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[14] * FE19_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[17] * FE19_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[20] * FE19_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[23] * FE19_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c3 = coordinate_dofs[1] * FE19_C0_D100_Q8eb[0][0][iq][0] + coordinate_dofs[4] * FE19_C0_D100_Q8eb[0][0][iq][1] + coordinate_dofs[7] * FE19_C0_D100_Q8eb[0][0][iq][2] + coordinate_dofs[10] * FE19_C0_D100_Q8eb[0][0][iq][3] + coordinate_dofs[13] * FE19_C0_D100_Q8eb[0][0][iq][4] + coordinate_dofs[16] * FE19_C0_D100_Q8eb[0][0][iq][5] + coordinate_dofs[19] * FE19_C0_D100_Q8eb[0][0][iq][6] + coordinate_dofs[22] * FE19_C0_D100_Q8eb[0][0][iq][7];
+    const double J_c2 = coordinate_dofs[0] * FE19_C2_D001_Q8eb[0][0][iq][0] + coordinate_dofs[3] * FE19_C2_D001_Q8eb[0][0][iq][1] + coordinate_dofs[6] * FE19_C2_D001_Q8eb[0][0][iq][2] + coordinate_dofs[9] * FE19_C2_D001_Q8eb[0][0][iq][3] + coordinate_dofs[12] * FE19_C2_D001_Q8eb[0][0][iq][4] + coordinate_dofs[15] * FE19_C2_D001_Q8eb[0][0][iq][5] + coordinate_dofs[18] * FE19_C2_D001_Q8eb[0][0][iq][6] + coordinate_dofs[21] * FE19_C2_D001_Q8eb[0][0][iq][7];
+    double w0_d010_c0 = 0.0;
+    double w0_d001_c0 = 0.0;
+    double w0_d100_c1 = 0.0;
+    double w0_d010_c1 = 0.0;
+    double w0_d001_c1 = 0.0;
+    double w0_d100_c2 = 0.0;
+    double w0_d010_c2 = 0.0;
+    double w0_d001_c2 = 0.0;
+    for (int ic = 0; ic < 20; ++ic)
+    {
+      w0_d100_c0 += _w_0_0[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c0 += _w_0_0[ic] * FE9_C0_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c0 += _w_0_0[ic] * FE9_C0_D001_Q8eb[0][0][iq][ic];
+      w0_d100_c1 += _w_0_1[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c1 += _w_0_1[ic] * FE9_C0_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c1 += _w_0_1[ic] * FE9_C0_D001_Q8eb[0][0][iq][ic];
+      w0_d100_c2 += _w_0_2[ic] * FE9_C0_D100_Q8eb[0][0][iq][ic];
+      w0_d010_c2 += _w_0_2[ic] * FE9_C0_D010_Q8eb[0][0][iq][ic];
+      w0_d001_c2 += _w_0_2[ic] * FE9_C0_D001_Q8eb[0][0][iq][ic];
+    }
+    double sv_8eb[139];
+    sv_8eb[0] = J_c4 * J_c8;
+    sv_8eb[1] = J_c5 * J_c7;
+    sv_8eb[2] = sv_8eb[0] + -1 * sv_8eb[1];
+    sv_8eb[3] = J_c0 * sv_8eb[2];
+    sv_8eb[4] = J_c5 * J_c6;
+    sv_8eb[5] = J_c3 * J_c8;
+    sv_8eb[6] = sv_8eb[4] + -1 * sv_8eb[5];
+    sv_8eb[7] = J_c1 * sv_8eb[6];
+    sv_8eb[8] = sv_8eb[3] + sv_8eb[7];
+    sv_8eb[9] = J_c3 * J_c7;
+    sv_8eb[10] = J_c4 * J_c6;
+    sv_8eb[11] = sv_8eb[9] + -1 * sv_8eb[10];
+    sv_8eb[12] = J_c2 * sv_8eb[11];
+    sv_8eb[13] = sv_8eb[8] + sv_8eb[12];
+    sv_8eb[14] = sv_8eb[2] / sv_8eb[13];
+    sv_8eb[15] = w0_d100_c0 * sv_8eb[14];
+    sv_8eb[16] = J_c3 * (-1 * J_c8);
+    sv_8eb[17] = sv_8eb[4] + sv_8eb[16];
+    sv_8eb[18] = sv_8eb[17] / sv_8eb[13];
+    sv_8eb[19] = w0_d010_c0 * sv_8eb[18];
+    sv_8eb[20] = sv_8eb[15] + sv_8eb[19];
+    sv_8eb[21] = sv_8eb[11] / sv_8eb[13];
+    sv_8eb[22] = w0_d001_c0 * sv_8eb[21];
+    sv_8eb[23] = sv_8eb[20] + sv_8eb[22];
+    sv_8eb[24] = (1 + sv_8eb[23]) * (1 + sv_8eb[23]);
+    sv_8eb[25] = w0_d100_c1 * sv_8eb[14];
+    sv_8eb[26] = w0_d010_c1 * sv_8eb[18];
+    sv_8eb[27] = sv_8eb[25] + sv_8eb[26];
+    sv_8eb[28] = w0_d001_c1 * sv_8eb[21];
+    sv_8eb[29] = sv_8eb[27] + sv_8eb[28];
+    sv_8eb[30] = sv_8eb[29] * sv_8eb[29];
+    sv_8eb[31] = sv_8eb[24] + sv_8eb[30];
+    sv_8eb[32] = w0_d100_c2 * sv_8eb[14];
+    sv_8eb[33] = w0_d010_c2 * sv_8eb[18];
+    sv_8eb[34] = sv_8eb[32] + sv_8eb[33];
+    sv_8eb[35] = w0_d001_c2 * sv_8eb[21];
+    sv_8eb[36] = sv_8eb[34] + sv_8eb[35];
+    sv_8eb[37] = sv_8eb[36] * sv_8eb[36];
+    sv_8eb[38] = sv_8eb[31] + sv_8eb[37];
+    sv_8eb[39] = (0.5 * (-1 + sv_8eb[38])) * (0.5 * (-1 + sv_8eb[38]));
+    sv_8eb[40] = J_c2 * J_c7;
+    sv_8eb[41] = J_c8 * (-1 * J_c1);
+    sv_8eb[42] = sv_8eb[40] + sv_8eb[41];
+    sv_8eb[43] = sv_8eb[42] / sv_8eb[13];
+    sv_8eb[44] = w0_d100_c1 * sv_8eb[43];
+    sv_8eb[45] = J_c0 * J_c8;
+    sv_8eb[46] = J_c6 * (-1 * J_c2);
+    sv_8eb[47] = sv_8eb[45] + sv_8eb[46];
+    sv_8eb[48] = sv_8eb[47] / sv_8eb[13];
+    sv_8eb[49] = w0_d010_c1 * sv_8eb[48];
+    sv_8eb[50] = sv_8eb[44] + sv_8eb[49];
+    sv_8eb[51] = J_c1 * J_c6;
+    sv_8eb[52] = J_c0 * J_c7;
+    sv_8eb[53] = sv_8eb[51] + -1 * sv_8eb[52];
+    sv_8eb[54] = sv_8eb[53] / sv_8eb[13];
+    sv_8eb[55] = w0_d001_c1 * sv_8eb[54];
+    sv_8eb[56] = sv_8eb[50] + sv_8eb[55];
+    sv_8eb[57] = (1 + sv_8eb[56]) * sv_8eb[29];
+    sv_8eb[58] = w0_d100_c0 * sv_8eb[43];
+    sv_8eb[59] = w0_d010_c0 * sv_8eb[48];
+    sv_8eb[60] = sv_8eb[58] + sv_8eb[59];
+    sv_8eb[61] = w0_d001_c0 * sv_8eb[54];
+    sv_8eb[62] = sv_8eb[60] + sv_8eb[61];
+    sv_8eb[63] = (1 + sv_8eb[23]) * sv_8eb[62];
+    sv_8eb[64] = sv_8eb[57] + sv_8eb[63];
+    sv_8eb[65] = w0_d100_c2 * sv_8eb[43];
+    sv_8eb[66] = w0_d010_c2 * sv_8eb[48];
+    sv_8eb[67] = sv_8eb[65] + sv_8eb[66];
+    sv_8eb[68] = w0_d001_c2 * sv_8eb[54];
+    sv_8eb[69] = sv_8eb[67] + sv_8eb[68];
+    sv_8eb[70] = sv_8eb[36] * sv_8eb[69];
+    sv_8eb[71] = sv_8eb[64] + sv_8eb[70];
+    sv_8eb[72] = (0.5 * sv_8eb[71]) * (0.5 * sv_8eb[71]);
+    sv_8eb[73] = sv_8eb[39] + sv_8eb[72];
+    sv_8eb[74] = J_c1 * J_c5;
+    sv_8eb[75] = J_c2 * J_c4;
+    sv_8eb[76] = sv_8eb[74] + -1 * sv_8eb[75];
+    sv_8eb[77] = sv_8eb[76] / sv_8eb[13];
+    sv_8eb[78] = w0_d100_c0 * sv_8eb[77];
+    sv_8eb[79] = J_c2 * J_c3;
+    sv_8eb[80] = J_c0 * J_c5;
+    sv_8eb[81] = sv_8eb[79] + -1 * sv_8eb[80];
+    sv_8eb[82] = sv_8eb[81] / sv_8eb[13];
+    sv_8eb[83] = w0_d010_c0 * sv_8eb[82];
+    sv_8eb[84] = sv_8eb[78] + sv_8eb[83];
+    sv_8eb[85] = J_c0 * J_c4;
+    sv_8eb[86] = J_c1 * J_c3;
+    sv_8eb[87] = sv_8eb[85] + -1 * sv_8eb[86];
+    sv_8eb[88] = sv_8eb[87] / sv_8eb[13];
+    sv_8eb[89] = w0_d001_c0 * sv_8eb[88];
+    sv_8eb[90] = sv_8eb[84] + sv_8eb[89];
+    sv_8eb[91] = (1 + sv_8eb[23]) * sv_8eb[90];
+    sv_8eb[92] = w0_d100_c1 * sv_8eb[77];
+    sv_8eb[93] = w0_d010_c1 * sv_8eb[82];
+    sv_8eb[94] = sv_8eb[92] + sv_8eb[93];
+    sv_8eb[95] = w0_d001_c1 * sv_8eb[88];
+    sv_8eb[96] = sv_8eb[94] + sv_8eb[95];
+    sv_8eb[97] = sv_8eb[96] * sv_8eb[29];
+    sv_8eb[98] = sv_8eb[91] + sv_8eb[97];
+    sv_8eb[99] = w0_d100_c2 * sv_8eb[77];
+    sv_8eb[100] = w0_d010_c2 * sv_8eb[82];
+    sv_8eb[101] = sv_8eb[99] + sv_8eb[100];
+    sv_8eb[102] = w0_d001_c2 * sv_8eb[88];
+    sv_8eb[103] = sv_8eb[101] + sv_8eb[102];
+    sv_8eb[104] = (1 + sv_8eb[103]) * sv_8eb[36];
+    sv_8eb[105] = sv_8eb[98] + sv_8eb[104];
+    sv_8eb[106] = (0.5 * sv_8eb[105]) * (0.5 * sv_8eb[105]);
+    sv_8eb[107] = sv_8eb[73] + sv_8eb[106];
+    sv_8eb[108] = (1 + sv_8eb[56]) * (1 + sv_8eb[56]);
+    sv_8eb[109] = sv_8eb[62] * sv_8eb[62];
+    sv_8eb[110] = sv_8eb[108] + sv_8eb[109];
+    sv_8eb[111] = sv_8eb[69] * sv_8eb[69];
+    sv_8eb[112] = sv_8eb[110] + sv_8eb[111];
+    sv_8eb[113] = (0.5 * (-1 + sv_8eb[112])) * (0.5 * (-1 + sv_8eb[112]));
+    sv_8eb[114] = sv_8eb[113] + sv_8eb[72];
+    sv_8eb[115] = (1 + sv_8eb[56]) * sv_8eb[96];
+    sv_8eb[116] = sv_8eb[90] * sv_8eb[62];
+    sv_8eb[117] = sv_8eb[115] + sv_8eb[116];
+    sv_8eb[118] = (1 + sv_8eb[103]) * sv_8eb[69];
+    sv_8eb[119] = sv_8eb[117] + sv_8eb[118];
+    sv_8eb[120] = (0.5 * sv_8eb[119]) * (0.5 * sv_8eb[119]);
+    sv_8eb[121] = sv_8eb[114] + sv_8eb[120];
+    sv_8eb[122] = sv_8eb[107] + sv_8eb[121];
+    sv_8eb[123] = sv_8eb[106] + sv_8eb[120];
+    sv_8eb[124] = sv_8eb[90] * sv_8eb[90];
+    sv_8eb[125] = sv_8eb[96] * sv_8eb[96];
+    sv_8eb[126] = sv_8eb[124] + sv_8eb[125];
+    sv_8eb[127] = (1 + sv_8eb[103]) * (1 + sv_8eb[103]);
+    sv_8eb[128] = sv_8eb[126] + sv_8eb[127];
+    sv_8eb[129] = (0.5 * (-1 + sv_8eb[128])) * (0.5 * (-1 + sv_8eb[128]));
+    sv_8eb[130] = sv_8eb[123] + sv_8eb[129];
+    sv_8eb[131] = sv_8eb[122] + sv_8eb[130];
+    sv_8eb[132] = sv_8eb[131] * sp_8eb[0];
+    sv_8eb[133] = 0.5 * (-1 + sv_8eb[38]) + 0.5 * (-1 + sv_8eb[112]);
+    sv_8eb[134] = sv_8eb[133] + 0.5 * (-1 + sv_8eb[128]);
+    sv_8eb[135] = (sp_8eb[3] / 2) * pow(sv_8eb[134], 2);
+    sv_8eb[136] = sv_8eb[132] + sv_8eb[135];
+    sv_8eb[137] = fabs(sv_8eb[13]);
+    sv_8eb[138] = sv_8eb[136] * sv_8eb[137];
+    const double fw0 = sv_8eb[138] * weights_8eb[iq];
+    A[0] += fw0;
+  }
+}
+
+bool enabled_coefficients_integral_794d5e6dc195c06d55c8d153d06632822ee878fd[1] = { false };
+
+ufcx_integral integral_794d5e6dc195c06d55c8d153d06632822ee878fd =
+{
+  .enabled_coefficients = enabled_coefficients_integral_794d5e6dc195c06d55c8d153d06632822ee878fd,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_794d5e6dc195c06d55c8d153d06632822ee878fd,
+  .needs_facet_permutations = false,
+  .coordinate_element = &element_3bce2c4fc0f55f0145ef075bfaaab27023a406ca,
+};
+
+// End of code for integral integral_794d5e6dc195c06d55c8d153d06632822ee878fd
+
+// Code for form form_2890a6649017e12f682862ffb3f33fde27f0d572
+
+int original_coefficient_position_form_2890a6649017e12f682862ffb3f33fde27f0d572[1] = { 0 };
+ufcx_dofmap* dofmaps_form_2890a6649017e12f682862ffb3f33fde27f0d572[2] = { &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
+ufcx_finite_element* finite_elements_form_2890a6649017e12f682862ffb3f33fde27f0d572[2] = { &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
 
 // Return a list of the coefficient names.
-const char** coefficient_name_form_06085c87ed59245afe178be1f43609e24c824160(void)
+const char** coefficient_name_form_2890a6649017e12f682862ffb3f33fde27f0d572(void)
 {
 static const char* names[1] = { "u" };
 return names;
 }
 
 // Return a list of the constant names.
-const char** constant_name_form_06085c87ed59245afe178be1f43609e24c824160(void)
+const char** constant_name_form_2890a6649017e12f682862ffb3f33fde27f0d572(void)
 {
 static const char* names[2] = { "young", "poisson" };
 return names;
 }
 
-int* integral_ids_form_06085c87ed59245afe178be1f43609e24c824160(ufcx_integral_type integral_type)
+int* integral_ids_form_2890a6649017e12f682862ffb3f33fde27f0d572(ufcx_integral_type integral_type)
 {
-static int integral_ids_cell_form_06085c87ed59245afe178be1f43609e24c824160[1] = { -1 };
+static int integral_ids_cell_form_2890a6649017e12f682862ffb3f33fde27f0d572[1] = { -1 };
 switch (integral_type)
 {
 case cell:
-  return integral_ids_cell_form_06085c87ed59245afe178be1f43609e24c824160;
+  return integral_ids_cell_form_2890a6649017e12f682862ffb3f33fde27f0d572;
 default:
   return NULL;
 }
 }
 
-int num_integrals_form_06085c87ed59245afe178be1f43609e24c824160(ufcx_integral_type integral_type)
+int num_integrals_form_2890a6649017e12f682862ffb3f33fde27f0d572(ufcx_integral_type integral_type)
 {
 switch (integral_type)
 {
@@ -3950,41 +4227,41 @@ default:
 }
 }
 
-ufcx_integral** integrals_form_06085c87ed59245afe178be1f43609e24c824160(ufcx_integral_type integral_type)
+ufcx_integral** integrals_form_2890a6649017e12f682862ffb3f33fde27f0d572(ufcx_integral_type integral_type)
 {
-static ufcx_integral* integrals_cell_form_06085c87ed59245afe178be1f43609e24c824160[1] = { &integral_91d8c78dc330436542327d33c8afb15015d4989d };
+static ufcx_integral* integrals_cell_form_2890a6649017e12f682862ffb3f33fde27f0d572[1] = { &integral_a6b298f21ede26166a0d44d19fb2356c9b2dd570 };
 switch (integral_type)
 {
 case cell:
-  return integrals_cell_form_06085c87ed59245afe178be1f43609e24c824160;
+  return integrals_cell_form_2890a6649017e12f682862ffb3f33fde27f0d572;
 default:
   return NULL;
 }
 }
 
-ufcx_form form_06085c87ed59245afe178be1f43609e24c824160 =
+ufcx_form form_2890a6649017e12f682862ffb3f33fde27f0d572 =
 {
 
-  .signature = "343352f80495e223adfa88aa1135f9378e5531cb87a505d8854eb0109971884c58901b4dfdec780d6c1b0ee8abe0e1244944f69a0053c2b689e0b7f283ad94b5",
+  .signature = "f3c126e2230818ebb6d0ed11c8262bac49606a472f70bc9026942a7168933982d1387bee3b01f72a5100ec879fcea0bfe1b555bcde72aa8b3e5e8a40a175c07d",
   .rank = 1,
   .num_coefficients = 1,
   .num_constants = 2,
-  .original_coefficient_position = original_coefficient_position_form_06085c87ed59245afe178be1f43609e24c824160,
+  .original_coefficient_position = original_coefficient_position_form_2890a6649017e12f682862ffb3f33fde27f0d572,
 
-  .coefficient_name_map = coefficient_name_form_06085c87ed59245afe178be1f43609e24c824160,
-  .constant_name_map = constant_name_form_06085c87ed59245afe178be1f43609e24c824160,
+  .coefficient_name_map = coefficient_name_form_2890a6649017e12f682862ffb3f33fde27f0d572,
+  .constant_name_map = constant_name_form_2890a6649017e12f682862ffb3f33fde27f0d572,
 
-  .finite_elements = finite_elements_form_06085c87ed59245afe178be1f43609e24c824160,
-  .dofmaps = dofmaps_form_06085c87ed59245afe178be1f43609e24c824160,
+  .finite_elements = finite_elements_form_2890a6649017e12f682862ffb3f33fde27f0d572,
+  .dofmaps = dofmaps_form_2890a6649017e12f682862ffb3f33fde27f0d572,
 
-  .integral_ids = integral_ids_form_06085c87ed59245afe178be1f43609e24c824160,
-  .num_integrals = num_integrals_form_06085c87ed59245afe178be1f43609e24c824160,
+  .integral_ids = integral_ids_form_2890a6649017e12f682862ffb3f33fde27f0d572,
+  .num_integrals = num_integrals_form_2890a6649017e12f682862ffb3f33fde27f0d572,
 
-  .integrals = integrals_form_06085c87ed59245afe178be1f43609e24c824160
+  .integrals = integrals_form_2890a6649017e12f682862ffb3f33fde27f0d572
 };
 
 // Alias name
-ufcx_form* form_SaintVenantKirchhoff_Hexa_Order2_F = &form_06085c87ed59245afe178be1f43609e24c824160;
+ufcx_form* form_SaintVenantKirchhoff_Hexa_Order2_F = &form_2890a6649017e12f682862ffb3f33fde27f0d572;
 
 ufcx_function_space* functionspace_form_SaintVenantKirchhoff_Hexa_Order2_F(const char* function_name)
 {
@@ -4014,41 +4291,41 @@ return NULL;
 
 }
 
-// End of code for form form_06085c87ed59245afe178be1f43609e24c824160
+// End of code for form form_2890a6649017e12f682862ffb3f33fde27f0d572
 
-// Code for form form_1e6b76bd4d62646886b35e5479790c77757f1665
+// Code for form form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0
 
-int original_coefficient_position_form_1e6b76bd4d62646886b35e5479790c77757f1665[1] = { 0 };
-ufcx_dofmap* dofmaps_form_1e6b76bd4d62646886b35e5479790c77757f1665[3] = { &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
-ufcx_finite_element* finite_elements_form_1e6b76bd4d62646886b35e5479790c77757f1665[3] = { &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
+int original_coefficient_position_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0[1] = { 0 };
+ufcx_dofmap* dofmaps_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0[3] = { &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
+ufcx_finite_element* finite_elements_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0[3] = { &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a, &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
 
 // Return a list of the coefficient names.
-const char** coefficient_name_form_1e6b76bd4d62646886b35e5479790c77757f1665(void)
+const char** coefficient_name_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0(void)
 {
 static const char* names[1] = { "u" };
 return names;
 }
 
 // Return a list of the constant names.
-const char** constant_name_form_1e6b76bd4d62646886b35e5479790c77757f1665(void)
+const char** constant_name_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0(void)
 {
 static const char* names[2] = { "young", "poisson" };
 return names;
 }
 
-int* integral_ids_form_1e6b76bd4d62646886b35e5479790c77757f1665(ufcx_integral_type integral_type)
+int* integral_ids_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0(ufcx_integral_type integral_type)
 {
-static int integral_ids_cell_form_1e6b76bd4d62646886b35e5479790c77757f1665[1] = { -1 };
+static int integral_ids_cell_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0[1] = { -1 };
 switch (integral_type)
 {
 case cell:
-  return integral_ids_cell_form_1e6b76bd4d62646886b35e5479790c77757f1665;
+  return integral_ids_cell_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0;
 default:
   return NULL;
 }
 }
 
-int num_integrals_form_1e6b76bd4d62646886b35e5479790c77757f1665(ufcx_integral_type integral_type)
+int num_integrals_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0(ufcx_integral_type integral_type)
 {
 switch (integral_type)
 {
@@ -4063,41 +4340,41 @@ default:
 }
 }
 
-ufcx_integral** integrals_form_1e6b76bd4d62646886b35e5479790c77757f1665(ufcx_integral_type integral_type)
+ufcx_integral** integrals_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0(ufcx_integral_type integral_type)
 {
-static ufcx_integral* integrals_cell_form_1e6b76bd4d62646886b35e5479790c77757f1665[1] = { &integral_e5c8b9cbba452d7569cd1a9c20d0ae69c391d377 };
+static ufcx_integral* integrals_cell_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0[1] = { &integral_56752cb3a7429362d5d9b05e2be1ebca857469fa };
 switch (integral_type)
 {
 case cell:
-  return integrals_cell_form_1e6b76bd4d62646886b35e5479790c77757f1665;
+  return integrals_cell_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0;
 default:
   return NULL;
 }
 }
 
-ufcx_form form_1e6b76bd4d62646886b35e5479790c77757f1665 =
+ufcx_form form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0 =
 {
 
-  .signature = "1066cf7f5b7d73257b613792a322bbfbe1cdd42137f3c29a895a0f495d576aeb2b76aa41033d70b027d3fe50dc8bef66539f219f0c5e3b87bf604f559b61dfc4",
+  .signature = "6a914f27296d380bb52a4131133112152f44dbadb71adcdffefef8d49595fc38fb3227e97b30814b967c6a5ba7245ba915fd682f5f1c9fe898509553d0de792b",
   .rank = 2,
   .num_coefficients = 1,
   .num_constants = 2,
-  .original_coefficient_position = original_coefficient_position_form_1e6b76bd4d62646886b35e5479790c77757f1665,
+  .original_coefficient_position = original_coefficient_position_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0,
 
-  .coefficient_name_map = coefficient_name_form_1e6b76bd4d62646886b35e5479790c77757f1665,
-  .constant_name_map = constant_name_form_1e6b76bd4d62646886b35e5479790c77757f1665,
+  .coefficient_name_map = coefficient_name_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0,
+  .constant_name_map = constant_name_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0,
 
-  .finite_elements = finite_elements_form_1e6b76bd4d62646886b35e5479790c77757f1665,
-  .dofmaps = dofmaps_form_1e6b76bd4d62646886b35e5479790c77757f1665,
+  .finite_elements = finite_elements_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0,
+  .dofmaps = dofmaps_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0,
 
-  .integral_ids = integral_ids_form_1e6b76bd4d62646886b35e5479790c77757f1665,
-  .num_integrals = num_integrals_form_1e6b76bd4d62646886b35e5479790c77757f1665,
+  .integral_ids = integral_ids_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0,
+  .num_integrals = num_integrals_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0,
 
-  .integrals = integrals_form_1e6b76bd4d62646886b35e5479790c77757f1665
+  .integrals = integrals_form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0
 };
 
 // Alias name
-ufcx_form* form_SaintVenantKirchhoff_Hexa_Order2_J = &form_1e6b76bd4d62646886b35e5479790c77757f1665;
+ufcx_form* form_SaintVenantKirchhoff_Hexa_Order2_J = &form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0;
 
 ufcx_function_space* functionspace_form_SaintVenantKirchhoff_Hexa_Order2_J(const char* function_name)
 {
@@ -4138,4 +4415,106 @@ return NULL;
 
 }
 
-// End of code for form form_1e6b76bd4d62646886b35e5479790c77757f1665
+// End of code for form form_5f81596a3c83aec098f617beecbd37fb3c0ea4a0
+
+// Code for form form_18094c3d32600a9ed8ee332cc68c083d473d201e
+
+int original_coefficient_position_form_18094c3d32600a9ed8ee332cc68c083d473d201e[1] = { 0 };
+ufcx_dofmap* dofmaps_form_18094c3d32600a9ed8ee332cc68c083d473d201e[1] = { &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
+ufcx_finite_element* finite_elements_form_18094c3d32600a9ed8ee332cc68c083d473d201e[1] = { &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a };
+
+// Return a list of the coefficient names.
+const char** coefficient_name_form_18094c3d32600a9ed8ee332cc68c083d473d201e(void)
+{
+static const char* names[1] = { "u" };
+return names;
+}
+
+// Return a list of the constant names.
+const char** constant_name_form_18094c3d32600a9ed8ee332cc68c083d473d201e(void)
+{
+static const char* names[2] = { "young", "poisson" };
+return names;
+}
+
+int* integral_ids_form_18094c3d32600a9ed8ee332cc68c083d473d201e(ufcx_integral_type integral_type)
+{
+static int integral_ids_cell_form_18094c3d32600a9ed8ee332cc68c083d473d201e[1] = { -1 };
+switch (integral_type)
+{
+case cell:
+  return integral_ids_cell_form_18094c3d32600a9ed8ee332cc68c083d473d201e;
+default:
+  return NULL;
+}
+}
+
+int num_integrals_form_18094c3d32600a9ed8ee332cc68c083d473d201e(ufcx_integral_type integral_type)
+{
+switch (integral_type)
+{
+case cell:
+  return 1;
+case interior_facet:
+  return 0;
+case exterior_facet:
+  return 0;
+default:
+  return 0;
+}
+}
+
+ufcx_integral** integrals_form_18094c3d32600a9ed8ee332cc68c083d473d201e(ufcx_integral_type integral_type)
+{
+static ufcx_integral* integrals_cell_form_18094c3d32600a9ed8ee332cc68c083d473d201e[1] = { &integral_794d5e6dc195c06d55c8d153d06632822ee878fd };
+switch (integral_type)
+{
+case cell:
+  return integrals_cell_form_18094c3d32600a9ed8ee332cc68c083d473d201e;
+default:
+  return NULL;
+}
+}
+
+ufcx_form form_18094c3d32600a9ed8ee332cc68c083d473d201e =
+{
+
+  .signature = "d5ac650529830f5a2ec51e4a8baddc154151d549c9ba2c7691855777734586746d7a9ae90c3982755f6e55788b56ac5593b14463fc18932f739d290aeb551cff",
+  .rank = 0,
+  .num_coefficients = 1,
+  .num_constants = 2,
+  .original_coefficient_position = original_coefficient_position_form_18094c3d32600a9ed8ee332cc68c083d473d201e,
+
+  .coefficient_name_map = coefficient_name_form_18094c3d32600a9ed8ee332cc68c083d473d201e,
+  .constant_name_map = constant_name_form_18094c3d32600a9ed8ee332cc68c083d473d201e,
+
+  .finite_elements = finite_elements_form_18094c3d32600a9ed8ee332cc68c083d473d201e,
+  .dofmaps = dofmaps_form_18094c3d32600a9ed8ee332cc68c083d473d201e,
+
+  .integral_ids = integral_ids_form_18094c3d32600a9ed8ee332cc68c083d473d201e,
+  .num_integrals = num_integrals_form_18094c3d32600a9ed8ee332cc68c083d473d201e,
+
+  .integrals = integrals_form_18094c3d32600a9ed8ee332cc68c083d473d201e
+};
+
+// Alias name
+ufcx_form* form_SaintVenantKirchhoff_Hexa_Order2_Pi = &form_18094c3d32600a9ed8ee332cc68c083d473d201e;
+
+ufcx_function_space* functionspace_form_SaintVenantKirchhoff_Hexa_Order2_Pi(const char* function_name)
+{
+static ufcx_function_space functionspace_u =
+{
+.finite_element = &element_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a,
+.dofmap = &dofmap_a1b485ad5ddf2dbf17fa94e2ddf274e58414432a,
+.geometry_family = "Q",
+.geometry_degree = 1,
+.geometry_basix_cell = 5,
+.geometry_basix_variant = 0
+};
+if (strcmp(function_name, "u") == 0)
+  return &functionspace_u;
+return NULL;
+
+}
+
+// End of code for form form_18094c3d32600a9ed8ee332cc68c083d473d201e
