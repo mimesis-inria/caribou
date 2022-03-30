@@ -6,13 +6,8 @@
 namespace SofaCaribou::forcefield {
 
 // Hexahedron linear specialization
-template <> auto CaribouForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::templateName(const CaribouForcefield<caribou::geometry::Hexahedron < caribou::Linear>> *) -> std::string;
-template <> void CaribouForcefield<caribou::geometry::Hexahedron < caribou::Linear>>::triangulate_face(const caribou::geometry::Hexahedron < caribou::Linear> & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes);
-extern template class CaribouForcefield<caribou::geometry::Hexahedron < caribou::Linear>>;
-
-// Hexahedron quadratic specialization
-template <> auto CaribouForcefield<caribou::geometry::Hexahedron < caribou::Quadratic>>::templateName(const CaribouForcefield<caribou::geometry::Hexahedron < caribou::Quadratic>> *) -> std::string;
-template <> void CaribouForcefield<caribou::geometry::Hexahedron < caribou::Quadratic>>::triangulate_face(const caribou::geometry::Hexahedron < caribou::Quadratic> & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes);
-extern template class CaribouForcefield<caribou::geometry::Hexahedron < caribou::Quadratic>>;
+template <> auto CaribouForcefield<caribou::geometry::Hexahedron>::templateName(const CaribouForcefield<caribou::geometry::Hexahedron> *) -> std::string;
+template <> void CaribouForcefield<caribou::geometry::Hexahedron>::triangulate_face(const caribou::geometry::Hexahedron & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes);
+extern template class CaribouForcefield<caribou::geometry::Hexahedron>;
 
 }

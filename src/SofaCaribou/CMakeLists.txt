@@ -9,17 +9,25 @@ set(HEADER_FILES
     Algebra/EigenVector.h
     Forcefield/CaribouForcefield.h
     Forcefield/CaribouForcefield[Hexahedron].h
+    Forcefield/CaribouForcefield[Hexahedron20].h
     Forcefield/CaribouForcefield[Quad].h
+    Forcefield/CaribouForcefield[Quad8].h
     Forcefield/CaribouForcefield[Tetrahedron].h
+    Forcefield/CaribouForcefield[Tetrahedron10].h
     Forcefield/CaribouForcefield[Triangle].h
+    Forcefield/CaribouForcefield[Triangle6].h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
     Forcefield/HyperelasticForcefield[Hexahedron].h
+    Forcefield/HyperelasticForcefield[Hexahedron20].h
     Forcefield/HyperelasticForcefield[Tetrahedron].h
+    Forcefield/HyperelasticForcefield[Tetrahedron10].h
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForcefield.h
     Forcefield/TractionForcefield[Quad].h
+    Forcefield/TractionForcefield[Quad8].h
     Forcefield/TractionForcefield[Triangle].h
+    Forcefield/TractionForcefield[Triangle6].h
     Mapping/CaribouBarycentricMapping.h
     Mapping/CaribouBarycentricMapping[Hexahedron].h
     Mapping/CaribouBarycentricMapping[Tetrahedron].h
@@ -76,15 +84,23 @@ set(TEMPLATE_FILES
 set(SOURCE_FILES
     Algebra/BaseVectorOperations.cpp
     Forcefield/CaribouForcefield[Hexahedron].cpp
+    Forcefield/CaribouForcefield[Hexahedron20].cpp
     Forcefield/CaribouForcefield[Quad].cpp
+    Forcefield/CaribouForcefield[Quad8].cpp
     Forcefield/CaribouForcefield[Tetrahedron].cpp
+    Forcefield/CaribouForcefield[Tetrahedron10].cpp
     Forcefield/CaribouForcefield[Triangle].cpp
+    Forcefield/CaribouForcefield[Triangle6].cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield[Hexahedron].cpp
+    Forcefield/HyperelasticForcefield[Hexahedron20].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
+    Forcefield/HyperelasticForcefield[Tetrahedron10].cpp
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
+    Forcefield/TractionForcefield[Quad8].cpp
     Forcefield/TractionForcefield[Triangle].cpp
+    Forcefield/TractionForcefield[Triangle6].cpp
     Mapping/CaribouBarycentricMapping[Hexahedron].cpp
     Mapping/CaribouBarycentricMapping[Tetrahedron].cpp
     Mass/CaribouMass[Tetrahedron].cpp

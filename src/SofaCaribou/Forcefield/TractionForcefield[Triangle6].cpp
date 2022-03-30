@@ -1,4 +1,4 @@
-#include <SofaCaribou/Forcefield/TractionForcefield[Triangle].h>
+#include <SofaCaribou/Forcefield/TractionForcefield[Triangle6].h>
 #include <SofaCaribou/Forcefield/TractionForcefield.inl>
 
 DISABLE_ALL_WARNINGS_BEGIN
@@ -11,13 +11,14 @@ using namespace caribou;
 
 namespace SofaCaribou::forcefield {
 
-// --------------------------------
-// Triangle linear specialization
-// --------------------------------
+// -----------------------------------
+// Quad quadratic specialization
+// -----------------------------------
 
 // This will force the compiler to compile the following templated class
-template class TractionForcefield<Triangle<_2D>>;
-template class TractionForcefield<Triangle<_3D>>;
+template class TractionForcefield<Triangle6<_2D>>;
+template class TractionForcefield<Triangle6<_3D>>;
+
 
 } // namespace SofaCaribou::forcefield
 
@@ -26,6 +27,6 @@ using namespace SofaCaribou::forcefield;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou traction force field")
-        .add<TractionForcefield<Triangle<_2D>>>()
-        .add<TractionForcefield<Triangle<_3D>>>();
+        .add<TractionForcefield<Triangle6<_2D>>>()
+        .add<TractionForcefield<Triangle6<_3D>>>();
 }
