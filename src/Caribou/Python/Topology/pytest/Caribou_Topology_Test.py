@@ -18,9 +18,7 @@ from Caribou.Geometry import Triangle, Triangle6
 from Caribou.Geometry import Tetrahedron, Tetrahedron10
 from Caribou.Geometry import Hexahedron, Hexahedron20
 
-meshfolder = os.path.dirname(__file__), '..', 'meshes'
-meshfolder = "/Users/jnbrunet/sources/caribou/unittest/Caribou/Topology/meshes"
-
+meshfolder = os.path.join(os.path.dirname(__file__), '..', 'meshes')
 
 class TestMesh(unittest.TestCase):
 
