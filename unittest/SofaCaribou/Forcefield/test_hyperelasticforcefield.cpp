@@ -57,7 +57,7 @@ TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
 
     // Mechanics
     createObject(meca, "SaintVenantKirchhoffMaterial", {{"young_modulus", "3000"}, {"poisson_ratio", "0.499"}});
-    auto ff = dynamic_cast<SofaCaribou::forcefield::HyperelasticForcefield<caribou::geometry::Hexahedron<caribou::Linear>> *> (
+    auto ff = dynamic_cast<SofaCaribou::forcefield::HyperelasticForcefield<caribou::geometry::Hexahedron> *> (
         createObject(meca, "HyperelasticForcefield").get()
     );
 

@@ -15,9 +15,13 @@ DISABLE_ALL_WARNINGS_BEGIN
 DISABLE_ALL_WARNINGS_BEGIN
 
 #include <SofaCaribou/Topology/CaribouTopology[Quad].h>
+#include <SofaCaribou/Topology/CaribouTopology[Quad8].h>
 #include <SofaCaribou/Topology/CaribouTopology[Tetrahedron].h>
+#include <SofaCaribou/Topology/CaribouTopology[Tetrahedron10].h>
 #include <SofaCaribou/Topology/CaribouTopology[Triangle].h>
+#include <SofaCaribou/Topology/CaribouTopology[Triangle6].h>
 #include <SofaCaribou/Topology/CaribouTopology[Hexahedron].h>
+#include <SofaCaribou/Topology/CaribouTopology[Hexahedron20].h>
 #include <Caribou/Topology/Mesh.h>
 #include <Caribou/Topology/IO/VTKReader.h>
 
@@ -44,7 +48,7 @@ TEST(CaribouTopology, QuadLinear2DAttachDomain) {
     using PointID  = sofa::core::topology::Topology::PointID;
 
     using Mesh = io::VTKReader<_2D, PointID>::MeshType;
-    using Domain = Mesh::Domain<Quad<_2D, Linear>, PointID>;
+    using Domain = Mesh::Domain<Quad<_2D>, PointID>;
     auto reader = io::VTKReader<_2D, PointID>::Read(executable_directory_path + "/meshes/2D_quad_linear.vtk");
 
     auto mesh = reader.mesh();
@@ -62,7 +66,7 @@ TEST(CaribouTopology, QuadLinear2DAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_2D, Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_2D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Quad_2D"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -96,7 +100,7 @@ TEST(CaribouTopology, QuadLinear2DFromIndices) {
 
     using Mesh = io::VTKReader<_2D, PointID>::MeshType;
     auto reader = io::VTKReader<_2D, PointID>::Read(executable_directory_path + "/meshes/2D_quad_linear.vtk");
-    using Domain = Mesh::Domain<Quad<_2D, Linear>, PointID>;
+    using Domain = Mesh::Domain<Quad<_2D>, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 25);
@@ -124,7 +128,7 @@ TEST(CaribouTopology, QuadLinear2DFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_2D, Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_2D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Quad_2D"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -171,7 +175,7 @@ TEST(CaribouTopology, QuadQuadratic2DAttachDomain) {
     using PointID  = sofa::core::topology::Topology::PointID;
 
     using Mesh = io::VTKReader<_2D, PointID>::MeshType;
-    using Domain = Mesh::Domain<Quad<_2D, Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Quad8<_2D>, PointID>;
     auto reader = io::VTKReader<_2D, PointID>::Read(executable_directory_path + "/meshes/2D_quad_quadratic.vtk");
 
     auto mesh = reader.mesh();
@@ -189,7 +193,7 @@ TEST(CaribouTopology, QuadQuadratic2DAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_2D, Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad8<_2D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Quad8_2D"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -223,7 +227,7 @@ TEST(CaribouTopology, QuadQuadratic2DFromIndices) {
 
     using Mesh = io::VTKReader<_2D, PointID>::MeshType;
     auto reader = io::VTKReader<_2D, PointID>::Read(executable_directory_path + "/meshes/2D_quad_quadratic.vtk");
-    using Domain = Mesh::Domain<Quad<_2D, Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Quad8<_2D>, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 65);
@@ -251,7 +255,7 @@ TEST(CaribouTopology, QuadQuadratic2DFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_2D, Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad8<_2D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Quad8_2D"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -298,7 +302,7 @@ TEST(CaribouTopology, QuadLinear3DAttachDomain) {
     using PointID  = sofa::core::topology::Topology::PointID;
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
-    using Domain = Mesh::Domain<Quad<_3D, Linear>, PointID>;
+    using Domain = Mesh::Domain<Quad<_3D>, PointID>;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_quad_linear.vtk");
 
     auto mesh = reader.mesh();
@@ -316,7 +320,7 @@ TEST(CaribouTopology, QuadLinear3DAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_3D, Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_3D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Quad"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -350,7 +354,7 @@ TEST(CaribouTopology, QuadLinear3DFromIndices) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_quad_linear.vtk");
-    using Domain = Mesh::Domain<Quad<_3D, Linear>, PointID>;
+    using Domain = Mesh::Domain<Quad<_3D>, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 25);
@@ -378,7 +382,7 @@ TEST(CaribouTopology, QuadLinear3DFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_3D, Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_3D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Quad"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -426,7 +430,7 @@ TEST(CaribouTopology, QuadQuadratic3DAttachDomain) {
     using PointID  = sofa::core::topology::Topology::PointID;
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
-    using Domain = Mesh::Domain<Quad<_3D, Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Quad8<_3D>, PointID>;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_quad_quadratic.vtk");
 
     auto mesh = reader.mesh();
@@ -444,7 +448,7 @@ TEST(CaribouTopology, QuadQuadratic3DAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_3D, Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad8<_3D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Quad8"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -478,7 +482,7 @@ TEST(CaribouTopology, QuadQuadratic3DFromIndices) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_quad_quadratic.vtk");
-    using Domain = Mesh::Domain<Quad<_3D, Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Quad8<_3D>, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 65);
@@ -506,7 +510,7 @@ TEST(CaribouTopology, QuadQuadratic3DFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad<_3D, Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Quad8<_3D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Quad8"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -554,7 +558,7 @@ TEST(CaribouTopology, TriangleLinear2DAttachDomain) {
     using PointID  = sofa::core::topology::Topology::PointID;
 
     using Mesh = io::VTKReader<_2D, PointID>::MeshType;
-    using Domain = Mesh::Domain<Triangle<_2D, Linear>, PointID>;
+    using Domain = Mesh::Domain<Triangle<_2D>, PointID>;
     auto reader = io::VTKReader<_2D, PointID>::Read(executable_directory_path + "/meshes/2D_triangle_linear.vtk");
 
     auto mesh = reader.mesh();
@@ -572,7 +576,7 @@ TEST(CaribouTopology, TriangleLinear2DAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_2D, Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_2D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Triangle_2D"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -606,7 +610,7 @@ TEST(CaribouTopology, TriangleLinear2DFromIndices) {
 
     using Mesh = io::VTKReader<_2D, PointID>::MeshType;
     auto reader = io::VTKReader<_2D, PointID>::Read(executable_directory_path + "/meshes/2D_triangle_linear.vtk");
-    using Domain = Mesh::Domain<Triangle<_2D, Linear>, PointID>;
+    using Domain = Mesh::Domain<Triangle<_2D>, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 25);
@@ -634,7 +638,7 @@ TEST(CaribouTopology, TriangleLinear2DFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_2D, Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_2D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Triangle_2D"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -681,7 +685,7 @@ TEST(CaribouTopology, TriangleQuadratic2DAttachDomain) {
     using PointID  = sofa::core::topology::Topology::PointID;
 
     using Mesh = io::VTKReader<_2D, PointID>::MeshType;
-    using Domain = Mesh::Domain<Triangle<_2D, Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Triangle6<_2D>, PointID>;
     auto reader = io::VTKReader<_2D, PointID>::Read(executable_directory_path + "/meshes/2D_triangle_quadratic.vtk");
 
     auto mesh = reader.mesh();
@@ -699,7 +703,7 @@ TEST(CaribouTopology, TriangleQuadratic2DAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_2D, Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle6<_2D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Triangle6_2D"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -733,7 +737,7 @@ TEST(CaribouTopology, TriangleQuadratic2DFromIndices) {
 
     using Mesh = io::VTKReader<_2D, PointID>::MeshType;
     auto reader = io::VTKReader<_2D, PointID>::Read(executable_directory_path + "/meshes/2D_triangle_quadratic.vtk");
-    using Domain = Mesh::Domain<Triangle<_2D, Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Triangle6<_2D>, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 81);
@@ -761,7 +765,7 @@ TEST(CaribouTopology, TriangleQuadratic2DFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_2D, Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle6<_2D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Triangle6_2D"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -808,7 +812,7 @@ TEST(CaribouTopology, TriangleLinear3DAttachDomain) {
     using PointID  = sofa::core::topology::Topology::PointID;
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
-    using Domain = Mesh::Domain<Triangle<_3D, Linear>, PointID>;
+    using Domain = Mesh::Domain<Triangle<_3D>, PointID>;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_triangle_linear.vtk");
 
     auto mesh = reader.mesh();
@@ -826,7 +830,7 @@ TEST(CaribouTopology, TriangleLinear3DAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_3D, Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_3D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Triangle"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -860,7 +864,7 @@ TEST(CaribouTopology, TriangleLinear3DFromIndices) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_triangle_linear.vtk");
-    using Domain = Mesh::Domain<Triangle<_3D, Linear>, PointID>;
+    using Domain = Mesh::Domain<Triangle<_3D>, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 25);
@@ -888,7 +892,7 @@ TEST(CaribouTopology, TriangleLinear3DFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_3D, Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_3D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Triangle"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -936,7 +940,7 @@ TEST(CaribouTopology, TriangleQuadratic3DAttachDomain) {
     using PointID  = sofa::core::topology::Topology::PointID;
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
-    using Domain = Mesh::Domain<Triangle<_3D, Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Triangle6<_3D>, PointID>;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_triangle_quadratic.vtk");
 
     auto mesh = reader.mesh();
@@ -954,7 +958,7 @@ TEST(CaribouTopology, TriangleQuadratic3DAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_3D, Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle6<_3D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Triangle6"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -988,7 +992,7 @@ TEST(CaribouTopology, TriangleQuadratic3DFromIndices) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_triangle_quadratic.vtk");
-    using Domain = Mesh::Domain<Triangle<_3D, Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Triangle6<_3D>, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 81);
@@ -1016,7 +1020,7 @@ TEST(CaribouTopology, TriangleQuadratic3DFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle<_3D, Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Triangle6<_3D>> *> (
             createObject(root, "CaribouTopology", {{"template", "Triangle6"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -1065,7 +1069,7 @@ TEST(CaribouTopology, TetrahedronLinearAttachDomain) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_tetrahedron_linear.vtk");
-    using Domain = Mesh::Domain<Tetrahedron<Linear>, PointID>;
+    using Domain = Mesh::Domain<Tetrahedron, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 206);
@@ -1082,7 +1086,7 @@ TEST(CaribouTopology, TetrahedronLinearAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Tetrahedron<Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Tetrahedron> *> (
         createObject(root, "CaribouTopology", {{"template", "Tetrahedron"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -1116,7 +1120,7 @@ TEST(CaribouTopology, TetrahedronLinearFromIndices) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_tetrahedron_linear.vtk");
-    using Domain = Mesh::Domain<Tetrahedron<Linear>, PointID>;
+    using Domain = Mesh::Domain<Tetrahedron, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 206);
@@ -1144,7 +1148,7 @@ TEST(CaribouTopology, TetrahedronLinearFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Tetrahedron<Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Tetrahedron> *> (
             createObject(root, "CaribouTopology", {{"template", "Tetrahedron"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -1196,7 +1200,7 @@ TEST(CaribouTopology, TetrahedronQuadraticAttachDomain) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_tetrahedron_quadratic.vtk");
-    using Domain = Mesh::Domain<Tetrahedron<Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Tetrahedron10, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 1250);
@@ -1213,7 +1217,7 @@ TEST(CaribouTopology, TetrahedronQuadraticAttachDomain) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Tetrahedron<Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Tetrahedron10> *> (
             createObject(root, "CaribouTopology", {{"template", "Tetrahedron10"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -1247,7 +1251,7 @@ TEST(CaribouTopology, TetrahedronQuadraticFromIndices) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_tetrahedron_quadratic.vtk");
-    using Domain = Mesh::Domain<Tetrahedron<Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Tetrahedron10, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 1250);
@@ -1275,7 +1279,7 @@ TEST(CaribouTopology, TetrahedronQuadraticFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Tetrahedron<Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Tetrahedron10> *> (
             createObject(root, "CaribouTopology", {{"template", "Tetrahedron10"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -1327,7 +1331,7 @@ TEST(CaribouTopology, HexahedronLinearAttachDomain) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_hexahedron_linear.vtk");
-    using Domain = Mesh::Domain<Hexahedron<Linear>, PointID>;
+    using Domain = Mesh::Domain<Hexahedron, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 125);
@@ -1346,7 +1350,7 @@ TEST(CaribouTopology, HexahedronLinearAttachDomain) {
     createObject(root, "DefaultVisualManagerLoop");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron<Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron> *> (
             createObject(root, "CaribouTopology", {{"template", "Hexahedron"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -1380,7 +1384,7 @@ TEST(CaribouTopology, HexahedronLinearFromIndices) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_hexahedron_linear.vtk");
-    using Domain = Mesh::Domain<Hexahedron<Linear>, PointID>;
+    using Domain = Mesh::Domain<Hexahedron, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 125);
@@ -1410,7 +1414,7 @@ TEST(CaribouTopology, HexahedronLinearFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron<Linear>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron> *> (
             createObject(root, "CaribouTopology", {{"template", "Hexahedron"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -1460,7 +1464,7 @@ TEST(CaribouTopology, HexahedronQuadraticAttachDomain) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_hexahedron_quadratic.vtk");
-    using Domain = Mesh::Domain<Hexahedron<Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Hexahedron20, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 425);
@@ -1479,7 +1483,7 @@ TEST(CaribouTopology, HexahedronQuadraticAttachDomain) {
     createObject(root, "DefaultVisualManagerLoop");
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron<Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron20> *> (
             createObject(root, "CaribouTopology", {{"template", "Hexahedron20"}}).get()
     );
     EXPECT_NE(topo, nullptr);
@@ -1513,7 +1517,7 @@ TEST(CaribouTopology, HexahedronQuadraticFromIndices) {
 
     using Mesh = io::VTKReader<_3D, PointID>::MeshType;
     auto reader = io::VTKReader<_3D, PointID>::Read(executable_directory_path + "/meshes/3D_hexahedron_quadratic.vtk");
-    using Domain = Mesh::Domain<Hexahedron<Quadratic>, PointID>;
+    using Domain = Mesh::Domain<Hexahedron20, PointID>;
 
     auto mesh = reader.mesh();
     EXPECT_EQ(mesh.number_of_nodes(), 425);
@@ -1543,7 +1547,7 @@ TEST(CaribouTopology, HexahedronQuadraticFromIndices) {
     }
 
     // Add the CaribouTopology component
-    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron<Quadratic>> *> (
+    auto topo = dynamic_cast<SofaCaribou::topology::CaribouTopology<Hexahedron20> *> (
             createObject(root, "CaribouTopology", {{"template", "Hexahedron20"}}).get()
     );
     EXPECT_NE(topo, nullptr);

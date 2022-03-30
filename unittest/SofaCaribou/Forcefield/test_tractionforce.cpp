@@ -46,7 +46,7 @@ TEST_F(TractionForcefield, Triangle) {
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "MechanicalObject", {{"position", "-1 0 1  1 0 1  -1 0 -1  1 0 -1  0 0 1  0 0 -1  -1 0 0  1 0 0  0 0 0"}});
     createObject(root, "TriangleSetTopologyContainer", {{"triangles", "7 5 8  8 2 6  4 6 0  1 8 4  7 3 5  8 5 2  4 8 6  1 7 8"}});
-    auto traction = dynamic_cast<const SofaCaribou::forcefield::TractionForcefield<Triangle<_3D, Linear>> *>(
+    auto traction = dynamic_cast<const SofaCaribou::forcefield::TractionForcefield<Triangle<_3D>> *>(
         createObject(root, "TractionForcefield", {{"traction", "0 5 0"}, {"slope", std::to_string(1/5.)}}).get()
     );
 

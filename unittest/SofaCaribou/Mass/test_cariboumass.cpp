@@ -60,7 +60,7 @@ TEST(CaribouMass, LinearTetrahedron) {
     createObject(root, "TetrahedronSetTopologyModifier");
     createObject(root, "TetrahedronSetGeometryAlgorithms");
     createObject(root, "Hexa2TetraTopologicalMapping", {{"input", "@grid"}, {"output", "@topology"}});
-    auto caribou_mass = dynamic_cast<CaribouMass<Tetrahedron<Linear>> *> (
+    auto caribou_mass = dynamic_cast<CaribouMass<Tetrahedron> *> (
         createObject(root, "CaribouMass", {{"name", "caribou_mass"}, {"topology", "@topology"}, {"density", "2"}}).get()
     );
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 220600)
@@ -129,9 +129,9 @@ TEST(CaribouMass, LinearTetrahedron) {
     EXPECT_DOUBLE_EQ(M_diag.diagonal().sum(), SofaM_diagonal.matrix().sum());
 
     // AddForce
-    using Real = CaribouMass<Tetrahedron<Linear>>::Real;
-    using VecDeriv = CaribouMass<Tetrahedron<Linear>>::VecDeriv;
-    using DataVecDeriv = CaribouMass<Tetrahedron<Linear>>::DataVecDeriv;
+    using Real = CaribouMass<Tetrahedron>::Real;
+    using VecDeriv = CaribouMass<Tetrahedron>::VecDeriv;
+    using DataVecDeriv = CaribouMass<Tetrahedron>::DataVecDeriv;
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
     DataVecDeriv d_f_caribou (VecDeriv(static_cast<int>(mo->getSize()), {0, 0, 0}));
     DataVecDeriv d_f_caribou_dia (VecDeriv(static_cast<int>(mo->getSize()), {0, 0, 0}));
@@ -186,7 +186,7 @@ TEST(CaribouMass, LinearHexahedron) {
     );
     createObject(root, "HexahedronSetTopologyContainer", {{"name", "topology"}, {"src", "@grid"}});
     createObject(root, "HexahedronSetGeometryAlgorithms");
-    auto caribou_mass = dynamic_cast<const CaribouMass<Hexahedron<Linear>> *> (
+    auto caribou_mass = dynamic_cast<const CaribouMass<Hexahedron> *> (
             createObject(root, "CaribouMass", {{"name", "caribou_mass"}, {"topology", "@topology"}, {"density", "2"}}).get()
     );
 
