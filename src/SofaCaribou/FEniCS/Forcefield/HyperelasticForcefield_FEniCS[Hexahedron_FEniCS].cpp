@@ -1,4 +1,4 @@
-#include <SofaCaribou/FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron].h>
+#include <SofaCaribou/FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS].h>
 #include <SofaCaribou/FEniCS/Forcefield/HyperelasticForcefield_FEniCS.inl>
 
 DISABLE_ALL_WARNINGS_BEGIN
@@ -12,18 +12,18 @@ using namespace caribou;
 namespace SofaCaribou::forcefield {
 
 // --------------------------------
-// Hexahedron linear specialization
+// Hexahedron_FEniCS linear specialization
 // --------------------------------
 
 // This will force the compiler to compile the following templated class
-template class HyperelasticForcefield_FEniCS<Hexahedron < Linear>>;
+template class HyperelasticForcefield_FEniCS<Hexahedron_FEniCS < Linear>>;
 
 // -----------------------------------
-// Hexahedron quadratic specialization
+// Hexahedron_FEniCS quadratic specialization
 // -----------------------------------
 
 // This will force the compiler to compile the following templated class
-template class HyperelasticForcefield_FEniCS<Hexahedron < Quadratic>>;
+template class HyperelasticForcefield_FEniCS<Hexahedron_FEniCS < Quadratic>>;
 
 } // namespace SofaCaribou::forcefield
 
@@ -32,6 +32,6 @@ using namespace SofaCaribou::forcefield;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou hyperelastic force field")
-    .add<HyperelasticForcefield_FEniCS<Hexahedron<Linear>>>()
-    .add<HyperelasticForcefield_FEniCS<Hexahedron<Quadratic>>>();
+    .add<HyperelasticForcefield_FEniCS<Hexahedron_FEniCS<Linear>>>()
+    .add<HyperelasticForcefield_FEniCS<Hexahedron_FEniCS<Quadratic>>>();
 }

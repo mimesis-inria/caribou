@@ -10,6 +10,7 @@ set(HEADER_FILES
     BaseTriangle.h
     Element.h
     Hexahedron.h
+    Hexahedron_FEniCS.h
     Quad.h
     RectangularHexahedron.h
     RectangularQuad.h
