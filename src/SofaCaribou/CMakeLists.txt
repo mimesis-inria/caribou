@@ -30,7 +30,9 @@ set(HEADER_FILES
     Forcefield/TractionForcefield[Triangle6].h
     Mapping/CaribouBarycentricMapping.h
     Mapping/CaribouBarycentricMapping[Hexahedron].h
+    Mapping/CaribouBarycentricMapping[Hexahedron20].h
     Mapping/CaribouBarycentricMapping[Tetrahedron].h
+    Mapping/CaribouBarycentricMapping[Tetrahedron10].h
     Mass/CaribouMass.h
     Mass/CaribouMass[Tetrahedron].h
     Mass/CaribouMass[Hexahedron].h
@@ -102,7 +104,9 @@ set(SOURCE_FILES
     Forcefield/TractionForcefield[Triangle].cpp
     Forcefield/TractionForcefield[Triangle6].cpp
     Mapping/CaribouBarycentricMapping[Hexahedron].cpp
+    Mapping/CaribouBarycentricMapping[Hexahedron20].cpp
     Mapping/CaribouBarycentricMapping[Tetrahedron].cpp
+    Mapping/CaribouBarycentricMapping[Tetrahedron10].cpp
     Mass/CaribouMass[Tetrahedron].cpp
     Mass/CaribouMass[Hexahedron].cpp
     Material/HyperelasticMaterial.cpp

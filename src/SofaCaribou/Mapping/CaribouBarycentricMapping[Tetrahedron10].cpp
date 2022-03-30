@@ -1,5 +1,5 @@
 #include <SofaCaribou/Mapping/CaribouBarycentricMapping.inl>
-#include <SofaCaribou/Mapping/CaribouBarycentricMapping[Tetrahedron].h>
+#include <SofaCaribou/Mapping/CaribouBarycentricMapping[Tetrahedron10].h>
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
@@ -11,12 +11,12 @@ using namespace caribou;
 
 namespace SofaCaribou::mapping {
 
-// ---------------------------------
-// Tetrahedron linear specialization
-// ---------------------------------
+// -----------------------------------
+// Tetrahedron quadratic specialization
+// -----------------------------------
 
 // This will force the compiler to compile the following templated class
-template class CaribouBarycentricMapping<caribou::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
+template class CaribouBarycentricMapping<caribou::geometry::Tetrahedron10, sofa::defaulttype::Vec3Types>;
 
 } // namespace SofaCaribou::mapping
 
@@ -25,5 +25,5 @@ using namespace SofaCaribou::mapping;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou barycentric mapping")
-.add<CaribouBarycentricMapping<Tetrahedron, sofa::defaulttype::Vec3Types>>();
+.add<CaribouBarycentricMapping<Tetrahedron10, sofa::defaulttype::Vec3Types>>();
 }
