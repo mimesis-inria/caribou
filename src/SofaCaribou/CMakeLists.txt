@@ -9,23 +9,35 @@ set(HEADER_FILES
     Algebra/EigenVector.h
     Forcefield/CaribouForcefield.h
     Forcefield/CaribouForcefield[Hexahedron].h
+    Forcefield/CaribouForcefield[Hexahedron20].h
     Forcefield/CaribouForcefield[Quad].h
+    Forcefield/CaribouForcefield[Quad8].h
     Forcefield/CaribouForcefield[Tetrahedron].h
+    Forcefield/CaribouForcefield[Tetrahedron10].h
     Forcefield/CaribouForcefield[Triangle].h
+    Forcefield/CaribouForcefield[Triangle6].h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
     Forcefield/HyperelasticForcefield[Hexahedron].h
+    Forcefield/HyperelasticForcefield[Hexahedron20].h
     Forcefield/HyperelasticForcefield[Tetrahedron].h
+    Forcefield/HyperelasticForcefield[Tetrahedron10].h
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForcefield.h
     Forcefield/TractionForcefield[Quad].h
+    Forcefield/TractionForcefield[Quad8].h
     Forcefield/TractionForcefield[Triangle].h
+    Forcefield/TractionForcefield[Triangle6].h
     Mapping/CaribouBarycentricMapping.h
     Mapping/CaribouBarycentricMapping[Hexahedron].h
+    Mapping/CaribouBarycentricMapping[Hexahedron20].h
     Mapping/CaribouBarycentricMapping[Tetrahedron].h
+    Mapping/CaribouBarycentricMapping[Tetrahedron10].h
     Mass/CaribouMass.h
     Mass/CaribouMass[Tetrahedron].h
+    Mass/CaribouMass[Tetrahedron10].h
     Mass/CaribouMass[Hexahedron].h
+    Mass/CaribouMass[Hexahedron20].h
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
@@ -41,9 +53,13 @@ set(HEADER_FILES
     Solver/LUSolver.h
     Topology/CaribouTopology.h
     Topology/CaribouTopology[Hexahedron].h
+    Topology/CaribouTopology[Hexahedron20].h
     Topology/CaribouTopology[Quad].h
+    Topology/CaribouTopology[Quad8].h
     Topology/CaribouTopology[Tetrahedron].h
+    Topology/CaribouTopology[Tetrahedron10].h
     Topology/CaribouTopology[Triangle].h
+    Topology/CaribouTopology[Triangle6].h
     Topology/CircleIsoSurface.h
     Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
@@ -72,19 +88,31 @@ set(TEMPLATE_FILES
 set(SOURCE_FILES
     Algebra/BaseVectorOperations.cpp
     Forcefield/CaribouForcefield[Hexahedron].cpp
+    Forcefield/CaribouForcefield[Hexahedron20].cpp
     Forcefield/CaribouForcefield[Quad].cpp
+    Forcefield/CaribouForcefield[Quad8].cpp
     Forcefield/CaribouForcefield[Tetrahedron].cpp
+    Forcefield/CaribouForcefield[Tetrahedron10].cpp
     Forcefield/CaribouForcefield[Triangle].cpp
+    Forcefield/CaribouForcefield[Triangle6].cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield[Hexahedron].cpp
+    Forcefield/HyperelasticForcefield[Hexahedron20].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
+    Forcefield/HyperelasticForcefield[Tetrahedron10].cpp
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
+    Forcefield/TractionForcefield[Quad8].cpp
     Forcefield/TractionForcefield[Triangle].cpp
+    Forcefield/TractionForcefield[Triangle6].cpp
     Mapping/CaribouBarycentricMapping[Hexahedron].cpp
+    Mapping/CaribouBarycentricMapping[Hexahedron20].cpp
     Mapping/CaribouBarycentricMapping[Tetrahedron].cpp
+    Mapping/CaribouBarycentricMapping[Tetrahedron10].cpp
     Mass/CaribouMass[Tetrahedron].cpp
+    Mass/CaribouMass[Tetrahedron10].cpp
     Mass/CaribouMass[Hexahedron].cpp
+    Mass/CaribouMass[Hexahedron20].cpp
     Material/HyperelasticMaterial.cpp
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp
@@ -96,9 +124,13 @@ set(SOURCE_FILES
     Solver/LLTSolver.cpp
     Solver/LUSolver.cpp
     Topology/CaribouTopology[Hexahedron].cpp
+    Topology/CaribouTopology[Hexahedron20].cpp
     Topology/CaribouTopology[Quad].cpp
+    Topology/CaribouTopology[Quad8].cpp
     Topology/CaribouTopology[Tetrahedron].cpp
+    Topology/CaribouTopology[Tetrahedron10].cpp
     Topology/CaribouTopology[Triangle].cpp
+    Topology/CaribouTopology[Triangle6].cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
     Visitor/AssembleGlobalMatrix.cpp

@@ -13,9 +13,6 @@ DISABLE_ALL_WARNINGS_END
 namespace SofaCaribou::mapping {
 
 // Tetrahedron linear specialization
-extern template class CaribouBarycentricMapping<caribou::geometry::Tetrahedron<caribou::Linear>, sofa::defaulttype::Vec3Types>;
-
-// Tetrahedron quadratic specialization
-extern template class CaribouBarycentricMapping<caribou::geometry::Tetrahedron<caribou::Quadratic>, sofa::defaulttype::Vec3Types>;
+extern template class CaribouBarycentricMapping<caribou::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
 
 } // namespace SofaCaribou::mapping

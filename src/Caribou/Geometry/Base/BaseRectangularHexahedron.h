@@ -99,7 +99,7 @@ struct BaseRectangularHexahedron : public Element<Derived> {
      * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
      */
     [[nodiscard]]
-    inline auto intersects(const Segment<_3D, Linear> & segment, const FLOATING_POINT_TYPE eps=0) const -> bool {
+    inline auto intersects(const Segment<_3D> & segment, const FLOATING_POINT_TYPE eps=0) const -> bool {
         return intersects_local_segment(local_coordinates(segment.node(0)), local_coordinates(segment.node(1)), eps);
     }
 
@@ -109,7 +109,7 @@ struct BaseRectangularHexahedron : public Element<Derived> {
      * @note  based on polygon_intersects_cube by Don Hatch (January 1994)
      */
     [[nodiscard]]
-    inline auto intersects(const Triangle<_3D, Linear> & t, const FLOATING_POINT_TYPE eps=0) const -> bool {
+    inline auto intersects(const Triangle<_3D> & t, const FLOATING_POINT_TYPE eps=0) const -> bool {
         LocalCoordinates nodes[3];
         for (UNSIGNED_INTEGER_TYPE i = 0; i < 3; ++i) {
             nodes[i] = self().local_coordinates(t.node(i));

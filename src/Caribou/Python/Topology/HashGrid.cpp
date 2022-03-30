@@ -6,8 +6,11 @@
 #include <Caribou/Topology/HashGrid.h>
 
 #include <Caribou/Geometry/Tetrahedron.h>
+#include <Caribou/Geometry/Tetrahedron10.h>
 #include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/Hexahedron20.h>
 #include <Caribou/Geometry/RectangularHexahedron.h>
+#include <Caribou/Geometry/RectangularHexahedron20.h>
 
 namespace py = pybind11;
 
@@ -28,33 +31,33 @@ auto grid(py::module & m, const std::string & name) {
 }
 
 void create_hashgrid(pybind11::module & m) {
-    grid<Tetrahedron<Linear>>(m, "Tetrahedron4HashGrid");
-    grid<Tetrahedron<Quadratic>>(m, "Tetrahedron10HashGrid");
-    grid<Hexahedron<Linear>>(m, "Hexahedron20HashGrid");
-    grid<Hexahedron<Quadratic>>(m, "Hexahedron8HashGrid");
-    grid<RectangularHexahedron<Linear>>(m, "RectangularHexahedron8HashGrid");
-    grid<RectangularHexahedron<Quadratic>>(m, "RectangularHexahedron20HashGrid");
+    grid<Tetrahedron>(m, "Tetrahedron4HashGrid");
+    grid<Tetrahedron10>(m, "Tetrahedron10HashGrid");
+    grid<Hexahedron>(m, "Hexahedron20HashGrid");
+    grid<Hexahedron20>(m, "Hexahedron8HashGrid");
+    grid<RectangularHexahedron>(m, "RectangularHexahedron8HashGrid");
+    grid<RectangularHexahedron20>(m, "RectangularHexahedron20HashGrid");
 
     m.def("HashGrid",
         [](const py::object & ElementClass, const FLOATING_POINT_TYPE & cell_size, UNSIGNED_INTEGER_TYPE number_of_elements = 0) -> py::object {
 
-        if (ElementClass.is(py::detail::get_type_handle(typeid(Tetrahedron<Linear>), true)))
-            return py::cast(HashGrid<Tetrahedron<Linear>>(cell_size, number_of_elements));
+        if (ElementClass.is(py::detail::get_type_handle(typeid(Tetrahedron), true)))
+            return py::cast(HashGrid<Tetrahedron>(cell_size, number_of_elements));
 
-        else if (ElementClass.is(py::detail::get_type_handle(typeid(Tetrahedron<Quadratic>), true)))
-            return py::cast(HashGrid<Tetrahedron<Quadratic>>(cell_size, number_of_elements));
+        else if (ElementClass.is(py::detail::get_type_handle(typeid(Tetrahedron10), true)))
+            return py::cast(HashGrid<Tetrahedron10>(cell_size, number_of_elements));
 
-        else if (ElementClass.is(py::detail::get_type_handle(typeid(Hexahedron<Linear>), true)))
-            return py::cast(HashGrid<Hexahedron<Linear>>(cell_size, number_of_elements));
+        else if (ElementClass.is(py::detail::get_type_handle(typeid(Hexahedron), true)))
+            return py::cast(HashGrid<Hexahedron>(cell_size, number_of_elements));
 
-        else if (ElementClass.is(py::detail::get_type_handle(typeid(Hexahedron<Quadratic>), true)))
-            return py::cast(HashGrid<Hexahedron<Quadratic>>(cell_size, number_of_elements));
+        else if (ElementClass.is(py::detail::get_type_handle(typeid(Hexahedron20), true)))
+            return py::cast(HashGrid<Hexahedron20>(cell_size, number_of_elements));
 
-        else if (ElementClass.is(py::detail::get_type_handle(typeid(RectangularHexahedron<Linear>), true)))
-            return py::cast(HashGrid<RectangularHexahedron<Linear>>(cell_size, number_of_elements));
+        else if (ElementClass.is(py::detail::get_type_handle(typeid(RectangularHexahedron), true)))
+            return py::cast(HashGrid<RectangularHexahedron>(cell_size, number_of_elements));
 
-        else if (ElementClass.is(py::detail::get_type_handle(typeid(RectangularHexahedron<Quadratic>), true)))
-            return py::cast(HashGrid<RectangularHexahedron<Quadratic>>(cell_size, number_of_elements));
+        else if (ElementClass.is(py::detail::get_type_handle(typeid(RectangularHexahedron20), true)))
+            return py::cast(HashGrid<RectangularHexahedron20>(cell_size, number_of_elements));
 
         return py::none();
     }, py::arg("element_type"), py::arg("cell_size"), py::arg("number_of_elements") = 0);

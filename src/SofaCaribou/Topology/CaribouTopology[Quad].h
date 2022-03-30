@@ -7,52 +7,30 @@ namespace SofaCaribou::topology {
 
 // Quad 2D linear specialization
 template<>
-auto CaribouTopology<caribou::geometry::Quad<caribou::_2D, caribou::Linear>>::templateName(
-        const CaribouTopology<caribou::geometry::Quad<caribou::_2D, caribou::Linear>> *) -> std::string;
+auto CaribouTopology<caribou::geometry::Quad<caribou::_2D>>::templateName(
+        const CaribouTopology<caribou::geometry::Quad<caribou::_2D>> *) -> std::string;
 
-template <> auto CaribouTopology<caribou::geometry::Quad <caribou::_2D,  caribou::Linear>>::mesh_is_compatible(
+template <> auto CaribouTopology<caribou::geometry::Quad<caribou::_2D>>::mesh_is_compatible(
         const sofa::core::topology::BaseMeshTopology * topology) -> bool;
 
-template <> auto CaribouTopology<caribou::geometry::Quad <caribou::_2D, caribou::Linear>>::get_indices_data_from(
+template <> auto CaribouTopology<caribou::geometry::Quad<caribou::_2D>>::get_indices_data_from(
         const sofa::core::topology::BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData *;
 
 extern template
-class CaribouTopology<caribou::geometry::Quad<caribou::_2D, caribou::Linear>>;
-
-// Quad 2D quadratic specialization
-template<>
-auto CaribouTopology<caribou::geometry::Quad<caribou::_2D, caribou::Quadratic>>::templateName(
-        const CaribouTopology<caribou::geometry::Quad<caribou::_2D, caribou::Quadratic>> *) -> std::string;
-
-template <> auto CaribouTopology<caribou::geometry::Quad <caribou::_2D,  caribou::Quadratic>>::mesh_is_compatible(
-        const sofa::core::topology::BaseMeshTopology * topology) -> bool;
-
-extern template
-class CaribouTopology<caribou::geometry::Quad<caribou::_2D, caribou::Quadratic>>;
+class CaribouTopology<caribou::geometry::Quad<caribou::_2D>>;
 
 // Quad 3D linear specialization
 template<>
-auto CaribouTopology<caribou::geometry::Quad<caribou::_3D, caribou::Linear>>::templateName(
-        const CaribouTopology<caribou::geometry::Quad<caribou::_3D, caribou::Linear>> *) -> std::string;
+auto CaribouTopology<caribou::geometry::Quad<caribou::_3D>>::templateName(
+        const CaribouTopology<caribou::geometry::Quad<caribou::_3D>> *) -> std::string;
 
-template <> auto CaribouTopology<caribou::geometry::Quad <caribou::_3D,  caribou::Linear>>::mesh_is_compatible(
+template <> auto CaribouTopology<caribou::geometry::Quad <caribou::_3D>>::mesh_is_compatible(
         const sofa::core::topology::BaseMeshTopology * topology) -> bool;
 
-template <> auto CaribouTopology<caribou::geometry::Quad <caribou::_3D, caribou::Linear>>::get_indices_data_from(
+template <> auto CaribouTopology<caribou::geometry::Quad <caribou::_3D>>::get_indices_data_from(
         const sofa::core::topology::BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData *;
 
 extern template
-class CaribouTopology<caribou::geometry::Quad<caribou::_3D, caribou::Linear>>;
-
-// Quad 3D quadratic specialization
-template<>
-auto CaribouTopology<caribou::geometry::Quad<caribou::_3D, caribou::Quadratic>>::templateName(
-        const CaribouTopology<caribou::geometry::Quad<caribou::_3D, caribou::Quadratic>> *) -> std::string;
-
-template <> auto CaribouTopology<caribou::geometry::Quad <caribou::_3D,  caribou::Quadratic>>::mesh_is_compatible(
-        const sofa::core::topology::BaseMeshTopology * topology) -> bool;
-
-extern template
-class CaribouTopology<caribou::geometry::Quad<caribou::_3D, caribou::Quadratic>>;
+class CaribouTopology<caribou::geometry::Quad<caribou::_3D>>;
 
 } // namespace SofaCaribou::topology

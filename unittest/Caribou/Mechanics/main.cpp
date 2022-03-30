@@ -35,7 +35,7 @@ template <typename Derived>
 TEST(Mechanics, Strain) {
     using namespace caribou::mechanics;
 
-    using Hexahedron = caribou::geometry::Hexahedron<caribou::Linear>;
+    using Hexahedron = caribou::geometry::Hexahedron;
     using Mat33 = Eigen::Matrix<FLOATING_POINT_TYPE, 3,3>;
     const Mat33 I = Mat33::Identity();
 
