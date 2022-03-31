@@ -5,10 +5,7 @@
 
 namespace SofaCaribou::forcefield {
 
-// Hexahedron linear specialization
-extern template class HyperelasticForcefield_FEniCS<caribou::geometry::Hexahedron_FEniCS < caribou::Linear>>;
-
-// Hexahedron quadratic specialization
-extern template class HyperelasticForcefield_FEniCS<caribou::geometry::Hexahedron_FEniCS < caribou::Quadratic>>;
+// Hexahedron_FEniCS linear specialization
+extern template class HyperelasticForcefield_FEniCS<caribou::geometry::Hexahedron_FEniCS>;
 
 }

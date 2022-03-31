@@ -1,4 +1,4 @@
-#include <SofaCaribou/Forcefield/CaribouForcefield[Hexahedron_FEniCS].h>
+#include <SofaCaribou/Forcefield/CaribouForcefield[Hexahedron_FEniCS20].h>
 #include <SofaCaribou/Forcefield/CaribouForcefield.inl>
 
 DISABLE_ALL_WARNINGS_BEGIN
@@ -13,16 +13,16 @@ using namespace caribou;
 namespace SofaCaribou::forcefield {
 
 // --------------------------------
-// Hexahedron_FEniCS linear specialization
+// Hexahedron_FEniCS quadratic specialization
 // --------------------------------
 
 template <>
-auto CaribouForcefield<Hexahedron_FEniCS>::templateName(const CaribouForcefield<Hexahedron_FEniCS> *) -> std::string {
-    return SofaCaribou::topology::CaribouTopology<Hexahedron_FEniCS>::templateName();
+auto CaribouForcefield<Hexahedron_FEniCS20>::templateName(const CaribouForcefield<Hexahedron_FEniCS20> *) -> std::string {
+    return SofaCaribou::topology::CaribouTopology<Hexahedron_FEniCS20>::templateName();
 }
 
 template <>
-void CaribouForcefield<Hexahedron_FEniCS>::triangulate_face(const Hexahedron_FEniCS & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes) {
+void CaribouForcefield<Hexahedron_FEniCS20>::triangulate_face(const Hexahedron_FEniCS20 & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes) {
     const auto face_indices = e.boundary_elements_node_indices();
     auto triangle_1 = std::vector {e.node(face_indices[face_id][0]), e.node(face_indices[face_id][1]), e.node(face_indices[face_id][2])};
     auto triangle_2 = std::vector {e.node(face_indices[face_id][2]), e.node(face_indices[face_id][3]), e.node(face_indices[face_id][0])};
@@ -35,6 +35,6 @@ void CaribouForcefield<Hexahedron_FEniCS>::triangulate_face(const Hexahedron_FEn
 }
 
 // This will force the compiler to compile the following templated class
-template class CaribouForcefield<Hexahedron_FEniCS>;
+template class CaribouForcefield<Hexahedron_FEniCS20>;
 
 } // namespace SofaCaribou::forcefield

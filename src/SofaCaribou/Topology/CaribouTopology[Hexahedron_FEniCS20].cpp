@@ -1,6 +1,6 @@
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Topology/CaribouTopology.inl>
-#include <SofaCaribou/Topology/CaribouTopology[Hexahedron_FEniCS].h>
+#include <SofaCaribou/Topology/CaribouTopology[Hexahedron_FEniCS20].h>
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
@@ -16,28 +16,28 @@ using namespace caribou;
 
 namespace SofaCaribou::topology {
 
-// Hexahedron_FEniCS linear specialization
+// Hexahedron_FEniCS quadratic specialization
 template<>
-auto CaribouTopology<Hexahedron_FEniCS>::templateName(const CaribouTopology<Hexahedron_FEniCS> *) -> std::string {
-    return "Hexahedron_FEniCS";
+auto CaribouTopology<Hexahedron_FEniCS20>::templateName(const CaribouTopology<Hexahedron_FEniCS20> *) -> std::string {
+    return "Hexahedron_FEniCS20";
 }
 
 template <>
-auto CaribouTopology<Hexahedron_FEniCS>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
+auto CaribouTopology<Hexahedron_FEniCS20>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
     return (
             dynamic_cast<const HexahedronSetTopologyContainer*>(topology) != nullptr
     );
 }
 
 template <>
-auto CaribouTopology<Hexahedron_FEniCS>::get_indices_data_from(
+auto CaribouTopology<Hexahedron_FEniCS20>::get_indices_data_from(
         const BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData * {
     return topology->findData("hexahedra");
 }
 
 // This will force the compiler to compile the class with some template type
 template
-class CaribouTopology<Hexahedron_FEniCS>;
+class CaribouTopology<Hexahedron_FEniCS20>;
 
 
 } // namespace SofaCaribou::topology
@@ -47,5 +47,5 @@ using namespace SofaCaribou::topology;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou topology")
-        .add<CaribouTopology<Hexahedron_FEniCS>>();
+        .add<CaribouTopology<Hexahedron_FEniCS20>>();
 }

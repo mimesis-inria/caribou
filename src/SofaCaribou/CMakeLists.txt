@@ -13,6 +13,7 @@ set(HEADER_FILES
     Forcefield/CaribouForcefield[Hexahedron].h
     Forcefield/CaribouForcefield[Hexahedron20].h
     Forcefield/CaribouForcefield[Hexahedron_FEniCS].h
+    Forcefield/CaribouForcefield[Hexahedron_FEniCS20].h
     Forcefield/CaribouForcefield[Quad].h
     Forcefield/CaribouForcefield[Quad8].h
     Forcefield/CaribouForcefield[Tetrahedron].h
@@ -27,7 +28,9 @@ set(HEADER_FILES
     Forcefield/HyperelasticForcefield[Tetrahedron10].h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS.h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS].h
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS20].h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron].h
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron10].h
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForcefield.h
     Forcefield/TractionForcefield[Quad].h
@@ -50,10 +53,14 @@ set(HEADER_FILES
     FEniCS/Material/HyperelasticMaterial_FEniCS.h
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS.h
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS].h
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS20].h
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].h
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron10].h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS.h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS].h
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS20].h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].h
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron10].h
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.h
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.h
@@ -79,6 +86,7 @@ set(HEADER_FILES
     Topology/CaribouTopology[Hexahedron].h
     Topology/CaribouTopology[Hexahedron20].h
     Topology/CaribouTopology[Hexahedron_FEniCS].h
+    Topology/CaribouTopology[Hexahedron_FEniCS20].h
     Topology/CaribouTopology[Quad].h
     Topology/CaribouTopology[Quad8].h
     Topology/CaribouTopology[Tetrahedron].h
@@ -116,6 +124,7 @@ set(SOURCE_FILES
     Forcefield/CaribouForcefield[Hexahedron].cpp
     Forcefield/CaribouForcefield[Hexahedron20].cpp
     Forcefield/CaribouForcefield[Hexahedron_FEniCS].cpp
+    Forcefield/CaribouForcefield[Hexahedron_FEniCS20].cpp
     Forcefield/CaribouForcefield[Quad].cpp
     Forcefield/CaribouForcefield[Quad8].cpp
     Forcefield/CaribouForcefield[Tetrahedron].cpp
@@ -128,7 +137,9 @@ set(SOURCE_FILES
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron10].cpp
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS].cpp
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS20].cpp
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron].cpp
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron10].cpp
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
     Forcefield/TractionForcefield[Quad8].cpp
@@ -144,9 +155,14 @@ set(SOURCE_FILES
     Mass/CaribouMass[Hexahedron20].cpp
     Material/HyperelasticMaterial.cpp
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS].cpp
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS20].cpp
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].cpp
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron10].cpp
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS].cpp
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS20].cpp
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].cpp
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron10].cpp
+
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.c
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.c
@@ -170,6 +186,7 @@ set(SOURCE_FILES
     Topology/CaribouTopology[Hexahedron].cpp
     Topology/CaribouTopology[Hexahedron20].cpp
     Topology/CaribouTopology[Hexahedron_FEniCS].cpp
+    Topology/CaribouTopology[Hexahedron_FEniCS20].cpp
     Topology/CaribouTopology[Quad].cpp
     Topology/CaribouTopology[Quad8].cpp
     Topology/CaribouTopology[Tetrahedron].cpp
