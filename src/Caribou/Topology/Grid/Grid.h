@@ -30,7 +30,7 @@ struct Grid<1> : public internal::BaseUnidimensionalGrid<Grid<1>>
     using Base = internal::BaseUnidimensionalGrid<Grid<Dimension>>;
     using Base::Base;
 
-    using Element = geometry::Segment<1, Linear>;
+    using Element = geometry::Segment<1>;
     using ElementIndices = std::array<NodeIndex, caribou::geometry::traits<Element>::NumberOfNodesAtCompileTime>;
 
     [[nodiscard]] inline
@@ -74,7 +74,7 @@ struct Grid<2> : public internal::BaseMultidimensionalGrid<2, Grid<2>>
     using Base = internal::BaseMultidimensionalGrid<Dimension, Grid<Dimension>>;
     using Base::Base;
 
-    using Element = geometry::RectangularQuad<2, Linear>;
+    using Element = geometry::RectangularQuad<2>;
     using Edge = geometry::traits<Element>::BoundaryElementType;
 
     using ElementNodes = std::array<NodeIndex, geometry::traits<Element>::NumberOfNodesAtCompileTime>;
@@ -197,7 +197,7 @@ struct Grid<3> : public internal::BaseMultidimensionalGrid<3, Grid<3>>
 
     using FaceIndex = typename Base::UInt;
 
-    using Element = geometry::RectangularHexahedron<Linear>;
+    using Element = geometry::RectangularHexahedron;
     using Face = geometry::traits<Element>::BoundaryElementType;
     using Edge = geometry::traits<Face>::BoundaryElementType;
 

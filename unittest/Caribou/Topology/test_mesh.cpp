@@ -107,7 +107,7 @@ TEST(Mesh, Triangle) {
     Domain::ElementsIndices domain_indices(1, 3); // One element of three nodes
     domain_indices << 2, 1, 0;
 
-    Domain * domain = mesh.add_domain<Triangle<_3D, Linear>>("triangles", domain_indices);
+    Domain * domain = mesh.add_domain<Triangle<_3D>>("triangles", domain_indices);
 
     EXPECT_EQ(domain->number_of_elements(), 1);
 
@@ -141,14 +141,14 @@ TEST(Mesh, Tetrahedron) {
     using namespace caribou::topology;
     using namespace caribou::geometry;
     using Mesh = Mesh<_3D>;
-    using Domain = Mesh::Domain<Tetrahedron<Linear>>;
+    using Domain = Mesh::Domain<Tetrahedron>;
 
     Mesh mesh ({{50,50,33}, {50,50,33}, {55, 55, -4}, {55, 55, -40}});
 
     Domain::ElementsIndices domain_indices(1, 4); // One element of four nodes
     domain_indices << 3, 2, 1, 0;
 
-    Domain * domain = mesh.add_domain<Tetrahedron<Linear>>("tetras", domain_indices);
+    Domain * domain = mesh.add_domain<Tetrahedron>("tetras", domain_indices);
 
     EXPECT_EQ(domain->number_of_elements(), 1);
 
@@ -157,18 +157,18 @@ TEST(Mesh, Tetrahedron) {
         EXPECT_MATRIX_EQUAL(indices, Domain::ElementIndices({3, 2, 1, 0}));
     }
 
-    EXPECT_ANY_THROW(mesh.add_domain<Tetrahedron<Linear>>("tetras", domain_indices));
+    EXPECT_ANY_THROW(mesh.add_domain<Tetrahedron>("tetras", domain_indices));
 
 
     {
         auto positions = mesh.positions(domain->element_indices(0));
-        const Tetrahedron<Linear> tetra (positions);
-        EXPECT_MATRIX_EQUAL(tetra.node(0), Tetrahedron<Linear>::WorldCoordinates(55, 55, -40));
+        const Tetrahedron tetra (positions);
+        EXPECT_MATRIX_EQUAL(tetra.node(0), Tetrahedron::WorldCoordinates(55, 55, -40));
     }
 
     {
         auto tetra = domain->element(0);
-        EXPECT_MATRIX_EQUAL(tetra.node(1), Tetrahedron<Linear>::WorldCoordinates(55, 55, -4));
+        EXPECT_MATRIX_EQUAL(tetra.node(1), Tetrahedron::WorldCoordinates(55, 55, -4));
     }
 
     mesh.remove(domain);

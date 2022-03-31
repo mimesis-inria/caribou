@@ -11,7 +11,7 @@ using namespace caribou;
 
 TEST(BarycentricContainer, _2D) {
     using Mesh = Mesh<_2D>;
-    using Quad = Quad<_2D, Linear>;
+    using Quad = Quad<_2D>;
     using Domain = Domain<Quad>;
     // Let's create a container mesh consisting of quads
     //

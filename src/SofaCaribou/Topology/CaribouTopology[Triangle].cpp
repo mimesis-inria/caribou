@@ -17,71 +17,44 @@ namespace SofaCaribou::topology {
 
 // Triangle 2D linear specialization
 template<>
-auto CaribouTopology<Triangle<_2D, Linear>>::templateName(const CaribouTopology<Triangle<_2D, Linear>> *) -> std::string {
+auto CaribouTopology<Triangle<_2D>>::templateName(const CaribouTopology<Triangle<_2D>> *) -> std::string {
     return "Triangle_2D";
 }
 
 template <>
-auto CaribouTopology<Triangle<_2D, Linear>>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
+auto CaribouTopology<Triangle<_2D>>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
     return (
         dynamic_cast<const TriangleSetTopologyContainer*>(topology) != nullptr
     );
 }
 
 template <>
-auto CaribouTopology<Triangle<_2D, Linear>>::get_indices_data_from(const BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData * {
+auto CaribouTopology<Triangle<_2D>>::get_indices_data_from(const BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData * {
     return topology->findData("triangles");
-}
-
-// Triangle 2D quadratic specialization
-template<>
-auto CaribouTopology<Triangle<_2D, Quadratic>>::templateName(const CaribouTopology<Triangle<_2D, Quadratic>> *) -> std::string {
-    return "Triangle6_2D";
-}
-
-template <>
-auto CaribouTopology<Triangle<_2D, Quadratic>>::mesh_is_compatible(const BaseMeshTopology *) -> bool {
-    // We cannot create a quadratic topology from a linear one
-    return false;
 }
 
 // Triangle 3D linear specialization
 template<>
 auto
-CaribouTopology<Triangle<_3D, Linear>>::templateName(const CaribouTopology<Triangle<_3D, Linear>> *) -> std::string {
+CaribouTopology<Triangle<_3D>>::templateName(const CaribouTopology<Triangle<_3D>> *) -> std::string {
     return "Triangle";
 }
 
 template <>
-auto CaribouTopology<Triangle<_3D, Linear>>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
+auto CaribouTopology<Triangle<_3D>>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
     return (
             dynamic_cast<const TriangleSetTopologyContainer*>(topology) != nullptr
     );
 }
 
 template <>
-auto CaribouTopology<Triangle<_3D, Linear>>::get_indices_data_from(const BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData * {
+auto CaribouTopology<Triangle<_3D>>::get_indices_data_from(const BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData * {
     return topology->findData("triangles");
 }
 
-// Triangle 3D quadratic specialization
-template<>
-auto
-CaribouTopology<Triangle<_3D, Quadratic>>::templateName(const CaribouTopology<Triangle<_3D, Quadratic>> *) -> std::string {
-    return "Triangle6";
-}
-
-template <>
-auto CaribouTopology<Triangle<_3D, Quadratic>>::mesh_is_compatible(const BaseMeshTopology *) -> bool {
-    // We cannot create a quadratic topology from a linear one
-    return false;
-}
-
 // This will force the compiler to compile the class with some template type
-template class CaribouTopology<Triangle<_2D, Linear>>;
-template class CaribouTopology<Triangle<_2D, Quadratic>>;
-template class CaribouTopology<Triangle<_3D, Linear>>;
-template class CaribouTopology<Triangle<_3D, Quadratic>>;
+template class CaribouTopology<Triangle<_2D>>;
+template class CaribouTopology<Triangle<_3D>>;
 
 } // namespace SofaCaribou::topology
 
@@ -90,9 +63,7 @@ using namespace SofaCaribou::topology;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou topology")
-.add<CaribouTopology<Triangle<_2D, Linear>>>()
-.add<CaribouTopology<Triangle<_2D, Quadratic>>>()
-.add<CaribouTopology<Triangle<_3D, Linear>>>()
-.add<CaribouTopology<Triangle<_3D, Quadratic>>>()
+.add<CaribouTopology<Triangle<_2D>>>()
+.add<CaribouTopology<Triangle<_3D>>>()
 ;
 }

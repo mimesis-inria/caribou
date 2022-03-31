@@ -7,27 +7,16 @@ namespace SofaCaribou::topology {
 
 // Tetrahedron linear specialization
 template<>
-auto CaribouTopology<caribou::geometry::Tetrahedron<caribou::Linear>>::templateName(
-        const CaribouTopology<caribou::geometry::Tetrahedron<caribou::Linear>> *) -> std::string;
+auto CaribouTopology<caribou::geometry::Tetrahedron>::templateName(
+        const CaribouTopology<caribou::geometry::Tetrahedron> *) -> std::string;
 
-template <> auto CaribouTopology<caribou::geometry::Tetrahedron < caribou::Linear>>::mesh_is_compatible(
+template <> auto CaribouTopology<caribou::geometry::Tetrahedron>::mesh_is_compatible(
         const sofa::core::topology::BaseMeshTopology * topology) -> bool;
 
-template <> auto CaribouTopology<caribou::geometry::Tetrahedron < caribou::Linear>>::get_indices_data_from(
+template <> auto CaribouTopology<caribou::geometry::Tetrahedron>::get_indices_data_from(
         const sofa::core::topology::BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData *;
 
 extern template
-class CaribouTopology<caribou::geometry::Tetrahedron<caribou::Linear>>;
-
-// Tetrahedron quadratic specialization
-template<>
-auto CaribouTopology<caribou::geometry::Tetrahedron<caribou::Quadratic>>::templateName(
-        const CaribouTopology<caribou::geometry::Tetrahedron<caribou::Quadratic>> *) -> std::string;
-
-template <> auto CaribouTopology<caribou::geometry::Tetrahedron < caribou::Quadratic>>::mesh_is_compatible(
-        const sofa::core::topology::BaseMeshTopology * topology) -> bool;
-
-extern template
-class CaribouTopology<caribou::geometry::Tetrahedron<caribou::Quadratic>>;
+class CaribouTopology<caribou::geometry::Tetrahedron>;
 
 } // namespace SofaCaribou::topology

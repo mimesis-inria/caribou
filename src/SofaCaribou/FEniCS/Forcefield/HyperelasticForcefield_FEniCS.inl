@@ -356,6 +356,7 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::update_stiffness");
 
+    // Get constants from the material
     const double constants[2] = {
                                     material->getConstants()(0, 0), // Young Modulus
                                     material->getConstants()(0, 1)  // Poisson ratio

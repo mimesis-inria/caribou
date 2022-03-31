@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SofaCaribou/FEniCS/Material/HyperelasticMaterial_FEniCS.h>
-//#include <SofaCaribou/Material/SaintVenantKirchhoff_Tetra.h>
 #include <iostream>
 DISABLE_ALL_WARNINGS_BEGIN
 #include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.h>
@@ -32,9 +31,9 @@ public:
     {
     }
 
-    Eigen::Array<float, 1, 2>
+    Eigen::Array<Real, 1, 2>
     getConstants() override {
-        Eigen::Array<float, 1, 2> constants; 
+        Eigen::Array<Real, 1, 2> constants;
         constants(0, 0) = d_young_modulus.getValue();
         constants(0, 1) = d_poisson_ratio.getValue();
         return constants;

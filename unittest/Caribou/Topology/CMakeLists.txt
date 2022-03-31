@@ -39,6 +39,10 @@ if (CARIBOU_WITH_VTK)
     list(APPEND SOURCE_FILES test_vtkreader.cpp)
 endif()
 
+if (NOT WIN32)
+    find_package(Threads QUIET)
+endif()
+
 enable_testing()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})

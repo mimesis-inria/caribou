@@ -6,11 +6,7 @@
 namespace SofaCaribou::forcefield {
 
 // Triangle linear specialization
-extern template class TractionForcefield<caribou::geometry::Triangle < caribou::_2D, caribou::Linear>>;
-extern template class TractionForcefield<caribou::geometry::Triangle < caribou::_3D, caribou::Linear>>;
+extern template class TractionForcefield<caribou::geometry::Triangle<caribou::_2D>>;
+extern template class TractionForcefield<caribou::geometry::Triangle<caribou::_3D>>;
 
-// Triangle quadratic specialization
-
-extern template class TractionForcefield<caribou::geometry::Triangle < caribou::_2D, caribou::Quadratic>>;
-extern template class TractionForcefield<caribou::geometry::Triangle < caribou::_3D, caribou::Quadratic>>;
 }

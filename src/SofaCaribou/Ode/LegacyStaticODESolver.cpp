@@ -185,7 +185,12 @@ void LegacyStaticODESolver::solve(const sofa::core::ExecParams* params, double /
         //       FixedConstraint. In this case, it will set to 0 every column (_, i) and row (i, _) of the assembled
         //       matrix for the ith degree of freedom.
         sofa::core::behavior::MultiMatrix<sofa::simulation::common::MechanicalOperations> matrix(&mop);
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
         matrix = MechanicalMatrix::K * -1.0;
+#else
+        matrix.setSystemMBKMatrix(MechanicalMatrix::K * -1.0);
+#endif // (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
+       
         sofa::helper::AdvancedTimer::stepEnd("MBKBuild");
 
         // Solving the system
