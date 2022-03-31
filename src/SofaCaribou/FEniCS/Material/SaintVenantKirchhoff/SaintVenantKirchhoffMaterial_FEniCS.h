@@ -31,9 +31,9 @@ public:
     {
     }
 
-    Eigen::Array<float, 1, 2>
+    Eigen::Array<Real, 1, 2>
     getConstants() override {
-        Eigen::Array<float, 1, 2> constants; 
+        Eigen::Array<Real, 1, 2> constants;
         constants(0, 0) = d_young_modulus.getValue();
         constants(0, 1) = d_poisson_ratio.getValue();
         return constants;

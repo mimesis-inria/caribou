@@ -27,8 +27,8 @@ public:
     SOFA_CLASS(SOFA_TEMPLATE2(HyperelasticMaterial_FEniCS, Element, DataTypes), sofa::core::objectmodel::BaseObject);
 
 
-    // Get Young Modulus and Poisson Ratio 
-    virtual Eigen::Array<float, 1, 2> getConstants() {};
+    // Get Young Modulus and Poisson Ratio
+    virtual Eigen::Array<Real, 1, 2> getConstants() {};
     // Retrieve FEniCS F tensor 
     virtual auto FEniCS_F() -> ufcx_integral* {}
     // Retrieve FEniCS J tensor
