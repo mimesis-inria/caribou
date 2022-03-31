@@ -14,6 +14,8 @@ DISABLE_ALL_WARNINGS_END
 #include <Caribou/Mechanics/Elasticity/Strain.h>
 #ifdef CARIBOU_WITH_OPENMP
 #include <omp.h>
+
+#include <iostream>
 #endif
 
 namespace SofaCaribou::forcefield {
@@ -94,6 +96,7 @@ void HyperelasticForcefield<Element>::addForce(
 
     // Update material parameters in case the user changed it
     material->before_update();
+
 
     ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     WriteAccessor<Data<VecDeriv>> sofa_f = d_f;
@@ -511,7 +514,7 @@ void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase
                 }
             }
         }
-
+        
 #pragma omp critical
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             // Node index of the ith node in the global stiffness matrix
@@ -534,6 +537,7 @@ void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase
         }
     }
     p_K.setFromTriplets(triplets.begin(), triplets.end());
+    
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::update_stiffness");
 
     K_is_up_to_date = true;
@@ -559,13 +563,11 @@ auto HyperelasticForcefield<Element>::get_gauss_nodes(const std::size_t & /*elem
         const Matrix<NumberOfNodesPerElement, Dimension> dN_dx =
             (Jinv.transpose() * element.dL(g.position).transpose()).transpose();
 
-
         GaussNode & gauss_node = gauss_nodes[gauss_node_id];
         gauss_node.weight               = g.weight;
         gauss_node.jacobian_determinant = detJ;
         gauss_node.dN_dx                = dN_dx;
     }
-
     return gauss_nodes;
 }
 

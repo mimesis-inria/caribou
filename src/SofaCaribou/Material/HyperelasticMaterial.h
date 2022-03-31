@@ -8,6 +8,8 @@ DISABLE_ALL_WARNINGS_BEGIN
 DISABLE_ALL_WARNINGS_END
 
 #include <Eigen/Eigen>
+//#include <SofaCaribou/Material/SaintVenantKirchhoff_Tetra.h>
+
 
 namespace SofaCaribou::material {
 
@@ -55,6 +57,9 @@ public:
      */
     virtual Eigen::Matrix<Real, 6, 6>
     PK2_stress_jacobian(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const = 0;
+
+//    virtual Eigen::Matrix<Real, 4, 3>
+//            calculate_nodal_forces(Eigen::Matrix<Real, 4, Dimension> & nodal_forces, Eigen::Matrix<Real, 4, Dimension> & coefficients, Eigen::Matrix<Real, 4, Dimension> & current_nodes_position) const = 0;
 
 
     // Sofa's scene methods
