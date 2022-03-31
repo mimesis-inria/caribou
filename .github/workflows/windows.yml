@@ -19,6 +19,7 @@ jobs:
         include:
           - sofa_version: master
             PYTHON_VERSION: 3.8
+            EIGEN_VERSION: 3.4
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: ${{ format('{0}/sofa', github.workspace) }}
@@ -46,7 +47,14 @@ jobs:
           python-version: ${{ matrix.PYTHON_VERSION }}
 
 #     Eigen3
+      - name: cache eigen
+        uses: actions/cache@v2
+        id: cache-eigen
+        with:
+          path: ${{ github.workspace }}/eigen
+          key: eigen-${{ matrix.EIGEN_VERSION }}-windows
       - name: Install Eigen
+        if: steps.cache-eigen.outputs.cache-hit != 'true'
         shell: bash
         run: |
           git clone --depth 1 -b 3.4 https://gitlab.com/libeigen/eigen.git eigen_src
@@ -71,6 +79,7 @@ jobs:
           key: boost-1.69.0-windows
 
       - name: Install Boost
+        if: steps.cache-Boost.outputs.cache-hit != 'true'
         run: |
           $BOOST_MAJOR = 1
           $BOOST_MINOR = 69
