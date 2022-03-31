@@ -26,17 +26,17 @@ struct traits<Hexahedron_FEniCS <Linear>> {
  *
  * \verbatim
  *        v
- * 3----------2
+ * 6----------7
  * |\     ^   |\
  * | \    |   | \
  * |  \   |   |  \
- * |   7------+---6
+ * |   4------+---5
  * |   |  +-- |-- | -> u
- * 0---+---\--1   |
+ * 2---+---\--3   |
  *  \  |    \  \  |
  *   \ |     \  \ |
  *    \|      w  \|
- *     4----------5
+ *     0----------1
  * \endverbatim
  *
  */
@@ -63,14 +63,14 @@ struct Hexahedron_FEniCS <Linear> : public BaseHexahedron<Hexahedron_FEniCS <Lin
 
     static constexpr FLOATING_POINT_TYPE canonical_nodes [NumberOfNodesAtCompileTime][CanonicalDimension] = {
     //    u,  v,  w
-        {-1, -1, -1}, // Node 0
-        {+1, -1, -1}, // Node 1
-        {+1, +1, -1}, // Node 2
-        {-1, +1, -1}, // Node 3
-        {-1, -1, +1}, // Node 4
-        {+1, -1, +1}, // Node 5
-        {+1, +1, +1}, // Node 6
-        {-1, +1, +1}, // Node 7
+        {-1, -1, +1}, // Node 0
+        {+1, -1, +1}, // Node 1
+        {-1, -1, -1}, // Node 2
+        {+1, -1, -1}, // Node 3
+        {-1, +1, +1}, // Node 4
+        {+1, +1, +1}, // Node 5
+        {-1, +1, -1}, // Node 6
+        {+1, +1, -1}, // Node 7
     };
 
     // Constructors
@@ -196,17 +196,17 @@ struct traits<Hexahedron_FEniCS <Quadratic>> {
  *         v
  *         ^
  *         |
- *  3-----10---2
+ *  6-----19---7
  *  |\     |   |\
- *  | 19   |   | 18
- * 11  \   |   9  \
- *  |   7----14+---6
+ *  | 17   |   | 18
+ * 14  \   |   15 \
+ *  |   4----16+---5
  *  |   |  +-- |-- | ---> u
- *  0---+-8-\--1   |
- *   \  15   \  \  13
- *   16 |     \  17|
+ *  2---+-13\--3   |
+ *   \  10   \  \  12
+ *    9 |     \  11|
  *     \|      w  \|
- *      4----12----5   u
+ *      0----8-----1   u
  * \endverbatim
  *
  */
@@ -233,26 +233,26 @@ struct Hexahedron_FEniCS <Quadratic> : public BaseHexahedron<Hexahedron_FEniCS <
 
     static constexpr FLOATING_POINT_TYPE canonical_nodes [NumberOfNodesAtCompileTime][CanonicalDimension] = {
         //    u,  v,  w
-        {-1, -1, -1}, // Node 0
-        {+1, -1, -1}, // Node 1
-        {+1, +1, -1}, // Node 2
-        {-1, +1, -1}, // Node 3
-        {-1, -1, +1}, // Node 4
-        {+1, -1, +1}, // Node 5
-        {+1, +1, +1}, // Node 6
-        {-1, +1, +1}, // Node 7
-        { 0, -1, -1}, // Node 8
-        {+1,  0, -1}, // Node 9
-        { 0, +1, -1}, // Node 10
-        {-1,  0, -1}, // Node 11
-        { 0, -1, +1}, // Node 12
-        {+1,  0, +1}, // Node 13
-        { 0, +1, +1}, // Node 14
-        {-1,  0, +1}, // Node 15
-        {-1, -1,  0}, // Node 16
-        {+1, -1,  0}, // Node 17
+        {-1, -1, +1}, // Node 0
+        {+1, -1, +1}, // Node 1
+        {-1, -1, -1}, // Node 2
+        {+1, -1, -1}, // Node 3
+        {-1, +1, +1}, // Node 4
+        {+1, +1, +1}, // Node 5
+        {-1, +1, -1}, // Node 6
+        {+1, +1, -1}, // Node 7
+        { 0, -1, +1}, // Node 8
+        {-1, -1,  0}, // Node 9
+        {-1,  0, +1}, // Node 10
+        {+1, -1,  0}, // Node 11
+        {+1,  0, +1}, // Node 12
+        { 0, -1, -1}, // Node 13
+        {-1,  0, -1}, // Node 14
+        {+1,  0, -1}, // Node 15
+        { 0, +1, +1}, // Node 16
+        {-1, +1,  0}, // Node 17
         {+1, +1,  0}, // Node 18
-        {-1, +1,  0}, // Node 19
+        { 0, +1, -1}, // Node 19
     };
 
     // Constructors
@@ -320,18 +320,18 @@ struct Hexahedron_FEniCS <Quadratic> : public BaseHexahedron<Hexahedron_FEniCS <
      */
     inline auto edges() const {
         static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 3>, 12> indices = {{
-             {0, 1, 8},  // Edge 0
-             {1, 2, 9},  // Edge 1
-             {2, 3, 10}, // Edge 2
-             {3, 0, 11}, // Edge 3
-             {4, 5, 12}, // Edge 4
-             {5, 6, 13}, // Edge 5
-             {6, 7, 14}, // Edge 6
-             {7, 4, 15}, // Edge 7
-             {0, 4, 16}, // Edge 8
-             {1, 5, 17}, // Edge 9
-             {2, 6, 18}, // Edge 10
-             {3, 7, 19}  // Edge 11
+             {2, 13, 3},  // Edge 0
+             {3, 7, 15},  // Edge 1
+             {7, 6, 19}, // Edge 2
+             {6, 2, 14}, // Edge 3
+             {0, 1,  8}, // Edge 4
+             {1, 5, 12}, // Edge 5
+             {5, 4, 16}, // Edge 6
+             {4, 0, 10}, // Edge 7
+             {2, 0,  9}, // Edge 8
+             {3, 1, 11}, // Edge 9
+             {7, 5, 18}, // Edge 10
+             {6, 4, 17}  // Edge 11
          }};
         return indices;
     }
@@ -426,12 +426,12 @@ private:
 
     inline auto get_boundary_elements_nodes() const -> const auto & {
         static const std::array<std::array<UNSIGNED_INTEGER_TYPE, 8>, 6> indices = {{
-            {0, 3, 2, 1, 11, 10,  9,  8}, // Face 0
-            {0, 4, 7, 3, 16, 15, 19, 11}, // Face 1
-            {1, 2, 6, 5,  9, 18, 13, 17}, // Face 2
-            {0, 1, 5, 4,  8, 17, 12, 16}, // Face 3
-            {2, 3, 7, 6, 10, 19, 14, 18}, // Face 4
-            {4, 5, 6, 7, 12, 13, 14, 15}  // Face 5
+            {2, 6, 7, 3, 14, 19, 15, 13}, // Face 0
+            {2, 0, 4, 6,  9, 10, 17, 14}, // Face 1
+            {3, 7, 5, 1, 15, 18, 12, 11}, // Face 2
+            {2, 3, 1, 0, 13, 11,  8,  9}, // Face 3
+            {7, 6, 4, 5, 19, 17, 16, 18}, // Face 4
+            {0, 1, 5, 4,  8, 12, 16, 10}  // Face 5
         }};
         return indices;
     }
