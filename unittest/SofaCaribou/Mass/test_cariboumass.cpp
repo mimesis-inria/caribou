@@ -1,7 +1,12 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 #include <sofa/helper/testing/BaseTest.h>
+#else
+#include <sofa/testing/BaseTest.h>
+#endif
 #include <sofa/simulation/Node.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 #include <SofaBaseMechanics/MechanicalObject.h>
@@ -23,7 +28,9 @@ using namespace SofaCaribou::mass;
 using namespace caribou::geometry;
 using namespace caribou;
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+using namespace sofa::helper::testing;
+#else
 using namespace sofa::testing;
 #endif
 
@@ -40,6 +47,10 @@ TEST(CaribouMass, LinearTetrahedron) {
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
 #endif
 
+    // Some component to avoid warnings
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
+
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
@@ -49,9 +60,10 @@ TEST(CaribouMass, LinearTetrahedron) {
     createObject(root, "TetrahedronSetTopologyModifier");
     createObject(root, "TetrahedronSetGeometryAlgorithms");
     createObject(root, "Hexa2TetraTopologicalMapping", {{"input", "@grid"}, {"output", "@topology"}});
-    auto caribou_mass = dynamic_cast<CaribouMass<Tetrahedron<Linear>> *> (
+    auto caribou_mass = dynamic_cast<CaribouMass<Tetrahedron> *> (
         createObject(root, "CaribouMass", {{"name", "caribou_mass"}, {"topology", "@topology"}, {"density", "2"}}).get()
     );
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 220600)
     auto sofa_mass = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec3Types::Real> *> (
             createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "false"}}).get()
     );
@@ -59,7 +71,15 @@ TEST(CaribouMass, LinearTetrahedron) {
     auto sofa_mass_diagonal = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec3Types::Real> *> (
             createObject(root, "MeshMatrixMass", {{"name", "sofa_mass_diagonal"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "true"}}).get()
     );
+#else // version is >= v22.06
+    auto sofa_mass = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types> *> (
+            createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "false"}}).get()
+    );
 
+    auto sofa_mass_diagonal = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types> *> (
+            createObject(root, "MeshMatrixMass", {{"name", "sofa_mass_diagonal"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "true"}}).get()
+    );
+#endif
     getSimulation()->init(root.get());
 
     // Get M from caribou
@@ -109,9 +129,9 @@ TEST(CaribouMass, LinearTetrahedron) {
     EXPECT_DOUBLE_EQ(M_diag.diagonal().sum(), SofaM_diagonal.matrix().sum());
 
     // AddForce
-    using Real = CaribouMass<Tetrahedron<Linear>>::Real;
-    using VecDeriv = CaribouMass<Tetrahedron<Linear>>::VecDeriv;
-    using DataVecDeriv = CaribouMass<Tetrahedron<Linear>>::DataVecDeriv;
+    using Real = CaribouMass<Tetrahedron>::Real;
+    using VecDeriv = CaribouMass<Tetrahedron>::VecDeriv;
+    using DataVecDeriv = CaribouMass<Tetrahedron>::DataVecDeriv;
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
     DataVecDeriv d_f_caribou (VecDeriv(static_cast<int>(mo->getSize()), {0, 0, 0}));
     DataVecDeriv d_f_caribou_dia (VecDeriv(static_cast<int>(mo->getSize()), {0, 0, 0}));
@@ -155,6 +175,10 @@ TEST(CaribouMass, LinearHexahedron) {
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
 #endif
 
+    // Some component to avoid warnings
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
+
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
@@ -162,12 +186,19 @@ TEST(CaribouMass, LinearHexahedron) {
     );
     createObject(root, "HexahedronSetTopologyContainer", {{"name", "topology"}, {"src", "@grid"}});
     createObject(root, "HexahedronSetGeometryAlgorithms");
-    auto caribou_mass = dynamic_cast<const CaribouMass<Hexahedron<Linear>> *> (
+    auto caribou_mass = dynamic_cast<const CaribouMass<Hexahedron> *> (
             createObject(root, "CaribouMass", {{"name", "caribou_mass"}, {"topology", "@topology"}, {"density", "2"}}).get()
     );
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 220600)
     auto sofa_mass = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec3Types::Real> *> (
             createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}}).get()
     );
+#else // version is >= v22.06
+    auto sofa_mass = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types> *> (
+            createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}}).get()
+    );
+#endif
 
     getSimulation()->init(root.get());
 

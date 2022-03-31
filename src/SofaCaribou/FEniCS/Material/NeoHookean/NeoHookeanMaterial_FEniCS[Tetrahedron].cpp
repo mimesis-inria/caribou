@@ -15,30 +15,15 @@ namespace SofaCaribou::material {
 
 
 
-template class NeoHookeanMaterial_FEniCS<caribou::geometry::Tetrahedron<caribou::Linear>, sofa::defaulttype::Vec3Types>;
+template class NeoHookeanMaterial_FEniCS<caribou::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
 template<>
-ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Linear >, sofa::defaulttype::Vec3Types>::FEniCS_F() {
+ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron, sofa::defaulttype::Vec3Types>::FEniCS_F() {
         ufcx_integral *integral = form_NeoHooke_Tetra_F->integrals(ufcx_integral_type::cell)[0];
         return integral;
     }
 template<>
-ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Linear >, sofa::defaulttype::Vec3Types>::FEniCS_J() {
+ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron, sofa::defaulttype::Vec3Types>::FEniCS_J() {
         ufcx_integral *integral = form_NeoHooke_Tetra_J->integrals(ufcx_integral_type::cell)[0];
-        return integral;
-    }
-
-
-
-
-template class NeoHookeanMaterial_FEniCS<caribou::geometry::Tetrahedron<caribou::Quadratic>, sofa::defaulttype::Vec3Types>;
-template <>
-ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Quadratic >, sofa::defaulttype::Vec3Types>::FEniCS_F()  {
-        ufcx_integral *integral = form_NeoHooke_Tetra_Order2_F->integrals(ufcx_integral_type::cell)[0];
-        return integral;
-    }
-template <>
-ufcx_integral* NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Quadratic >, sofa::defaulttype::Vec3Types>::FEniCS_J()  {
-        ufcx_integral *integral = form_NeoHooke_Tetra_Order2_J->integrals(ufcx_integral_type::cell)[0];
         return integral;
     }
 } // namespace SofaCaribou::material
@@ -49,9 +34,7 @@ using namespace SofaCaribou::material;
 [[maybe_unused]]
 
 static int _i_ = RegisterObject("FEniCS NeoHookean hyperelastic material")
-/* Linear */         .add<NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Linear >, sofa::defaulttype::Vec3Types>>()
-/* Qudratic */       .add<NeoHookeanMaterial_FEniCS<Tetrahedron<caribou::Quadratic >, sofa::defaulttype::Vec3Types>>();
-
+/* Linear */         .add<NeoHookeanMaterial_FEniCS<Tetrahedron, sofa::defaulttype::Vec3Types>>();
 
 }
 

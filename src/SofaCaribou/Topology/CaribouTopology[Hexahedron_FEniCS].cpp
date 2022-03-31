@@ -18,42 +18,27 @@ namespace SofaCaribou::topology {
 
 // Hexahedron_FEniCS linear specialization
 template<>
-auto CaribouTopology<Hexahedron_FEniCS<Linear>>::templateName(const CaribouTopology<Hexahedron_FEniCS<Linear>> *) -> std::string {
+auto CaribouTopology<Hexahedron_FEniCS>::templateName(const CaribouTopology<Hexahedron_FEniCS> *) -> std::string {
     return "Hexahedron_FEniCS";
 }
 
 template <>
-auto CaribouTopology<Hexahedron_FEniCS<Linear>>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
+auto CaribouTopology<Hexahedron_FEniCS>::mesh_is_compatible(const BaseMeshTopology * topology) -> bool {
     return (
             dynamic_cast<const HexahedronSetTopologyContainer*>(topology) != nullptr
     );
 }
 
 template <>
-auto CaribouTopology<Hexahedron_FEniCS<Linear>>::get_indices_data_from(
+auto CaribouTopology<Hexahedron_FEniCS>::get_indices_data_from(
         const BaseMeshTopology * topology) -> sofa::core::objectmodel::BaseData * {
     return topology->findData("hexahedra");
 }
 
-// Hexahedron_FEniCS Quadratic specialization
-template<>
-auto
-CaribouTopology<Hexahedron_FEniCS<Quadratic>>::templateName(const CaribouTopology<Hexahedron_FEniCS<Quadratic>> *) -> std::string {
-    return "Hexahedron_FEniCS20";
-}
-
-template <>
-auto CaribouTopology<Hexahedron_FEniCS<Quadratic>>::mesh_is_compatible(const BaseMeshTopology *) -> bool {
-    // We cannot create a quadratic topology from a linear one
-    return false;
-}
-
 // This will force the compiler to compile the class with some template type
 template
-class CaribouTopology<Hexahedron_FEniCS<Linear>>;
+class CaribouTopology<Hexahedron_FEniCS>;
 
-template
-class CaribouTopology<Hexahedron_FEniCS<Quadratic>>;
 
 } // namespace SofaCaribou::topology
 
@@ -62,6 +47,5 @@ using namespace SofaCaribou::topology;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou topology")
-        .add<CaribouTopology<Hexahedron_FEniCS<Linear>>>()
-        .add<CaribouTopology<Hexahedron_FEniCS<Quadratic>>>();
+        .add<CaribouTopology<Hexahedron_FEniCS>>();
 }

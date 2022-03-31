@@ -326,6 +326,7 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
     const auto u =  x - x0;
 
     const ufcx_integral *integral = material->FEniCS_J();
+
 #pragma omp parallel for if (enable_multithreading)
     for (int element_id = 0; element_id < static_cast<int>(nb_elements); ++element_id) {
         // Fetch the node indices of the element

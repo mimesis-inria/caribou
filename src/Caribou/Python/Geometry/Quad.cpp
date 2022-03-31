@@ -5,142 +5,123 @@
 #include <Caribou/constants.h>
 #include <Caribou/Geometry/Segment.h>
 #include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Quad8.h>
 #include <Caribou/Python/Caribou.h>
 #include <Caribou/Python/Geometry/Element.h>
 
 namespace py = pybind11;
 
 namespace caribou::geometry::bindings {
-static auto order_name(const UNSIGNED_INTEGER_TYPE & order) -> std::string {
-    if (order == Linear)
-        return "Linear";
-    else if (order == Quadratic) {
-        return "Quadratic";
-    }
-    return "";
-}
-
-template<UNSIGNED_INTEGER_TYPE Dimension, UNSIGNED_INTEGER_TYPE Order>
-void declare_quad(py::module & m) {
-    std::string name = "Quad" + std::to_string(Dimension) + "D" + order_name(Order);
-
-    using Quad = Quad<Dimension, Order>;
-    using BaseQuad = typename Quad::Base;
+template<typename QuadType>
+void declare_quad(py::module & m, const std::string & name) {
+    using BaseQuad = typename QuadType::Base;
 
     // BaseQuad
     std::string base_name = "Base" + name;
-    declare_element<Quad>(m, base_name);
-    py::class_<BaseQuad, Element<Quad>> (m, base_name.c_str());
+    declare_element<QuadType>(m, base_name);
+    py::class_<BaseQuad, Element<QuadType>> (m, base_name.c_str());
 
     // Quad
-    py::class_<Quad, BaseQuad> c (m, name.c_str());
-    c.def("__str__", [](const Quad & s) {
+    py::class_<QuadType, BaseQuad> c (m, name.c_str());
+    c.def("__str__", [&name](const QuadType & s) {
         Eigen::IOFormat f(std::numeric_limits<double>::digits10 + 2, 0, ", ", ", ", "[", "]", "[", "]");
-        if (Dimension == 1) {
+        if (caribou::geometry::traits<QuadType>::Dimension == 1) {
             f.rowPrefix = "";
             f.rowSuffix = "";
         }
         std::stringstream ss;
-        ss << "Quad <" << std::to_string(Dimension) << "D, " << order_name(Order) << "> : ";
+        ss << name << ": ";
         ss << s.nodes().format(f);
         return ss.str();
     });
 }
 
 void create_quad(pybind11::module & m) {
-    declare_quad<_2D, Linear>(m);
-    declare_quad<_2D, Quadratic>(m);
-    declare_quad<_3D, Linear>(m);
-    declare_quad<_3D, Quadratic>(m);
+    declare_quad<Quad<_2D>>(m, "Quad_2D");
+    declare_quad<Quad<_3D>>(m, "Quad_3D");
+    declare_quad<Quad8<_2D>>(m, "Quad8_2D");
+    declare_quad<Quad8<_3D>>(m, "Quad8_3D");
 
     m.def("Quad", [](){
-        return py::cast(Quad<_2D, Linear>());
+        return py::cast(Quad<_2D>());
     });
 
     m.def("Quad", [](const caribou::bindings::Dimension & dim) {
         if (dim == caribou::bindings::Dimension::_2D) {
-            return py::cast(Quad<_2D, Linear>());
+            return py::cast(Quad<_2D>());
         } else {
-            return py::cast(Quad<_3D, Linear>());
+            return py::cast(Quad<_3D>());
         }
     }, py::arg("dimension"));
 
-    m.def("Quad", [](const caribou::bindings::Order & order) {
-        if (order == caribou::bindings::Order::Linear) {
-            return py::cast(Quad<_2D, Linear>());
-        } else {
-            return py::cast(Quad<_2D, Quadratic>());
-        }
-    }, py::arg("order"));
-
-    m.def("Quad", [](const caribou::bindings::Dimension & dim, const caribou::bindings::Order & order) {
+    m.def("Quad8", [](const caribou::bindings::Dimension & dim) {
         if (dim == caribou::bindings::Dimension::_2D) {
-            if (order == caribou::bindings::Order::Linear)
-                return py::cast(Quad<_2D, Linear>());
-            else
-                return py::cast(Quad<_2D, Quadratic>());
+            return py::cast(Quad8<_2D>());
         } else {
-            if (order == caribou::bindings::Order::Linear)
-                return py::cast(Quad<_3D, Linear>());
-            else
-                return py::cast(Quad<_3D, Quadratic>());
+            return py::cast(Quad8<_3D>());
         }
-    }, py::arg("dimension"), py::arg("order"));
+        }, py::arg("dimension"));
 
-    // Linear creation
-    // 2D
-    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 4, 2> & nodes, const caribou::bindings::Order & order) {
-        return (order == caribou::bindings::Order::Linear)
-               ? py::cast(Quad<_2D, Linear>(nodes))
-               : py::cast(Quad<_2D, Quadratic>(Quad<_2D, Linear>(nodes)));
-    }, py::arg("nodes"), py::arg("order") = caribou::bindings::Order::Linear);
-
-    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n1,
-                     const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n2, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n3,
-                     const caribou::bindings::Order & order) {
-        return (order == caribou::bindings::Order::Linear)
-               ? py::cast(Quad<_2D, Linear>(n0, n1, n2, n3))
-               : py::cast(Quad<_2D, Quadratic>(n0, n1, n2, n3));
-    }, py::arg("n0"), py::arg("n1"), py::arg("n2"), py::arg("n3"), py::arg("order") = caribou::bindings::Order::Linear);
-
-    // 3D
-    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 4, 3> & nodes, const caribou::bindings::Order & order) {
-        return (order == caribou::bindings::Order::Linear)
-               ? py::cast(Quad<_3D, Linear>(nodes))
-               : py::cast(Quad<_3D, Quadratic>(Quad<_3D, Linear>(nodes)));
-    }, py::arg("nodes"), py::arg("order") = caribou::bindings::Order::Linear);
-
-    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n1,
-                     const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n2, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n3,
-                     const caribou::bindings::Order & order) {
-        return (order == caribou::bindings::Order::Linear)
-               ? py::cast(Quad<_3D, Linear>(n0, n1, n2, n3))
-               : py::cast(Quad<_3D, Quadratic>(n0, n1, n2, n3));
-    }, py::arg("n0"), py::arg("n1"), py::arg("n2"), py::arg("n3"), py::arg("order") = caribou::bindings::Order::Linear);
-
-    // Quadratic creation
-    // 2D
-    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 8, 2> & nodes) {
-        return py::cast(Quad<_2D, Quadratic>(nodes));
+    // Creation from 4 nodes in 2D
+    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 4, 2> & nodes) {
+        return py::cast(Quad<_2D>(nodes));
     }, py::arg("nodes"));
 
+    m.def("Quad8", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 4, 2> & nodes) {
+        return py::cast(Quad8<_2D>(Quad<_2D>(nodes)));
+        }, py::arg("nodes"));
+
     m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n1,
+                     const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n2, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n3) {
+        return py::cast(Quad<_2D>(n0, n1, n2, n3));
+    }, py::arg("n0"), py::arg("n1"), py::arg("n2"), py::arg("n3"));
+
+    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n1,
+            const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n2, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n3) {
+        return py::cast(Quad8<_2D>(n0, n1, n2, n3));
+        }, py::arg("n0"), py::arg("n1"), py::arg("n2"), py::arg("n3"));
+
+    // Creation from 4 nodes in 3D
+    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 4, 3> & nodes) {
+        return py::cast(Quad<_3D>(nodes));
+        }, py::arg("nodes"));
+
+    m.def("Quad8", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 4, 3> & nodes) {
+        return py::cast(Quad8<_3D>(Quad<_3D>(nodes)));
+        }, py::arg("nodes"));
+
+    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n1,
+            const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n2, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n3) {
+        return py::cast(Quad<_3D>(n0, n1, n2, n3));
+        }, py::arg("n0"), py::arg("n1"), py::arg("n2"), py::arg("n3"));
+
+    m.def("Quad8", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n1,
+            const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n2, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n3) {
+        return py::cast(Quad8<_3D>(n0, n1, n2, n3));
+        }, py::arg("n0"), py::arg("n1"), py::arg("n2"), py::arg("n3"));
+
+    // Creation from 8 nodes in 2D
+    m.def("Quad8", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 8, 2> & nodes) {
+        return py::cast(Quad8<_2D>(nodes));
+    }, py::arg("nodes"));
+
+    m.def("Quad8", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n1,
                      const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n2, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n3,
                      const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n4, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n5,
                      const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n6, const Eigen::Matrix<FLOATING_POINT_TYPE, 2, 1> & n7) {
-        return py::cast(Quad<_2D, Quadratic>(n0, n1, n2, n3, n4, n5, n6, n7));
+        return py::cast(Quad8<_2D>(n0, n1, n2, n3, n4, n5, n6, n7));
     }, py::arg("n0"), py::arg("n1"), py::arg("n2"), py::arg("n3"), py::arg("n4"), py::arg("n5"), py::arg("n6"), py::arg("n7"));
 
     // 3D
-    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 8, 3> & nodes) {
-        return py::cast(Quad<_3D, Quadratic>(nodes));
+    m.def("Quad8", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 8, 3> & nodes) {
+        return py::cast(Quad8<_3D>(nodes));
     }, py::arg("nodes"));
 
-    m.def("Quad", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n1,
+    m.def("Quad8", [](const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n0, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n1,
                      const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n2, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n3,
                      const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n4, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n5,
                      const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n6, const Eigen::Matrix<FLOATING_POINT_TYPE, 3, 1> & n7) {
-        return py::cast(Quad<_3D, Quadratic>(n0, n1, n2, n3, n4, n5, n6, n7));
+        return py::cast(Quad8<_3D>(n0, n1, n2, n3, n4, n5, n6, n7));
     }, py::arg("n0"), py::arg("n1"), py::arg("n2"), py::arg("n3"), py::arg("n4"), py::arg("n5"), py::arg("n6"), py::arg("n7"));
 
 }

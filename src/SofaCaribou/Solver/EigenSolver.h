@@ -202,4 +202,7 @@ private:
     bool p_is_symmetric = false;
 };
 
+extern template class EigenSolver<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::ColMajor, int>>;
+extern template class EigenSolver<Eigen::SparseMatrix<FLOATING_POINT_TYPE, Eigen::RowMajor, int>>;
+
 } // namespace SofaCaribou::solver

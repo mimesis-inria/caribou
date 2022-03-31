@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SofaCaribou/FEniCS/Material/HyperelasticMaterial_FEniCS.h>
-//#include <SofaCaribou/Material/SaintVenantKirchhoff_Tetra.h>
 #include <iostream>
 DISABLE_ALL_WARNINGS_BEGIN
 #include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.h>

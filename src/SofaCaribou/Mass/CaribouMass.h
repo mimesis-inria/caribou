@@ -7,6 +7,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/defaulttype/VecTypes.h>
+#include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/core/behavior/Mass.h>
 DISABLE_ALL_WARNINGS_END
 

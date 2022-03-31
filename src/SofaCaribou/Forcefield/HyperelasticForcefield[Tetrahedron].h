@@ -6,9 +6,6 @@
 namespace SofaCaribou::forcefield {
 
 // Tetrahedron linear specialization
-extern template class HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Linear>>;
-
-// Tetrahedron quadratic specialization
-extern template class HyperelasticForcefield<caribou::geometry::Tetrahedron < caribou::Quadratic>>;
+extern template class HyperelasticForcefield<caribou::geometry::Tetrahedron>;
 
 }

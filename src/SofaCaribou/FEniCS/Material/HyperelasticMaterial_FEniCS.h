@@ -13,7 +13,6 @@ DISABLE_ALL_WARNINGS_END
 
 #include <ufcx.h>
 #include <Eigen/Eigen>
-//#include <SofaCaribou/Material/SaintVenantKirchhoff_Tetra.h>
 
 
 namespace SofaCaribou::material {
