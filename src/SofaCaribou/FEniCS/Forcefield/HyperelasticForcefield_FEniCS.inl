@@ -236,6 +236,85 @@ void HyperelasticForcefield_FEniCS<Element>::addKToMatrix(
 }
 
 template <typename Element>
+SReal HyperelasticForcefield_FEniCS<Element>::getEnergy()
+{
+    getEnergy(*this->mstate->read (p_X_id.getId(this->mstate)));
+}
+
+template<typename Element>
+SReal HyperelasticForcefield_FEniCS<Element>::getEnergy(const sofa::core::objectmodel::Data<VecCoord> & x) {
+    using namespace sofa::core::objectmodel;
+
+    const sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x= x;
+    const sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
+
+    const auto nb_nodes = sofa_x.size();
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
+
+
+    getEnergy(X, X0);
+}
+
+template<typename Element>
+template<typename Derived>
+SReal HyperelasticForcefield_FEniCS<Element>::getEnergy(const Eigen::MatrixBase<Derived> & x, const Eigen::MatrixBase<Derived> & x0) {
+        const auto material = d_material.get();
+        if (!material) {
+            return 0;
+        }
+
+        const auto nb_nodes = x.size();
+        const auto nb_elements = this->number_of_elements();
+
+
+        SReal Psi = 0.;
+
+        // Compute the displacement with respect to the rest position
+        const auto u =  x - x0;
+
+        // Get FEniCS F
+        const ufcx_integral *integral = material->FEniCS_Pi();
+
+        // Get constants from the material
+        const double constants[2] = {
+                                        material->getConstants()(0, 0), // Young Modulus
+                                        material->getConstants()(0, 1)  // Poisson ratio
+                                    };
+
+        sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::getPotentialEnergy");
+
+
+        for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
+
+            // Fetch the node indices of the element
+            auto node_indices = this->topology()->domain()->element_indices(element_id);
+
+            // Fetch the initial and current positions of the element's nodes
+            Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+            Matrix<NumberOfNodesPerElement, Dimension> coefficients;
+
+
+            for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+                current_nodes_position.row(i).noalias() = x0.row(node_indices[i]);
+                coefficients.row(i).noalias() = u.row(node_indices[i]);
+
+            }
+
+            // Compute the nodal forces
+            Matrix<1, 1> element_energy;
+            element_energy.fill(0);
+
+            integral->tabulate_tensor_float64(element_energy.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
+            Psi += element_energy[0];
+        }
+        std::cout << Psi;
+
+        sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::getPotentialEnergy");
+        return Psi;
+}
+
+template <typename Element>
 SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
     const sofa::core::MechanicalParams* mparams,
     const sofa::core::objectmodel::Data<VecCoord>& d_x) const {

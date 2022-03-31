@@ -16,13 +16,13 @@ print(f'Adding {site_packages_dir} to sys.path')
 # TODO: pass the tests for quadratic hexahedron or lower the tolerance
 # TODO: better way of doing it ?
 TEST_CASES = [
-    ("Kirchhoff_tetra", "SaintVenantKirchhoffMaterial", "Tetrahedron"),
-    ("Kirchhoff_tetra10", "SaintVenantKirchhoffMaterial", "Tetrahedron10"),
-    ("Kirchhoff_hexa", "SaintVenantKirchhoffMaterial", "Hexahedron"),
+    # ("Kirchhoff_tetra", "SaintVenantKirchhoffMaterial", "Tetrahedron"),
+    # ("Kirchhoff_tetra10", "SaintVenantKirchhoffMaterial", "Tetrahedron10"),
+    # ("Kirchhoff_hexa", "SaintVenantKirchhoffMaterial", "Hexahedron"),
     # ("Kirchhoff_hexa20", "SaintVenantKirchhoffMaterial", "Hexahedron20"),
     ("NeoHooke_tetra", "NeoHookeanMaterial", "Tetrahedron"),
-    ("NeoHooke_tetra10", "NeoHookeanMaterial", "Tetrahedron10"),
-    ("NeoHooke_hexa", "NeoHookeanMaterial", "Hexahedron"),
+    # ("NeoHooke_tetra10", "NeoHookeanMaterial", "Tetrahedron10"),
+    # ("NeoHooke_hexa", "NeoHookeanMaterial", "Hexahedron"),
     # ("NeoHooke_hexa20", "NeoHookeanMaterial", "Hexahedron20"),
 ]
 
@@ -124,6 +124,22 @@ class TestHyperelasticForcefield(unittest.TestCase):
                 # print(K_fenics - K_sofa)
                 # print(linalg.norm(K_fenics - K_sofa))
                 self.assertMatrixQuasiEqual(K_fenics, K_sofa)
+
+    def test_energy(self):
+        for name, material, element in TEST_CASES:
+            with self.subTest(msg=name):
+                root = Sofa.Core.Node()
+                createScene(root, element, material)
+                Sofa.Simulation.init(root)
+                x = np.array(root.fenics_node.mo.position.array(), dtype=np.float64, order='C', copy=False)
+                x0 = np.array(root.fenics_node.mo.rest_position.array(), dtype=np.float64, order='C', copy=False)
+                root.fenics_node.ff.getEnergy(x, x0)
+                energy_fenics = root.fenics_node.ff.psi()
+                print(energy_fenics)
+                # K_sofa = csr_matrix(root.sofa_node.ff.K(), copy=True)
+                # print(K_fenics - K_sofa)
+                # print(linalg.norm(K_fenics - K_sofa))
+                # self.assertMatrixQuasiEqual(K_fenics, K_sofa)
 
     def assertMatrixQuasiEqual(self, A, B):
         """ absolute(a - b) <= (atol + rtol * absolute(b)) """

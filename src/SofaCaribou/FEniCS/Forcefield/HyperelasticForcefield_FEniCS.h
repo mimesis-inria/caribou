@@ -83,6 +83,18 @@ public:
         const sofa::core::MechanicalParams* /* mparams */,
         const sofa::core::objectmodel::Data<VecCoord>& /* d_x */) const override;
 
+    virtual SReal getEnergy();
+    virtual SReal getEnergy(const sofa::core::objectmodel::Data<VecCoord> & x);
+     template <typename Derived>
+    SReal getEnergy(const Eigen::MatrixBase<Derived> & x);
+
+    template <typename Derived>
+    SReal getEnergy(const Eigen::MatrixBase<Derived> & x, const Eigen::MatrixBase<Derived> & x0);
+
+    auto psi() const -> SReal {
+        return Psi;
+    }
+
     
     void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
@@ -191,6 +203,7 @@ private:
     // Private variables
     Eigen::SparseMatrix<Real> p_K;
     Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
+    SReal Psi;
 
     /// Identifier of the multi-vector x used in the last call to the method addForce. This will be used to recompute
     /// the stiffness matrix K using the method update_stiffness() without any parameters.

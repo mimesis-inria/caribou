@@ -3,9 +3,9 @@ import SofaCaribou
 import meshio
 import numpy as np
 
-ELEMENT_TYPE = "Hexahedron"
-ELEMENT_APPROXIMATION_DEGREE = 2
-MATERIAL_MODEL = "SaintVenantKirchhoff"
+ELEMENT_TYPE = "Tetrahedron"
+ELEMENT_APPROXIMATION_DEGREE = 1
+MATERIAL_MODEL = "NeoHookean"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 # TODO redefine the visualization of the hexaedron
 
@@ -71,7 +71,7 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
         sofa_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
         sofa_node.addObject(material, young_modulus="3000", poisson_ratio="0.3")
-        sofa_node.addObject('HyperelasticForcefield', printLog=True)
+        self.sofa_ff = sofa_node.addObject('HyperelasticForcefield', printLog=True)
 
         fenics_node = root.addChild("fenics_node")
         fenics_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
@@ -86,7 +86,7 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
         fenics_node.addObject(material + '_FEniCS', template=element_fenics, young_modulus="3000",
                               poisson_ratio="0.3")
-        fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
+        self.fenics_ff = fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 
         return root
 
@@ -98,21 +98,28 @@ class ControlFrame(Sofa.Core.Controller):
 
         pass
 
+    # def onAnimateEndEvent(self, event):
+    #     sofa_current_positions = np.array(self.sofa_mo.position.value.copy().tolist())
+    #     fenics_current_positions = np.array(self.fenics_mo.position.value.copy().tolist())
+    #
+    #     errors = []
+    #     for sofa_current_point, fenics_current_point, sofa_initial_point in zip(sofa_current_positions,
+    #                                                                             fenics_current_positions,
+    #                                                                             self.sofa_rest_position):
+    #         if np.linalg.norm(sofa_current_point - sofa_initial_point) != 0:
+    #             errors.append(np.linalg.norm(sofa_current_point - fenics_current_point) / np.linalg.norm(
+    #                 sofa_current_point - sofa_initial_point))
+    #
+    #     mean_error = np.mean(np.array(errors))
+    #
+    #     print(f"Relative Mean Error: {100 * mean_error} %")
+
     def onAnimateEndEvent(self, event):
-        sofa_current_positions = np.array(self.sofa_mo.position.value.copy().tolist())
         fenics_current_positions = np.array(self.fenics_mo.position.value.copy().tolist())
-
-        errors = []
-        for sofa_current_point, fenics_current_point, sofa_initial_point in zip(sofa_current_positions,
-                                                                                fenics_current_positions,
-                                                                                self.sofa_rest_position):
-            if np.linalg.norm(sofa_current_point - sofa_initial_point) != 0:
-                errors.append(np.linalg.norm(sofa_current_point - fenics_current_point) / np.linalg.norm(
-                    sofa_current_point - sofa_initial_point))
-
-        mean_error = np.mean(np.array(errors))
-
-        print(f"Relative Mean Error: {100 * mean_error} %")
+        fenics_rest_positions = np.array(self.fenics_mo.rest_position.value.copy().tolist())
+        self.fenics_ff.getEnergy(fenics_current_positions, fenics_rest_positions)
+        energy_fenics = self.fenics_ff.psi()
+        print(energy_fenics)
 
 
 def createScene(node):
