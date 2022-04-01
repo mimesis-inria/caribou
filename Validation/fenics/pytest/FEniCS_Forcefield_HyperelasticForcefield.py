@@ -61,19 +61,21 @@ def generate_geometry(element):
     tetra_p_9 = [0, 0.5, 0.5]
 
     if element == "Tetrahedron":
-        return np.array([tetra_p_0, tetra_p_1, tetra_p_2, tetra_p_3]), np.array([0, 1, 2, 3])
+        return element, element, np.array([tetra_p_0, tetra_p_1, tetra_p_2, tetra_p_3]), np.arange(4), np.arange(4)
     elif element == "Tetrahedron10":
-        return np.array(
+        return element, element, np.array(
             [tetra_p_0, tetra_p_1, tetra_p_2, tetra_p_3, tetra_p_4, tetra_p_5, tetra_p_6, tetra_p_7, tetra_p_8,
-             tetra_p_9]), np.array([0, 1, 2, 3, 9, 8, 5, 7, 6, 4])
+             tetra_p_9]), np.arange(10), np.array([0, 1, 2, 3, 9, 8, 5, 7, 6, 4])
     elif element == "Hexahedron":
-        return np.array([hexa_p_0, hexa_p_1, hexa_p_2, hexa_p_3, hexa_p_4, hexa_p_5, hexa_p_6, hexa_p_7]), np.array(
-            [4, 5, 0, 1, 7, 6, 3, 2])
+        return element, element + "_FEniCS", np.array(
+            [hexa_p_0, hexa_p_1, hexa_p_2, hexa_p_3, hexa_p_4, hexa_p_5, hexa_p_6, hexa_p_7]), np.arange(
+            8), np.array([4, 5, 0, 1, 7, 6, 3, 2])
     elif element == "Hexahedron20":
-        return np.array(
+        return element, "Hexahedron_FEniCS20", np.array(
             [hexa_p_0, hexa_p_1, hexa_p_2, hexa_p_3, hexa_p_4, hexa_p_5, hexa_p_6, hexa_p_7, hexa_p_8, hexa_p_9,
              hexa_p_10, hexa_p_11, hexa_p_12, hexa_p_13, hexa_p_14, hexa_p_15, hexa_p_16, hexa_p_17, hexa_p_18,
-             hexa_p_19]), np.array([4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10])
+             hexa_p_19]), np.arange(20), np.array(
+            [4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10])
 
 
 def createScene(node, element_type, material_model):
@@ -82,14 +84,14 @@ def createScene(node, element_type, material_model):
     node.addObject('VisualStyle', displayFlags="showForceFields showBehaviorModels")
     node.addObject('RequiredPlugin',
                    pluginName="SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine")
-    position, indices = generate_geometry(element_type)
+    element_sofa, element_fenics, position, indices_sofa, indices_fenics = generate_geometry(element_type)
 
     sofa_node = node.addChild("sofa_node")
     sofa_node.addObject('StaticSolver', newton_iterations="1", relative_correction_tolerance_threshold="1e-15",
                         relative_residual_tolerance_threshold="1e-10", printLog="1")
     sofa_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
     sofa_node.addObject('MechanicalObject', name="mo", position=position.tolist())
-    sofa_node.addObject('CaribouTopology', name='topology', template=element_type, indices=indices.tolist())
+    sofa_node.addObject('CaribouTopology', name='topology', template=element_sofa, indices=indices_sofa.tolist())
     sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
     sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
     sofa_node.addObject(material_model, young_modulus="3000", poisson_ratio="0.3")
@@ -100,10 +102,11 @@ def createScene(node, element_type, material_model):
                           relative_residual_tolerance_threshold="1e-10", printLog="1")
     fenics_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
     fenics_node.addObject('MechanicalObject', name="mo", position=position.tolist())
-    fenics_node.addObject('CaribouTopology', name='topology', template=element_type, indices=indices.tolist())
+    fenics_node.addObject('CaribouTopology', name='topology', template=element_fenics,
+                          indices=indices_fenics.tolist())
     fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
     fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
-    fenics_node.addObject(material_model + '_FEniCS', template=element_type, young_modulus="3000",
+    fenics_node.addObject(material_model + '_FEniCS', template=element_fenics, young_modulus="3000",
                           poisson_ratio="0.3")
     fenics_node.addObject('HyperelasticForcefield_FEniCS', name="ff", printLog=False)
 
@@ -118,9 +121,12 @@ class TestHyperelasticForcefield(unittest.TestCase):
                 Sofa.Simulation.init(root)
                 K_fenics = csr_matrix(root.fenics_node.ff.K(), copy=True)
                 K_sofa = csr_matrix(root.sofa_node.ff.K(), copy=True)
-                print(linalg.norm(K_fenics - K_sofa))
-                #self.assertMatrixQuasiEqual(K_fenics, K_sofa)
+                Psi = csr_matrix(root.fenics_node.ff.Pi(), copy=True)
+                print("Psi: ", Psi)
                 
+                # print(K_fenics - K_sofa)
+                # print(linalg.norm(K_fenics - K_sofa))
+                self.assertMatrixQuasiEqual(K_fenics, K_sofa)
 
     def assertMatrixQuasiEqual(self, A, B):
         """ absolute(a - b) <= (atol + rtol * absolute(b)) """

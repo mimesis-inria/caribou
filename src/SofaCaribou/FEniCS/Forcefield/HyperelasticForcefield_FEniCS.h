@@ -138,6 +138,8 @@ public:
     
     auto cond() -> Real;
 
+    auto Pi() -> SReal;
+
     /**
      *  Assemble the stiffness matrix K.
      *
@@ -189,6 +191,7 @@ private:
     sofa::core::objectmodel::Data<bool> d_enable_multithreading;
 
     // Private variables
+    mutable SReal Psi;
     Eigen::SparseMatrix<Real> p_K;
     Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
 
@@ -196,6 +199,7 @@ private:
     /// the stiffness matrix K using the method update_stiffness() without any parameters.
     sofa::core::ConstMultiVecCoordId p_X_id = sofa::core::ConstVecCoordId::position();
     bool K_is_up_to_date = false;
+    mutable bool Psi_is_up_to_date = false;
     bool eigenvalues_are_up_to_date = false;
 };
 

@@ -11,40 +11,56 @@ set(HEADER_FILES
     Algebra/EigenVector.h
     Forcefield/CaribouForcefield.h
     Forcefield/CaribouForcefield[Hexahedron].h
+    Forcefield/CaribouForcefield[Hexahedron20].h
+    Forcefield/CaribouForcefield[Hexahedron_FEniCS].h
+    Forcefield/CaribouForcefield[Hexahedron_FEniCS20].h
     Forcefield/CaribouForcefield[Quad].h
+    Forcefield/CaribouForcefield[Quad8].h
     Forcefield/CaribouForcefield[Tetrahedron].h
+    Forcefield/CaribouForcefield[Tetrahedron10].h
     Forcefield/CaribouForcefield[Triangle].h
+    Forcefield/CaribouForcefield[Triangle6].h
     Forcefield/HexahedronElasticForce.h
     Forcefield/HyperelasticForcefield.h
     Forcefield/HyperelasticForcefield[Hexahedron].h
+    Forcefield/HyperelasticForcefield[Hexahedron20].h
     Forcefield/HyperelasticForcefield[Tetrahedron].h
+    Forcefield/HyperelasticForcefield[Tetrahedron10].h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS.h
-    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron].h
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS].h
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS20].h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron].h
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron10].h
     Forcefield/TetrahedronElasticForce.h
     Forcefield/TractionForcefield.h
     Forcefield/TractionForcefield[Quad].h
+    Forcefield/TractionForcefield[Quad8].h
     Forcefield/TractionForcefield[Triangle].h
+    Forcefield/TractionForcefield[Triangle6].h
     Mapping/CaribouBarycentricMapping.h
     Mapping/CaribouBarycentricMapping[Hexahedron].h
+    Mapping/CaribouBarycentricMapping[Hexahedron20].h
     Mapping/CaribouBarycentricMapping[Tetrahedron].h
+    Mapping/CaribouBarycentricMapping[Tetrahedron10].h
     Mass/CaribouMass.h
     Mass/CaribouMass[Tetrahedron].h
+    Mass/CaribouMass[Tetrahedron10].h
     Mass/CaribouMass[Hexahedron].h
+    Mass/CaribouMass[Hexahedron20].h
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
     FEniCS/Material/HyperelasticMaterial_FEniCS.h
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS.h
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron].h
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS].h
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS20].h
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].h
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron10].h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS.h
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron].h
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS].h
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS20].h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].h
-    # FEniCS_Material
-    FEniCS/Material/FEniCS_Material.h
-    FEniCS/Material/FEniCS_Material[Hexahedron].h
-    FEniCS/Material/FEniCS_Material[Tetrahedron].h
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron10].h
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.h
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.h
@@ -68,9 +84,15 @@ set(HEADER_FILES
     Solver/LUSolver.h
     Topology/CaribouTopology.h
     Topology/CaribouTopology[Hexahedron].h
+    Topology/CaribouTopology[Hexahedron20].h
+    Topology/CaribouTopology[Hexahedron_FEniCS].h
+    Topology/CaribouTopology[Hexahedron_FEniCS20].h
     Topology/CaribouTopology[Quad].h
+    Topology/CaribouTopology[Quad8].h
     Topology/CaribouTopology[Tetrahedron].h
+    Topology/CaribouTopology[Tetrahedron10].h
     Topology/CaribouTopology[Triangle].h
+    Topology/CaribouTopology[Triangle6].h
     Topology/CircleIsoSurface.h
     Topology/CylinderIsoSurface.h
     Topology/FictitiousGrid.h
@@ -100,29 +122,47 @@ set(TEMPLATE_FILES
 set(SOURCE_FILES
     Algebra/BaseVectorOperations.cpp
     Forcefield/CaribouForcefield[Hexahedron].cpp
+    Forcefield/CaribouForcefield[Hexahedron20].cpp
+    Forcefield/CaribouForcefield[Hexahedron_FEniCS].cpp
+    Forcefield/CaribouForcefield[Hexahedron_FEniCS20].cpp
     Forcefield/CaribouForcefield[Quad].cpp
+    Forcefield/CaribouForcefield[Quad8].cpp
     Forcefield/CaribouForcefield[Tetrahedron].cpp
+    Forcefield/CaribouForcefield[Tetrahedron10].cpp
     Forcefield/CaribouForcefield[Triangle].cpp
+    Forcefield/CaribouForcefield[Triangle6].cpp
     Forcefield/HexahedronElasticForce.cpp
     Forcefield/HyperelasticForcefield[Hexahedron].cpp
+    Forcefield/HyperelasticForcefield[Hexahedron20].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
-    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron].cpp
+    Forcefield/HyperelasticForcefield[Tetrahedron10].cpp
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS].cpp
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS20].cpp
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron].cpp
+    FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron10].cpp
     Forcefield/TetrahedronElasticForce.cpp
     Forcefield/TractionForcefield[Quad].cpp
+    Forcefield/TractionForcefield[Quad8].cpp
     Forcefield/TractionForcefield[Triangle].cpp
+    Forcefield/TractionForcefield[Triangle6].cpp
     Mapping/CaribouBarycentricMapping[Hexahedron].cpp
+    Mapping/CaribouBarycentricMapping[Hexahedron20].cpp
     Mapping/CaribouBarycentricMapping[Tetrahedron].cpp
+    Mapping/CaribouBarycentricMapping[Tetrahedron10].cpp
     Mass/CaribouMass[Tetrahedron].cpp
+    Mass/CaribouMass[Tetrahedron10].cpp
     Mass/CaribouMass[Hexahedron].cpp
+    Mass/CaribouMass[Hexahedron20].cpp
     Material/HyperelasticMaterial.cpp
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron].cpp
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS].cpp
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS20].cpp
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].cpp
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron].cpp
+    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron10].cpp
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS].cpp
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS20].cpp
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].cpp
-    # FEniCS_Material
-    FEniCS/Material/FEniCS_Material[Hexahedron].cpp
-    FEniCS/Material/FEniCS_Material[Tetrahedron].cpp
+    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron10].cpp
+
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.c
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.c
@@ -139,13 +179,20 @@ set(SOURCE_FILES
     Ode/NewtonRaphsonSolver.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
+    Solver/EigenSolver.cpp
     Solver/LDLTSolver.cpp
     Solver/LLTSolver.cpp
     Solver/LUSolver.cpp
     Topology/CaribouTopology[Hexahedron].cpp
+    Topology/CaribouTopology[Hexahedron20].cpp
+    Topology/CaribouTopology[Hexahedron_FEniCS].cpp
+    Topology/CaribouTopology[Hexahedron_FEniCS20].cpp
     Topology/CaribouTopology[Quad].cpp
+    Topology/CaribouTopology[Quad8].cpp
     Topology/CaribouTopology[Tetrahedron].cpp
+    Topology/CaribouTopology[Tetrahedron10].cpp
     Topology/CaribouTopology[Triangle].cpp
+    Topology/CaribouTopology[Triangle6].cpp
     Topology/FictitiousGrid.cpp
     Topology/IsoSurface.cpp
     Visitor/AssembleGlobalMatrix.cpp
@@ -230,7 +277,7 @@ caribou_add_target_to_component (
 )
 
 find_package(SofaPython3 QUIET)
-if (CARIBOU_WITH_SOFA AND SofaPython3_FOUND)
+if (CARIBOU_WITH_SOFA AND SofaPython3_FOUND AND CARIBOU_WITH_PYTHON_3)
     add_subdirectory(Python)
     set(CARIBOU_WITH_SP3 ON)
 endif()

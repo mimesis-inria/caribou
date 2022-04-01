@@ -3,6 +3,7 @@
 [![Documentation Status](https://readthedocs.org/projects/caribou/badge/?version=latest)](https://caribou.readthedocs.io/en/latest/?badge=latest)
 [![MacOS](https://github.com/jnbrunet/caribou/actions/workflows/macos.yml/badge.svg)](https://github.com/jnbrunet/caribou/actions/workflows/macos.yml)
 [![Linux](https://github.com/jnbrunet/caribou/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/jnbrunet/caribou/actions/workflows/ubuntu.yml)
+[![Gitter](https://badges.gitter.im/sofa-framework/caribou.svg)](https://gitter.im/sofa-framework/caribou)
 
 The caribou project is aimed at multiphysics computation. 
 It brings a plugin that complements [SOFA multiphysics framework](https://www.sofa-framework.org/). 

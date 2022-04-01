@@ -7,9 +7,6 @@
 namespace SofaCaribou::mass {
 
 // Tetrahedron linear specialization
-extern template class CaribouMass<caribou::geometry::Tetrahedron<caribou::Linear>>;
-
-// Tetrahedron quadratic specialization
-extern template class CaribouMass<caribou::geometry::Tetrahedron<caribou::Quadratic>>;
+extern template class CaribouMass<caribou::geometry::Tetrahedron>;
 
 } // namespace SofaCaribou::mass

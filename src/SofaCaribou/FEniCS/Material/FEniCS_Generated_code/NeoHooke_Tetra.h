@@ -12,7 +12,10 @@
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['NeoHooke_Tetra.py'],
+//   'ufl_file': ['NeoHooke_Hexa.py',
+//                'NeoHooke_Hexa_Order2.py',
+//                'NeoHooke_Tetra.py',
+//                'NeoHooke_Tetra_Order2.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -33,11 +36,13 @@ extern ufcx_dofmap dofmap_fa87cee5c4927ef45d998ec9fec54bc2e34e5444;
 
 extern ufcx_dofmap dofmap_ac7b8695c5f1b030c221ce178a8ccf93e59b27a8;
 
-extern ufcx_integral integral_2e384ec671b74569b1bb349426416f72ac1722a1;
+extern ufcx_integral integral_1c07ae730faa9aa32d20632e42f1796c87a2a795;
 
-extern ufcx_integral integral_d6af65c8a42d71c7a9c6422652b716b2bb1fae2e;
+extern ufcx_integral integral_7ea029a84cfe1c55796506cddc26e806346061d6;
 
-extern ufcx_form form_c129190cfde8bdb29ee26663556b96557be4d659;
+extern ufcx_integral integral_e7e42fd9da23dc749e8c24034db10143bba6225b;
+
+extern ufcx_form form_f32fbcfc8d5a394caf08df529c9595779a479c8e;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.
@@ -50,7 +55,7 @@ extern ufcx_form* form_NeoHooke_Tetra_F;
 //
 ufcx_function_space* functionspace_form_NeoHooke_Tetra_F(const char* function_name);
 
-extern ufcx_form form_0fde9b75ed944461b005c002a6f8917bf2d89034;
+extern ufcx_form form_cd4ec0282d07d9026404f5f890ff481382c17936;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.
@@ -62,6 +67,19 @@ extern ufcx_form* form_NeoHooke_Tetra_J;
 // i.e. name of the Python variable.
 //
 ufcx_function_space* functionspace_form_NeoHooke_Tetra_J(const char* function_name);
+
+extern ufcx_form form_ad91a8b6f93b422d98a84d56056b6ce300d41ae8;
+
+// Helper used to create form using name which was given to the
+// form in the UFL file.
+// This helper is called in user c++ code.
+//
+extern ufcx_form* form_NeoHooke_Tetra_Pi;
+
+// Helper used to create function space using function name
+// i.e. name of the Python variable.
+//
+ufcx_function_space* functionspace_form_NeoHooke_Tetra_Pi(const char* function_name);
 
 #ifdef __cplusplus
 }

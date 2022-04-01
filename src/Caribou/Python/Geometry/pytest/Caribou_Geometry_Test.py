@@ -10,11 +10,11 @@ site_packages_dir = (current_dir / '..' / '..' / 'lib' / 'python3' / 'site-packa
 sys.path.insert(0, str(site_packages_dir))
 print(f'Adding {site_packages_dir} to sys.path')
 import Caribou
-from Caribou.Geometry import Segment
-from Caribou.Geometry import Quad
-from Caribou.Geometry import Triangle
-from Caribou.Geometry import Tetrahedron
-from Caribou.Geometry import Hexahedron
+from Caribou.Geometry import Segment, Segment3
+from Caribou.Geometry import Quad, Quad8
+from Caribou.Geometry import Triangle, Triangle6
+from Caribou.Geometry import Tetrahedron, Tetrahedron10
+from Caribou.Geometry import Hexahedron, Hexahedron20
 
 
 def p1(p):
@@ -69,31 +69,31 @@ class TestSegment(unittest.TestCase):
         self.assertTrue((s.nodes() == np.array([[-5, 4, 1], [5, -4, 1]])).all())
 
     def test_constructor_quadratic(self):
-        s = Segment(Caribou.Quadratic)
+        s = Segment3()
         self.assertTrue((s.nodes() == np.array([-1., 1., 0.])).all())
 
         # 1D
-        s = Segment(-5, 5, 0)
+        s = Segment3(-5, 5, 0)
         self.assertTrue((s.nodes() == np.array([-5., 5., 0])).all())
 
-        s = Segment([-5, 5, 0])
+        s = Segment3([-5, 5, 0])
         self.assertTrue((s.nodes() == np.array([-5., 5., 0])).all())
 
-        s = Segment([[-5], [5], [0]])
+        s = Segment3([[-5], [5], [0]])
         self.assertTrue((s.nodes() == np.array([-5., 5., 0])).all())
 
         # 2D
-        s = Segment([-5, 5], [5, -5], [0, 0])
+        s = Segment3([-5, 5], [5, -5], [0, 0])
         self.assertTrue((s.nodes() == np.array([[-5, 5], [5, -5], [0, 0]])).all())
 
-        s = Segment([[-5, 5], [5, -5], [0, 0]])
+        s = Segment3([[-5, 5], [5, -5], [0, 0]])
         self.assertTrue((s.nodes() == np.array([[-5, 5], [5, -5], [0, 0]])).all())
 
         # 3D
-        s = Segment([-5, 4, 1], [5, -4, 1], [0, 0, 1])
+        s = Segment3([-5, 4, 1], [5, -4, 1], [0, 0, 1])
         self.assertTrue((s.nodes() == np.array([[-5, 4, 1], [5, -4, 1], [0, 0, 1]])).all())
 
-        s = Segment([[-5, 4, 1], [5, -4, 1], [0, 0, 1]])
+        s = Segment3([[-5, 4, 1], [5, -4, 1], [0, 0, 1]])
         self.assertTrue((s.nodes() == np.array([[-5, 4, 1], [5, -4, 1], [0, 0, 1]])).all())
 
     def test_linear_1D(self):
@@ -153,10 +153,9 @@ class TestQuad(unittest.TestCase):
         self.assertTrue((s.nodes() == np.array([[-5, -4, 1], [5, -4, 1], [5, 4, 1], [-5, 4, 1]])).all())
 
     def test_quadratic_3D(self):
-        q = Quad(
+        q = Quad8(
             [-5, -53./15, -53./15], [+5, -53./15, -53./15],
-            [+10,+53./15, +53./15], [-10,+53./15, +53./15],
-            Caribou.Quadratic
+            [+10,+53./15, +53./15], [-10,+53./15, +53./15]
         )
         self.assertEqual(q.number_of_boundary_elements(), 4)
         self.assertEqual(q.number_of_nodes(), 8)
@@ -213,9 +212,8 @@ class TestTriangle(unittest.TestCase):
         self.assertTrue((t.nodes() == np.array([[50, 50, 5], [60, 50, 5], [55, 55, 5]])).all())
 
     def test_quadratic_3D(self):
-        t = Triangle(
-            [50, 50, 5], [60, 50, 5], [55, 55, 5],
-            Caribou.Quadratic
+        t = Triangle6(
+            [50, 50, 5], [60, 50, 5], [55, 55, 5]
         )
         self.assertEqual(t.number_of_boundary_elements(), 3)
         self.assertEqual(t.number_of_nodes(), 6)
@@ -265,9 +263,8 @@ class TestTetrahedron(unittest.TestCase):
         self.assertTrue((t.nodes() == np.array([[50, 50, 5], [60, 50, 5], [55, 55, 5], [0, 1, 2]])).all())
 
     def test_quadratic_3D(self):
-        t = Tetrahedron(
-            [50, 50, 0], [60, 50, 0], [55, 55, 0], [55, 52.5, -5],
-            Caribou.Quadratic
+        t = Tetrahedron10(
+            [50, 50, 0], [60, 50, 0], [55, 55, 0], [55, 52.5, -5]
         )
         self.assertEqual(t.number_of_boundary_elements(), 4)
         self.assertEqual(t.number_of_nodes(), 10)
@@ -317,7 +314,7 @@ class TestHexahedron(unittest.TestCase):
         self.assertTrue((t.nodes() == np.array([[-1, -1, -1], [+1, -1, -1], [+1, +1, -1], [-1, +1, -1], [-1, -1, +1], [+1, -1, +1], [+1, +1, +1], [-1, +1, +1]])).all())
 
     def test_quadratic_3D(self):
-        t = Hexahedron(Caribou.Quadratic)
+        t = Hexahedron20()
         self.assertEqual(t.number_of_boundary_elements(), 6)
         self.assertEqual(t.number_of_nodes(), 20)
 

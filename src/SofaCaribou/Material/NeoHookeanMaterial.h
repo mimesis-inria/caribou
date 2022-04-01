@@ -71,18 +71,6 @@ public:
         return D;
     }
 
-//    Eigen::Matrix<Real, 4, 3>
-//    calculate_nodal_forces(Eigen::Matrix<Real, 4, Dimension> & nodal_forces, Eigen::Matrix<Real, 4, Dimension> & coefficients, Eigen::Matrix<Real, 4, Dimension> & current_nodes_position) const override{
-//    const Real young_modulus = d_young_modulus.getValue();
-//    const Real poisson_ratio = d_poisson_ratio.getValue();
-////    const ufc_scalar_t constants[2] = {young_modulus, poisson_ratio};
-//    // Get the single cell integral
-////    const ufc_integral *integral =
-////        form_SaintVenantKirchhoff_Tetra_F->integrals(ufc_integral_type::cell)[0];
-////    integral->tabulate_tensor(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
-//        return nodal_forces;
-//    }
-
 
 private:
     // Private members

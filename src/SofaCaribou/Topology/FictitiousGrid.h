@@ -6,9 +6,11 @@
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/objectmodel/BaseObject.h>
-#include <sofa/defaulttype/Vec.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
+#include <sofa/defaulttype/Vec.h>
+#endif
 DISABLE_ALL_WARNINGS_END
 
 #include <Caribou/Geometry/RectangularQuad.h>
@@ -31,6 +33,9 @@ template <typename T> using vector = ::sofa::helper::vector<T>;
 using Vector3 = ::sofa::defaulttype::Vector3;
 using RGBAColor = ::sofa::helper::types::RGBAColor;
 template <typename Real> using TBoundingBox = ::sofa::defaulttype::TBoundingBox<Real> ;
+template <std::size_t N, typename Real>
+using Vec = sofa::defaulttype::Vec<N, Real>;
+
 }
 #endif
 
@@ -58,8 +63,8 @@ public:
     // Sofa data aliases
     // -----------------
     using SofaFloat = typename DataTypes::Real;
-    using SofaVecInt = sofa::defaulttype::Vec<Dimension, UNSIGNED_INTEGER_TYPE>;
-    using SofaVecFloat = sofa::defaulttype::Vec<Dimension, SofaFloat>;
+    using SofaVecInt = sofa::type::Vec<Dimension, UNSIGNED_INTEGER_TYPE>;
+    using SofaVecFloat = sofa::type::Vec<Dimension, SofaFloat>;
     using Coord = typename DataTypes::Coord;
     using SofaVecCoord = sofa::type::vector<Coord>;
     using ElementId = sofa::Index;

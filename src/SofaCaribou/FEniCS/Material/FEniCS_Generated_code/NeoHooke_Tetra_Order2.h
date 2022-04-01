@@ -12,7 +12,10 @@
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['NeoHooke_Tetra_Order2.py'],
+//   'ufl_file': ['NeoHooke_Hexa.py',
+//                'NeoHooke_Hexa_Order2.py',
+//                'NeoHooke_Tetra.py',
+//                'NeoHooke_Tetra_Order2.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -41,11 +44,13 @@ extern ufcx_dofmap dofmap_245f817e5f53640abdebf7310b7a715b0e8910a6;
 
 extern ufcx_dofmap dofmap_1fe49d7550e509ccee96a8f5d029606511c39b33;
 
-extern ufcx_integral integral_c35abcff9167c0670a9913558c5993c8127d4eee;
+extern ufcx_integral integral_d4df239667ae1e83391cf105aaa44efdd107dfa2;
 
-extern ufcx_integral integral_5a8255d2e0e5217db99068c7dd50e9ff6ccd1387;
+extern ufcx_integral integral_c5d9314e566f06eb9b70ee9033a6797acf63463b;
 
-extern ufcx_form form_cc0388f38af563ae0b0746bd6837d8491c6d2082;
+extern ufcx_integral integral_589a2e42abe29e2fcec7b5db0f13f228ca71c252;
+
+extern ufcx_form form_a97a853b1fe0da463a569f2e42aa7504ad2f6a71;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.
@@ -58,7 +63,7 @@ extern ufcx_form* form_NeoHooke_Tetra_Order2_F;
 //
 ufcx_function_space* functionspace_form_NeoHooke_Tetra_Order2_F(const char* function_name);
 
-extern ufcx_form form_f658a45a7700c787458ebe483a8791740edec2b4;
+extern ufcx_form form_a9c1225dcc99b387885c79d8fe00a1d2a563e3ab;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.
@@ -70,6 +75,19 @@ extern ufcx_form* form_NeoHooke_Tetra_Order2_J;
 // i.e. name of the Python variable.
 //
 ufcx_function_space* functionspace_form_NeoHooke_Tetra_Order2_J(const char* function_name);
+
+extern ufcx_form form_a3b136f6f2cd77486f5d254bfa0f03d124692c93;
+
+// Helper used to create form using name which was given to the
+// form in the UFL file.
+// This helper is called in user c++ code.
+//
+extern ufcx_form* form_NeoHooke_Tetra_Order2_Pi;
+
+// Helper used to create function space using function name
+// i.e. name of the Python variable.
+//
+ufcx_function_space* functionspace_form_NeoHooke_Tetra_Order2_Pi(const char* function_name);
 
 #ifdef __cplusplus
 }

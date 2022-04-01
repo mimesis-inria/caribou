@@ -16,13 +16,10 @@ DISABLE_ALL_WARNINGS_END
 namespace SofaCaribou::material {
 
 // Hexahedron linear specialization
-template <> auto SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron <caribou::Linear>, sofa::defaulttype::Vec3Types>::FEniCS_F() -> ufcx_integral*;
-template <> auto SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron <caribou::Linear>, sofa::defaulttype::Vec3Types>::FEniCS_J() -> ufcx_integral*;
-extern template class SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron<caribou::Linear>, sofa::defaulttype::Vec3Types>;
-
-template <> auto SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron <caribou::Quadratic>, sofa::defaulttype::Vec3Types>::FEniCS_F() -> ufcx_integral*;
-template <> auto SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron <caribou::Quadratic>, sofa::defaulttype::Vec3Types>::FEniCS_J() -> ufcx_integral*;
-extern template class SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron<caribou::Quadratic>, sofa::defaulttype::Vec3Types>;
+template <> auto SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>::FEniCS_F() -> ufcx_integral*;
+template <> auto SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>::FEniCS_J() -> ufcx_integral*;
+template <> auto SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>::FEniCS_Pi() -> ufcx_integral*;
+extern template class SaintVenantKirchhoffMaterial_FEniCS<caribou::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
 
 
 } // namespace SofaCaribou::mapping

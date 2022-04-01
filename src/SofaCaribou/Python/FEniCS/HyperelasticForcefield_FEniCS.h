@@ -22,6 +22,7 @@ void bind_hyperelastic_forcefield_FEniCS(pybind11::module &m, const std::string 
     c.def("K", &HyperelasticForcefield_FEniCS<Element>::K);
     c.def("cond", &HyperelasticForcefield_FEniCS<Element>::cond);
     c.def("eigenvalues", &HyperelasticForcefield_FEniCS<Element>::eigenvalues);
+    c.def("Pi", &HyperelasticForcefield_FEniCS<Element>::Pi);
     c.def("assemble_stiffness", [](HyperelasticForcefield_FEniCS<Element> & self, const Eigen::Matrix<double, Eigen::Dynamic, HyperelasticForcefield_FEniCS<Element>::Dimension, Eigen::RowMajor> & x, const Eigen::Matrix<double, Eigen::Dynamic, HyperelasticForcefield_FEniCS<Element>::Dimension, Eigen::RowMajor> & x0) {
         self.assemble_stiffness(x, x0);
     }, pybind11::arg("x").noconvert(true), pybind11::arg("x0").noconvert(true));

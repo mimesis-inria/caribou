@@ -4,6 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
+#include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
@@ -42,7 +43,7 @@ public:
     using Deriv    = typename DataTypes::Deriv;
     using Real     = typename Coord::value_type;
 
-    using Hexahedron = caribou::geometry::Hexahedron<caribou::Linear>;
+    using Hexahedron = caribou::geometry::Hexahedron;
     static constexpr INTEGER_TYPE NumberOfNodes = Hexahedron::NumberOfNodesAtCompileTime;
 
 

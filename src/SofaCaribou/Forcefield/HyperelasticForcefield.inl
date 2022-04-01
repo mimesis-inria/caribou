@@ -6,6 +6,7 @@
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/core/MechanicalParams.h>
 DISABLE_ALL_WARNINGS_END

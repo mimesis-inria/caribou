@@ -140,12 +140,9 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 
         }
 
-       
         // Compute the nodal forces
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
-        
-
 
         integral->tabulate_tensor_float64(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
 
@@ -161,6 +158,7 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
     // This is the only I found to detect when a stiffness matrix reassembly is needed for calls to addDForce
     K_is_up_to_date = false;
     eigenvalues_are_up_to_date = false;
+
 }
 
 template <typename Element>
@@ -254,6 +252,7 @@ SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
         return 0;
     }
 
+
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
 
@@ -265,18 +264,55 @@ SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
 
     if (nb_nodes == 0 || nb_elements == 0)
         return 0;
+    
+    if (Psi_is_up_to_date) {
+        return Psi;
+    }
 
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
 
+     // Compute the displacement with respect to the rest position
+    const auto u =  X - X0;
+
+    // Get FEniCS F 
+    const ufcx_integral *integral = material->FEniCS_Pi();
+
+    // Get constants from the material
+    const double constants[2] = {   
+                                    material->getConstants()(0, 0), // Young Modulus
+                                    material->getConstants()(0, 1)  // Poisson ration
+                                };
+
     SReal Psi = 0.;
 
-    /* sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::getPotentialEnergy");
+    sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::getPotentialEnergy");
 
-     --- Update Phi with FEniCS code here ---
+    for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
 
+        // Fetch the node indices of the element
+        auto node_indices = this->topology()->domain()->element_indices(element_id);
+
+        // Fetch the initial and current positions of the element's nodes
+        Matrix<NumberOfNodesPerElement, Dimension> current_nodes_position;
+        Matrix<NumberOfNodesPerElement, Dimension> coefficients;
+
+
+        for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
+            current_nodes_position.row(i).noalias() = X0.row(node_indices[i]);
+            coefficients.row(i).noalias() = u.row(node_indices[i]);
+
+        }
+
+        // Compute the element energy
+        Matrix<1, 1> element_energy;
+        element_energy.fill(0);
+
+        integral->tabulate_tensor_float64(element_energy.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
+        Psi += element_energy[0];
+    }
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield_FEniCS::getPotentialEnergy");
-     */
+    Psi_is_up_to_date = true;
     return Psi;
 }
 
@@ -325,11 +361,15 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::update_stiffness");
 
-    const double constants[2] = {3000, 0.3};
-    
+    // Get constants from the material
+    const double constants[2] = {
+                                    material->getConstants()(0, 0), // Young Modulus
+                                    material->getConstants()(0, 1)  // Poisson ratio
+                                };
     const auto u =  x - x0;
 
     const ufcx_integral *integral = material->FEniCS_J();
+
 #pragma omp parallel for if (enable_multithreading)
     for (int element_id = 0; element_id < static_cast<int>(nb_elements); ++element_id) {
         // Fetch the node indices of the element
@@ -412,4 +452,14 @@ auto HyperelasticForcefield_FEniCS<Element>::cond() -> Real {
     return min/max;
 }
 
+
+template <typename Element>
+auto HyperelasticForcefield_FEniCS<Element>::Pi() -> SReal {
+    if(Psi_is_up_to_date) {
+        return Psi;
+    }
+    msg_warning() << "Potential Energy haven't been updated, no call for getPotentialEnergy() was detected";
+    return 0;
+
+}
 } // namespace SofaCaribou::forcefield

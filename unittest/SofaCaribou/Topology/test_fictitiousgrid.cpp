@@ -2,7 +2,11 @@
 #include <SofaCaribou/Topology/FictitiousGrid.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 #include <sofa/helper/testing/BaseTest.h>
+#else
+#include <sofa/testing/BaseTest.h>
+#endif
 #include <sofa/simulation/Node.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
@@ -15,7 +19,13 @@ using sofa::helper::system::PluginManager ;
 using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 
-class FictitiousGrid : public sofa::helper::testing::BaseTest {
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+using namespace sofa::helper::testing;
+#else
+using namespace sofa::testing;
+#endif
+
+class FictitiousGrid : public BaseTest {
     void SetUp() override {
         setSimulation(new sofa::simulation::graph::DAGSimulation()) ;
         root = getSimulation()->createNewNode("root");

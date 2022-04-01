@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 5.0.2, 2022-01-26T14:21:43. -->
+<!-- Written by QtCreator 5.0.2, 2022-03-31T16:01:18. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -67,50 +67,7 @@
     <value type="bool" key="AutoTest.Framework.QtQuickTest">true</value>
     <value type="bool" key="AutoTest.Framework.QtTest">true</value>
    </valuemap>
-   <valuemap type="QVariantMap" key="AutoTest.CheckStates">
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Mechanics/main.cpp:Mechanics">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Mechanics/main.cpp:Strain">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_barycentric_container.cpp:BarycentricContainer">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_barycentric_container.cpp:_2D">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_domain.cpp:Domain">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_domain.cpp:Segment">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_mesh.cpp:AttachDomain">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_mesh.cpp:Constructor_eigen_copy">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_mesh.cpp:Constructor_std_copy">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_mesh.cpp:Mesh">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_mesh.cpp:Segment">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_mesh.cpp:Tetrahedron">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/Caribou/Topology/test_mesh.cpp:Triangle">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:Algebra">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:SofaFullDFullDDotProduct">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:SofaFullDFullFDotProduct">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_base_vector_operations.cpp:SofaFullFFullDDotProduct">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_eigen_matrix_wrapper.cpp:DenseMatrixByCopy">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_eigen_matrix_wrapper.cpp:DenseMatrixByReference">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_eigen_matrix_wrapper.cpp:SparseMatrixByCopy">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_eigen_matrix_wrapper.cpp:SparseMatrixByReference">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_eigen_vector_wrapper.cpp:ColVectorByCopy">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_eigen_vector_wrapper.cpp:ColVectorByReference">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Algebra/test_eigen_vector_wrapper.cpp:ColVectorCreation">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Forcefield/test_hyperelasticforcefield.cpp:Hexahedron_from_SOFA">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Forcefield/test_hyperelasticforcefield.cpp:HyperelasticForcefield">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Forcefield/test_tractionforce.cpp:Quad">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Forcefield/test_tractionforce.cpp:TractionForcefield">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Forcefield/test_tractionforce.cpp:Triangle">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Mass/test_cariboumass.cpp:CaribouMass">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Mass/test_cariboumass.cpp:LinearHexahedron">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Mass/test_cariboumass.cpp:LinearTetrahedron">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/ODE/test_backward_euler.cpp:BackwardEulerODESolver">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/ODE/test_backward_euler.cpp:Beam">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/ODE/test_static.cpp:Beam">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/ODE/test_static.cpp:InitCaribouSolver">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/ODE/test_static.cpp:InitMultipleCaribouSolver">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/ODE/test_static.cpp:InitSofaSolver">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/ODE/test_static.cpp:InitWithoutSolver">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/ODE/test_static.cpp:StaticODESolver">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Topology/test_fictitiousgrid.cpp:FictitiousGrid">Checked</value>
-    <value type="Qt::CheckState" key="1@/home/arnaud/dev/caribou/unittest/SofaCaribou/Topology/test_fictitiousgrid.cpp:Liver">Checked</value>
-   </valuemap>
+   <valuemap type="QVariantMap" key="AutoTest.CheckStates"/>
    <value type="int" key="AutoTest.RunAfterBuild">0</value>
    <value type="bool" key="AutoTest.UseGlobal">true</value>
    <valuelist type="QVariantList" key="ClangCodeModel.CustomCommandLineKey"/>

@@ -4,6 +4,10 @@ set(SOURCE_FILES
     main.cpp
 )
 
+if (NOT WIN32)
+    find_package(Threads QUIET)
+endif()
+
 enable_testing()
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})

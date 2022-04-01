@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SofaCaribou/FEniCS/Material/HyperelasticMaterial_FEniCS.h>
-//#include <SofaCaribou/Material/NeoHooke_Tetra.h>
 #include <iostream>
 DISABLE_ALL_WARNINGS_BEGIN
 #include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/NeoHooke_Tetra.h>
@@ -32,16 +31,27 @@ public:
     {
     }
 
-    Eigen::Array<float, 1, 2>
+    /* double*
     getConstants() override {
-        Eigen::Array<float, 1, 2> constants; 
+        double constants[2] =  {
+            d_young_modulus.getValue(),
+            d_poisson_ratio.getValue()
+        };
+        return constants;
+    } */
+
+    Eigen::Array<Real, 1, 2>
+    getConstants() override {
+        Eigen::Array<Real, 1, 2> constants;
         constants(0, 0) = d_young_modulus.getValue();
         constants(0, 1) = d_poisson_ratio.getValue();
         return constants;
     }
+    
 
     auto FEniCS_F() -> ufcx_integral* {}
     auto FEniCS_J() -> ufcx_integral* {}
+    auto FEniCS_Pi() -> ufcx_integral* {}
     
 
 private:

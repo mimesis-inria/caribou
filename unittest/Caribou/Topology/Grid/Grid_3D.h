@@ -19,7 +19,7 @@ TEST(Topology_Grid_3D, Grid3D) {
     using Dimensions = Grid::Dimensions;
     using GridCoordinates = Grid::GridCoordinates;
     using CellIndex = Grid::CellIndex;
-    using Hexa = caribou::geometry::Hexahedron<caribou::Linear>;
+    using Hexa = caribou::geometry::Hexahedron;
 
     Grid grid(WorldCoordinates{0.25, 0.5, 0.75}, Subdivisions{2, 2, 2}, Dimensions{100, 100, 100});
 

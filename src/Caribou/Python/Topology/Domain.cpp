@@ -1,10 +1,15 @@
 #include <pybind11/pybind11.h>
 
 #include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/Hexahedron20.h>
 #include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Quad8.h>
 #include <Caribou/Geometry/Segment.h>
+#include <Caribou/Geometry/Segment3.h>
 #include <Caribou/Geometry/Triangle.h>
+#include <Caribou/Geometry/Triangle6.h>
 #include <Caribou/Geometry/Tetrahedron.h>
+#include <Caribou/Geometry/Tetrahedron10.h>
 #include <Caribou/Topology/Domain.h>
 
 #include <Caribou/Python/Topology/Domain.h>
@@ -30,28 +35,28 @@ void declare_domain(py::module &m) {
 
     // Segments
     if constexpr (Dimension >= 1) {
-        declare_domain<Segment<Dimension, Linear>>(m, "Domain" + std::to_string(Dimension) + "DSegmentLinear");
-        declare_domain<Segment<Dimension, Quadratic>>(m, "Domain" + std::to_string(Dimension) + "DSegmentQuadratic");
+        declare_domain<Segment<Dimension>>(m, "Domain" + std::to_string(Dimension) + "DSegment");
+        declare_domain<Segment3<Dimension>>(m, "Domain" + std::to_string(Dimension) + "DSegment3");
     }
 
     if constexpr (Dimension >= 2) {
         // Triangles
-        declare_domain<Triangle<Dimension, Linear>>(m, "Domain" + std::to_string(Dimension) + "DTriangleLinear");
-        declare_domain<Triangle<Dimension, Quadratic>>(m, "Domain" + std::to_string(Dimension) + "DTriangleQuadratic");
+        declare_domain<Triangle<Dimension>>(m, "Domain" + std::to_string(Dimension) + "DTriangle");
+        declare_domain<Triangle6<Dimension>>(m, "Domain" + std::to_string(Dimension) + "DTriangle6");
 
         // Quads
-        declare_domain<Quad<Dimension, Linear>>(m, "Domain" + std::to_string(Dimension) + "DQuadLinear");
-        declare_domain<Quad<Dimension, Quadratic>>(m, "Domain" + std::to_string(Dimension) + "DQuadQuadratic");
+        declare_domain<Quad<Dimension>>(m, "Domain" + std::to_string(Dimension) + "DQuad");
+        declare_domain<Quad8<Dimension>>(m, "Domain" + std::to_string(Dimension) + "DQuad8");
     }
 
     if constexpr (Dimension == 3) {
         // Hexahedrons
-        declare_domain<Hexahedron<Linear>>(m, "Domain3DHexahedronLinear");
-        declare_domain<Hexahedron<Quadratic>>(m, "Domain3DHexahedronQuadratic");
+        declare_domain<Hexahedron>(m, "Domain3DHexahedron");
+        declare_domain<Hexahedron20>(m, "Domain3DHexahedron20");
 
         // Tetrahedrons
-        declare_domain<Tetrahedron<Linear>>(m, "Domain3DTetrahedronLinear");
-        declare_domain<Tetrahedron<Quadratic>>(m, "Domain3DTetrahedronQuadratic");
+        declare_domain<Tetrahedron>(m, "Domain3DTetrahedron");
+        declare_domain<Tetrahedron10>(m, "Domain3DTetrahedron10");
     }
 }
 
