@@ -41,6 +41,10 @@ set(HEADER_FILES
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS.h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron].h
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].h
+    # FEniCS_Material
+    FEniCS/Material/FEniCS_Material.h
+    FEniCS/Material/FEniCS_Material[Hexahedron].h
+    FEniCS/Material/FEniCS_Material[Tetrahedron].h
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.h
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.h
@@ -116,6 +120,9 @@ set(SOURCE_FILES
     FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].cpp
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron].cpp
     FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].cpp
+    # FEniCS_Material
+    FEniCS/Material/FEniCS_Material[Hexahedron].cpp
+    FEniCS/Material/FEniCS_Material[Tetrahedron].cpp
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.c
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.c

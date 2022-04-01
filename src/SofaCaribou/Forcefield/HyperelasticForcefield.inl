@@ -128,9 +128,11 @@ void HyperelasticForcefield<Element>::addForce(
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
 
+
         // Compute the nodal forces
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
+    
 
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
 

@@ -140,9 +140,12 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 
         }
 
+       
         // Compute the nodal forces
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
+        
+
 
         integral->tabulate_tensor_float64(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
 
@@ -323,6 +326,7 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::update_stiffness");
 
     const double constants[2] = {3000, 0.3};
+    
     const auto u =  x - x0;
 
     const ufcx_integral *integral = material->FEniCS_J();

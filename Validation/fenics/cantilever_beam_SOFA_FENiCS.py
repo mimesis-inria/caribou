@@ -5,7 +5,7 @@ import numpy as np
 
 ELEMENT_TYPE = "Tetrahedron"
 ELEMENT_APPROXIMATION_DEGREE = 2
-MATERIAL_MODEL = "NeoHookean"
+MATERIAL_MODEL = "SaintVenantKirchhoff"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 # TODO redefine the visualization of the hexaedron
 
@@ -24,12 +24,14 @@ elif ELEMENT_TYPE == "Hexahedron" and ELEMENT_APPROXIMATION_DEGREE == 1:
     mesh = meshio.read("../meshes/beam_q1.vtu")
     indices = np.empty(mesh.cells_dict['hexahedron'].shape)
     indices = mesh.cells_dict['hexahedron'][:, [4, 5, 0, 1, 7, 6, 3, 2]]
+    #indices = mesh.cells_dict['hexahedron'][:, [0, 1, 2, 3, 4, 5, 6, 7]]
 elif ELEMENT_TYPE == "Hexahedron" and ELEMENT_APPROXIMATION_DEGREE == 2:
     element = "Hexahedron20"
     mesh = meshio.read("../meshes/beam_q2.vtu")
     indices = np.empty(mesh.cells_dict['hexahedron20'].shape)
     indices = mesh.cells_dict['hexahedron20'][:,
               [4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10]]
+
 else:
     raise ValueError('The element or the approximation order is not implemented yet.')
 
@@ -63,7 +65,7 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         sofa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-        sofa_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
+        sofa_node.addObject('ConstantForceField', force="0 -500 0", indices="@top_roi.indices")
         sofa_node.addObject(material, young_modulus="3000", poisson_ratio="0.3")
         sofa_node.addObject('HyperelasticForcefield', printLog=True)
 
@@ -77,9 +79,9 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-        fenics_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
-        fenics_node.addObject(material + '_FEniCS', template=element, young_modulus="3000",
-                              poisson_ratio="0.3")
+        fenics_node.addObject('ConstantForceField', force="0 -500 0", indices="@top_roi.indices")
+        #fenics_node.addObject('FEniCS_Material', template=element, young_modulus="3000", material_name="StVk", path="../your/path", poisson_ratio="0.3")
+        fenics_node.addObject(material + '_FEniCS', template=element, young_modulus="3000", poisson_ratio="0.3")
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 
         return root
@@ -103,7 +105,8 @@ class ControlFrame(Sofa.Core.Controller):
             if np.linalg.norm(sofa_current_point - sofa_initial_point) != 0:
                 errors.append(np.linalg.norm(sofa_current_point - fenics_current_point) / np.linalg.norm(
                     sofa_current_point - sofa_initial_point))
-
+                
+                
         mean_error = np.mean(np.array(errors))
 
         print(f"Relative Mean Error: {100 * mean_error} %")

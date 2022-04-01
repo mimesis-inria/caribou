@@ -37,7 +37,9 @@ def create_scene(root):
     root.addObject('RequiredPlugin', pluginName='SofaBaseMechanics SofaBoundaryCondition')
     root.addObject('RequiredPlugin', name='SofaCaribou')
     root.addObject('VisualStyle', displayFlags='showBehaviorModels showForceFields')
-
+    """ sofa_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
+                            relative_residual_tolerance_threshold="1e-10", printLog="1")
+        sofa_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d") """
     root.addObject('StaticODESolver', newton_iterations=10, residual_tolerance_threshold=1e-10, printLog=True)
     root.addObject('LDLTSolver', backend='Pardiso')
     root.addObject('MechanicalObject', name='mo', position=mesh.points.tolist())
