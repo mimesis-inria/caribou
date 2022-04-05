@@ -8,7 +8,6 @@ while output != '1' and output != '2':
     print('1 - SaintVenantKirchhoff')
     print('2 - Neo-Hookean')
     output = input()
-    print(output)
 
 if output == '1': 
     sonics_material = 'SaintVenantKirchhoffMaterial_FEniCS'
@@ -39,13 +38,13 @@ elif output == '2':
     indices = np.empty(mesh.cells_dict['tetra10'].shape)
     indices = mesh.cells_dict['tetra10'][:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
 elif output == '3': 
-    element = 'Hexahedron'
+    element = 'Hexahedron_FEniCS'
     meshfile = "../../meshes/beam_q1.vtu"
     mesh = meshio.read(meshfile)
     indices = np.empty(mesh.cells_dict['hexahedron'].shape)
     indices = mesh.cells_dict['hexahedron'][:, [4, 5, 0, 1, 7, 6, 3, 2]]
 else:
-    element = 'Hexahedron20'
+    element = 'Hexahedron_FEniCS20'
     meshfile = "../../meshes/beam_q2.vtu"
     mesh = meshio.read(meshfile)
     indices = np.empty(mesh.cells_dict['hexahedron20'].shape)
@@ -64,7 +63,7 @@ parameters = {
     'mesh': mesh,
     'young_modulus': 3000, 
     'poisson_ratio': 0.3, 
-    'traction': np.array([0., -10, 0.]), 
+    'traction': np.array([0., -100, 0.]), 
     'residual_tolerance':"1e-10",
     'displacement_tolerance': "1e-10",
     'nnewtonsteps': 25,
@@ -73,7 +72,7 @@ parameters = {
     'bas_id': 1,  # Id of surface elements forming the base of the beam. Must be defined in the gmsh:physical Cell Data attribute.
     'top_id': 2,  # Id of surface elements forming the top of the beam. Must be defined in the gmsh:physical Cell Data attribute.
     'vol_id': 4,  # Id of volumentric elements forming the top of the beam. Must be defined in the gmsh:physical Cell Data attribute.
-    'displacements_filename': 'febio_displacements.txt',
+    'displacement_filename': './febio_displacements.txt',
 }
 
 meshio_to_febio_element_types = {

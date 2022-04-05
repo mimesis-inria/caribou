@@ -89,7 +89,7 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
         fenics_node.addObject(material + '_FEniCS', template=element_fenics, young_modulus="3000",
                               poisson_ratio="0.3")
-        self.ff = fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
+        fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 
         return root
 
@@ -115,7 +115,6 @@ class ControlFrame(Sofa.Core.Controller):
 
         mean_error = np.mean(np.array(errors))
 
-        Pi = self.ff.Pi()
 
         print(f"Relative Mean Error: {100 * mean_error} %")
 

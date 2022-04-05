@@ -7,26 +7,29 @@ import meshio, tempfile, subprocess
 def febio_scene(parameters, elements): 
     # Create the FEBio spec file
 
-    with tempfile.NamedTemporaryFile(suffix=".txt") as f:
-        displacement_filename = f.name
     c = []
     c.append(f'<?xml version="1.0" encoding="UTF-8"?>')
-    c.append(f'<febio_spec version="2.0">')
+    c.append(f'<febio_spec version="3.0">')
     c.append(f'  <Module type="solid"/>')
     c.append(f'  <Control>')
-    c.append(f'    <title>Rectangular beam bending</title>')
     c.append(f'    <time_steps>{parameters["nsteps"]}</time_steps>')
     c.append(f'    <step_size>1</step_size>')
-    c.append(f'    <rtol>{parameters["residual_tolerance"]}</rtol>')
-    c.append(f'    <dtol>{parameters["displacement_tolerance"]}</dtol>')
-    c.append(f'    <max_ups>{parameters["nBFGSsteps"]}</max_ups>')
-    c.append(f'    <max_refs>{parameters["nnewtonsteps"]}</max_refs>')
-    c.append(f'    <lstol>0</lstol>')
-    c.append(f'    <min_residual>1e-15</min_residual>')
-    c.append(f'    <output_level>OUTPUT_FINAL</output_level>')
+    c.append(f'    <solver>')
+    c.append(f'    	<max_refs>{parameters["nnewtonsteps"]}</max_refs>')
+    c.append(f'    	<max_ups>{parameters["nBFGSsteps"]}</max_ups>')
+    c.append(f'    	<diverge_reform>1</diverge_reform>')
+    c.append(f'    	<reform_each_time_step>1</reform_each_time_step>')
+    c.append(f'    	<dtol>{parameters["displacement_tolerance"]}</dtol>')
+    c.append(f'    	<etol>0.01</etol>')
+    c.append(f'    	<rtol>{parameters["residual_tolerance"]}</rtol>')
+    c.append(f'    	<lstol>0</lstol>')
+    c.append(f'    	<min_residual>1e-15</min_residual>')
+    c.append(f'    	<qnmethod>BFGS</qnmethod>')
+    c.append(f'    	<rhoi>-2</rhoi>')
+    c.append(f'    </solver>')
     c.append(f'  </Control>')
     c.append(f'  <Material>')
-    c.append(f'    <material id="1" type="{parameters["febio_material"]}">')
+    c.append(f'    <material id="1" name="{parameters["febio_material"]}" type="{parameters["febio_material"]}">')
     c.append(f'      <E>{parameters["young_modulus"]}</E>')
     c.append(f'      <v>{parameters["poisson_ratio"]}</v>')
     c.append(f'    </material>')
@@ -42,6 +45,13 @@ def febio_scene(parameters, elements):
     for n in base_nodes:
         c.append(f'      <node id="{n+1}"/>')
     c.append(f'    </NodeSet>')
+
+    c.append(f'    <NodeSet name="top_nodes">')
+    top_nodes = np.unique(np.concatenate([elements[parameters["top_id"]][type] for type in elements[parameters["top_id"]].keys()])).astype(int)
+    for n in top_nodes:
+        c.append(f'      <node id="{n+1}"/>')
+    c.append(f'    </NodeSet>')
+   
     for type, indices in elements[parameters["vol_id"]].items():
         c.append(f'    <Elements type="{type}" mat="1">')
         for id, t in enumerate(indices[0].tolist()):
@@ -64,26 +74,30 @@ def febio_scene(parameters, elements):
     c.append(f'  </Geometry>')
 
     c.append(f'  <Boundary>')
-    c.append(f'    <fix bc="xyz" set="base_nodes"/>')
+    c.append(f'  <bc name="FixedDisplacement01" type="fix" node_set="base_nodes">')
+    c.append(f'  		<dofs>x,y,z</dofs>')
+    c.append(f'  </bc>')
     c.append(f'  </Boundary>')
 
     c.append(f'  <Loads>')
-    c.append(f'    <surface_load type="traction" extend="constant">')
-    c.append(f'      <surface set="top"/>')
-    c.append(f'      <scale lc="1">{np.linalg.norm(parameters["traction"])}</scale>')
-    c.append(f'      <traction>{",".join([str(i) for i in parameters["traction"]/np.linalg.norm(parameters["traction"])])}</traction>')
-    c.append(f'    </surface_load>')
+    c.append(f'      <nodal_load name="ForceLoad01" type="nodal_load" node_set="top_nodes">')
+    c.append(f'      		<dof>y</dof>')
+    c.append(f'      		<scale lc="1">{parameters["traction"][1]}</scale>')
+    c.append(f'      	</nodal_load>')
     c.append(f'  </Loads>')
 
     c.append(f'  <LoadData>')
-    c.append(f'    <loadcurve id="1" type="linear">')
-    c.append(f'      <loadpoint>0,0</loadpoint>')
-    c.append(f'      <loadpoint>{parameters["nsteps"]},1</loadpoint>')
-    c.append(f'    </loadcurve>')
+    c.append(f'  	<load_controller id="1" type="loadcurve">')
+    c.append(f'  		<interpolate>SMOOTH</interpolate>')
+    c.append(f'  		<points>')
+    c.append(f'  			<point>0,0</point>')
+    c.append(f'  			<point>1,1</point>')
+    c.append(f'  		</points>')
+    c.append(f'  	</load_controller>')
     c.append(f'  </LoadData>')
 
     c.append(f'  <Output>')
-    c.append(f'    <logfile file="{displacement_filename}">')
+    c.append(f'    <logfile file="{parameters["displacement_filename"]}">')
     c.append(f'      <node_data data="x;y;z"></node_data>')
     c.append(f'    </logfile>')
     c.append(f'  </Output>')
@@ -114,7 +128,7 @@ def febio_scene(parameters, elements):
     p.communicate()
     assert p.returncode == 0, f"febio exited with error (return code {p.returncode})."
     print('Done')
-    with open(displacement_filename, 'r') as f:
+    with open(parameters["displacement_filename"], 'r') as f:
         lines = f.readlines()
         last_record_position = 0
         for id, l in zip(range(len(lines)),lines):

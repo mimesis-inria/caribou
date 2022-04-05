@@ -52,7 +52,7 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-        fenics_node.addObject('ConstantForceField', force=[0., -100, 0.], indices="@top_roi.indices")
+        fenics_node.addObject('ConstantForceField', force=parameters['traction'].tolist(), indices="@top_roi.indices")
         fenics_node.addObject(parameters['sonics_material'], template=parameters['element'], young_modulus=parameters['young_modulus'], poisson_ratio=parameters['poisson_ratio'])
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 
@@ -67,12 +67,11 @@ class ControlFrame(Sofa.Core.Controller):
 
     def onAnimateEndEvent(self, event):
         sonics_current_positions = np.array(self.fenics_mo.position.value.copy().tolist())
-        #sonics_displacement = sonics_current_positions - self.fenics_rest_position
+        sonics_displacement = sonics_current_positions - self.sonics_initial_points
         
-        
+        febio_displacement = self.febio_current_points - self.sonics_initial_points
         
         errors = []
-
         
         for febio_current_point, sonics_current_point, sonics_initial_point in zip(self.febio_current_points,
                                                                                 sonics_current_positions,
