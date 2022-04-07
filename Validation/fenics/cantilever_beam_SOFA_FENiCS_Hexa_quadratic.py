@@ -63,7 +63,7 @@ def createScene(root):
     indices = np.array([4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10])
 
 
-    hexa_node = root.addChild("hexa_node")
+    """ hexa_node = root.addChild("hexa_node")
     hexa_node.addObject('StaticSolver', newton_iterations="1", relative_correction_tolerance_threshold="1e-15", relative_residual_tolerance_threshold="1e-10", printLog="1")
     hexa_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
 
@@ -76,7 +76,7 @@ def createScene(root):
     hexa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
     hexa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
     hexa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-    hexa_node.addObject('ConstantForceField', force="0 -1 0", indices="@top_roi.indices")
+    hexa_node.addObject('ConstantForceField', force="0 -1 0", indices="@top_roi.indices") """
 
     test_node = root.addChild("test")
     test_node.addObject('StaticSolver', newton_iterations="1", relative_correction_tolerance_threshold="1e-15", relative_residual_tolerance_threshold="1e-10", printLog="1")

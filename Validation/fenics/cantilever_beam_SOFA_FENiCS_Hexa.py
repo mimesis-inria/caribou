@@ -83,7 +83,7 @@ def createScene(root):
 
 
     import meshio
-    beam_q1 = meshio.read("../meshes/beam_q1.vtu")
+    beam_q1 = meshio.read("/home/sidaty/Desktop/Vascularization/external_plugins/caribou/Validation/meshes/beam_q1.vtu")
 
     # TODO improve the manual permutation for matching the redefinition of the hexahedron
     # TODO redefine the visualization of the hexaedron

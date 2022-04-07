@@ -1,4 +1,4 @@
-# Required import for python
+""" # Required import for python
 import Sofa
 import SofaCaribou
 import numpy as np
@@ -70,4 +70,9 @@ def createScene(root):
 
 # Function used only if this script is called from a python environment
 if __name__ == '__main__':
-    main()
+    main() """
+
+from sketchpy import library as lib 
+
+obj = lib.tom_holland()
+obj.draw()
