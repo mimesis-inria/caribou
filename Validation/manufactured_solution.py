@@ -22,7 +22,7 @@ import Sofa, SofaRuntime, SofaCaribou
 import meshio, numpy as np
 from manufactured_solution import assemble, integrate, compute_solution, ConstantForceField
 
-mesh = meshio.read('meshes/cylinder_p1.vtu')
+mesh = meshio.read('meshes/beam_p2.vtu')
 
 mu = 1.0
 l  = 1.25
@@ -34,19 +34,23 @@ P, f, u_s = compute_solution(mu, l, rad, length)
 
 
 def create_scene(root):
-    root.addObject('RequiredPlugin', pluginName='SofaBaseMechanics SofaBoundaryCondition')
+    root.addObject('RequiredPlugin', pluginName='SofaBaseMechanics SofaBoundaryCondition SofaImplicitOdeSolver SofaSparseSolver')
     root.addObject('RequiredPlugin', name='SofaCaribou')
     root.addObject('VisualStyle', displayFlags='showBehaviorModels showForceFields')
-    """ sofa_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
-                            relative_residual_tolerance_threshold="1e-10", printLog="1")
-        sofa_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d") """
+    #root.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
+    #                        relative_residual_tolerance_threshold="1e-10", printLog="1")
+    #root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
     root.addObject('StaticODESolver', newton_iterations=10, residual_tolerance_threshold=1e-10, printLog=True)
     root.addObject('LDLTSolver', backend='Pardiso')
     root.addObject('MechanicalObject', name='mo', position=mesh.points.tolist())
-    root.addObject('CaribouTopology', name='volume', template='Tetrahedron', indices=mesh.cells[1].data.tolist())
+    """root.addObject('CaribouTopology', name='volume', template='Tetrahedron', indices=mesh.cells[1].data.tolist())
     root.addObject('CaribouTopology', name='dirichlet_boundary', template='Triangle', indices=mesh.cells[0].data[np.ma.masked_equal(mesh.cell_data['gmsh:physical'][0], 1).mask].tolist())
     root.addObject('CaribouTopology', name='neumann_boundary',   template='Triangle', indices=mesh.cells[0].data[np.ma.masked_inside(mesh.cell_data['gmsh:physical'][0], 2, 3).mask].tolist())
-
+    """
+    root.addObject('CaribouTopology', name='volume', template='Tetrahedron10', indices=mesh.cells[1].data.tolist())
+    root.addObject('CaribouTopology', name='dirichlet_boundary', template='Triangle6', indices=mesh.cells[0].data[np.ma.masked_equal(mesh.cell_data['gmsh:physical'][0], 1).mask].tolist())
+    root.addObject('CaribouTopology', name='neumann_boundary',   template='Triangle6', indices=mesh.cells[0].data[np.ma.masked_inside(mesh.cell_data['gmsh:physical'][0], 2, 3).mask].tolist())
+ 
     root.addObject('SaintVenantKirchhoffMaterial', young_modulus=young_modulus, poisson_ratio=poisson_ratio)
     root.addObject('HyperelasticForcefield', topology='@volume', printLog=True)
 

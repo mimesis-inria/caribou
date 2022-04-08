@@ -12,7 +12,7 @@ class ConstantForceField(ForceField):
     def addForce(self, m, out_force, pos, vel):
         with out_force.writeable() as wa:
             wa[:] += self.forces
-
+            
     def addDForce(self, df, dx, params):
         pass
 

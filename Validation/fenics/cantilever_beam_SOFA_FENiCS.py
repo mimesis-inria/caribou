@@ -4,10 +4,11 @@ import meshio
 import numpy as np
 
 ELEMENT_TYPE = "Hexahedron"
-ELEMENT_APPROXIMATION_DEGREE = 2
+ELEMENT_APPROXIMATION_DEGREE = 1
 MATERIAL_MODEL = "NeoHookean"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 # TODO redefine the visualization of the hexaedron
+
 
 if ELEMENT_TYPE == "Tetrahedron" and ELEMENT_APPROXIMATION_DEGREE == 1:
     element_sofa = "Tetrahedron"
@@ -87,8 +88,9 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
         fenics_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
-        fenics_node.addObject(material + '_FEniCS', template=element_fenics, young_modulus="3000",
-                              poisson_ratio="0.3")
+        fenics_node.addObject('FEniCS_Material', template=element_fenics, young_modulus="3000",
+                              poisson_ratio="0.3", material_name=MATERIAL_MODEL, path="/home/..")
+
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 
         return root

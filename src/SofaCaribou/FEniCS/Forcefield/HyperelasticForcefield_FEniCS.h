@@ -4,7 +4,7 @@
 #include <array>
 
 #include <SofaCaribou/config.h>
-#include <SofaCaribou/FEniCS/Material/HyperelasticMaterial_FEniCS.h>
+#include <SofaCaribou/FEniCS/Material/FEniCS_Material.h>
 #include <SofaCaribou/Forcefield/CaribouForcefield.h>
 
 #include <Caribou/config.h>
@@ -46,9 +46,6 @@ public:
 
     template<int nRows>
     using Vector = typename Inherit::template Vector<nRows>;
-
-    using Mat33   = Matrix<3, 3>;
-    using Vec3   = Vector<3>;
 
     template <typename ObjectType>
     using Link = sofa::core::objectmodel::SingleLink<HyperelasticForcefield_FEniCS<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
@@ -187,7 +184,7 @@ private:
 
 
     // Data members
-    Link<material::HyperelasticMaterial_FEniCS<Element, DataTypes>> d_material;
+    Link<material::FEniCS_Material<Element, DataTypes>> d_material;
     sofa::core::objectmodel::Data<bool> d_enable_multithreading;
 
     // Private variables

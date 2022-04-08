@@ -46,7 +46,7 @@ void HyperelasticForcefield_FEniCS<Element>::init()
 
     // No material set, try to find one in the current context
     if (not d_material.get()) {
-        auto materials = this->getContext()->template getObjects<material::HyperelasticMaterial_FEniCS<Element, DataTypes>>(BaseContext::Local);
+        auto materials = this->getContext()->template getObjects<material::FEniCS_Material<Element, DataTypes>>(BaseContext::Local);
         if (materials.empty()) {
             msg_warning() << "Could not find an hyperelastic material in the current context.";
         } else if (materials.size() > 1) {
@@ -57,6 +57,10 @@ void HyperelasticForcefield_FEniCS<Element>::init()
             d_material.set(materials[0]);
             msg_info() << "Automatically found the material '" << d_material.get()->getPathName() << "'.";
         }
+    }
+    if(!d_material->MaterialIsAvailable()) {
+        msg_error() << "No material named " << d_material->getMaterialName() << " available";
+        return;
     }
 
     // Assemble the initial stiffness matrix
@@ -93,6 +97,12 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
     if (!material) {
         return;
     }
+
+    if(!d_material->MaterialIsAvailable()) {
+        msg_error() << "No material named " << d_material->getMaterialName() << " available";
+        return;
+    }
+
 
     ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
@@ -252,6 +262,10 @@ SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
         return 0;
     }
 
+    if(!d_material->MaterialIsAvailable()) {
+        msg_error()<< "No material named " << d_material->getMaterialName() << " available";
+        return 0;
+    }
 
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     sofa::helper::ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
@@ -346,6 +360,11 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
     [[maybe_unused]]
     const auto enable_multithreading = d_enable_multithreading.getValue();
     if (!material) {
+        return;
+    }
+
+    if(!d_material->MaterialIsAvailable()) {
+        msg_error() << "No material named " << d_material->getMaterialName() << " available";
         return;
     }
 

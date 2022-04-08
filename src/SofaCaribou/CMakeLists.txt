@@ -50,17 +50,23 @@ set(HEADER_FILES
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
-    FEniCS/Material/HyperelasticMaterial_FEniCS.h
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS.h
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS].h
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS20].h
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].h
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron10].h
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS.h
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS].h
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS20].h
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].h
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron10].h
+    #FEniCS/Material/HyperelasticMaterial_FEniCS.h
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS.h
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS].h
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS20].h
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].h
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron10].h
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS.h
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS].h
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS20].h
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].h
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron10].h
+    # FEniCS Material
+    FEniCS/Material/FEniCS_Material.h
+    FEniCS/Material/FEniCS_Material[Hexahedron_FEniCS].h
+    FEniCS/Material/FEniCS_Material[Hexahedron_FEniCS20].h
+    FEniCS/Material/FEniCS_Material[Tetrahedron].h
+    FEniCS/Material/FEniCS_Material[Tetrahedron10].h
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.h
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.h
@@ -154,15 +160,19 @@ set(SOURCE_FILES
     Mass/CaribouMass[Hexahedron].cpp
     Mass/CaribouMass[Hexahedron20].cpp
     Material/HyperelasticMaterial.cpp
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS].cpp
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS20].cpp
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].cpp
-    FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron10].cpp
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS].cpp
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS20].cpp
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].cpp
-    FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron10].cpp
-
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS].cpp
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Hexahedron_FEniCS20].cpp
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron].cpp
+    #FEniCS/Material/SaintVenantKirchhoff/SaintVenantKirchhoffMaterial_FEniCS[Tetrahedron10].cpp
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS].cpp
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Hexahedron_FEniCS20].cpp
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron].cpp
+    #FEniCS/Material/NeoHookean/NeoHookeanMaterial_FEniCS[Tetrahedron10].cpp
+    # FEniCS Material
+    FEniCS/Material/FEniCS_Material[Hexahedron_FEniCS].cpp
+    FEniCS/Material/FEniCS_Material[Hexahedron_FEniCS20].cpp
+    FEniCS/Material/FEniCS_Material[Tetrahedron].cpp
+    FEniCS/Material/FEniCS_Material[Tetrahedron10].cpp
     # StVk FEniCS Generated code
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra.c
     FEniCS/Material/FEniCS_Generated_code/SaintVenantKirchhoff_Tetra_Order2.c
