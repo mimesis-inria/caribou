@@ -103,6 +103,7 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         return;
     }
 
+    //material->before_update();
 
     ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
@@ -126,12 +127,28 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
     // Get FEniCS F 
     const ufcx_integral *integral = material->FEniCS_F();
 
+
     // Get constants from the material
-    const double constants[2] = {   
+    /* const double constants[2] = {   
                                     material->getConstants()(0, 0), // Young Modulus
                                     material->getConstants()(0, 1)  // Poisson ratio
+                                }; */
+    const double constants_mooney[3] = {   
+                                    material->getMooneyRivlinConstants()(0, 0), // Young Modulus
+                                    material->getMooneyRivlinConstants()(0, 1),  // Poisson ratiO
+                                    material->getMooneyRivlinConstants()(0, 2) 
                                 };
-
+    const double constants_else[2] = {   
+                                    material->getYoungModulusAndPoissonRatio()(0, 0), // Young Modulus
+                                    material->getYoungModulusAndPoissonRatio()(0, 1)  // Poisson ratio
+                                };
+    const double* constants;
+    if(material->getMaterialName() == "MooneyRivlin") {
+        constants = constants_mooney;
+    } else {
+        constants = constants_else;
+    }
+    
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::addForce");
 
     for (std::size_t element_id = 0; element_id < nb_elements; ++element_id) {
@@ -292,11 +309,21 @@ SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
     // Get FEniCS F 
     const ufcx_integral *integral = material->FEniCS_Pi();
 
-    // Get constants from the material
-    const double constants[2] = {   
-                                    material->getConstants()(0, 0), // Young Modulus
-                                    material->getConstants()(0, 1)  // Poisson ration
+    const double constants_mooney[3] = {   
+                                    material->getMooneyRivlinConstants()(0, 0), // Young Modulus
+                                    material->getMooneyRivlinConstants()(0, 1),  // Poisson ratiO
+                                    material->getMooneyRivlinConstants()(0, 2) 
                                 };
+    const double constants_else[2] = {   
+                                    material->getYoungModulusAndPoissonRatio()(0, 0), // Young Modulus
+                                    material->getYoungModulusAndPoissonRatio()(0, 1)  // Poisson ratio
+                                };
+    const double* constants;
+    if(material->getMaterialName() == "MooneyRivlin") {
+        constants = constants_mooney;
+    } else {
+        constants = constants_else;
+    }
 
     SReal Psi = 0.;
 
@@ -380,11 +407,21 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield_FEniCS::update_stiffness");
 
-    // Get constants from the material
-    const double constants[2] = {
-                                    material->getConstants()(0, 0), // Young Modulus
-                                    material->getConstants()(0, 1)  // Poisson ratio
+    const double constants_mooney[3] = {   
+                                    material->getMooneyRivlinConstants()(0, 0), // Young Modulus
+                                    material->getMooneyRivlinConstants()(0, 1),  // Poisson ratiO
+                                    material->getMooneyRivlinConstants()(0, 2) 
                                 };
+    const double constants_else[2] = {   
+                                    material->getYoungModulusAndPoissonRatio()(0, 0), // Young Modulus
+                                    material->getYoungModulusAndPoissonRatio()(0, 1)  // Poisson ratio
+                                };
+    const double* constants;
+    if(material->getMaterialName() == "MooneyRivlin") {
+        constants = constants_mooney;
+    } else {
+        constants = constants_else;
+    }
     const auto u =  x - x0;
 
     const ufcx_integral *integral = material->FEniCS_J();

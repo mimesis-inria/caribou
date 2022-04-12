@@ -17,6 +17,11 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/NeoHooke_Tetra_Order2.h>
 #include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/NeoHooke_Hexa.h>
 #include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/NeoHooke_Hexa_Order2.h>
+
+#include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Tetra.h>
+#include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Tetra_Order2.h>
+#include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Hexa.h>
+#include <SofaCaribou/FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Hexa_Order2.h>
 DISABLE_ALL_WARNINGS_END
 
 
@@ -43,13 +48,25 @@ public:
            "Poisson's ratio of the material",
            true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
         , d_path(initData(&d_path,
-        std::string("None"),  "path",
-        "Path to FEniCS generated code",
-        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+            std::string("None"),  "path",
+            "Path to FEniCS generated code",
+            true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
         , d_material_name(initData(&d_material_name,
-        std::string("None"),  "material_name",
-        "FEniCS Material Name",
-        true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+            std::string("None"),  "material_name",
+            "FEniCS Material Name",
+            true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+        , d_C01(initData(&d_C01, 
+            Real(0), "C01", 
+            "Monoey-Rivlin parameter c1", 
+            true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+        , d_C10(initData(&d_C10, 
+            Real(0), "C10", 
+            "Mooney-Rivlin parameter c2", 
+            true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+        , d_k(initData(&d_k, 
+            Real(0), "k", 
+            "Mooney-Rivlin parameter bulk modulus", 
+            true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
     {
     }
 
@@ -62,23 +79,43 @@ public:
     virtual auto FEniCS_Pi() -> ufcx_integral* {}
 
     Eigen::Array<Real, 1, 2>
-    getConstants() {
+    getYoungModulusAndPoissonRatio() {
         Eigen::Array<Real, 1, 2> constants;
         constants(0, 0) = d_young_modulus.getValue();
         constants(0, 1) = d_poisson_ratio.getValue();
         return constants;
     }
 
+
+    Eigen::Array<Real, 1, 3> getMooneyRivlinConstants() {
+        Eigen::Array<Real, 1, 3> constants;
+        constants(0, 0) = d_C01.getValue();
+        constants(0, 1) = d_C10.getValue();
+        constants(0, 2) = d_k.getValue();
+        return constants;
+    }
+
+
     bool MaterialIsAvailable() {
-        if (d_material_name.getValue() == "SaintVenantKirchhoff" || d_material_name.getValue() == "NeoHookean") {
+        if (d_material_name.getValue() == "SaintVenantKirchhoff" || 
+            d_material_name.getValue() == "NeoHookean" ||
+            d_material_name.getValue() == "MooneyRivlin") {
             return true;
         } else return false;
     }
+
+    /* void before_update() {
+        constants = {
+            d_young_modulus.getValue(),
+            d_poisson_ratio.getValue()
+        };
+    } */
 
     std::string getMaterialName() {
         return d_material_name.getValue();
     }
 
+    
     [[nodiscard]]  auto
     getTemplateName() const -> std::string override {
         return templateName(this);
@@ -111,9 +148,13 @@ public:
     }
 
 private:
+
     // Data members
     sofa::core::objectmodel::Data<Real> d_young_modulus;
     sofa::core::objectmodel::Data<Real> d_poisson_ratio;
+    sofa::core::objectmodel::Data<Real> d_C01;
+    sofa::core::objectmodel::Data<Real> d_C10;
+    sofa::core::objectmodel::Data<Real> d_k;
     sofa::core::objectmodel::Data<std::string> d_path;
     sofa::core::objectmodel::Data<std::string> d_material_name;
 };

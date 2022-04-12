@@ -25,6 +25,9 @@ ufcx_integral* FEniCS_Material<Tetrahedron, sofa::defaulttype::Vec3Types>::FEniC
         } else if(d_material_name.getValue() == "NeoHookean") {
             ufcx_integral *integral = form_NeoHooke_Tetra_F->integrals(ufcx_integral_type::cell)[0];
             return integral;
+        } else if(d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral = form_MooneyRivlin_Tetra_F->integrals(ufcx_integral_type::cell)[0];
+            return integral;
         }
     }
 template<>
@@ -35,6 +38,9 @@ ufcx_integral* FEniCS_Material<Tetrahedron, sofa::defaulttype::Vec3Types>::FEniC
         } else if(d_material_name.getValue() == "NeoHookean") {
             ufcx_integral *integral = form_NeoHooke_Tetra_J->integrals(ufcx_integral_type::cell)[0];
             return integral;
+        } else if(d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral = form_MooneyRivlin_Tetra_J->integrals(ufcx_integral_type::cell)[0];
+            return integral;
         }
     }
 template<>
@@ -44,6 +50,9 @@ ufcx_integral* FEniCS_Material<Tetrahedron, sofa::defaulttype::Vec3Types>::FEniC
             return integral;
         } else if(d_material_name.getValue() == "NeoHookean") {
             ufcx_integral *integral = form_NeoHooke_Tetra_Pi->integrals(ufcx_integral_type::cell)[0];
+            return integral;
+        } else if(d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral = form_MooneyRivlin_Tetra_Pi->integrals(ufcx_integral_type::cell)[0];
             return integral;
         }
     }

@@ -16,10 +16,13 @@ template class FEniCS_Material<caribou::geometry::Hexahedron_FEniCS, sofa::defau
 template <>
 ufcx_integral* FEniCS_Material<Hexahedron_FEniCS, sofa::defaulttype::Vec3Types>::FEniCS_F()  {
         if(d_material_name.getValue() == "SaintVenantKirchhoff") {
-            ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_F->integrals(ufcx_integral_type::cell)[0];
+            ufcx_integral *integral = form_SaintVenantKirchhoff_Hexa_F->integrals(ufcx_integral_type::cell)[0];
             return integral;
         } else if (d_material_name.getValue() == "NeoHookean") {
-            ufcx_integral *integral =form_NeoHooke_Hexa_F->integrals(ufcx_integral_type::cell)[0];
+            ufcx_integral *integral = form_NeoHooke_Hexa_F->integrals(ufcx_integral_type::cell)[0];
+            return integral;
+        } else if (d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral = form_MooneyRivlin_Hexa_F->integrals(ufcx_integral_type::cell)[0];
             return integral;
         }
     }
@@ -27,10 +30,13 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS, sofa::defaulttype::Vec3Types>:
 template <>
 ufcx_integral* FEniCS_Material<Hexahedron_FEniCS, sofa::defaulttype::Vec3Types>::FEniCS_J()  {
         if(d_material_name.getValue() == "SaintVenantKirchhoff") {
-            ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_J->integrals(ufcx_integral_type::cell)[0];
+            ufcx_integral *integral = form_SaintVenantKirchhoff_Hexa_J->integrals(ufcx_integral_type::cell)[0];
             return integral;
         } else if (d_material_name.getValue() == "NeoHookean") {
-            ufcx_integral *integral =form_NeoHooke_Hexa_J->integrals(ufcx_integral_type::cell)[0];
+            ufcx_integral *integral = form_NeoHooke_Hexa_J->integrals(ufcx_integral_type::cell)[0];
+            return integral;
+        } else if (d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral = form_MooneyRivlin_Hexa_J->integrals(ufcx_integral_type::cell)[0];
             return integral;
         }
     }
@@ -38,10 +44,13 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS, sofa::defaulttype::Vec3Types>:
 template <>
 ufcx_integral* FEniCS_Material<Hexahedron_FEniCS, sofa::defaulttype::Vec3Types>::FEniCS_Pi()  {
         if(d_material_name.getValue() == "SaintVenantKirchhoff") {
-            ufcx_integral *integral =form_SaintVenantKirchhoff_Hexa_Pi->integrals(ufcx_integral_type::cell)[0];
+            ufcx_integral *integral = form_SaintVenantKirchhoff_Hexa_Pi->integrals(ufcx_integral_type::cell)[0];
             return integral;
         } else if (d_material_name.getValue() == "NeoHookean") {
-            ufcx_integral *integral =form_NeoHooke_Hexa_Pi->integrals(ufcx_integral_type::cell)[0];
+            ufcx_integral *integral = form_NeoHooke_Hexa_Pi->integrals(ufcx_integral_type::cell)[0];
+            return integral;
+        } else if (d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral = form_MooneyRivlin_Hexa_Pi->integrals(ufcx_integral_type::cell)[0];
             return integral;
         }
     }
