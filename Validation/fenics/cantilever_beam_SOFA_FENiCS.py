@@ -3,6 +3,7 @@ import SofaCaribou
 import meshio
 import numpy as np
 
+
 ELEMENT_TYPE = "Hexahedron"
 ELEMENT_APPROXIMATION_DEGREE = 1
 MATERIAL_MODEL = "NeoHookean"
@@ -89,7 +90,7 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
         fenics_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
         fenics_node.addObject('FEniCS_Material', template=element_fenics, young_modulus="3000",
-                              poisson_ratio="0.3", material_name=MATERIAL_MODEL, path="/home/..")
+                              poisson_ratio="0.3", C01=0.7, C10=-0.55, k=0.001, material_name="MooneyRivlin", path="/home/..")
 
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 

@@ -53,8 +53,11 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
         fenics_node.addObject('ConstantForceField', force=parameters['traction'].tolist(), indices="@top_roi.indices")
-        fenics_node.addObject(parameters['sonics_material'], template=parameters['element'], young_modulus=parameters['young_modulus'], poisson_ratio=parameters['poisson_ratio'])
+        fenics_node.addObject('FEniCS_Material', template=parameters['element'], young_modulus="3000",
+                              poisson_ratio="0.3", C01=parameters['c01'], C10=parameters['c10'], k=parameters['k'], material_name=parameters['sonics_material'], path="/home/..")
+
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
+
 
         return root
 

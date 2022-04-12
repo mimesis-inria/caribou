@@ -20,6 +20,9 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS20, sofa::defaulttype::Vec3Types
         } else if(d_material_name.getValue() == "NeoHookean") {
             ufcx_integral *integral =form_NeoHooke_Hexa_Order2_F->integrals(ufcx_integral_type::cell)[0];
             return integral;
+        } else if(d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral =form_MooneyRivlin_Hexa_Order2_F->integrals(ufcx_integral_type::cell)[0];
+            return integral;
         }
     }
 template <>
@@ -30,7 +33,10 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS20, sofa::defaulttype::Vec3Types
         } else if(d_material_name.getValue() == "NeoHookean") {
             ufcx_integral *integral =form_NeoHooke_Hexa_Order2_J->integrals(ufcx_integral_type::cell)[0];
             return integral;
-        }
+        } else if(d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral =form_MooneyRivlin_Hexa_Order2_J->integrals(ufcx_integral_type::cell)[0];
+            return integral;
+        } 
     }
 template <>
 ufcx_integral* FEniCS_Material<Hexahedron_FEniCS20, sofa::defaulttype::Vec3Types>::FEniCS_Pi()  {
@@ -39,6 +45,9 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS20, sofa::defaulttype::Vec3Types
             return integral;
         } else if(d_material_name.getValue() == "NeoHookean") {
             ufcx_integral *integral =form_NeoHooke_Hexa_Order2_Pi->integrals(ufcx_integral_type::cell)[0];
+            return integral;
+        } else if(d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral =form_MooneyRivlin_Hexa_Order2_Pi->integrals(ufcx_integral_type::cell)[0];
             return integral;
         }
     }

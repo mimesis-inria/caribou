@@ -3,18 +3,22 @@ import numpy as np
 
 
 output = 0
-while output != '1' and output != '2':  
+while output != '1' and output != '2' and output != '3':  
     print('Choose one of the bellow materials: ')
     print('1 - SaintVenantKirchhoff')
     print('2 - Neo-Hookean')
+    print('3 - MooneyRivlin')
     output = input()
 
 if output == '1': 
-    sonics_material = 'SaintVenantKirchhoffMaterial_FEniCS'
+    sonics_material = 'SaintVenantKirchhoff'
     febio_material = 'isotropic elastic'
-else:
-    sonics_material = 'NeoHookeanMaterial_FEniCS'
+elif output == '2':
+    sonics_material = 'NeoHookean'
     febio_material = 'neo-Hookean'
+else: 
+    sonics_material = 'MooneyRivlin'
+    febio_material = 'coupled Mooney-Rivlin'
 
 output = 0
 while int(output) < 1 or int(output) > 4:  
@@ -59,6 +63,9 @@ parameters = {
     'indices': indices,
     'sonics_material': sonics_material, 
     'febio_material': febio_material,
+    'c01': 1000, 
+    'c10': 100, 
+    'k': 1000, 
     'meshfile': meshfile,
     'mesh': mesh,
     'young_modulus': 3000, 

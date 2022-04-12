@@ -30,8 +30,14 @@ def febio_scene(parameters, elements):
     c.append(f'  </Control>')
     c.append(f'  <Material>')
     c.append(f'    <material id="1" name="{parameters["febio_material"]}" type="{parameters["febio_material"]}">')
-    c.append(f'      <E>{parameters["young_modulus"]}</E>')
-    c.append(f'      <v>{parameters["poisson_ratio"]}</v>')
+    if(parameters['febio_material'] != "coupled Mooney-Rivlin"): 
+        c.append(f'      <E>{parameters["young_modulus"]}</E>')
+        c.append(f'      <v>{parameters["poisson_ratio"]}</v>')
+    else: 
+        c.append(f'     <c1>{parameters["c01"]}</c1>')
+        c.append(f'     <c2>{parameters["c10"]}</c2>')
+        c.append(f'     <k>{parameters["k"]}</k>')
+    
     c.append(f'    </material>')
     c.append(f'  </Material>')
 
@@ -103,6 +109,7 @@ def febio_scene(parameters, elements):
     c.append(f'  </Output>')
 
     c.append(f'</febio_spec>')
+
 
     with tempfile.NamedTemporaryFile(suffix=".feb") as f:
         feb_filename = f.name
