@@ -18,11 +18,7 @@ elif output == '2':
     febio_material = 'neo-Hookean'
 else: 
     sonics_material = 'MooneyRivlin'
-<<<<<<< HEAD
-    febio_material = 'coupled Mooney-Rivlin'
-=======
     febio_material = 'Mooney-Rivlin'
->>>>>>> 9cf7f89dbfc9c19148e756c04184278c91604969
 
 output = 0
 while int(output) < 1 or int(output) > 4:  
