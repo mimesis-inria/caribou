@@ -30,7 +30,7 @@ C_10 = Constant(cell)
 K = Constant(cell)
 
 # stored strain energy density (nearly incompressible Mooney-Rivlin model)
-psi = Constant(C_01)*(J**(-2.0/3.0)*I_C - 3) + Constant(C_10)*(J**(-4.0/3.0)*II_C - 3) + 0.5 * K * (ln(J))**2
+psi = C_01*(J**(-2.0/3.0)*I_C - 3) + C_10*(J**(-4.0/3.0)*II_C - 3) + 0.5 * K * (ln(J))**2
 
 # Total potential energy
 Pi = psi * dx(degree=1)

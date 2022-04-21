@@ -34,8 +34,8 @@ def febio_scene(parameters, elements):
         c.append(f'      <E>{parameters["young_modulus"]}</E>')
         c.append(f'      <v>{parameters["poisson_ratio"]}</v>')
     else: 
-        c.append(f'     <c1>{parameters["c10"]}</c1>')
-        c.append(f'     <c2>{parameters["c01"]}</c2>')
+        c.append(f'     <c1>{parameters["c01"]}</c1>')
+        c.append(f'     <c2>{parameters["c10"]}</c2>')
         c.append(f'     <k>{parameters["k"]}</k>')
     
     c.append(f'    </material>')
