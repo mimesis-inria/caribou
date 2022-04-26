@@ -22,21 +22,21 @@ import Sofa, SofaRuntime, SofaCaribou
 import meshio, numpy as np
 from manufactured_solution import assemble, integrate, compute_solution, ConstantForceField
 
-order = "linear"
+order = "quadratic"
 material = "SaintVenantKirchhoff"
 
 if order == "linear":
-    mesh = meshio.read('meshes/cylinder_p1.vtu')
+    mesh = meshio.read('meshes/new_cylinder_p1.vtu')
     surface_template = "Triangle"
     volume_template = "Tetrahedron"
     fenics_volume_indices = mesh.cells[1].data
     length = 80
 else:
-    mesh = meshio.read('meshes/cylinder_p2.vtu')
+    mesh = meshio.read('meshes/new_cylinder_p2.vtu')
     surface_template = "Triangle6"
     volume_template = "Tetrahedron10"
     fenics_volume_indices = mesh.cells[1].data[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
-    length = 3
+    length = 80
 
 mu = 1.0
 l = 1.25

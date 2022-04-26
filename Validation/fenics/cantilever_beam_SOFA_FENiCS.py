@@ -4,8 +4,8 @@ import meshio
 import numpy as np
 
 
-ELEMENT_TYPE = "Hexahedron"
-ELEMENT_APPROXIMATION_DEGREE = 1
+ELEMENT_TYPE = "Tetrahedron"
+ELEMENT_APPROXIMATION_DEGREE = 2
 MATERIAL_MODEL = "NeoHookean"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 # TODO redefine the visualization of the hexaedron
@@ -14,14 +14,16 @@ MATERIAL_MODEL = "NeoHookean"
 if ELEMENT_TYPE == "Tetrahedron" and ELEMENT_APPROXIMATION_DEGREE == 1:
     element_sofa = "Tetrahedron"
     element_fenics = element_sofa
-    mesh = meshio.read("../meshes/beam_p1.vtu")
+    mesh = meshio.read("../meshes/p1_from_gmsh.msh")
+    # mesh = meshio.read("../meshes/beam_p1.vtu")
     indices = np.empty(mesh.cells_dict['tetra'].shape)
     indices_sofa = mesh.cells_dict['tetra']
     indices_fenics = indices_sofa
 elif ELEMENT_TYPE == "Tetrahedron" and ELEMENT_APPROXIMATION_DEGREE == 2:
     element_sofa = "Tetrahedron10"
     element_fenics = element_sofa
-    mesh = meshio.read("../meshes/beam_p2.vtu")
+    mesh = meshio.read("../meshes/p2_from_gmsh.msh")
+    # mesh = meshio.read("../meshes/beam_p2.vtu")
     indices_sofa = mesh.cells_dict['tetra10']
     indices_fenics = indices_sofa[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
 elif ELEMENT_TYPE == "Hexahedron" and ELEMENT_APPROXIMATION_DEGREE == 1:
@@ -42,7 +44,7 @@ else:
     raise ValueError('The element or the approximation degree is not implemented yet.')
 
 if MATERIAL_MODEL == "SaintVenantKirchhoff" or MATERIAL_MODEL == "NeoHookean":
-    material = MATERIAL_MODEL + "Material"
+    material = MATERIAL_MODEL
 else:
     raise ValueError('The material model is not implemented yet.')
 
@@ -73,8 +75,8 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         sofa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-        sofa_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
-        sofa_node.addObject(material, young_modulus="3000", poisson_ratio="0.3")
+        sofa_node.addObject('ConstantForceField', force="0 -80 0", indices="@top_roi.indices")
+        sofa_node.addObject(material + "Material", young_modulus="3000", poisson_ratio="0.3")
         sofa_node.addObject('HyperelasticForcefield', printLog=True)
 
         fenics_node = root.addChild("fenics_node")
@@ -88,9 +90,9 @@ class ControlFrame(Sofa.Core.Controller):
         fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-        fenics_node.addObject('ConstantForceField', force="0 -100 0", indices="@top_roi.indices")
+        fenics_node.addObject('ConstantForceField', force="0 -80 0", indices="@top_roi.indices")
         fenics_node.addObject('FEniCS_Material', template=element_fenics, young_modulus="3000",
-                              poisson_ratio="0.3", C01=0.7, C10=-0.55, k=0.001, material_name="MooneyRivlin", path="/home/..")
+                              poisson_ratio="0.3", C01=0.7, C10=-0.55, k=0.001, material_name=material, path="/home/..")
 
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
 

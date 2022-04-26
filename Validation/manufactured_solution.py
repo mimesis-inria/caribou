@@ -22,22 +22,21 @@ import Sofa, SofaRuntime, SofaCaribou
 import meshio, numpy as np
 from manufactured_solution import assemble, integrate, compute_solution, ConstantForceField
 
-order = "linear"
+order = "quadratic"
 
 if order == "linear":
-    mesh = meshio.read('meshes/cylinder_p1.vtu')
+    mesh = meshio.read('meshes/new_cylinder_p1.vtu')
     surface_template = "Triangle"
     volume_template = "Tetrahedron"
-    length = 80
 else:
-    mesh = meshio.read('meshes/cylinder_p2.vtu')
+    mesh = meshio.read('meshes/new_cylinder_p2.vtu')
     surface_template = "Triangle6"
     volume_template = "Tetrahedron10"
-    length = 3
 
 mu = 1.0
 l = 1.25
-rad = 1
+length = 80
+rad = 7.5
 poisson_ratio = 1. / (2 * ((mu / l) + 1))
 young_modulus = 2 * mu * (1 + poisson_ratio)
 P, f, u_s = compute_solution(mu, l, rad, length)
