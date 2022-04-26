@@ -30,17 +30,16 @@ if order == "linear":
     surface_template = "Triangle"
     volume_template = "Tetrahedron"
     fenics_volume_indices = mesh.cells[1].data
-    length = 80
 else:
     mesh = meshio.read('meshes/new_cylinder_p2.vtu')
     surface_template = "Triangle6"
     volume_template = "Tetrahedron10"
     fenics_volume_indices = mesh.cells[1].data[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
-    length = 80
 
 mu = 1.0
 l = 1.25
-rad = 1
+rad = 7.5
+length = 80
 poisson_ratio = 1. / (2 * ((mu / l) + 1))
 young_modulus = 2 * mu * (1 + poisson_ratio)
 P, f, u_s = compute_solution(mu, l, rad, length)
@@ -98,24 +97,18 @@ if __name__ == '__main__':
     Sofa.Simulation.init(root)
 
     print('Assembling the external force vector...', end='', flush=True)
-    external_forces_sofa = \
+    external_forces = \
         assemble(root.sofa_node.volume.domain(), lambda x, y, z, _: f(x, y, z)) + \
         assemble(root.sofa_node.neumann_boundary.domain(), lambda x, y, z, t: np.dot(P(x, y, z), t.normal()))
-    external_forces_fenics = \
-        assemble(root.fenics_node.volume.domain(), lambda x, y, z, _: f(x, y, z)) + \
-        assemble(root.fenics_node.neumann_boundary.domain(), lambda x, y, z, t: np.dot(P(x, y, z), t.normal()))
     print(' Done.', flush=True)
 
-    exact_error_sofa = np.sqrt(
+    exact_error = np.sqrt(
         integrate(root.sofa_node.volume.domain(), lambda x, y, z, _: np.dot(u_s(x, y, z), u_s(x, y, z))))
-    exact_error_fenics = np.sqrt(
-        integrate(root.fenics_node.volume.domain(), lambda x, y, z, _: np.dot(u_s(x, y, z), u_s(x, y, z))))
-
-    print(f"Difference for the exact error is {np.abs(exact_error_sofa - exact_error_fenics)}")
+    print(f"Exact error is {exact_error}")
 
     for load in [1e-3, 1e-2, 1e-1, 0.15, 0.5, 1.0]:
-        root.sofa_node.external_forces_sofa.forces = (external_forces_sofa * load)
-        root.fenics_node.external_forces_fenics.forces = (external_forces_fenics * load)
+        root.sofa_node.external_forces_sofa.forces = (external_forces * load)
+        root.fenics_node.external_forces_fenics.forces = (external_forces * load)
         Sofa.Simulation.animate(root, 1)
         u_h_sofa = (root.sofa_node.mo.position.array() - root.sofa_node.mo.rest_position.array())
         error_L2_sofa = np.sqrt(integrate(
@@ -123,14 +116,14 @@ if __name__ == '__main__':
             lambda x, y, z, u_g, _: np.dot((u_s(x, y, z) - u_g), (u_s(x, y, z) - u_g)),
             u_h_sofa
         ))
-        print(f"SOFA relative L2 error at {int(load * 100)}% load: {error_L2_sofa / exact_error_sofa}")
+        print(f"SOFA relative L2 error at {int(load * 100)}% load: {error_L2_sofa / exact_error}")
 
         u_h_fenics = (root.fenics_node.mo.position.array() - root.fenics_node.mo.rest_position.array())
         error_L2_fenics = np.sqrt(integrate(
-            root.fenics_node.volume.domain(),
+            root.sofa_node.volume.domain(),
             lambda x, y, z, u_g, _: np.dot((u_s(x, y, z) - u_g), (u_s(x, y, z) - u_g)),
             u_h_fenics
         ))
-        print(f"FEniCS relative L2 error at {int(load * 100)}% load: {error_L2_fenics / exact_error_fenics}")
+        print(f"FEniCS relative L2 error at {int(load * 100)}% load: {error_L2_fenics / exact_error}")
         print(
-            f"Difference in relative L2 error at {int(load * 100)}% load: {np.abs((error_L2_fenics / exact_error_fenics) - (error_L2_sofa / exact_error_sofa))}")
+            f"Difference in relative L2 error at {int(load * 100)}% load: {np.abs((error_L2_fenics / exact_error) - (error_L2_sofa / exact_error))}")

@@ -3,13 +3,10 @@ import SofaCaribou
 import meshio
 import numpy as np
 
-
 ELEMENT_TYPE = "Tetrahedron"
 ELEMENT_APPROXIMATION_DEGREE = 2
 MATERIAL_MODEL = "NeoHookean"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
-# TODO redefine the visualization of the hexaedron
-
 
 if ELEMENT_TYPE == "Tetrahedron" and ELEMENT_APPROXIMATION_DEGREE == 1:
     element_sofa = "Tetrahedron"
@@ -71,7 +68,7 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('CaribouTopology', name='topology', template=element_sofa,
                             indices=indices_sofa.tolist())
 
-        sofa_node.addObject('UniformMass',  totalMass="250")
+        sofa_node.addObject('UniformMass', totalMass="250")
         sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         sofa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
@@ -86,7 +83,7 @@ class ControlFrame(Sofa.Core.Controller):
         self.fenics_mo = fenics_node.addObject('MechanicalObject', name="mo", position=mesh.points.tolist())
         fenics_node.addObject('CaribouTopology', name='topology', template=element_fenics,
                               indices=indices_fenics.tolist())
-        fenics_node.addObject('UniformMass',  totalMass="250")
+        fenics_node.addObject('UniformMass', totalMass="250")
         fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
@@ -119,7 +116,6 @@ class ControlFrame(Sofa.Core.Controller):
                     sofa_current_point - sofa_initial_point))
 
         mean_error = np.mean(np.array(errors))
-
 
         print(f"Relative Mean Error: {100 * mean_error} %")
 
