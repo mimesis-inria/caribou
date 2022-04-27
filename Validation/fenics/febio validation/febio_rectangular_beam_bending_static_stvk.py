@@ -24,40 +24,47 @@ from febio_scene import *
 from parameters import parameters, meshio_to_febio_element_types
 
 
-
-
 # SOniCS scene and displacement computing
 class ControlFrame(Sofa.Core.Controller):
 
     def __init__(self, node, febio_current_points):
         Sofa.Core.Controller.__init__(self)
-        self.root = self.CreateGraph(node)
         self.febio_current_points = febio_current_points
+        self.root = self.CreateGraph(node, self.febio_current_points)
 
-    def CreateGraph(self, root):
-
+    def CreateGraph(self, root, febio_current_points):
         root.addObject('DefaultVisualManagerLoop')
         root.addObject('DefaultAnimationLoop')
         root.addObject('VisualStyle', displayFlags="showForceFields showBehaviorModels")
         root.addObject('RequiredPlugin',
                        pluginName="SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine")
 
+        febio_node = root.addChild("febio_node")
+        febio_node.addObject('MechanicalObject', name="mo",
+                             position=febio_current_points, showObject=True,
+                             showObjectScale=10)
+        febio_node.addObject('CaribouTopology', name='topology', template=parameters['element'],
+                             indices=parameters['indices'].tolist())
+
         fenics_node = root.addChild("fenics_node")
-        fenics_node.addObject('StaticSolver', newton_iterations=parameters['nnewtonsteps'], relative_correction_tolerance_threshold=parameters['displacement_tolerance'],
+        fenics_node.addObject('StaticSolver', newton_iterations=parameters['nnewtonsteps'],
+                              relative_correction_tolerance_threshold=parameters['displacement_tolerance'],
                               relative_residual_tolerance_threshold=parameters['residual_tolerance'], printLog="1")
         fenics_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
-        self.fenics_mo = fenics_node.addObject('MechanicalObject', name="mo", position=parameters['mesh'].points.tolist())
+        self.fenics_mo = fenics_node.addObject('MechanicalObject', name="mo",
+                                               position=parameters['mesh'].points.tolist(), showObject=True,
+                                               showObjectScale=10, showColor="0 0 255 255")
         fenics_node.addObject('CaribouTopology', name='topology', template=parameters['element'],
                               indices=parameters['indices'].tolist())
         fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
         fenics_node.addObject('ConstantForceField', force=parameters['traction'].tolist(), indices="@top_roi.indices")
-        fenics_node.addObject('FEniCS_Material', template=parameters['element'], young_modulus="3000",
-                              poisson_ratio="0.3", C01=parameters['c01'], C10=parameters['c10'], k=parameters['k'], material_name=parameters['sonics_material'], path="/home/..")
-
+        fenics_node.addObject('FEniCS_Material', template=parameters['element'],
+                              young_modulus=parameters["young_modulus"],
+                              poisson_ratio=parameters["poisson_ratio"], C01=parameters['c01'], C10=parameters['c10'],
+                              k=parameters['k'], material_name=parameters['sonics_material'], path="/home/..")
         fenics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
-
 
         return root
 
@@ -71,23 +78,21 @@ class ControlFrame(Sofa.Core.Controller):
     def onAnimateEndEvent(self, event):
         sonics_current_positions = np.array(self.fenics_mo.position.value.copy().tolist())
         sonics_displacement = sonics_current_positions - self.sonics_initial_points
-        
+
         febio_displacement = self.febio_current_points - self.sonics_initial_points
-        
+
         errors = []
-        
+
         for febio_current_point, sonics_current_point, sonics_initial_point in zip(self.febio_current_points,
-                                                                                sonics_current_positions,
-                                                                                self.sonics_initial_points):
+                                                                                   sonics_current_positions,
+                                                                                   self.sonics_initial_points):
             if np.linalg.norm(sonics_current_point - sonics_initial_point) != 0:
                 errors.append(np.linalg.norm(febio_current_point - sonics_current_point) / np.linalg.norm(
                     sonics_current_point - sonics_initial_point))
-                
-                
+
         mean_error = np.mean(np.array(errors))
 
         print(f"Relative Mean Error: {100 * mean_error} %")
-
 
 
 def createScene(node, febio_current_points):
@@ -96,6 +101,7 @@ def createScene(node, febio_current_points):
 
 # Choose in your script to activate or not the GUI
 USE_GUI = True
+
 
 def main():
     import SofaRuntime
@@ -106,11 +112,9 @@ def main():
 
     root = Sofa.Core.Node("root")
 
-
-    # FEBIO displacements computing 
+    # FEBIO displacements computing
     elements = sort_elements(meshio_to_febio_element_types, parameters)
     febio_current_points = febio_scene(parameters, elements)
-    #print(displacements_febio)
 
     createScene(root, febio_current_points)
     Sofa.Simulation.init(root)
