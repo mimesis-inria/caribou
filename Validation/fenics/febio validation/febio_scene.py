@@ -110,7 +110,6 @@ def febio_scene(parameters, elements):
 
     c.append(f'</febio_spec>')
 
-
     with tempfile.NamedTemporaryFile(suffix=".feb") as f:
         feb_filename = f.name
     with open(feb_filename, 'w') as f:

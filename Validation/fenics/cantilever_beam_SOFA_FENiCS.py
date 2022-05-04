@@ -3,7 +3,7 @@ import SofaCaribou
 import meshio
 import numpy as np
 
-ELEMENT_TYPE = "Tetrahedron"
+ELEMENT_TYPE = "Hexahedron"
 ELEMENT_APPROXIMATION_DEGREE = 2
 MATERIAL_MODEL = "NeoHookean"
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
@@ -11,16 +11,16 @@ MATERIAL_MODEL = "NeoHookean"
 if ELEMENT_TYPE == "Tetrahedron" and ELEMENT_APPROXIMATION_DEGREE == 1:
     element_sofa = "Tetrahedron"
     element_fenics = element_sofa
-    mesh = meshio.read("../meshes/p1_from_gmsh.msh")
-    # mesh = meshio.read("../meshes/beam_p1.vtu")
+    # mesh = meshio.read("../meshes/p1_from_gmsh.msh")
+    mesh = meshio.read("../meshes/beam_p1.vtu")
     indices = np.empty(mesh.cells_dict['tetra'].shape)
     indices_sofa = mesh.cells_dict['tetra']
     indices_fenics = indices_sofa
 elif ELEMENT_TYPE == "Tetrahedron" and ELEMENT_APPROXIMATION_DEGREE == 2:
     element_sofa = "Tetrahedron10"
     element_fenics = element_sofa
-    mesh = meshio.read("../meshes/p2_from_gmsh.msh")
-    # mesh = meshio.read("../meshes/beam_p2.vtu")
+    # mesh = meshio.read("../meshes/p2_from_gmsh.msh")
+    mesh = meshio.read("../meshes/beam_p2.vtu")
     indices_sofa = mesh.cells_dict['tetra10']
     indices_fenics = indices_sofa[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
 elif ELEMENT_TYPE == "Hexahedron" and ELEMENT_APPROXIMATION_DEGREE == 1:

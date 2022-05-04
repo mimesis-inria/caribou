@@ -19,10 +19,9 @@ u = Coefficient(element)  # Displacement from previous iteration
 I = Identity(d)  # Identity tensor
 F = variable(I + grad(u))  # Deformation gradient
 C = variable(F.T * F)  # Right Cauchy-Green tensor
-I_C = tr(C)
-II_C = (1.0/2.0)*(tr(C)**2 - tr(C*C))
-III_C = det(C)
-J = III_C**(1.0/2.0)
+E = variable(0.5 * (C - I))
+Ic = tr(C)
+J = det(F)
 
 # Elasticity parameters
 C_01 = Constant(cell)
