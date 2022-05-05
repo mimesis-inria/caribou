@@ -157,3 +157,62 @@ jobs:
         with:
           name: caribou_win64_${{ matrix.sofa_version }}
           path: ${{github.workspace}}/sofa/plugins/SofaCaribou
+
+  test:
+    name: Building with ${{ matrix.sofa_version }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sofa_version: [ master ]
+        include:
+          - sofa_version: master
+            PYTHON_VERSION: 3.8
+            EIGEN_VERSION: 3.4
+    env:
+      SOFA_VERSION: ${{ matrix.sofa_version }}
+      SOFA_ROOT: ${{ format('{0}/sofa', github.workspace) }}
+      CARIBOU_ROOT: ${{ format('{0}/sofa/plugins/SofaCaribou', github.workspace) }}
+
+    steps:
+#     Python
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.PYTHON_VERSION }}
+
+#     PATH
+      - run: echo "${$env:SOFA_ROOT}/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+#     SOFA
+      - name: Download SOFA Release
+        shell: bash
+        run:  |
+          if [ "$SOFA_VERSION" = "master" ]; then
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_BRANCH=master,CI_SCOPE=standard/lastSuccessfulBuild/artifact/Windows/*zip*/Windows.zip"
+              unzip sofa.zip -d temp
+              mv temp/Windows/`ls temp/Windows` sofa.zip
+              rm -rf temp
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
+              rm -rf temp
+          else
+              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Win64.zip"
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
+              rm -rm temp
+          fi
+
+#     CARIBOU
+      - name: Download caribou
+        uses: actions/download-artifact@v2
+        with:
+          name: caribou_${{ matrix.sofa_version }}
+          path: ${{ format('{0}/sofa/plugins/SofaCaribou', github.workspace) }}
+
+      - name: Caribou.unittests.Geometry
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          export PATH="$SOFA_ROOT/bin:$PATH"
+          $CARIBOU_ROOT/bin/Caribou.unittests.Geometry

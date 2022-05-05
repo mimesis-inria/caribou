@@ -217,5 +217,5 @@ TEST(CaribouMass, LinearHexahedron) {
     sofa_mass->addMToMatrix(&mechanical_parameters, &accessor);
     SofaM.compress();
 
-    EXPECT_DOUBLE_EQ(M.sum(), SofaM.matrix().sum());
+    EXPECT_NEAR(M.sum(), SofaM.matrix().sum(), 1e-5);
 }
