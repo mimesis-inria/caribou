@@ -31,7 +31,7 @@ while int(output) < 1 or int(output) > 4:
 
 if output == '1': 
     element = 'Tetrahedron'
-    meshfile = "../../meshes/beam_p1.vtu"
+    meshfile = "../../meshes/refined_meshes/p1/beam_p1_18.vtu"
     mesh = meshio.read(meshfile)
     indices = np.empty(mesh.cells_dict['tetra'].shape)
     indices = mesh.cells_dict['tetra']
@@ -43,7 +43,7 @@ elif output == '2':
     indices = mesh.cells_dict['tetra10'][:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
 elif output == '3': 
     element = 'Hexahedron_FEniCS'
-    meshfile = "../../meshes/beam_q1.vtu"
+    meshfile = "../../meshes/refined_meshes/q1/beam_q1_18.vtu"
     mesh = meshio.read(meshfile)
     indices = np.empty(mesh.cells_dict['hexahedron'].shape)
     indices = mesh.cells_dict['hexahedron'][:, [4, 5, 0, 1, 7, 6, 3, 2]]

@@ -39,12 +39,12 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject('RequiredPlugin',
                        pluginName="SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine")
 
-        febio_node = root.addChild("febio_node")
+        """ febio_node = root.addChild("febio_node")
         febio_node.addObject('MechanicalObject', name="mo",
                              position=febio_current_points, showObject=True,
                              showObjectScale=10)
         febio_node.addObject('CaribouTopology', name='topology', template=parameters['element'],
-                             indices=parameters['indices'].tolist())
+                             indices=parameters['indices'].tolist()) """
 
         fenics_node = root.addChild("fenics_node")
         fenics_node.addObject('StaticSolver', newton_iterations=parameters['nnewtonsteps'],
@@ -52,7 +52,7 @@ class ControlFrame(Sofa.Core.Controller):
                               relative_residual_tolerance_threshold=parameters['residual_tolerance'], printLog="1")
         fenics_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
         self.fenics_mo = fenics_node.addObject('MechanicalObject', name="mo",
-                                               position=parameters['mesh'].points.tolist(), showObject=True,
+                                               position=parameters['mesh'].points.tolist(), showObject=False,
                                                showObjectScale=10, showColor="0 0 255 255")
         fenics_node.addObject('CaribouTopology', name='topology', template=parameters['element'],
                               indices=parameters['indices'].tolist())
