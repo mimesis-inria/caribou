@@ -59,6 +59,9 @@ CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "S
 if (CARIBOU_WITH_SOFA)
     list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
     list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+    if (SOFA_VERSION VERSION_GREATER_EQUAL  "22.06.00")
+        find_package(SOFA COMPONENTS SofaBaseUtils SofaBaseCollision SofaBaseVisual QUIET)
+    endif()
     find_package(SofaPython3 QUIET) # We need to do this first to setup the exact python version required
 endif()
 

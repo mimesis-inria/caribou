@@ -20,10 +20,12 @@ jobs:
           - sofa_version: master
             PYTHON_VERSION: 3.8
             EIGEN_VERSION: 3.4
+            PYBIND11_VERSION: 2.4.3
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: ${{ format('{0}/sofa', github.workspace) }}
       PYBIND11_ROOT: ${{ format('{0}/pybind11', github.workspace) }}
+      PYBIND11_VERSION: ${{ matrix.PYBIND11_VERSION }}
       QT_ROOT: ${{ format('{0}/qt', github.workspace) }}
       PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
       BOOST_ROOT: ${{ format('{0}/boost', github.workspace) }}
@@ -65,7 +67,7 @@ jobs:
       - name: Install pybind11
         shell: bash
         run: |
-          git clone --depth 1 -b v2.6  https://github.com/pybind/pybind11.git pybind11_src
+          git clone --depth 1 -b v$PYBIND11_VERSION  https://github.com/pybind/pybind11.git pybind11_src
           cmake -S pybind11_src -B pybind11_src/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release -DPYBIND11_FINDPYTHON=ON
           cmake --install pybind11_src/build --prefix $PYBIND11_ROOT
           rm -rf pybind11_src
@@ -160,6 +162,7 @@ jobs:
 
   test:
     name: Building with ${{ matrix.sofa_version }}
+    needs: [build]
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -167,7 +170,7 @@ jobs:
         sofa_version: [ master ]
         include:
           - sofa_version: master
-            PYTHON_VERSION: 3.8
+            PYTHON_VERSION: 3.8.10
             EIGEN_VERSION: 3.4
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
@@ -207,7 +210,7 @@ jobs:
       - name: Download caribou
         uses: actions/download-artifact@v2
         with:
-          name: caribou_${{ matrix.sofa_version }}
+          name: caribou_win64_${{ matrix.sofa_version }}
           path: ${{ format('{0}/sofa/plugins/SofaCaribou', github.workspace) }}
 
       - name: Caribou.unittests.Geometry
