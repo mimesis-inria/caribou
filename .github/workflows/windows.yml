@@ -15,11 +15,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ master ]
+        sofa_version: [ v21.12.00, master ]
         include:
           - sofa_version: master
             PYTHON_VERSION: 3.8
             EIGEN_VERSION: 3.4
+            PYBIND11_VERSION: 2.4.3
+          - sofa_version: v21.12.00
+            PYTHON_VERSION: 3.7
+            EIGEN_VERSION: 3.3.7
             PYBIND11_VERSION: 2.4.3
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
@@ -30,6 +34,7 @@ jobs:
       PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
       BOOST_ROOT: ${{ format('{0}/boost', github.workspace) }}
       EIGEN_ROOT: ${{ format('{0}/eigen', github.workspace) }}
+      EIGEN_VERSION: ${{ matrix.EIGEN_VERSION }}
 
     steps:
       - uses: actions/checkout@v2
@@ -59,7 +64,7 @@ jobs:
         if: steps.cache-eigen.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          git clone --depth 1 -b 3.4 https://gitlab.com/libeigen/eigen.git eigen_src
+          git clone --depth 1 -b $EIGEN_VERSION https://gitlab.com/libeigen/eigen.git eigen_src
           cmake -S eigen_src -B eigen_src/build -DCMAKE_BUILD_TYPE=Release -DEIGEN_BUILD_DOC=OFF -DCMAKE_INSTALL_PREFIX="$EIGEN_ROOT"
           cmake --build eigen_src/build --target install
 
@@ -106,7 +111,6 @@ jobs:
               curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Win64.zip"
               unzip sofa.zip -d temp
               mv temp/`ls temp` $SOFA_ROOT
-              rm -rm temp
           fi
 
           # Patch SP3 absolute path
@@ -167,11 +171,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ master ]
+        sofa_version: [ v21.12.00, master ]
         include:
           - sofa_version: master
             PYTHON_VERSION: 3.8.10
-            EIGEN_VERSION: 3.4
+          - sofa_version: v21.12.00
+            PYTHON_VERSION: 3.7
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: ${{ format('{0}/sofa', github.workspace) }}
@@ -203,7 +208,6 @@ jobs:
               curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Win64.zip"
               unzip sofa.zip -d temp
               mv temp/`ls temp` $SOFA_ROOT
-              rm -rm temp
           fi
 
 #     CARIBOU
@@ -219,3 +223,24 @@ jobs:
         run: |
           export PATH="$SOFA_ROOT/bin:$PATH"
           $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
+
+      - name: Caribou.unittests.Topology
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          export PATH="$SOFA_ROOT/bin:$PATH"
+          $CARIBOU_ROOT/bin/Caribou.unittests.Topology
+
+      - name: Caribou.unittests.Mechanics
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          export PATH="$SOFA_ROOT/bin:$PATH"
+          $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
+
+      - name: Caribou.unittests.SofaCaribou
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          export PATH="$SOFA_ROOT/bin:$PATH"
+          $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
