@@ -165,7 +165,7 @@ jobs:
           path: ${{github.workspace}}/sofa/plugins/SofaCaribou
 
   test:
-    name: Building with ${{ matrix.sofa_version }}
+    name: Testing with ${{ matrix.sofa_version }}
     needs: [build]
     runs-on: windows-latest
     strategy:
