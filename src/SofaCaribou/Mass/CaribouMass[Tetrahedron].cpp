@@ -14,12 +14,10 @@ using namespace caribou;
 namespace SofaCaribou::mass {
 
 // This will force the compiler to compile the following templated class
-template class CaribouMass<Tetrahedron<Linear>>;
-template class CaribouMass<Tetrahedron<Quadratic>>;
+template class CaribouMass<Tetrahedron>;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou mass")
-        .add<CaribouMass<Tetrahedron<Linear>>>()
-        .add<CaribouMass<Tetrahedron<Quadratic>>>();
+        .add<CaribouMass<Tetrahedron>>();
 
 } // namespace SofaCaribou::mass

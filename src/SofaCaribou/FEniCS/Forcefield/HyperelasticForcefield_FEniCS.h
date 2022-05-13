@@ -4,7 +4,7 @@
 #include <array>
 
 #include <SofaCaribou/config.h>
-#include <SofaCaribou/Material/HyperelasticMaterial.h>
+#include <SofaCaribou/FEniCS/Material/FEniCS_Material.h>
 #include <SofaCaribou/Forcefield/CaribouForcefield.h>
 
 #include <Caribou/config.h>
@@ -47,27 +47,10 @@ public:
     template<int nRows>
     using Vector = typename Inherit::template Vector<nRows>;
 
-    using Mat33   = Matrix<3, 3>;
-    using Vec3   = Vector<3>;
-
     template <typename ObjectType>
     using Link = sofa::core::objectmodel::SingleLink<HyperelasticForcefield_FEniCS<Element>, ObjectType, sofa::core::objectmodel::BaseLink::FLAG_STRONGLINK>;
 
-    // Data structures
-    struct GaussNode {
-        Real weight;
-        Real jacobian_determinant;
-        Matrix<NumberOfNodesPerElement, Dimension> dN_dx;
-    };
-
-    // The container of Gauss points (for each elements) is an array if the number of integration
-    // points per element is known at compile time, or a dynamic vector otherwise.
-    using GaussContainer = typename std::conditional<
-            NumberOfGaussNodesPerElement != caribou::Dynamic,
-            std::array<GaussNode, static_cast<std::size_t>(NumberOfGaussNodesPerElement)>,
-            std::vector<GaussNode>
-    >::type;
-
+    
     // Public methods
 
     
@@ -100,10 +83,6 @@ public:
     
     void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
-    /** Get the set of Gauss integration nodes of an element */
-    inline auto gauss_nodes_of(std::size_t element_id) const -> const auto & {
-        return p_elements_quadrature_nodes[element_id];
-    }
 
     /**
      * Get the complete tangent stiffness matrix as a compressed sparse matrix.
@@ -156,6 +135,8 @@ public:
     
     auto cond() -> Real;
 
+    auto Pi() -> SReal;
+
     /**
      *  Assemble the stiffness matrix K.
      *
@@ -195,24 +176,19 @@ public:
     void assemble_stiffness(const Eigen::MatrixBase<Derived> & x);
 
     template <typename Derived>
-   void assemble_stiffness(const Eigen::MatrixBase<Derived> & x, const Eigen::MatrixBase<Derived> & x0);
+    void assemble_stiffness(const Eigen::MatrixBase<Derived> & x, const Eigen::MatrixBase<Derived> & x0);
 
 private:
 
     // These private methods are implemented but can be overridden
 
-    /** Compute and store the shape functions and their derivatives for every integration points */
-    virtual void initialize_elements();
-
-    /** Get the set of Gauss integration nodes of the given element */
-    virtual auto get_gauss_nodes(const std::size_t & element_id, const Element & element) const -> GaussContainer;
 
     // Data members
-    Link<material::HyperelasticMaterial<DataTypes>> d_material;
+    Link<material::FEniCS_Material<Element, DataTypes>> d_material;
     sofa::core::objectmodel::Data<bool> d_enable_multithreading;
 
     // Private variables
-    std::vector<GaussContainer> p_elements_quadrature_nodes;
+    mutable SReal Psi;
     Eigen::SparseMatrix<Real> p_K;
     Eigen::Matrix<Real, Eigen::Dynamic, 1> p_eigenvalues;
 
@@ -220,6 +196,7 @@ private:
     /// the stiffness matrix K using the method update_stiffness() without any parameters.
     sofa::core::ConstMultiVecCoordId p_X_id = sofa::core::ConstVecCoordId::position();
     bool K_is_up_to_date = false;
+    mutable bool Psi_is_up_to_date = false;
     bool eigenvalues_are_up_to_date = false;
 };
 

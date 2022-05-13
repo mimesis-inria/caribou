@@ -1,9 +1,6 @@
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Material/SaintVenantKirchhoffMaterial.h>
 #include <SofaCaribou/Material/NeoHookeanMaterial.h>
-#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoffMaterial_FEniCS.h>
-//#include <SofaCaribou/Material/SaintVenantKirchhoff_Tetra.h>
-
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
@@ -17,11 +14,6 @@ static int SaintVenantKirchhoffClass = RegisterObject("Caribou Saint-Venant-Kirc
 //                                                 .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types> >()
 //                                                 .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types> >()
                                                  .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types> >();
-
-static int SaintVenantKirchhoffFEniCSClass = RegisterObject("FEniCS Saint-Venant-Kirchhoff hyperelastic material")
-//                                                 .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types> >()
-//                                                 .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types> >()
-                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types> >();
 
 static int NeoHookeanClass = RegisterObject("Caribou NeoHookeanMaterial hyperelastic material")
 //    .add< NeoHookeanMaterial<sofa::defaulttype::Vec1Types> >()

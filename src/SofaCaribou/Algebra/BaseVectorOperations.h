@@ -9,7 +9,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h> // for SOFA_VERSION
 DISABLE_ALL_WARNINGS_END
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 namespace sofa::defaulttype {
     class BaseVector;
 }

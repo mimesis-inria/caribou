@@ -9,3 +9,5 @@ build/
 doc/Doxygen
 doc/sphinx/build
 scenes/*.log
+Validation/fenics/*.log
+Validation/fenics/*.ini

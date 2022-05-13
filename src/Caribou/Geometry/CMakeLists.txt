@@ -1,15 +1,16 @@
 project(Geometry)
 
 set(HEADER_FILES
-    BaseHexahedron.h
-    BaseQuad.h
-    BaseRectangularHexahedron.h
-    BaseRectangularQuad.h
-    BaseSegment.h
-    BaseTetrahedron.h
-    BaseTriangle.h
+    Base/BaseHexahedron.h
+    Base/BaseQuad.h
+    Base/BaseRectangularHexahedron.h
+    Base/BaseRectangularQuad.h
+    Base/BaseSegment.h
+    Base/BaseTetrahedron.h
+    Base/BaseTriangle.h
     Element.h
     Hexahedron.h
+    Hexahedron_FEniCS.h
     Quad.h
     RectangularHexahedron.h
     RectangularQuad.h

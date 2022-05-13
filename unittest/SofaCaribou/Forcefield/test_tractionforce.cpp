@@ -3,7 +3,11 @@
 #include <SofaCaribou/Forcefield/TractionForcefield[Triangle].h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 #include <sofa/helper/testing/BaseTest.h>
+#else
+#include <sofa/testing/BaseTest.h>
+#endif
 #include <sofa/simulation/Node.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
@@ -16,7 +20,13 @@ using namespace sofa::simpleapi;
 using namespace caribou;
 using namespace caribou::geometry;
 
-class TractionForcefield : public sofa::helper::testing::BaseTest {
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+using namespace sofa::helper::testing;
+#else
+using namespace sofa::testing;
+#endif
+
+class TractionForcefield : public BaseTest {
     void SetUp() override {
         setSimulation(new sofa::simulation::graph::DAGSimulation()) ;
         root = getSimulation()->createNewNode("TractionForce");
@@ -36,7 +46,7 @@ TEST_F(TractionForcefield, Triangle) {
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "MechanicalObject", {{"position", "-1 0 1  1 0 1  -1 0 -1  1 0 -1  0 0 1  0 0 -1  -1 0 0  1 0 0  0 0 0"}});
     createObject(root, "TriangleSetTopologyContainer", {{"triangles", "7 5 8  8 2 6  4 6 0  1 8 4  7 3 5  8 5 2  4 8 6  1 7 8"}});
-    auto traction = dynamic_cast<const SofaCaribou::forcefield::TractionForcefield<Triangle<_3D, Linear>> *>(
+    auto traction = dynamic_cast<const SofaCaribou::forcefield::TractionForcefield<Triangle<_3D>> *>(
         createObject(root, "TractionForcefield", {{"traction", "0 5 0"}, {"slope", std::to_string(1/5.)}}).get()
     );
 

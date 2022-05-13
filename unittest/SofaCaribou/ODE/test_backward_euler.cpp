@@ -5,7 +5,11 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 #include <sofa/helper/testing/BaseTest.h>
+#else
+#include <sofa/testing/BaseTest.h>
+#endif
 #include <sofa/simulation/Node.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
 #include <SofaSimulationGraph/SimpleApi.h>
@@ -16,7 +20,9 @@ using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace sofa::helper::logging;
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+using namespace sofa::helper::testing;
+#else
 using namespace sofa::testing;
 #endif
 
@@ -49,6 +55,11 @@ TEST(BackwardEulerODESolver, Beam) {
 #if (defined(SOFA_VERSION) && SOFA_VERSION > 201299)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
 #endif
+
+    // Some component to avoid warnings
+    createObject(root, "DefaultAnimationLoop");
+    createObject(root, "DefaultVisualManagerLoop");
+
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto meca = createChild(root, "meca");

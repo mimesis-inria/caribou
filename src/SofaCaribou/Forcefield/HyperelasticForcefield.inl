@@ -6,6 +6,7 @@
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/core/MechanicalParams.h>
 DISABLE_ALL_WARNINGS_END
@@ -96,6 +97,7 @@ void HyperelasticForcefield<Element>::addForce(
     // Update material parameters in case the user changed it
     material->before_update();
 
+
     ReadAccessor<Data<VecCoord>> sofa_x = d_x;
     WriteAccessor<Data<VecDeriv>> sofa_f = d_f;
 
@@ -126,11 +128,12 @@ void HyperelasticForcefield<Element>::addForce(
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             current_nodes_position.row(i).noalias() = X.row(node_indices[i]);
         }
-//        std::cout << "current node positions: " << current_nodes_position;
+
 
         // Compute the nodal forces
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
+    
 
         for (GaussNode &gauss_node : p_elements_quadrature_nodes[element_id]) {
 
@@ -162,7 +165,6 @@ void HyperelasticForcefield<Element>::addForce(
                 }
             }
         }
-        if (element_id == 0) std::cout << "final nodal forces" << nodal_forces << "\n";
 
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
@@ -514,8 +516,7 @@ void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase
                 }
             }
         }
-//        if (element_id == 0) std::cout << "Ke: " << Ke << "\n";
-
+        
 #pragma omp critical
         for (std::size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             // Node index of the ith node in the global stiffness matrix
@@ -538,7 +539,7 @@ void HyperelasticForcefield<Element>::assemble_stiffness(const Eigen::MatrixBase
         }
     }
     p_K.setFromTriplets(triplets.begin(), triplets.end());
-    std::cout << p_K.row(0) << "\n";
+    
     sofa::helper::AdvancedTimer::stepEnd("HyperelasticForcefield::update_stiffness");
 
     K_is_up_to_date = true;

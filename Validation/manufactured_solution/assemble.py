@@ -14,7 +14,6 @@ def assemble(domain, f):
     for element_id in range(domain.number_of_elements()):
         element = domain.element(element_id)
         node_indices = domain.element_indices(element_id)
-
         for gauss_node in element.gauss_nodes():
             xi = gauss_node.position
             w = gauss_node.weight

@@ -16,14 +16,7 @@ namespace SofaCaribou::forcefield {
 // --------------------------------
 
 // This will force the compiler to compile the following templated class
-template class HyperelasticForcefield<Hexahedron < Linear>>;
-
-// -----------------------------------
-// Hexahedron quadratic specialization
-// -----------------------------------
-
-// This will force the compiler to compile the following templated class
-template class HyperelasticForcefield<Hexahedron < Quadratic>>;
+template class HyperelasticForcefield<Hexahedron>;
 
 } // namespace SofaCaribou::forcefield
 
@@ -32,6 +25,5 @@ using namespace SofaCaribou::forcefield;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou hyperelastic force field")
-    .add<HyperelasticForcefield<Hexahedron<Linear>>>()
-    .add<HyperelasticForcefield<Hexahedron<Quadratic>>>();
+    .add<HyperelasticForcefield<Hexahedron>>();
 }

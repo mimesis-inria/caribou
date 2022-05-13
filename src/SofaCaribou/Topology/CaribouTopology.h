@@ -10,11 +10,11 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/State.h>
 #include <sofa/core/topology/Topology.h>
 #include <sofa/defaulttype/VecTypes.h>
-#include <sofa/helper/vector.h>
-#include <sofa/helper/fixed_array.h>
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+#include <sofa/helper/fixed_array.h>
+#include <sofa/helper/vector.h>
 namespace sofa::type {
 template <typename T> using vector = ::sofa::helper::vector<T>;
 template <typename T, std::size_t N> using fixed_array = ::sofa::helper::fixed_array<T, N>;
