@@ -20,12 +20,12 @@ namespace SofaCaribou::forcefield {
 // 2D
 
 template <>
-auto CaribouForcefield<Triangle<_2D, Linear>>::templateName(const CaribouForcefield<Triangle<_2D, Linear>> *) -> std::string {
-    return SofaCaribou::topology::CaribouTopology<Triangle<_2D, Linear>>::templateName();
+auto CaribouForcefield<Triangle<_2D>>::templateName(const CaribouForcefield<Triangle<_2D>> *) -> std::string {
+    return SofaCaribou::topology::CaribouTopology<Triangle<_2D>>::templateName();
 }
 
 template <>
-void CaribouForcefield<Triangle<_2D, Linear>>::triangulate_face(const Triangle<_2D, Linear> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
+void CaribouForcefield<Triangle<_2D>>::triangulate_face(const Triangle<_2D> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
     auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
     for (const auto &n : triangle) {
         triangles_nodes.emplace_back(n[0], n[1], 0);
@@ -33,17 +33,17 @@ void CaribouForcefield<Triangle<_2D, Linear>>::triangulate_face(const Triangle<_
 }
 
 // This will force the compiler to compile the following templated class
-template class CaribouForcefield<Triangle<_2D, Linear>>;
+template class CaribouForcefield<Triangle<_2D>>;
 
 // 3D
 
 template <>
-auto CaribouForcefield<Triangle<_3D, Linear>>::templateName(const CaribouForcefield<Triangle<_3D, Linear>> *) -> std::string {
-    return SofaCaribou::topology::CaribouTopology<Triangle<_3D, Linear>>::templateName();
+auto CaribouForcefield<Triangle<_3D>>::templateName(const CaribouForcefield<Triangle<_3D>> *) -> std::string {
+    return SofaCaribou::topology::CaribouTopology<Triangle<_3D>>::templateName();
 }
 
 template <>
-void CaribouForcefield<Triangle<_3D, Linear>>::triangulate_face(const Triangle<_3D, Linear> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
+void CaribouForcefield<Triangle<_3D>>::triangulate_face(const Triangle<_3D> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
     auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
     for (const auto &n : triangle) {
         triangles_nodes.emplace_back(n[0], n[1], n[2]);
@@ -51,46 +51,6 @@ void CaribouForcefield<Triangle<_3D, Linear>>::triangulate_face(const Triangle<_
 }
 
 // This will force the compiler to compile the following templated class
-template class CaribouForcefield<Triangle<_3D, Linear>>;
-
-// -----------------------------------
-// Triangle quadratic specialization
-// -----------------------------------
-
-// 2D
-
-template <>
-auto CaribouForcefield<Triangle<_2D, Quadratic>>::templateName(const CaribouForcefield<Triangle<_2D, Quadratic>> *) -> std::string {
-    return SofaCaribou::topology::CaribouTopology<Triangle<_2D, Quadratic>>::templateName();
-}
-
-template <>
-void CaribouForcefield<Triangle<_2D, Quadratic>>::triangulate_face(const Triangle<_2D, Quadratic> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
-    auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
-    for (const auto &n : triangle) {
-        triangles_nodes.emplace_back(n[0], n[1], 0);
-    }
-}
-
-// This will force the compiler to compile the following templated class
-template class CaribouForcefield<Triangle<_2D, Quadratic>>;
-
-// 3D
-
-template <>
-auto CaribouForcefield<Triangle<_3D, Quadratic>>::templateName(const CaribouForcefield<Triangle<_3D, Quadratic>> *) -> std::string {
-    return SofaCaribou::topology::CaribouTopology<Triangle<_3D, Quadratic>>::templateName();
-}
-
-template <>
-void CaribouForcefield<Triangle<_3D, Quadratic>>::triangulate_face(const Triangle<_3D, Quadratic> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
-    auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
-    for (const auto &n : triangle) {
-        triangles_nodes.emplace_back(n[0], n[1], n[2]);
-    }
-}
-
-// This will force the compiler to compile the following templated class
-template class CaribouForcefield<Triangle<_3D, Quadratic>>;
+template class CaribouForcefield<Triangle<_3D>>;
 
 } // namespace SofaCaribou::forcefield

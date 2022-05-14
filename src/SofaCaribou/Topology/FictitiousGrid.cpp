@@ -82,7 +82,7 @@ FictitiousGrid<Vec3Types>::tag_intersected_cells()
             continue;
         }
 
-        const caribou::geometry::Triangle<caribou::_3D, caribou::Linear> t(nodes[0], nodes[1], nodes[2]);
+        const caribou::geometry::Triangle<caribou::_3D> t(nodes[0], nodes[1], nodes[2]);
 
         // Get all the cells enclosing the three nodes of the triangles
         TICK;

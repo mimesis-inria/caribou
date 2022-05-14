@@ -1,0 +1,1 @@
+docker run -ti -v $(pwd):/root/shared dolfinx/dolfinx:latest

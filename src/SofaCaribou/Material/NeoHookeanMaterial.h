@@ -71,7 +71,10 @@ public:
         return D;
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> FenicCS-features
 
 private:
     // Private members

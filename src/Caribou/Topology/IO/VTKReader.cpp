@@ -10,10 +10,15 @@ namespace fs = ::std::filesystem;
 
 #include <Caribou/constants.h>
 #include <Caribou/Geometry/Quad.h>
+#include <Caribou/Geometry/Quad8.h>
 #include <Caribou/Geometry/Triangle.h>
+#include <Caribou/Geometry/Triangle6.h>
 #include <Caribou/Geometry/Segment.h>
+#include <Caribou/Geometry/Segment3.h>
 #include <Caribou/Geometry/Tetrahedron.h>
+#include <Caribou/Geometry/Tetrahedron10.h>
 #include <Caribou/Geometry/Hexahedron.h>
+#include <Caribou/Geometry/Hexahedron20.h>
 
 #include <Caribou/Topology/IO/VTKReader.h>
 
@@ -36,26 +41,26 @@ VTKReader<Dimension, NodeIndex>::VTKReader(std::string filepath, vtkSmartPointer
 : p_filepath(std::move(filepath)), p_reader(std::move(reader)), p_axes(axes)
 {
     // Segments
-    register_element_type<geometry::Segment<Dimension, Linear>>(VTK_LINE);
-    register_element_type<geometry::Segment<Dimension, Quadratic>>(VTK_QUADRATIC_EDGE);
+    register_element_type<geometry::Segment<Dimension>>(VTK_LINE);
+    register_element_type<geometry::Segment3<Dimension>>(VTK_QUADRATIC_EDGE);
 
     if constexpr (Dimension > 1) {
         // Quads
-        register_element_type<geometry::Quad<Dimension, Linear>>(VTK_QUAD);
-        register_element_type<geometry::Quad<Dimension, Quadratic>>(VTK_QUADRATIC_QUAD);
+        register_element_type<geometry::Quad<Dimension>>(VTK_QUAD);
+        register_element_type<geometry::Quad8<Dimension>>(VTK_QUADRATIC_QUAD);
 
         // Triangles
-        register_element_type<geometry::Triangle<Dimension, Linear>>(VTK_TRIANGLE);
-        register_element_type<geometry::Triangle<Dimension, Quadratic>>(VTK_QUADRATIC_TRIANGLE);
+        register_element_type<geometry::Triangle<Dimension>>(VTK_TRIANGLE);
+        register_element_type<geometry::Triangle6<Dimension>>(VTK_QUADRATIC_TRIANGLE);
     }
 
     if constexpr (Dimension > 2) {
         // Tetrahedrons
-        register_element_type<geometry::Tetrahedron<Linear>>(VTK_TETRA);
-        register_element_type<geometry::Tetrahedron<Quadratic>>(VTK_QUADRATIC_TETRA);
+        register_element_type<geometry::Tetrahedron>(VTK_TETRA);
+        register_element_type<geometry::Tetrahedron10>(VTK_QUADRATIC_TETRA);
 
         // Hexahedrons
-        register_element_type<geometry::Hexahedron<Linear>>(VTK_HEXAHEDRON);
+        register_element_type<geometry::Hexahedron>(VTK_HEXAHEDRON);
         register_element_type(VTK_QUADRATIC_HEXAHEDRON, [](Mesh<Dimension> & m, const ElementsIndices & indices) {
 
             // The order of quadratic hexahedron node indces in VTK aren't the same as the order used in Caribou
@@ -71,7 +76,7 @@ VTKReader<Dimension, NodeIndex>::VTKReader(std::string filepath, vtkSmartPointer
             reordered_indices.col(17) = indices.col(16);
             reordered_indices.col(18) = indices.col(19);
             reordered_indices.col(19) = indices.col(17);
-            return m.template add_domain<geometry::Hexahedron<Quadratic>, NodeIndex>("domain_"+std::to_string(m.number_of_domains()+1), reordered_indices);
+            return m.template add_domain<geometry::Hexahedron20, NodeIndex>("domain_"+std::to_string(m.number_of_domains()+1), reordered_indices);
         });
     }
 }

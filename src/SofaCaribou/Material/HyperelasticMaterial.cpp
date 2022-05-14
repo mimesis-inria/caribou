@@ -1,9 +1,12 @@
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Material/SaintVenantKirchhoffMaterial.h>
 #include <SofaCaribou/Material/NeoHookeanMaterial.h>
+<<<<<<< HEAD
 #include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoffMaterial_FEniCS.h>
 
 
+=======
+>>>>>>> FenicCS-features
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
@@ -23,12 +26,15 @@ static int SaintVenantKirchhoffClass = RegisterObject("Caribou Saint-Venant-Kirc
 //                                                 .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types> >()
                                                  .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types> >();
 
+<<<<<<< HEAD
 static int SaintVenantKirchhoffFEniCSClass = RegisterObject("FEniCS Saint-Venant-Kirchhoff hyperelastic material")
                                                  .add< SaintVenantKirchhoffMaterial_FEniCS< Tetrahedron<Linear>, sofa::defaulttype::Vec3Types> >()
 //                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Tetrahedron<caribou::Quadratic>> >()
 //                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Hexahedron<caribou::Linear>> >()
                                                  .add< SaintVenantKirchhoffMaterial_FEniCS<Hexahedron<Quadratic>, sofa::defaulttype::Vec3Types> >();
 
+=======
+>>>>>>> FenicCS-features
 static int NeoHookeanClass = RegisterObject("Caribou NeoHookeanMaterial hyperelastic material")
 //    .add< NeoHookeanMaterial<sofa::defaulttype::Vec1Types> >()
 //    .add< NeoHookeanMaterial<sofa::defaulttype::Vec2Types> >()

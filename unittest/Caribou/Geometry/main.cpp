@@ -55,10 +55,19 @@ template <typename Derived>
                       val1, val2, abs_error)
 
 #include "test_segment.h"
+#include "test_segment3.h"
 #include "test_triangle.h"
+#include "test_triangle6.h"
 #include "test_quad.h"
+#include "test_quad8.h"
+#include "test_rectangular_quad.h"
+#include "test_rectangular_quad8.h"
 #include "test_tetrahedron.h"
+#include "test_tetrahedron10.h"
 #include "test_hexahedron.h"
+#include "test_hexahedron20.h"
+#include "test_rectangular_hexahedron.h"
+#include "test_rectangular_hexahedron20.h"
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

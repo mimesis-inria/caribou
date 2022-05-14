@@ -18,13 +18,13 @@ using namespace SofaCaribou::benchmark::forcefield;
 
 [[maybe_unused]]
 static int _c1_ = RegisterObject("Caribou hyperelastic force field")
-.add<HyperelasticForcefieldRecomputeF<Hexahedron<Linear>>>()
-.add<HyperelasticForcefieldRecomputeF<Tetrahedron<Linear>>>();
+.add<HyperelasticForcefieldRecomputeF<Hexahedron>>()
+.add<HyperelasticForcefieldRecomputeF<Tetrahedron>>();
 
 static int _c2_ = RegisterObject("Caribou hyperelastic force field")
-.add<HyperelasticForcefieldStoreF<Hexahedron<Linear>>>()
-.add<HyperelasticForcefieldStoreF<Tetrahedron<Linear>>>();
+.add<HyperelasticForcefieldStoreF<Hexahedron>>()
+.add<HyperelasticForcefieldStoreF<Tetrahedron>>();
 
 static int _c3_ = RegisterObject("Caribou hyperelastic force field")
-.add<HyperelasticForcefieldStoreFAndS<Hexahedron<Linear>>>()
-.add<HyperelasticForcefieldStoreFAndS<Tetrahedron<Linear>>>();
+.add<HyperelasticForcefieldStoreFAndS<Hexahedron>>()
+.add<HyperelasticForcefieldStoreFAndS<Tetrahedron>>();

@@ -16,6 +16,10 @@
 #include <Eigen/Dense>
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
+DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/defaulttype/BaseMatrix.h>
+DISABLE_ALL_WARNINGS_END
+
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
 namespace sofa { using Index = unsigned int; }
 #endif

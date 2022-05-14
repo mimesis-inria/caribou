@@ -1,7 +1,12 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
+#include <sofa/version.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
 #include <sofa/helper/testing/BaseTest.h>
+#else
+#include <sofa/testing/BaseTest.h>
+#endif
 #include <sofa/simulation/Node.h>
 #include <SofaBaseMechanics/MechanicalObject.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
@@ -17,7 +22,9 @@ using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace sofa::helper::logging;
 
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201299)
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
+using namespace sofa::helper::testing;
+#else
 using namespace sofa::testing;
 #endif
 
@@ -50,7 +57,7 @@ TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
 
     // Mechanics
     createObject(meca, "SaintVenantKirchhoffMaterial", {{"young_modulus", "3000"}, {"poisson_ratio", "0.499"}});
-    auto ff = dynamic_cast<SofaCaribou::forcefield::HyperelasticForcefield<caribou::geometry::Hexahedron<caribou::Linear>> *> (
+    auto ff = dynamic_cast<SofaCaribou::forcefield::HyperelasticForcefield<caribou::geometry::Hexahedron> *> (
         createObject(meca, "HyperelasticForcefield").get()
     );
 

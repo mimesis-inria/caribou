@@ -1,7 +1,12 @@
 project(Caribou.unittests.Mechanics)
 
 set(SOURCE_FILES
-        main.cpp)
+    main.cpp
+)
+
+if (NOT WIN32)
+    find_package(Threads QUIET)
+endif()
 
 enable_testing()
 

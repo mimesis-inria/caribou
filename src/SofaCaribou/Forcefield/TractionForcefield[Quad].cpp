@@ -16,17 +16,8 @@ namespace SofaCaribou::forcefield {
 // --------------------------------
 
 // This will force the compiler to compile the following templated class
-template class TractionForcefield<Quad <_2D, Linear>>;
-template class TractionForcefield<Quad <_3D, Linear>>;
-
-// -----------------------------------
-// Quad quadratic specialization
-// -----------------------------------
-
-// This will force the compiler to compile the following templated class
-template class TractionForcefield<Quad <_2D, Quadratic>>;
-template class TractionForcefield<Quad <_3D, Quadratic>>;
-
+template class TractionForcefield<Quad<_2D>>;
+template class TractionForcefield<Quad<_3D>>;
 
 } // namespace SofaCaribou::forcefield
 
@@ -35,8 +26,6 @@ using namespace SofaCaribou::forcefield;
 
 [[maybe_unused]]
 static int _c_ = RegisterObject("Caribou traction force field")
-        .add<TractionForcefield<Quad <_2D, Linear>>>()
-        .add<TractionForcefield<Quad <_3D, Linear>>>()
-        .add<TractionForcefield<Quad <_2D, Quadratic>>>()
-        .add<TractionForcefield<Quad <_3D, Quadratic>>>();
+        .add<TractionForcefield<Quad<_2D>>>()
+        .add<TractionForcefield<Quad<_3D>>>();
 }
