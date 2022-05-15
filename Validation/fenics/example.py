@@ -60,8 +60,9 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject('VisualStyle', displayFlags="showForceFields showBehaviorModels")
         root.addObject('RequiredPlugin',
                        pluginName="SofaCaribou CImgPlugin SofaMiscCollision SofaGeneralSimpleFem SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine SofaGeneralDeformable SofaMiscFem SofaMeshCollision SofaGeneralLoader")
-        root.gravity = [0, 0, -9.81]
+        
         root.dt = 0.1 / 3
+        root.gravity = [0, 0, -9.81]
 
         root.addObject("DefaultPipeline", verbose=0, depth=10, draw=0)
         root.addObject("BruteForceBroadPhase")
@@ -69,6 +70,8 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject("DefaultContactManager", name="Response", response="default")
         root.addObject("MinProximityIntersection", name="Proximity", alarmDistance=0.75, contactDistance=0.5)
 
+
+        # Liver node 
         liver = root.addChild('liver')
         liver.addObject("EulerImplicitSolver", name="cg_odesolver", printLog=False, rayleighStiffness=0.1,
                              rayleighMass=0.1)
@@ -77,31 +80,52 @@ class ControlFrame(Sofa.Core.Controller):
         liver.addObject('MechanicalObject', name="mo", src="@loader")
         liver.addObject('CaribouTopology', name='topology', template="Tetrahedron", position="@loader.position",
                              indices="@loader.tetrahedra")
-        liver.addObject('UniformMass', totalMass="250")
-
+        # The liver is fixed
+        liver.addObject('UniformMass', totalMass="0")
+        liver.addObject('FixedConstraint', indices="0 10 20 30 40")
+        # Attributing a Neohookean fenics material to the liver 
         liver.addObject('FEniCS_Material', template="Tetrahedron", young_modulus="3000",
                               poisson_ratio="0.3", material_name="NeoHookean")
-
         liver.addObject('HyperelasticForcefield_FEniCS', printLog=True)
-
+        # Liver visualisation 
         liver_visu = liver.addChild('visu')
         liver_visu.addObject("OglModel", name="liver_ogl", src="@../loader", color="red")
         liver_visu.addObject("CaribouBarycentricMapping")
-
+        # Liver collision model 
         liver_collision = liver.addChild('collision')
         liver_collision.addObject("MeshTopology", src="@../loader")
         liver_collision.addObject("TriangleCollisionModel")
         liver_collision.addObject("LineCollisionModel")
         liver_collision.addObject("PointCollisionModel")
 
-        floor_node = root.addChild("floor")
-        floor_node.addObject("MeshSTLLoader", name="loader", filename="../meshes/drap_refined.stl")
-        floor_node.addObject("MeshTopology", src="@loader")
-        floor_node.addObject("MechanicalObject", src="@loader")
-        floor_node.addObject("TriangleCollisionModel", name="FloorTriangleModel", simulated="0", moving="0")
-        floor_node.addObject("LineCollisionModel", name="FloorLineModel", simulated="0", moving="0")
-        floor_node.addObject("PointCollisionModel", name="FloorPointModel", simulated="0", moving="0")
-        floor_node.addObject("OglModel", name="FloorV", src="@loader", texturename="textures/floor.bmp")
+
+
+        drap = root.addChild("floor")
+        drap.addObject("EulerImplicitSolver", name="cg_odesolver", printLog=False, rayleighStiffness=0.1,
+                             rayleighMass=0.1)
+        drap.addObject("CGLinearSolver", iterations=25, name="linear solver", tolerance=1.0e-9, threshold=1.0e-9)
+        drap.addObject("MeshVTKLoader", name="loader", filename="../meshes/drap_3d.vtk")
+        drap.addObject("MeshTopology", src="@loader")
+        drap.addObject("MechanicalObject", src="@loader")
+
+        drap.addObject('CaribouTopology', name='topology', template="Tetrahedron", position="@loader.position",
+                             indices="@loader.tetrahedra")
+        drap.addObject('UniformMass', totalMass="200")
+
+        drap.addObject('FEniCS_Material', template="Tetrahedron", young_modulus="300",
+                              poisson_ratio="0.3", material_name="NeoHookean")
+
+        drap.addObject('HyperelasticForcefield_FEniCS', printLog=True)
+        # Visualisation 
+        drap_visu = drap.addChild('visu')
+        drap_visu.addObject("OglModel", name="FloorV", src="@../loader", texturename="textures/floor.bmp")
+        drap_visu.addObject("CaribouBarycentricMapping")
+        # Collision model
+        drap_collision = drap.addChild('collision')
+        drap_collision.addObject("MeshTopology", src="@../loader")
+        drap_collision.addObject("TriangleCollisionModel")
+        drap_collision.addObject("LineCollisionModel")
+        drap_collision.addObject("PointCollisionModel",)
 
         return root
 
