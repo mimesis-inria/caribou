@@ -22,19 +22,33 @@ import Sofa, SofaRuntime, SofaCaribou
 import meshio, numpy as np
 from manufactured_solution import assemble, integrate, compute_solution, ConstantForceField
 
-order = "quadratic"
+order = "linear"
+element = "tetrahedron"
 material = "SaintVenantKirchhoff"
 
-if order == "linear":
-    mesh = meshio.read('meshes/new_cylinder_p1.vtu')
-    surface_template = "Triangle"
-    volume_template = "Tetrahedron"
-    fenics_volume_indices = mesh.cells[1].data
+if element == "tetrahedron":
+    if order == "linear":
+        mesh = meshio.read('meshes/refined_meshes/cylinder/p1/cylinder_p1_5.0.vtu')
+        surface_template = "Triangle"
+        volume_template = "Tetrahedron"
+        fenics_volume_indices = mesh.cells[1].data
+    else:
+        mesh = meshio.read('meshes/refined_meshes/cylinder/p2/cylinder_p2_5.0.vtu')
+        surface_template = "Triangle6"
+        volume_template = "Tetrahedron10"
+        fenics_volume_indices = mesh.cells[1].data[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
 else:
-    mesh = meshio.read('meshes/new_cylinder_p2.vtu')
-    surface_template = "Triangle6"
-    volume_template = "Tetrahedron10"
-    fenics_volume_indices = mesh.cells[1].data[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
+    if order == "linear":
+        mesh = meshio.read('meshes/refined_meshes/cylinder/q1/cylinder_q1_5.0.vtu')
+        surface_template = "Quad"
+        volume_template = "Hexahedron"
+        fenics_volume_indices = mesh.cells[1].data[:, [4, 5, 0, 1, 7, 6, 3, 2]]
+    else:
+        mesh = meshio.read('meshes/refined_meshes/cylinder/p2/cylinder_p2_5.0.vtu')
+        surface_template = "Triangle6"
+        volume_template = "Tetrahedron10"
+        fenics_volume_indices = mesh.cells[1].data[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
+
 
 mu = 1.0
 l = 1.25
