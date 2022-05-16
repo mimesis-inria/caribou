@@ -1,6 +1,7 @@
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/Material/SaintVenantKirchhoffMaterial.h>
 #include <SofaCaribou/Material/NeoHookeanMaterial.h>
+#include <SofaCaribou/Material/MooneyRivlinMaterial.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
@@ -19,5 +20,11 @@ static int NeoHookeanClass = RegisterObject("Caribou NeoHookeanMaterial hyperela
 //    .add< NeoHookeanMaterial<sofa::defaulttype::Vec1Types> >()
 //    .add< NeoHookeanMaterial<sofa::defaulttype::Vec2Types> >()
     .add< NeoHookeanMaterial<sofa::defaulttype::Vec3Types> >();
+
+static int MooneyRivlinClass = RegisterObject("Caribou MooneyRivlin hyperelastic material")
+//    .add< MooneyRivlinMaterial<sofa::defaulttype::Vec1Types> >()
+//    .add< MooneyRivlinMaterial<sofa::defaulttype::Vec2Types> >()
+    .add< MooneyRivlinMaterial<sofa::defaulttype::Vec3Types> >();
+
 
 } // namespace SofaCaribou::material
