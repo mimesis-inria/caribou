@@ -24,10 +24,10 @@ static int SaintVenantKirchhoffClass = RegisterObject("Caribou Saint-Venant-Kirc
 static int SaintVenantKirchhoffFEniCSClass = RegisterObject("FEniCS Saint-Venant-Kirchhoff hyperelastic material")
 //                                                 .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types> >()
 //                                                 .add< SaintVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types> >()
-                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Tetrahedron<caribou::Linear>> >()
-                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Tetrahedron<caribou::Quadratic>> >()
-                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Hexahedron<caribou::Linear>> >()
-                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Hexahedron<caribou::Quadratic>> >();
+                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Tetrahedron> >()
+                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Tetrahedron10> >()
+                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Hexahedron> >()
+                                                 .add< SaintVenantKirchhoffMaterial_FEniCS<sofa::defaulttype::Vec3Types, caribou::geometry::Hexahedron20> >();
 
 static int NeoHookeanClass = RegisterObject("Caribou NeoHookeanMaterial hyperelastic material")
 //    .add< NeoHookeanMaterial<sofa::defaulttype::Vec1Types> >()

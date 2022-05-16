@@ -4,11 +4,7 @@
 #include <array>
 
 #include <SofaCaribou/config.h>
-<<<<<<< HEAD
-#include <SofaCaribou/FEniCS/Material/HyperelasticMaterial_FEniCS.h>
-=======
 #include <SofaCaribou/FEniCS/Material/FEniCS_Material.h>
->>>>>>> FenicCS-features
 #include <SofaCaribou/Forcefield/CaribouForcefield.h>
 
 #include <Caribou/config.h>
@@ -188,11 +184,7 @@ private:
 
 
     // Data members
-<<<<<<< HEAD
-    Link<material::HyperelasticMaterial_FEniCS<Element, DataTypes>> d_material;
-=======
     Link<material::FEniCS_Material<Element, DataTypes>> d_material;
->>>>>>> FenicCS-features
     sofa::core::objectmodel::Data<bool> d_enable_multithreading;
 
     // Private variables

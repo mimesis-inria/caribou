@@ -57,11 +57,6 @@ public:
     virtual Eigen::Matrix<Real, 6, 6>
     PK2_stress_jacobian(const Real & J, const Eigen::Matrix<Real, Dimension, Dimension>  & C) const = 0;
 
-<<<<<<< HEAD
-    // Sofa's scene methods
-
-=======
->>>>>>> FenicCS-features
     /** Return the data type (ex. Vec3D) as the template name  */
     static std::string templateName(const HyperelasticMaterial<DataTypes>* = nullptr) {
         return DataTypes::Name();

@@ -50,14 +50,6 @@ set(HEADER_FILES
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
-<<<<<<< HEAD
-    FEniCS/Material/HyperelasticMaterial_FEniCS.h
-    FEniCS/Material/SaintVenantKirchhoffMaterial_FEniCS.h
-    FEniCS/Material/SaintVenantKirchhoff_Tetra.h
-    FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h
-    FEniCS/Material/SaintVenantKirchhoff_Hexa.h
-    FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.h
-=======
     # FEniCS Material
     FEniCS/Material/FEniCS_Material.h
     FEniCS/Material/FEniCS_Material[Hexahedron_FEniCS].h
@@ -80,7 +72,6 @@ set(HEADER_FILES
     FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Hexa.h
     FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Hexa_Order2.h
     ##################################
->>>>>>> FenicCS-features
     Ode/BackwardEulerODESolver.h
     Ode/LegacyStaticODESolver.h
     Ode/NewtonRaphsonSolver.h

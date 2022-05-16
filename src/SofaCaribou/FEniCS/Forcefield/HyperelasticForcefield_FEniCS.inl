@@ -18,14 +18,6 @@ DISABLE_ALL_WARNINGS_END
 #include <omp.h>
 
 #include <iostream>
-<<<<<<< HEAD
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra.h>
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Tetra_Order2.h>
-//#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa.h>
-#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoff_Hexa_Order2.h>
-#include <SofaCaribou/FEniCS/Material/SaintVenantKirchhoffMaterial_FEniCS.h>
-=======
->>>>>>> FenicCS-features
 
 #endif
 
@@ -54,11 +46,7 @@ void HyperelasticForcefield_FEniCS<Element>::init()
 
     // No material set, try to find one in the current context
     if (not d_material.get()) {
-<<<<<<< HEAD
-        auto materials = this->getContext()->template getObjects<material::HyperelasticMaterial_FEniCS<Element, DataTypes>>(BaseContext::Local);
-=======
         auto materials = this->getContext()->template getObjects<material::FEniCS_Material<Element, DataTypes>>(BaseContext::Local);
->>>>>>> FenicCS-features
         if (materials.empty()) {
             msg_warning() << "Could not find an hyperelastic material in the current context.";
         } else if (materials.size() > 1) {
@@ -183,22 +171,7 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         Matrix<NumberOfNodesPerElement, Dimension> nodal_forces;
         nodal_forces.fill(0);
 
-<<<<<<< HEAD
-//        if (element_id==0) std::cout <<"coefficients: " << coefficients;
-//        if (element_id==0) std::cout <<"positions: " << X;
-        
-        
         integral->tabulate_tensor_float64(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
-        material->calculate_nodal_forces(nodal_forces, coefficients, current_nodes_position);
-
-//        if (element_id == 0) std::cout << "final nodal forces" << nodal_forces << "\n";
-
-        std::cout << "final nodal forces" << nodal_forces << "\n";
-
-
-=======
-        integral->tabulate_tensor_float64(nodal_forces.data(), coefficients.data(), constants, current_nodes_position.data(), nullptr, nullptr);
->>>>>>> FenicCS-features
 
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {

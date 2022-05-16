@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import Sofa
-
+import SofaCaribou
 newton_iterations = 20
 cg_iterations = 1000
 increments=100
