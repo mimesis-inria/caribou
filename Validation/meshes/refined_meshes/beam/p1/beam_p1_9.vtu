@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
+<!--This file was created by meshio v5.0.4-->
+<UnstructuredGrid>
+<Piece NumberOfPoints="81" NumberOfCells="336">
+<Points>
+<DataArray type="Float64" Name="Points" NumberOfComponents="3" format="binary">
+AQAAAACAAACYBwAA8gAAAA==eJyF1EEOgjAQQNGuOIar3sAupWHRTTdNTLiPHoc7GJO5mWICTZiZL92QvgB+aSGE37hIOBz30X1SPp34yX1mdT26KJe/Pizvw8/2OXQOy6jOH91+cx/V2a+b1fys0/yvbR7BE3gGL+AVvPn+vE/H80ynOibwDF7AK3jz3XYKdAp0CnQKdAp0CnSK6hToVG7WXXcqN+uuO5Wbde+dn3U8btdX8IZ5L7Z+4wk8gxfwCt581/uhv5cRPIFn8AJewZvve6f5bkTwBJ7BC3gFb77rfdufdwRP4Bm8gFfw5jvu2xk8gifwDF7AK3jzfe3/AknXyMg=
+</DataArray>
+</Points>
+<Cells>
+<DataArray type="Int64" Name="connectivity" format="binary">
+AQAAAACAAACAJQAABQUAAA==eJx12tdSXEkQBFBADgknL+1Ku8vKIIPwMI4BZvAe/v9r9KDOlxNR81KRmVV9IzqyudW3mJz485tu8Sn4V8FPoOc3U9QFT4GfFfwMevAD+OctTra4An4K/4K6VfAK/Evq1sCr8K+oWwevwb+mbgO8Dv+Guk3wBvxb6rbAm/APqZsFb8Fnv7LPU/DB71pcRZcPft/iGrp88F8trqPLB//d4ga6fPCHFjfR5YM/triFLh/8T4uz6PLBj1rMfmWft8HP4LNfqdsBb8Nnv1LXAe/AZ79S1wV34LNfqeuBu/DZr9T1wT347FfqBuA+fPY1dXPgAXz2K/v8AD743xZ30OWD/2uxgy4fvNhiF10++P8We+jywZ9a7KPLB39ucYAuH/ylxTl0+eDHLWa/ss+74Bn47FfqhuBd+EXq9sBD+OxX6vbBe/DZr9QdgPfhs1+pG4EP4LNfqRuDR/DZ19TNg8fw2a/s8wR8fl9bHKLLBy+1uIcuH/ytxX10+eDvLR6gywf/aHGELh/8s8Uxunzwcovz6PLBT1rMfuU3DR982OIS+hH4ED77lbpj8BF89it1J+Bj+OxX6k7BJ/DZr9SdgU/hs1+pOwefwWdfU7cAPofPfmWfn4Mn4bNfhwUfnP7yGF0+OP3lCbp8cPrLU3T54PSXZ+jywekvz9Hlg9NfLqDLBz8kzpK3AH8BH/yEGD7nLfWP0C/g5+CD54nh83c2/vD+lf5Yn6yQr++8/4Q/RD8iep9xPX2avBcFf0z0/uPz9HXyXhb8CdH7ks/zHCTvVcGfEr1f+TzPTfJeF/wZ0fuYz/OcJe9NwZ8Tvb/5PM9l8t4WvOfMc+jzPMfJq74zxHeXLepf66bJ9/zIx69XYO+nl0V+tU7qr4n6N3m+P6/R5VN/Q9S/yfN9e4Mun/pbov5Nnu/nW3T51N8R9W/yfJ/focun/p6of5Pn+/8eXT71vgf0dfLsFy7Qq+9p8Z19WXjr7Ps8N/LxnX3cFfn2idGrdaLHr/Z91+TbV0b3XHxDj1/tE2/Itw+N7rn4jh6/2lfekm/fGt1z8QM9frUPvSPfPje65+Inevxq33pPvn1xdM/FMrr9k/5eJqpn3fz8brxL1L/5+f15l7yvBT8k6l+f5z01eUsFH596D9X/1b3W8yMfn3pv1f/VPdjzIx+fes/V/9W92fMjH5+OWtS/1nnP9vzIx6feo/W/zx+Tt1zw3hO8P1jnPT551XzE/sPv5c5LzK/WSf0V0e/ryXMecoUun3r7H7/HJ8/5yTW6fOrtf/x+nzznLTfo8qm3//F7f/Kcz9yiy6fe/sf5QPKc59yhy6fe/sd5QvKc/9yjy6fe/sd7cvKcF12gV3PAbaL+1f+X5E8VvHOPRP2bvEt05yXy+r8D1v87RX61jv7vgvV/p8iv1tH/PbD+7xb51Tr6vw/W/70iv1pH/w/A+r9f5Ffr6H+/++j/QZGv/5132//oY8+NfZPnRt7+Rx/7PPsmz428/Y8+Tt6wyK/W0c/2Lc6/9or8ah39bN/ivGy/yK/W0c8jsPO1gyK/Wkc/27c4jxsV+dU6+tl+xvnduMiPXv1fR/zqXM65qnM/57Guo/+d4zmHdU7o/NZ1osd3i2Dnts4VPR+uEz2+c07onHex0Kt1osd3zhWdCzu39Hy4TvRRi84hnSM75/R8uE70+M65pXNn56KeD9eJHh8/Bjundo7q+fgN6LjawQ==
+</DataArray>
+<DataArray type="Int64" Name="offsets" format="binary">
+AQAAAACAAACACgAAMAIAAA==eJwtxVFoDAAAANDZRpPFaLIYTRajycVoshhNFqOTxehkMZpcjE4Wo8nFaLIYTRajk8VoamVpamVpamVpamVpamVpamVpasXH3vt5CXGTpnm6kz3LczzXaV7gRV7sTC/zCq90wGu8zuud503e4q0u9A7v8m4Xe58P+KBLfcTHfNxhn/IZn3WlL/iSLzvqa77hm67zHd/zfTf6kZ/4qZv9wq/82m1+47d+506/9wd/dI8/+bO/uN9f/c3fPeQf/ulfHvVv//FfT/if46dMPtVJnuGZnu1Uz/N8L3SGl3iplzvbq7zaa53rDd7ozS7wNm/3Tge9x3u93yEf8mEfdblP+KRPO+JzPu+LrvYVX/V11/qWb/uuG/zAD/3YMT/zc790q9vc7g53usvd7nGv+9zvAQ96yMMe8ajHPO4Jx8VPlugkJzvFqU5zujOc6SxnO+Ac5zrP+S5woYscdLFLHHKpy1zusCsccaWrXO2oa1zrOte7wY1ucszNbnGr29zuDne6y93uca/73O8BD3rIwx7xqMc87gnHJUyW6CQnO8WpTnO6M5zpLGc74BznOs/5LnChixx0sUsccqnLXO6wKxxxpatc7ahrXOs617vBjW5yzM1ucavb3O4Od7rL3e5xr/vc7wEPesjDHvGoxzzuCcclyklOdopTneZ0ZzjTWc52wDnOdZ7zXeBCFznoYpc45FKXudxhVzjiSle52lHXuNZ1rneDG93kmJvd4lb/B6aMoBs=
+</DataArray>
+<DataArray type="Int64" Name="types" format="binary">
+AQAAAACAAACACgAAIQAAAA==eJxjZYAA1lF6lB6lR2k601yj9Cg9So/So/SIpAHqYwpR
+</DataArray>
+</Cells>
+<PointData>
+<DataArray type="Int64" Name="gmsh:dim_tags" NumberOfComponents="2" format="binary">
+AQAAAACAAAAQBQAAWgAAAA==eJy907EOgCAMhOEKSACjJpLgIO//nA7q4L9zt1y+qWnSmj2Z7B8HezjAMxzhAm+Yy3awhwOc4AwXeIFXsbn/aB9iN5G/O4nwLnYV+xT7Eru/zb8f7RsqTQUd
+</DataArray>
+</PointData>
+<CellData>
+<DataArray type="Int64" Name="gmsh:physical" format="binary">
+AQAAAACAAACACgAAJQAAAA==eJztxbEBAAAEBDGP/WdW2IDyL00US8eLmW3P583MzJYPMyoEmQ==
+</DataArray>
+<DataArray type="Int64" Name="gmsh:geometrical" format="binary">
+AQAAAACAAACACgAAKwAAAA==eJxjY4AANjJp/hFOC49wWnyE09IjnJahkGYcpUfpUXqUHqVHJA0A7zMMUQ==
+</DataArray>
+</CellData>
+</Piece>
+</UnstructuredGrid>
+</VTKFile>
