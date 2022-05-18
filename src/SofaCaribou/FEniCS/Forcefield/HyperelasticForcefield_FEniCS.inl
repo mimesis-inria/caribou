@@ -129,15 +129,24 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 
 
     // Get constants from the material
-    /* const double constants[2] = {   
-                                    material->getConstants()(0, 0), // Young Modulus
-                                    material->getConstants()(0, 1)  // Poisson ratio
-                                }; */
     const double constants_mooney[3] = {   
-                                    material->getMooneyRivlinConstants()(0, 0), // Young Modulus
-                                    material->getMooneyRivlinConstants()(0, 1),  // Poisson ratiO
-                                    material->getMooneyRivlinConstants()(0, 2) 
+                                    material->getMooneyRivlinConstants()(0, 0), // C01
+                                    material->getMooneyRivlinConstants()(0, 1),  // C10
+                                    material->getMooneyRivlinConstants()(0, 2)   // K
                                 };
+
+    const double constants_ogden[9] = {
+                                    material->getOgdenConstants()(0, 0), // bulk modulus
+                                    material->getOgdenConstants()(0, 1), // a
+                                    material->getOgdenConstants()(0, 2), // b
+                                    material->getOgdenConstants()(0, 3), // a_f
+                                    material->getOgdenConstants()(0, 4), // b_f
+                                    material->getOgdenConstants()(0, 5), // a_s
+                                    material->getOgdenConstants()(0, 6), // b_s
+                                    material->getOgdenConstants()(0, 7), // a_fs
+                                    material->getOgdenConstants()(0, 8), // b_fs
+                                };
+
     const double constants_else[2] = {   
                                     material->getYoungModulusAndPoissonRatio()(0, 0), // Young Modulus
                                     material->getYoungModulusAndPoissonRatio()(0, 1)  // Poisson ratio
@@ -145,6 +154,8 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
     const double* constants;
     if(material->getMaterialName() == "MooneyRivlin") {
         constants = constants_mooney;
+    } else if(material->getMaterialName() == "Ogden") {
+        constants = constants_ogden;
     } else {
         constants = constants_else;
     }
@@ -314,13 +325,28 @@ SReal HyperelasticForcefield_FEniCS<Element>::getPotentialEnergy (
                                     material->getMooneyRivlinConstants()(0, 1),  // Poisson ratiO
                                     material->getMooneyRivlinConstants()(0, 2) 
                                 };
-    const double constants_else[2] = {   
+
+    const double constants_ogden[9] = {
+                                    material->getOgdenConstants()(0, 0), // bulk modulus
+                                    material->getOgdenConstants()(0, 1), // a
+                                    material->getOgdenConstants()(0, 2), // b
+                                    material->getOgdenConstants()(0, 3), // a_f
+                                    material->getOgdenConstants()(0, 4), // b_f
+                                    material->getOgdenConstants()(0, 5), // a_s
+                                    material->getOgdenConstants()(0, 6), // b_s
+                                    material->getOgdenConstants()(0, 7), // a_fs
+                                    material->getOgdenConstants()(0, 8), // b_fs
+                                };
+
+    const double constants_else[2] = {
                                     material->getYoungModulusAndPoissonRatio()(0, 0), // Young Modulus
                                     material->getYoungModulusAndPoissonRatio()(0, 1)  // Poisson ratio
                                 };
     const double* constants;
     if(material->getMaterialName() == "MooneyRivlin") {
         constants = constants_mooney;
+    } else if(material->getMaterialName() == "Ogden") {
+        constants = constants_ogden;
     } else {
         constants = constants_else;
     }
@@ -412,13 +438,28 @@ void HyperelasticForcefield_FEniCS<Element>::assemble_stiffness(const Eigen::Mat
                                     material->getMooneyRivlinConstants()(0, 1),  // Poisson ratiO
                                     material->getMooneyRivlinConstants()(0, 2) 
                                 };
-    const double constants_else[2] = {   
+
+    const double constants_ogden[9] = {
+                                    material->getOgdenConstants()(0, 0), // bulk modulus
+                                    material->getOgdenConstants()(0, 1), // a
+                                    material->getOgdenConstants()(0, 2), // b
+                                    material->getOgdenConstants()(0, 3), // a_f
+                                    material->getOgdenConstants()(0, 4), // b_f
+                                    material->getOgdenConstants()(0, 5), // a_s
+                                    material->getOgdenConstants()(0, 6), // b_s
+                                    material->getOgdenConstants()(0, 7), // a_fs
+                                    material->getOgdenConstants()(0, 8), // b_fs
+                                };
+
+    const double constants_else[2] = {
                                     material->getYoungModulusAndPoissonRatio()(0, 0), // Young Modulus
                                     material->getYoungModulusAndPoissonRatio()(0, 1)  // Poisson ratio
                                 };
     const double* constants;
     if(material->getMaterialName() == "MooneyRivlin") {
         constants = constants_mooney;
+    } else if(material->getMaterialName() == "Ogden") {
+        constants = constants_ogden;
     } else {
         constants = constants_else;
     }

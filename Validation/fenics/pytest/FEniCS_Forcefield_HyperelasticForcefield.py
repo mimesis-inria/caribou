@@ -16,14 +16,14 @@ print(f'Adding {site_packages_dir} to sys.path')
 # TODO: pass the tests for quadratic hexahedron or lower the tolerance
 # TODO: better way of doing it ?
 TEST_CASES = [
-    ("Kirchhoff_tetra", "SaintVenantKirchhoffMaterial", "Tetrahedron"),
-    ("Kirchhoff_tetra10", "SaintVenantKirchhoffMaterial", "Tetrahedron10"),
-    ("Kirchhoff_hexa", "SaintVenantKirchhoffMaterial", "Hexahedron"),
-    # ("Kirchhoff_hexa20", "SaintVenantKirchhoffMaterial", "Hexahedron20"),
-    ("NeoHooke_tetra", "NeoHookeanMaterial", "Tetrahedron"),
-    ("NeoHooke_tetra10", "NeoHookeanMaterial", "Tetrahedron10"),
-    ("NeoHooke_hexa", "NeoHookeanMaterial", "Hexahedron"),
-    # ("NeoHooke_hexa20", "NeoHookeanMaterial", "Hexahedron20"),
+    # ("Kirchhoff_tetra", "SaintVenantKirchhoff", "Tetrahedron"),
+    # ("Kirchhoff_tetra10", "SaintVenantKirchhoff", "Tetrahedron10"),
+    # ("Kirchhoff_hexa", "SaintVenantKirchhoff", "Hexahedron"),
+    ("Kirchhoff_hexa20", "SaintVenantKirchhoff", "Hexahedron20"),
+    # ("NeoHooke_tetra", "NeoHookean", "Tetrahedron"),
+    # ("NeoHooke_tetra10", "NeoHookean", "Tetrahedron10"),
+    # ("NeoHooke_hexa", "NeoHookean", "Hexahedron"),
+    # ("NeoHooke_hexa20", "NeoHookean", "Hexahedron20"),
 ]
 
 
@@ -75,7 +75,9 @@ def generate_geometry(element):
             [hexa_p_0, hexa_p_1, hexa_p_2, hexa_p_3, hexa_p_4, hexa_p_5, hexa_p_6, hexa_p_7, hexa_p_8, hexa_p_9,
              hexa_p_10, hexa_p_11, hexa_p_12, hexa_p_13, hexa_p_14, hexa_p_15, hexa_p_16, hexa_p_17, hexa_p_18,
              hexa_p_19]), np.arange(20), np.array(
-            [4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10])
+            [4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10]
+
+        )
 
 
 def createScene(node, element_type, material_model):
@@ -94,7 +96,7 @@ def createScene(node, element_type, material_model):
     sofa_node.addObject('CaribouTopology', name='topology', template=element_sofa, indices=indices_sofa.tolist())
     sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
     sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
-    sofa_node.addObject(material_model, young_modulus="3000", poisson_ratio="0.3")
+    sofa_node.addObject(material_model + "Material", young_modulus="3000", poisson_ratio="0.3")
     sofa_node.addObject('HyperelasticForcefield', name="ff", printLog=False)
 
     fenics_node = node.addChild("fenics_node")
@@ -106,8 +108,8 @@ def createScene(node, element_type, material_model):
                           indices=indices_fenics.tolist())
     fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
     fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
-    fenics_node.addObject(material_model + '_FEniCS', template=element_fenics, young_modulus="3000",
-                          poisson_ratio="0.3")
+    fenics_node.addObject('FEniCS_Material', template=element_fenics, young_modulus="3000",
+                          poisson_ratio="0.3", material_name=material_model)
     fenics_node.addObject('HyperelasticForcefield_FEniCS', name="ff", printLog=False)
 
 
@@ -122,11 +124,13 @@ class TestHyperelasticForcefield(unittest.TestCase):
                 K_fenics = csr_matrix(root.fenics_node.ff.K(), copy=True)
                 K_sofa = csr_matrix(root.sofa_node.ff.K(), copy=True)
                 Psi = csr_matrix(root.fenics_node.ff.Pi(), copy=True)
-                print("Psi: ", Psi)
+                # print("Psi: ", Psi)
                 
-                # print(K_fenics - K_sofa)
-                # print(linalg.norm(K_fenics - K_sofa))
-                self.assertMatrixQuasiEqual(K_fenics, K_sofa)
+                print(K_fenics - K_sofa)
+                # print(K_fenics)
+
+                print(linalg.norm(K_fenics - K_sofa))
+                # self.assertMatrixQuasiEqual(K_fenics, K_sofa)
 
     def assertMatrixQuasiEqual(self, A, B):
         """ absolute(a - b) <= (atol + rtol * absolute(b)) """

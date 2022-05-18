@@ -28,12 +28,13 @@ material = "SaintVenantKirchhoff"
 
 if element == "tetrahedron":
     if order == "linear":
+        # mesh = meshio.read('meshes/refined_meshes/beam/p1/beam_p1_9.vtu')
         mesh = meshio.read('meshes/refined_meshes/cylinder/p1/cylinder_p1_5.0.vtu')
         surface_template = "Triangle"
         volume_template = "Tetrahedron"
         fenics_volume_indices = mesh.cells[1].data
     else:
-        mesh = meshio.read('meshes/refined_meshes/cylinder/p2/cylinder_p2_5.0.vtu')
+        mesh = meshio.read('meshes/refined_meshes/beam/p2/beam_p2_9.vtu')
         surface_template = "Triangle6"
         volume_template = "Tetrahedron10"
         fenics_volume_indices = mesh.cells[1].data[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
@@ -115,12 +116,13 @@ if __name__ == '__main__':
         assemble(root.sofa_node.volume.domain(), lambda x, y, z, _: f(x, y, z)) + \
         assemble(root.sofa_node.neumann_boundary.domain(), lambda x, y, z, t: np.dot(P(x, y, z), t.normal()))
     print(' Done.', flush=True)
-
     exact_error = np.sqrt(
         integrate(root.sofa_node.volume.domain(), lambda x, y, z, _: np.dot(u_s(x, y, z), u_s(x, y, z))))
     print(f"Exact error is {exact_error}")
 
-    for load in [1e-3, 1e-2, 1e-1, 0.15, 0.5, 1.0]:
+    # for load in [1e-3, 1e-2, 1e-1, 0.15, 0.5, 1.0]:
+    for load in [1e-3]:
+
         root.sofa_node.external_forces_sofa.forces = (external_forces * load)
         root.fenics_node.external_forces_fenics.forces = (external_forces * load)
         Sofa.Simulation.animate(root, 1)

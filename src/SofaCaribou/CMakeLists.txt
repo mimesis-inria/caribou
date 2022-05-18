@@ -71,6 +71,11 @@ set(HEADER_FILES
     FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Tetra_Order2.h
     FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Hexa.h
     FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Hexa_Order2.h
+    # Ogden FEniCS Generated code
+    FEniCS/Material/FEniCS_Generated_code/Ogden_Tetra.h
+    FEniCS/Material/FEniCS_Generated_code/Ogden_Tetra_Order2.h
+    FEniCS/Material/FEniCS_Generated_code/Ogden_Hexa.h
+    FEniCS/Material/FEniCS_Generated_code/Ogden_Hexa_Order2.h
     ##################################
     Ode/BackwardEulerODESolver.h
     Ode/LegacyStaticODESolver.h
@@ -174,6 +179,11 @@ set(SOURCE_FILES
     FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Tetra_Order2.c
     FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Hexa.c
     FEniCS/Material/FEniCS_Generated_code/MooneyRivlin_Hexa_Order2.c
+    # Ogden FEniCS Generated code
+    FEniCS/Material/FEniCS_Generated_code/Ogden_Tetra.c
+    FEniCS/Material/FEniCS_Generated_code/Ogden_Tetra_Order2.c
+    FEniCS/Material/FEniCS_Generated_code/Ogden_Hexa.c
+    FEniCS/Material/FEniCS_Generated_code/Ogden_Hexa_Order2.c
     ##################################
     Ode/BackwardEulerODESolver.cpp
     Ode/LegacyStaticODESolver.cpp

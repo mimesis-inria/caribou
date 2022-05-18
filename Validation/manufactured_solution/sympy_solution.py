@@ -6,7 +6,7 @@ def compute(mu, lmbda, rad, length):
     Tr  = lambda A: A[0, 0] + A[1, 1] + A[2, 2]
     Div = lambda A, b: Matrix(3, 3, lambda i, j: smp.diff(A[i,j], b[j], 1)) * smp.ones(A.shape[1], 1)
 
-    l, m    = 1.25, 1.
+    l, m    = lmbda, mu
     Id      = smp.eye(3)
     x, y, z = smp.symbols('x y z')
     u, v, w = [z*smp.exp(v/length) for v in [x, y, z]]

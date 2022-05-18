@@ -24,6 +24,9 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS, sofa::defaulttype::Vec3Types>:
         } else if (d_material_name.getValue() == "MooneyRivlin") {
             ufcx_integral *integral = form_MooneyRivlin_Hexa_F->integrals(ufcx_integral_type::cell)[0];
             return integral;
+        } else if (d_material_name.getValue() == "Ogden") {
+            ufcx_integral *integral = form_Ogden_Hexa_F->integrals(ufcx_integral_type::cell)[0];
+            return integral;
         }
     }
 
@@ -38,6 +41,9 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS, sofa::defaulttype::Vec3Types>:
         } else if (d_material_name.getValue() == "MooneyRivlin") {
             ufcx_integral *integral = form_MooneyRivlin_Hexa_J->integrals(ufcx_integral_type::cell)[0];
             return integral;
+        } else if (d_material_name.getValue() == "Ogden") {
+            ufcx_integral *integral = form_Ogden_Hexa_J->integrals(ufcx_integral_type::cell)[0];
+            return integral;
         }
     }
 
@@ -51,6 +57,9 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS, sofa::defaulttype::Vec3Types>:
             return integral;
         } else if (d_material_name.getValue() == "MooneyRivlin") {
             ufcx_integral *integral = form_MooneyRivlin_Hexa_Pi->integrals(ufcx_integral_type::cell)[0];
+            return integral;
+        } else if (d_material_name.getValue() == "Ogden") {
+            ufcx_integral *integral = form_Ogden_Hexa_Pi->integrals(ufcx_integral_type::cell)[0];
             return integral;
         }
     }

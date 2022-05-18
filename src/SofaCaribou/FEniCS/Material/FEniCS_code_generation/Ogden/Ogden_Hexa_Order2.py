@@ -63,3 +63,6 @@ F = derivative(Pi, u, v)
 
 # Compute Jacobian of F
 J = derivative(F, u, du)
+
+# Export forms
+forms = [F, J, Pi]
