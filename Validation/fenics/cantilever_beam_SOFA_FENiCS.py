@@ -3,9 +3,10 @@ import SofaCaribou
 import meshio
 import numpy as np
 
-ELEMENT_TYPE = "Hexahedron"
-ELEMENT_APPROXIMATION_DEGREE = 2
+ELEMENT_TYPE = "Tetrahedron"
+ELEMENT_APPROXIMATION_DEGREE = 1
 MATERIAL_MODEL = "NeoHookean"
+FORCES = [0, -4000, 0]
 # TODO improve the manual permutation for matching the redefinition of the hexahedron
 
 if ELEMENT_TYPE == "Tetrahedron" and ELEMENT_APPROXIMATION_DEGREE == 1:
@@ -59,7 +60,7 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject('VisualStyle', displayFlags="showForceFields showBehaviorModels")
         root.addObject('RequiredPlugin',
                        pluginName="SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine")
-
+        root.gravity = [0, 0, 0]
         sofa_node = root.addChild("sofa_node")
         sofa_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-15",
                             relative_residual_tolerance_threshold="1e-10", printLog="1")
@@ -68,11 +69,10 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('CaribouTopology', name='topology', template=element_sofa,
                             indices=indices_sofa.tolist())
 
-        sofa_node.addObject('UniformMass', totalMass="250")
         sofa_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         sofa_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         sofa_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-        sofa_node.addObject('ConstantForceField', force="0 -80 0", indices="@top_roi.indices")
+        sofa_node.addObject('ConstantForceField', totalForce=FORCES, indices="@top_roi.indices")
         sofa_node.addObject(material + "Material", young_modulus="3000", poisson_ratio="0.3")
         sofa_node.addObject('HyperelasticForcefield', printLog=True)
 
@@ -83,11 +83,10 @@ class ControlFrame(Sofa.Core.Controller):
         self.fenics_mo = fenics_node.addObject('MechanicalObject', name="mo", position=mesh.points.tolist())
         fenics_node.addObject('CaribouTopology', name='topology', template=element_fenics,
                               indices=indices_fenics.tolist())
-        fenics_node.addObject('UniformMass', totalMass="250")
         fenics_node.addObject('BoxROI', name="fixed_roi", box="-7.5 -7.5 -0.9 7.5 7.5 0.1")
         fenics_node.addObject('FixedConstraint', indices="@fixed_roi.indices")
         fenics_node.addObject('BoxROI', name="top_roi", box="-7.5 -7.5 79.9 7.5 7.5 80.1")
-        fenics_node.addObject('ConstantForceField', force="0 -80 0", indices="@top_roi.indices")
+        fenics_node.addObject('ConstantForceField', totalForce=FORCES, indices="@top_roi.indices")
         fenics_node.addObject('FEniCS_Material', template=element_fenics, young_modulus="3000",
                               poisson_ratio="0.3", C01=0.7, C10=-0.55, k=0.001, material_name=material, path="/home/..")
 
@@ -116,6 +115,9 @@ class ControlFrame(Sofa.Core.Controller):
                     sofa_current_point - sofa_initial_point))
 
         mean_error = np.mean(np.array(errors))
+
+        displacement = fenics_current_positions - self.sofa_rest_position
+        print(displacement[:, 1].min())
 
         print(f"Relative Mean Error: {100 * mean_error} %")
 

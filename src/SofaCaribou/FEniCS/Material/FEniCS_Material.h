@@ -68,6 +68,10 @@ public:
             Real(0), "C10", 
             "Mooney-Rivlin parameter c2", 
             true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
+        , d_k(initData(&d_k,
+            Real(0), "k",
+            "Mooney-Rivlin parameter k",
+            true /*displayed_in_GUI*/, false /*read_only_in_GUI*/))
         , d_bulk_modulus(initData(&d_bulk_modulus,
             Real(0), "bulk_modulus",
             "Ogden parameter bulk modulus",

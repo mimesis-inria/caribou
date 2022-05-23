@@ -12,9 +12,9 @@ import gmsh
 from mpi4py import MPI
 from dolfinx.io import extract_gmsh_geometry, extract_gmsh_topology_and_markers, ufl_mesh_from_gmsh
 from dolfinx.cpp.io import perm_gmsh, distribute_entity_data
-from dolfinx.cpp.mesh import to_type, cell_entity_type
+from dolfinx.cpp.mesh import to_type, cell_entity_type, create_meshtags
 from dolfinx.cpp.graph import AdjacencyList_int32
-from dolfinx.mesh import meshtags, create_mesh
+from dolfinx.mesh import create_mesh
 
 
 def read_from_msh(filename: str, cell_data=False, facet_data=False, gdim=None):
@@ -117,13 +117,14 @@ def gmsh_model_to_mesh(model, cell_data=False, facet_data=False, gdim=None):
     gmsh_cell_perm = perm_gmsh(to_type(str(ufl_domain.ufl_cell())), num_nodes)
     cells = cells[:, gmsh_cell_perm]
     mesh = create_mesh(MPI.COMM_WORLD, cells, x[:, :gdim], ufl_domain)
-    # Create MeshTags for cells
+    # Create meshtags for cells
     if cell_data:
         local_entities, local_values = distribute_entity_data(
             mesh, mesh.topology.dim, cells, cell_values)
         mesh.topology.create_connectivity(mesh.topology.dim, 0)
         adj = AdjacencyList_int32(local_entities)
-        ct = meshtags(mesh, mesh.topology.dim,
+
+        ct = create_meshtags(mesh, mesh.topology.dim,
                              adj, numpy.int32(local_values))
         ct.name = "Cell tags"
 
@@ -141,7 +142,7 @@ def gmsh_model_to_mesh(model, cell_data=False, facet_data=False, gdim=None):
         mesh.topology.create_connectivity(
             mesh.topology.dim - 1, mesh.topology.dim)
         adj = AdjacencyList_int32(local_entities)
-        ft = meshtags(mesh, mesh.topology.dim - 1,
+        ft = create_meshtags(mesh, mesh.topology.dim - 1,
                              adj, numpy.int32(local_values))
         ft.name = "Facet tags"
 

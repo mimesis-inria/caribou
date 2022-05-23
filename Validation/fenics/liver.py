@@ -18,16 +18,13 @@ class ControlFrame(Sofa.Core.Controller):
                        pluginName="SofaCaribou CImgPlugin SofaMiscCollision SofaGeneralSimpleFem SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine SofaGeneralDeformable SofaMiscFem SofaMeshCollision SofaGeneralLoader")
 
         liver = root.addChild('liver')
-        liver.addObject("EulerImplicitSolver", name="cg_odesolver", printLog=False, rayleighStiffness=0.1,
-                        rayleighMass=0.1)
-        liver.addObject("CGLinearSolver", iterations=25, name="linear solver", tolerance=1.0e-9, threshold=1.0e-9)
         liver.addObject("MeshGmshLoader", name="loader", filename="mesh/liver.msh")
         liver.addObject('MechanicalObject', name="mo", src="@loader")
         liver.addObject('CaribouTopology', name='topology', template="Tetrahedron", position="@loader.position",
                         indices="@loader.tetrahedra")
         liver.addObject('UniformMass', totalMass="250")
 
-        # liver.addObject('FEniCS_Material', template="Tetrahedron", young_modulus="3000",
+        # liver.addObject('FEniCS_Material', template="Tetrahedron", young_modulus="300",
         #                 poisson_ratio="0.3", material_name="NeoHookean")
         liver.addObject('FEniCS_Material', template="Tetrahedron", bulk_modulus=1000000, a=1180, b=8, a_f=18.5 * 10e4,
                         b_f=16, a_s=2.5 * 10e4, b_s=11.1, a_fs=2160, b_fs=11.4, material_name="Ogden")
@@ -41,6 +38,9 @@ class ControlFrame(Sofa.Core.Controller):
         if CONTACT:
             root.gravity = [0, 0, -9.81]
             root.dt = 0.1 / 3
+            root.addObject("EulerImplicitSolver", name="cg_odesolver", printLog=False, rayleighStiffness=0.01,
+                           rayleighMass=0.1)
+            root.addObject("CGLinearSolver", iterations=25, name="linear solver", tolerance=1.0e-9, threshold=1.0e-9)
             root.addObject("DefaultPipeline", verbose=0, depth=10, draw=0)
             root.addObject("BruteForceBroadPhase")
             root.addObject("BVHNarrowPhase")
@@ -63,10 +63,44 @@ class ControlFrame(Sofa.Core.Controller):
             floor_node.addObject("OglModel", name="FloorV", src="@loader", texturename="textures/floor.bmp")
 
         else:
-            root.gravity = [0, -900.81, 0]
-            liver.addObject('BoxROI', name="FixedIndices", box="-1 2 -2 2 6 3", drawBoxes=False)
+            # root.gravity = [0, -900.81, 0]
+            # liver.addObject('BoxROI', name="FixedIndices", box="-1 2 -2 2 6 3", drawBoxes=False)
+            # liver.addObject('FixedConstraint', name="FixedConstraint", indices="@FixedIndices.indices",
+            #                 showObject=False)
+            root.gravity = [0, 0, 0]
+            root.dt = 0.1 / 3
+            root.addObject("EulerImplicitSolver", name="cg_odesolver", printLog=False, rayleighStiffness=0.05,
+                           rayleighMass=1)
+            root.addObject("CGLinearSolver", iterations=25, name="linear solver", tolerance=1.0e-9, threshold=1.0e-9)
+            root.addObject("DefaultPipeline", verbose=0, depth=6, draw=0)
+            root.addObject("BruteForceBroadPhase")
+            root.addObject("BVHNarrowPhase")
+            root.addObject("DefaultContactManager", name="Response", response="default")
+            root.addObject("MinProximityIntersection", name="Proximity", alarmDistance=0.15, contactDistance=0.05)
+
+            liver_collision = liver.addChild('collision')
+            liver_collision.addObject("MeshTopology", src="@../loader")
+            liver_collision.addObject("TriangleCollisionModel")
+            liver_collision.addObject("LineCollisionModel")
+            liver_collision.addObject("PointCollisionModel")
+            liver.addObject('BoxROI', name="FixedIndices", box="-2 3 0 -1 4 1", drawBoxes=False)
             liver.addObject('FixedConstraint', name="FixedConstraint", indices="@FixedIndices.indices",
                             showObject=False)
+
+            tool_node = root.addChild("tool")
+            tool_node.addObject("MechanicalObject", template="Rigid3d")
+            tool_node.addObject("UniformMass", totalMass=1000)
+            tool_collision = tool_node.addChild("collision")
+            tool_collision.addObject("MeshObjLoader", name="loader", filename="mesh/dental_instrument.obj")
+            tool_collision.addObject("MeshTopology", src="@loader")
+            tool_collision.addObject("MechanicalObject", template="Vec3")
+            tool_collision.addObject("RigidMapping")
+            tool_collision.addObject("TriangleCollisionModel", name="TriangleModel", simulated="0", moving="1")
+            tool_collision.addObject("LineCollisionModel", name="LineModel", simulated="0", moving="1")
+            tool_collision.addObject("PointCollisionModel", name="PointModel", simulated="0", moving="1")
+            tool_visu = tool_collision.addChild('visu')
+            tool_visu.addObject("OglModel", name="visu", src="@../loader")
+            tool_visu.addObject("BarycentricMapping")
 
         return root
 
