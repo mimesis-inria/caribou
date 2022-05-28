@@ -157,12 +157,16 @@ jobs:
           && cmake --build . --config Release
           && cmake --install .
 
+#     ZIP
+      - name: Zip production
+        run: Compress-Archive -LiteralPath "$($env:SOFA_ROOT)/plugins/SofaCaribou" -DestinationPath SofaCaribou.zip
+
 #     ARCHIVE
       - name: Archive production
         uses: actions/upload-artifact@v2
         with:
           name: caribou_win64_${{ matrix.sofa_version }}
-          path: ${{github.workspace}}/sofa/plugins/SofaCaribou
+          path: SofaCaribou.zip
 
   test:
     name: Testing with ${{ matrix.sofa_version }}
@@ -215,7 +219,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: caribou_win64_${{ matrix.sofa_version }}
-          path: ${{ format('{0}/sofa/plugins/SofaCaribou', github.workspace) }}
+          path: SofaCaribou.zip
+      - name: Install caribou
+        run: Expand-Archive -LiteralPath SofaCaribou.zip -DestinationPath "${$env:CARIBOU_ROOT}"
 
       - name: Caribou.unittests.Geometry
         if: ${{ always() }}
