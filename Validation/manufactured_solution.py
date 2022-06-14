@@ -22,14 +22,14 @@ import Sofa, SofaRuntime, SofaCaribou
 import meshio, numpy as np
 from manufactured_solution import assemble, integrate, compute_solution, ConstantForceField
 
-order = "quadratic"
+order = "linear"
 
 if order == "linear":
-    mesh = meshio.read('meshes/new_cylinder_p1.vtu')
+    mesh = meshio.read('meshes/refined_meshes/beam/p1/beam_p1_18.vtu')
     surface_template = "Triangle"
     volume_template = "Tetrahedron"
 else:
-    mesh = meshio.read('meshes/new_cylinder_p2.vtu')
+    mesh = meshio.read('meshes/refined_meshes/beam/p2/beam_p2_15.vtu')
     surface_template = "Triangle6"
     volume_template = "Tetrahedron10"
 
@@ -48,7 +48,7 @@ def create_scene(root):
     root.addObject('RequiredPlugin', name='SofaCaribou')
     root.addObject('VisualStyle', displayFlags='showBehaviorModels showForceFields')
     root.addObject('StaticODESolver', newton_iterations=10, residual_tolerance_threshold=1e-10, printLog=True)
-    root.addObject('LDLTSolver', backend='Pardiso')
+    root.addObject('LDLTSolver', backend='Eigen')
     root.addObject('MechanicalObject', name='mo', position=mesh.points.tolist())
     root.addObject('CaribouTopology', name='volume', template=volume_template, indices=mesh.cells[1].data.tolist())
     root.addObject('CaribouTopology', name='dirichlet_boundary', template=surface_template,
