@@ -159,7 +159,6 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     }
 
     // Local variables used for the iterations
-    unsigned n_it=0;
     double dx_squared_norm, du_squared_norm, R_squared_norm = 0;
     const auto squared_residual_threshold = residual_tolerance_threshold*residual_tolerance_threshold;
     const auto squared_correction_threshold = correction_tolerance_threshold*correction_tolerance_threshold;
@@ -248,9 +247,12 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     // #                          Newton iterations                              #
     // ###########################################################################
 
-    while (not converged and n_it < newton_iterations) {
+    p_current_iteration = 0;
+    while (not converged and p_current_iteration < newton_iterations) {
         sofa::helper::ScopedAdvancedTimer step_timer ("NewtonStep");
         t = steady_clock::now();
+
+        trigger_event(Event::ITERATION_BEGIN);
 
         // Part 1. Assemble the system matrix.
         {
@@ -258,6 +260,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
             p_A->clear();
             this->assemble_system_matrix(mechanical_parameters, accessor, p_A.get());
             linear_solver->set_system_matrix(p_A.get());
+            trigger_event(Event::MATRIX_ASSEMBLED);
         }
 
         // Part 2. Analyze the pattern of the matrix in order to compute a permutation matrix.
@@ -281,6 +284,8 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
                     break;
                 }
 
+                trigger_event(Event::MATRIX_ANALYZED);
+
                 p_has_already_analyzed_the_pattern = true;
             }
         }
@@ -293,6 +298,8 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
                 diverged = true;
                 break;
             }
+
+            trigger_event(Event::MATRIX_FACTORIZED);
         }
 
         // Part 4. Solve the unknown increment.
@@ -303,12 +310,14 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
                 diverged = true;
                 break;
             }
+            trigger_event(Event::INCREMENT_SOLVED);
         }
 
         // Part 5. Propagating the solution increment and update geometry.
         {
             sofa::helper::ScopedAdvancedTimer _t_("PropagateDx");
             this->propagate_solution_increment(mechanical_parameters, accessor, p_DX.get(), x_id, v_id, dx_id);
+            trigger_event(Event::INCREMENT_PROPAGATED);
         }
 
         // The next two parts are only necessary when doing more than one Newton iteration
@@ -323,6 +332,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
             sofa::helper::AdvancedTimer::stepBegin("UpdateResidual");
             R_squared_norm = SofaCaribou::Algebra::dot(p_F.get(), p_F.get());
             sofa::helper::AdvancedTimer::stepEnd("UpdateResidual");
+            trigger_event(Event::RESIDUAL_UPDATED);
         }
 
         // Part 8. Compute the updated displacement residual.
@@ -341,11 +351,13 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
 
         p_squared_residuals.emplace_back(R_squared_norm);
 
+        trigger_event(Event::ITERATION_END);
+
         // We completed one iteration, increment the counter
-        n_it++;
+        p_current_iteration++;
 
         if( print_log ) {
-            info << "Newton iteration #" << std::left << std::setw(5)  << n_it
+            info << "Newton iteration #" << std::left << std::setw(5)  << p_current_iteration
                  << std::scientific
                  << "  |R| = "   << std::setw(12) << sqrt(R_squared_norm)
                  << "  |R|/|R0| = "   << std::setw(12) << sqrt(R_squared_norm  / p_squared_residuals[0])
@@ -405,9 +417,9 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
         vop.v_clear(dx_id);
     } // End while (not converged and not diverged and n_it < newton_iterations)
 
-    n_it--; // Reset to the actual index of the last iteration completed
+    p_current_iteration--; // Reset to the actual index of the last iteration completed
 
-    if (not converged and not diverged and n_it == (newton_iterations-1)) {
+    if (not converged and not diverged and p_current_iteration == (newton_iterations-1)) {
         if (print_log) {
             info << "[DIVERGED] The number of Newton iterations reached the maximum of " << newton_iterations << " iterations" << ".\n";
         }
@@ -416,7 +428,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     d_converged.setValue(converged);
 
     sofa::helper::AdvancedTimer::valSet("has_converged", converged ? 1 : 0);
-    sofa::helper::AdvancedTimer::valSet("nb_iterations", n_it+1);
+    sofa::helper::AdvancedTimer::valSet("nb_iterations", p_current_iteration+1);
 }
 
 void NewtonRaphsonSolver::init() {

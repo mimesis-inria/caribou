@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 
 #include <SofaCaribou/Python/Ode/LegacyStaticODESolver.h>
+#include <SofaCaribou/Python/Ode/NewtonRaphsonSolver.h>
 #include <SofaCaribou/Python/Ode/StaticODESolver.h>
 #include <SofaCaribou/Python/Mass/CaribouMass.h>
 #include <SofaCaribou/Python/Forcefield/HexahedronElasticForce.h>
@@ -23,6 +24,7 @@ PYBIND11_MODULE(SofaCaribou, m) {
     SofaCaribou::topology::python::addCaribouTopology(m);
 
     // ODE bindings
+    SofaCaribou::ode::python::addNewtonRaphsonSolver(m);
     SofaCaribou::ode::python::addLegacyStaticODESolver(m);
     SofaCaribou::ode::python::addStaticODESolver(m);
 

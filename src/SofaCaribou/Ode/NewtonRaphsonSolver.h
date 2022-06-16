@@ -14,6 +14,8 @@ DISABLE_ALL_WARNINGS_BEGIN
 DISABLE_ALL_WARNINGS_END
 
 #include <memory>
+#include <functional>
+#include <array>
 
 namespace SofaCaribou::ode {
 
@@ -63,6 +65,35 @@ public:
         ALWAYS
     };
 
+    /**
+     * Events associated to registered callback function for different time in the NR iteration process.
+     */
+    enum class Event : unsigned int {
+        /** Event triggered at the very beginning of the Newton iteration. */
+        ITERATION_BEGIN = 0,
+
+        /** Event triggered after the system matrix has been assembled. */
+        MATRIX_ASSEMBLED,
+
+        /** Event triggered after the system matrix has been analyzed. */
+        MATRIX_ANALYZED,
+
+        /** Event triggered after the system matrix has been factorized. */
+        MATRIX_FACTORIZED,
+
+        /** Event triggered after the system solution vector has been solved. */
+        INCREMENT_SOLVED,
+
+        /** Event triggered after the system solution vector has been propagated through mappings. */
+        INCREMENT_PROPAGATED,
+
+        /** Event triggered after the system force vector has been updated. */
+        RESIDUAL_UPDATED,
+
+        /** Event triggered at the very end of the Newton iteration. */
+        ITERATION_END,
+    };
+
     
     NewtonRaphsonSolver();
 
@@ -91,6 +122,45 @@ public:
     /** Set the current strategy that determine when the pattern of the system matrix should be analyzed. */
     
     void set_pattern_analysis_strategy(const PatternAnalysisStrategy & strategy);
+
+    /** Get the complete force vector of the system */
+    auto F() const -> const sofa::defaulttype::BaseVector * {
+        return p_F.get();
+    }
+
+    /** Get the complete increment vector (solution) of the system */
+    auto dx() const -> const sofa::defaulttype::BaseVector * {
+        return p_DX.get();
+    }
+
+    /** Get the complete matrix of the linearized part of system */
+    auto A() const -> const sofa::defaulttype::BaseMatrix * {
+        return p_A.get();
+    }
+
+    /** Get the current newton iteration within the time step solve call. First iteration is 1 (index starts from 1). */
+    auto current_iteration() const -> unsigned int {
+        return p_current_iteration+1;
+    }
+
+    /**
+     * Register a callback function to be called at the specific NR event (see NewtonRaphsonSolver::Event for the list
+     * of events).
+     *
+     * @example
+     * @code
+     * using NewtonRaphson::Event;
+     * solver->register_callback(MATRIX_ASSEMBLED, [](const NewtonRaphsonSolver & solver){
+     *   std::cout << "The system tangent matrix has been assembled in NR iteration #" << solver.current_iteration << '\n';
+     * });
+     * @endcode
+     * @param event
+     */
+    inline void register_callback(const Event & event, const std::function<void(const NewtonRaphsonSolver &)>& fct) {
+        const auto event_id = static_cast<unsigned int>(event);
+        caribou_assert(event_id >= 0 and event_id <= static_cast<unsigned int>(Event::ITERATION_END));
+        p_iteration_callbacks[event_id].push_back(fct);
+    }
 
 private:
 
@@ -164,6 +234,13 @@ private:
                                               sofa::core::MultiVecDerivId & v_id,
                                               sofa::core::MultiVecDerivId & dx_id) = 0;
 
+    void trigger_event(const Event & event) const {
+        const auto event_id = static_cast<unsigned int>(event);
+        for (const auto & cb : p_iteration_callbacks[event_id]) {
+            cb(*this);
+        }
+    }
+
 protected:
     /** Check that the linked linear solver is not null and that it implements the SofaCaribou::solver::LinearSolver interface */
     
@@ -207,5 +284,11 @@ protected:
 
     /// Either or not the pattern of the system matrix was analyzed at the beginning of the simulation
     bool p_has_already_analyzed_the_pattern = false;
+
+    /// Current newton iteration within a time step solve call
+    unsigned int p_current_iteration;
+
+    /// List of callback function to be called at each events of a NR iteration
+    std::array<std::vector<std::function<void(const NewtonRaphsonSolver &)>>, static_cast<unsigned int>(Event::ITERATION_END)+1> p_iteration_callbacks;
 };
 }

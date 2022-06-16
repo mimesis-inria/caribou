@@ -7,6 +7,7 @@ set(HEADER_FILES
     Forcefield/HyperelasticForcefield.h
     Mass/CaribouMass.h
     Ode/LegacyStaticODESolver.h
+    Ode/NewtonRaphsonSolver.h
     Ode/StaticODESolver.h
     Solver/ConjugateGradientSolver.h
     Solver/LDLTSolver.h
@@ -22,6 +23,7 @@ set(SOURCE_FILES
     Forcefield/HyperelasticForcefield.cpp
     Mass/CaribouMass.cpp
     Ode/LegacyStaticODESolver.cpp
+    Ode/NewtonRaphsonSolver.cpp
     Ode/StaticODESolver.cpp
     Solver/ConjugateGradientSolver.cpp
     Solver/LDLTSolver.cpp
@@ -38,6 +40,7 @@ set(PYTHON_FILES
 set(PYTHON_TEST_FILES
     pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
     pytest/SofaCaribou_Mass_CaribouMass.py
+    pytest/SofaCaribou_StaticSolver.py
 )
 
 find_package(SofaPython3 REQUIRED)
@@ -64,10 +67,20 @@ caribou_add_python_module(SofaCaribou
                           )
 
 list(APPEND target_rpath
-     "$ORIGIN/../../../../../../lib"
-     "$loader_path/../../../../../../lib"
-     "$ORIGIN/../../../../lib"
-     "$loader_path/../../../../lib"
+        "$ORIGIN/../../../../../../lib"
+        "$$ORIGIN/../../../../../../lib"
+        "$loader_path/../../../../../../lib"
+        "@loader_path/../../../../../../lib"
+        "$executable_path/../../../../../../lib"
+        "@executable_path/../../../../../../lib"
+        "$ORIGIN/../../../../lib"
+        "$$ORIGIN/../../../../lib"
+        "$loader_path/../../../../lib"
+        "@loader_path/../../../../lib"
+        "$executable_path/../../../../lib"
+        "@executable_path/../../../../lib"
+        "$loader_path/../Caribou"
+        "@loader_path/../Caribou"
      )
 set_target_properties(
     ${PROJECT_NAME}
@@ -75,6 +88,10 @@ set_target_properties(
     INSTALL_RPATH "${target_rpath}"
 )
 
+
+# Make the target relocatable
+set_target_properties(${PROJECT_NAME} PROPERTIES RELOCATABLE_INSTALL_DIR "plugins/SofaCaribou")
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_PROPERTIES "RELOCATABLE_INSTALL_DIR")
 if (SOFA_VERSION VERSION_GREATER_EQUAL "20.12.99")
     # Set RPATH towards relocatable dependencies
     sofa_auto_set_target_rpath(TARGETS ${PROJECT_NAME} RELOCATABLE "plugins")
