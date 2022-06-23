@@ -183,8 +183,8 @@ jobs:
             PYTHON_VERSION: 3.7
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
-      SOFA_ROOT: ${{ format('{0}/sofa', github.workspace) }}
-      CARIBOU_ROOT: ${{ format('{0}/sofa/plugins/SofaCaribou', github.workspace) }}
+      SOFA_ROOT: ${{ format('{0}\sofa', github.workspace) }}
+      CARIBOU_ROOT: ${{ format('{0}\sofa\plugins\SofaCaribou', github.workspace) }}
 
     steps:
 #     Python
@@ -221,7 +221,7 @@ jobs:
           name: caribou_win64_${{ matrix.sofa_version }}
           path: SofaCaribou.zip
       - name: Install caribou
-        run: Expand-Archive -LiteralPath SofaCaribou.zip -DestinationPath "${$env:CARIBOU_ROOT}"
+        run: Expand-Archive -LiteralPath SofaCaribou.zip -DestinationPath "${$env:SOFA_ROOT}\plugins"
 
       - name: Caribou.unittests.Geometry
         if: ${{ always() }}
