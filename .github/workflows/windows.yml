@@ -228,25 +228,25 @@ jobs:
         shell: bash
         run: |
           export PATH="$SOFA_ROOT/bin:$PATH"
-          $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
+          $CARIBOU_ROOT\bin\Caribou.unittests.Geometry
 
       - name: Caribou.unittests.Topology
         if: ${{ always() }}
         shell: bash
         run: |
           export PATH="$SOFA_ROOT/bin:$PATH"
-          $CARIBOU_ROOT/bin/Caribou.unittests.Topology
+          $CARIBOU_ROOT\bin\Caribou.unittests.Topology
 
       - name: Caribou.unittests.Mechanics
         if: ${{ always() }}
         shell: bash
         run: |
           export PATH="$SOFA_ROOT/bin:$PATH"
-          $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
+          $CARIBOU_ROOT\bin\Caribou.unittests.Mechanics
 
       - name: Caribou.unittests.SofaCaribou
         if: ${{ always() }}
         shell: bash
         run: |
           export PATH="$SOFA_ROOT/bin:$PATH"
-          $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
+          $CARIBOU_ROOT\bin\Caribou.unittests.SofaCaribou
