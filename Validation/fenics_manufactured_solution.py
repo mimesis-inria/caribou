@@ -22,7 +22,7 @@ import Sofa, SofaRuntime, SofaCaribou
 import meshio, numpy as np
 from manufactured_solution import assemble, integrate, compute_solution, ConstantForceField
 
-order = "linear"
+order = "quadratic"
 element = "tetrahedron"
 material = "SaintVenantKirchhoff"
 
@@ -34,7 +34,8 @@ if element == "tetrahedron":
         volume_template = "Tetrahedron"
         fenics_volume_indices = mesh.cells[1].data
     else:
-        mesh = meshio.read('meshes/refined_meshes/beam/p2/beam_p2_9.vtu')
+        # mesh = meshio.read('meshes/refined_meshes/beam/p2/beam_p2_9.vtu')
+        mesh = meshio.read('meshes/refined_meshes/cylinder/p2/cylinder_p2_4.0.vtu')
         surface_template = "Triangle6"
         volume_template = "Tetrahedron10"
         fenics_volume_indices = mesh.cells[1].data[:, [0, 1, 2, 3, 9, 8, 5, 7, 6, 4]]
@@ -120,8 +121,8 @@ if __name__ == '__main__':
         integrate(root.sofa_node.volume.domain(), lambda x, y, z, _: np.dot(u_s(x, y, z), u_s(x, y, z))))
     print(f"Exact error is {exact_error}")
 
-    # for load in [1e-3, 1e-2, 1e-1, 0.15, 0.5, 1.0]:
-    for load in [1e-3]:
+    for load in [1e-3, 1e-2, 1e-1, 0.15, 0.5, 1.0]:
+    # for load in [1e-3]:
 
         root.sofa_node.external_forces_sofa.forces = (external_forces * load)
         root.fenics_node.external_forces_fenics.forces = (external_forces * load)

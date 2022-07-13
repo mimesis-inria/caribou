@@ -1,5 +1,5 @@
 from ufl import (Coefficient, Constant, Identity,
-                 TestFunction, TrialFunction,
+                 TestFunction, TrialFunction, inner, ds,
                  VectorElement, derivative, dx, grad,
                  tetrahedron, tr, variable, det, as_vector,
                  sqrt, dot, ln, exp)
@@ -15,6 +15,8 @@ v = TestFunction(element)  # Test function
 
 # Functions
 u = Coefficient(element)  # Displacement from previous iteration
+B = Coefficient(element)  # Body forces
+T = Coefficient(element)  # Traction forces
 
 # Kinematics
 I = Identity(d)  # Identity tensor
@@ -56,7 +58,7 @@ W_8_fs = a_fs*(exp((I_8_f_0_s_0**2)*b_fs)-1.0)/(2.0*b_fs)
 psi = W_vol + W_1 + W_4f + W_4s + W_8_fs
 
 # Total potential energy
-Pi = psi * dx(degree=1)
+Pi = psi * dx(degree=2) - inner(B, u)*dx(degree=2) - inner(T, u)*ds(degree=2)
 
 # First variation of Pi (directional derivative about u in the direction of v)
 F = derivative(Pi, u, v)

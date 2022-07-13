@@ -28,6 +28,24 @@ ufcx_integral* FEniCS_Material<Hexahedron_FEniCS20, sofa::defaulttype::Vec3Types
             return integral;
         }
     }
+
+template <>
+ufcx_integral* FEniCS_Material<Hexahedron_FEniCS20, sofa::defaulttype::Vec3Types>::FEniCS_F_bc()  {
+        if(d_material_name.getValue() == "SaintVenantKirchhoff") {
+            ufcx_integral *integral = form_SaintVenantKirchhoff_Hexa_Order2_F->integrals(ufcx_integral_type::exterior_facet)[0];
+            return integral;
+        } else if (d_material_name.getValue() == "NeoHookean") {
+            ufcx_integral *integral = form_NeoHooke_Hexa_Order2_F->integrals(ufcx_integral_type::exterior_facet)[0];
+            return integral;
+        } else if (d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral = form_MooneyRivlin_Hexa_Order2_F->integrals(ufcx_integral_type::exterior_facet)[0];
+            return integral;
+        } else if (d_material_name.getValue() == "Ogden") {
+            ufcx_integral *integral = form_Ogden_Hexa_Order2_F->integrals(ufcx_integral_type::exterior_facet)[0];
+            return integral;
+        }
+    }
+
 template <>
 ufcx_integral* FEniCS_Material<Hexahedron_FEniCS20, sofa::defaulttype::Vec3Types>::FEniCS_J()  {
         if(d_material_name.getValue() == "SaintVenantKirchhoff") {

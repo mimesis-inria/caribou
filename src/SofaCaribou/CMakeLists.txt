@@ -26,6 +26,7 @@ set(HEADER_FILES
     Forcefield/HyperelasticForcefield[Hexahedron20].h
     Forcefield/HyperelasticForcefield[Tetrahedron].h
     Forcefield/HyperelasticForcefield[Tetrahedron10].h
+    Forcefield/HyperelasticForcefield[Triangle].h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS.h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS].h
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS20].h
@@ -46,7 +47,9 @@ set(HEADER_FILES
     Mass/CaribouMass[Tetrahedron].h
     Mass/CaribouMass[Tetrahedron10].h
     Mass/CaribouMass[Hexahedron].h
+    Mass/CaribouMass[Hexahedron_FEniCS].h
     Mass/CaribouMass[Hexahedron20].h
+    Mass/CaribouMass[Hexahedron_FEniCS20].h
     Material/HyperelasticMaterial.h
     Material/NeoHookeanMaterial.h
     Material/SaintVenantKirchhoffMaterial.h
@@ -141,6 +144,7 @@ set(SOURCE_FILES
     Forcefield/HyperelasticForcefield[Hexahedron20].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron].cpp
     Forcefield/HyperelasticForcefield[Tetrahedron10].cpp
+    Forcefield/HyperelasticForcefield[Triangle].cpp
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS].cpp
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Hexahedron_FEniCS20].cpp
     FEniCS/Forcefield/HyperelasticForcefield_FEniCS[Tetrahedron].cpp
@@ -157,7 +161,9 @@ set(SOURCE_FILES
     Mass/CaribouMass[Tetrahedron].cpp
     Mass/CaribouMass[Tetrahedron10].cpp
     Mass/CaribouMass[Hexahedron].cpp
+    Mass/CaribouMass[Hexahedron_FEniCS].cpp
     Mass/CaribouMass[Hexahedron20].cpp
+    Mass/CaribouMass[Hexahedron_FEniCS20].cpp
     Material/HyperelasticMaterial.cpp
     # FEniCS Material
     FEniCS/Material/FEniCS_Material[Hexahedron_FEniCS].cpp

@@ -1,5 +1,5 @@
-from ufl import (Coefficient, Constant, Identity,
-                 TestFunction, TrialFunction,
+from ufl import (Coefficient, Constant, Identity, Mesh, FunctionSpace,
+                 TestFunction, TrialFunction, inner, ds,
                  VectorElement, derivative, dx, grad,
                  hexahedron, tr, variable, det, as_vector,
                  sqrt, dot, ln, exp)
@@ -7,14 +7,20 @@ from ufl import (Coefficient, Constant, Identity,
 # Function spaces
 cell = hexahedron
 d = cell.geometric_dimension()
+coordinate_element = VectorElement("Q", cell, 1)
 element = VectorElement("S", cell, 2)
 
+mesh = Mesh(coordinate_element)
+V = FunctionSpace(mesh, element)
+
 # Trial and test functions
-du = TrialFunction(element)  # Incremental displacement
-v = TestFunction(element)  # Test function
+du = TrialFunction(V)  # Incremental displacement
+v = TestFunction(V)  # Test function
 
 # Functions
-u = Coefficient(element)  # Displacement from previous iteration
+u = Coefficient(V)  # Displacement from previous iteration
+B = Coefficient(V)  # Body forces
+T = Coefficient(V)  # Traction forces
 
 # Kinematics
 I = Identity(d)  # Identity tensor
@@ -24,15 +30,15 @@ J  = det(F)
 I1 = tr(C)
 
 # Elasticity parameters
-bulk_modulus = Constant(cell) 
-a =    Constant(cell)   
-b =    Constant(cell)  
-a_f =  Constant(cell)
-b_f =  Constant(cell)
-a_s =  Constant(cell)
-b_s =  Constant(cell)
-a_fs = Constant(cell)
-b_fs = Constant(cell)
+bulk_modulus = Constant(mesh) 
+a =    Constant(mesh)   
+b =    Constant(mesh)  
+a_f =  Constant(mesh)
+b_f =  Constant(mesh)
+a_s =  Constant(mesh)
+b_s =  Constant(mesh)
+a_fs = Constant(mesh)
+b_fs = Constant(mesh)
 
 f_0 = as_vector([0.0, 1.0/sqrt(2), 1.0/sqrt(2)])
 s_0 = as_vector([0.0, 1.0/sqrt(2), -1.0/sqrt(2)])
@@ -56,7 +62,7 @@ W_8_fs = a_fs*(exp((I_8_f_0_s_0**2)*b_fs)-1.0)/(2.0*b_fs)
 psi = W_vol + W_1 + W_4f + W_4s + W_8_fs
 
 # Total potential energy
-Pi = psi * dx(degree=1)
+Pi = psi * dx(degree=2) - inner(B, u)*dx(degree=2) - inner(T, u)*ds(degree=2)
 
 # First variation of Pi (directional derivative about u in the direction of v)
 F = derivative(Pi, u, v)

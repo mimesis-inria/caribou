@@ -17,6 +17,7 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject('RequiredPlugin',
                        pluginName="SofaCaribou CImgPlugin SofaMiscCollision SofaGeneralSimpleFem SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine SofaGeneralDeformable SofaMiscFem SofaMeshCollision SofaGeneralLoader")
 
+
         liver = root.addChild('liver')
         liver.addObject("MeshGmshLoader", name="loader", filename="mesh/liver.msh")
         liver.addObject('MechanicalObject', name="mo", src="@loader")
@@ -24,7 +25,7 @@ class ControlFrame(Sofa.Core.Controller):
                         indices="@loader.tetrahedra")
         liver.addObject('UniformMass', totalMass="250")
 
-        # liver.addObject('FEniCS_Material', template="Tetrahedron", young_modulus="300",
+        # liver.addObject('FEniCS_Material', template="Tetrahedron", young_modulus="30",
         #                 poisson_ratio="0.3", material_name="NeoHookean")
         liver.addObject('FEniCS_Material', template="Tetrahedron", bulk_modulus=1000000, a=1180, b=8, a_f=18.5 * 10e4,
                         b_f=16, a_s=2.5 * 10e4, b_s=11.1, a_fs=2160, b_fs=11.4, material_name="Ogden")

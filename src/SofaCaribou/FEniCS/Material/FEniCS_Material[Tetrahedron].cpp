@@ -1,6 +1,5 @@
 #include <SofaCaribou/config.h>
 #include <SofaCaribou/FEniCS/Material/FEniCS_Material[Tetrahedron].h>
-//#include <SofaCaribou/Material/SaintVenantKirchhoff_Tetra.h>
 
 
 DISABLE_ALL_WARNINGS_BEGIN
@@ -30,6 +29,22 @@ ufcx_integral* FEniCS_Material<Tetrahedron, sofa::defaulttype::Vec3Types>::FEniC
             return integral;
         } else if(d_material_name.getValue() == "Ogden") {
             ufcx_integral *integral = form_Ogden_Tetra_F->integrals(ufcx_integral_type::cell)[0];
+            return integral;
+        }
+    }
+template<>
+ufcx_integral* FEniCS_Material<Tetrahedron, sofa::defaulttype::Vec3Types>::FEniCS_F_bc() {
+        if(d_material_name.getValue() == "SaintVenantKirchhoff") {
+            ufcx_integral *integral = form_SaintVenantKirchhoff_Tetra_F->integrals(ufcx_integral_type::exterior_facet)[0];
+            return integral;
+        } else if(d_material_name.getValue() == "NeoHookean") {
+            ufcx_integral *integral = form_NeoHooke_Tetra_F->integrals(ufcx_integral_type::exterior_facet)[0];
+            return integral;
+        } else if(d_material_name.getValue() == "MooneyRivlin") {
+            ufcx_integral *integral = form_MooneyRivlin_Tetra_F->integrals(ufcx_integral_type::exterior_facet)[0];
+            return integral;
+        } else if(d_material_name.getValue() == "Ogden") {
+            ufcx_integral *integral = form_Ogden_Tetra_F->integrals(ufcx_integral_type::exterior_facet)[0];
             return integral;
         }
     }

@@ -1,6 +1,11 @@
 $MeshFormat
 4.1 0 8
 $EndMeshFormat
+$PhysicalNames
+2
+2 2 "Surface"
+3 1 "Volume"
+$EndPhysicalNames
 $Entities
 8 12 6 1
 1 -7.5 -7.5 80 0 

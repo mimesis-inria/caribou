@@ -1,6 +1,6 @@
 from ufl import (Coefficient, Constant, Identity,
-                 TestFunction, TrialFunction, det,
-                 VectorElement, derivative, dx, grad,
+                 TestFunction, TrialFunction, det, inner, 
+                 VectorElement, derivative, dx, ds, grad,
                  hexahedron, tr, variable, ln)
 
 # Function spaces
@@ -14,6 +14,8 @@ v = TestFunction(element)  # Test function
 
 # Functions
 u = Coefficient(element)  # Displacement from previous iteration
+B = Coefficient(element)  # Body forces
+T = Coefficient(element)  # Traction forces
 
 # Kinematics
 I = Identity(d)  # Identity tensor
@@ -33,7 +35,7 @@ K = Constant(cell)
 psi = C_01*(J**(-2.0/3.0)*I_C - 3) + C_10*(J**(-4.0/3.0)*II_C - 3) + 0.5 * K * (ln(J))**2
 
 # Total potential energy
-Pi = psi * dx(degree=2)
+Pi = psi * dx(degree=2) - inner(B, u)*dx(degree=2) - inner(T, u)*ds(degree=2)
 
 # First variation of Pi (directional derivative about u in the direction of v)
 F = derivative(Pi, u, v)

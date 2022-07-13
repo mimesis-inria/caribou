@@ -5,17 +5,14 @@
 //
 //  {'assume_aligned': -1,
 //   'epsilon': 1e-14,
-//   'output_directory': '../../FEniCS_Generated_code/',
+//   'output_directory': '../../FEniCS_Generated_code',
 //   'padlen': 1,
 //   'profile': False,
 //   'scalar_type': 'double',
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['NeoHooke_Hexa.py',
-//                'NeoHooke_Hexa_Order2.py',
-//                'NeoHooke_Tetra.py',
-//                'NeoHooke_Tetra_Order2.py'],
+//   'ufl_file': ['NeoHooke_Tetra.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -372,9 +369,9 @@ ufcx_dofmap dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42 =
 
 // End of code for dofmap dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42
 
-// Code for integral integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623
+// Code for integral integral_14686bb76ad4ae9f60f75351d34e791381e0363a
 
-void tabulate_tensor_integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623(double* restrict A,
+void tabulate_tensor_integral_14686bb76ad4ae9f60f75351d34e791381e0363a(double* restrict A,
                                     const double* restrict w,
                                     const double* restrict c,
                                     const double* restrict coordinate_dofs,
@@ -385,20 +382,21 @@ void tabulate_tensor_integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623(double* r
   static const double weights_421[1] = { 0.1666666666666667 };
   // Precomputed values of basis functions and precomputations
   // FE* dimensions: [permutation][entities][points][dofs]
-  static const double FE27_C0_D100_Q421[1][1][1][4] = { { { { -1.0, 1.0, 0.0, 0.0 } } } };
-  static const double FE27_C1_D010_Q421[1][1][1][4] = { { { { -1.0, 0.0, 1.0, 0.0 } } } };
-  static const double FE27_C2_D001_Q421[1][1][1][4] = { { { { -1.0, 0.0, 0.0, 1.0 } } } };
+  static const double FE33_C0_D100_Q421[1][1][1][4] = { { { { -1.0, 1.0, 0.0, 0.0 } } } };
+  static const double FE33_C0_Q421[1][1][1][4] = { { { { 0.25, 0.25, 0.25, 0.25 } } } };
+  static const double FE33_C1_D010_Q421[1][1][1][4] = { { { { -1.0, 0.0, 1.0, 0.0 } } } };
+  static const double FE33_C2_D001_Q421[1][1][1][4] = { { { { -1.0, 0.0, 0.0, 1.0 } } } };
   // Quadrature loop independent computations for quadrature rule 421
   double w0_d100_c0 = 0.0;
-  const double J_c4 = coordinate_dofs[1] * FE27_C1_D010_Q421[0][0][0][0] + coordinate_dofs[4] * FE27_C1_D010_Q421[0][0][0][1] + coordinate_dofs[7] * FE27_C1_D010_Q421[0][0][0][2] + coordinate_dofs[10] * FE27_C1_D010_Q421[0][0][0][3];
-  const double J_c8 = coordinate_dofs[2] * FE27_C2_D001_Q421[0][0][0][0] + coordinate_dofs[5] * FE27_C2_D001_Q421[0][0][0][1] + coordinate_dofs[8] * FE27_C2_D001_Q421[0][0][0][2] + coordinate_dofs[11] * FE27_C2_D001_Q421[0][0][0][3];
-  const double J_c5 = coordinate_dofs[1] * FE27_C2_D001_Q421[0][0][0][0] + coordinate_dofs[4] * FE27_C2_D001_Q421[0][0][0][1] + coordinate_dofs[7] * FE27_C2_D001_Q421[0][0][0][2] + coordinate_dofs[10] * FE27_C2_D001_Q421[0][0][0][3];
-  const double J_c7 = coordinate_dofs[2] * FE27_C1_D010_Q421[0][0][0][0] + coordinate_dofs[5] * FE27_C1_D010_Q421[0][0][0][1] + coordinate_dofs[8] * FE27_C1_D010_Q421[0][0][0][2] + coordinate_dofs[11] * FE27_C1_D010_Q421[0][0][0][3];
-  const double J_c0 = coordinate_dofs[0] * FE27_C0_D100_Q421[0][0][0][0] + coordinate_dofs[3] * FE27_C0_D100_Q421[0][0][0][1] + coordinate_dofs[6] * FE27_C0_D100_Q421[0][0][0][2] + coordinate_dofs[9] * FE27_C0_D100_Q421[0][0][0][3];
-  const double J_c1 = coordinate_dofs[0] * FE27_C1_D010_Q421[0][0][0][0] + coordinate_dofs[3] * FE27_C1_D010_Q421[0][0][0][1] + coordinate_dofs[6] * FE27_C1_D010_Q421[0][0][0][2] + coordinate_dofs[9] * FE27_C1_D010_Q421[0][0][0][3];
-  const double J_c6 = coordinate_dofs[2] * FE27_C0_D100_Q421[0][0][0][0] + coordinate_dofs[5] * FE27_C0_D100_Q421[0][0][0][1] + coordinate_dofs[8] * FE27_C0_D100_Q421[0][0][0][2] + coordinate_dofs[11] * FE27_C0_D100_Q421[0][0][0][3];
-  const double J_c3 = coordinate_dofs[1] * FE27_C0_D100_Q421[0][0][0][0] + coordinate_dofs[4] * FE27_C0_D100_Q421[0][0][0][1] + coordinate_dofs[7] * FE27_C0_D100_Q421[0][0][0][2] + coordinate_dofs[10] * FE27_C0_D100_Q421[0][0][0][3];
-  const double J_c2 = coordinate_dofs[0] * FE27_C2_D001_Q421[0][0][0][0] + coordinate_dofs[3] * FE27_C2_D001_Q421[0][0][0][1] + coordinate_dofs[6] * FE27_C2_D001_Q421[0][0][0][2] + coordinate_dofs[9] * FE27_C2_D001_Q421[0][0][0][3];
+  const double J_c4 = coordinate_dofs[1] * FE33_C1_D010_Q421[0][0][0][0] + coordinate_dofs[4] * FE33_C1_D010_Q421[0][0][0][1] + coordinate_dofs[7] * FE33_C1_D010_Q421[0][0][0][2] + coordinate_dofs[10] * FE33_C1_D010_Q421[0][0][0][3];
+  const double J_c8 = coordinate_dofs[2] * FE33_C2_D001_Q421[0][0][0][0] + coordinate_dofs[5] * FE33_C2_D001_Q421[0][0][0][1] + coordinate_dofs[8] * FE33_C2_D001_Q421[0][0][0][2] + coordinate_dofs[11] * FE33_C2_D001_Q421[0][0][0][3];
+  const double J_c5 = coordinate_dofs[1] * FE33_C2_D001_Q421[0][0][0][0] + coordinate_dofs[4] * FE33_C2_D001_Q421[0][0][0][1] + coordinate_dofs[7] * FE33_C2_D001_Q421[0][0][0][2] + coordinate_dofs[10] * FE33_C2_D001_Q421[0][0][0][3];
+  const double J_c7 = coordinate_dofs[2] * FE33_C1_D010_Q421[0][0][0][0] + coordinate_dofs[5] * FE33_C1_D010_Q421[0][0][0][1] + coordinate_dofs[8] * FE33_C1_D010_Q421[0][0][0][2] + coordinate_dofs[11] * FE33_C1_D010_Q421[0][0][0][3];
+  const double J_c0 = coordinate_dofs[0] * FE33_C0_D100_Q421[0][0][0][0] + coordinate_dofs[3] * FE33_C0_D100_Q421[0][0][0][1] + coordinate_dofs[6] * FE33_C0_D100_Q421[0][0][0][2] + coordinate_dofs[9] * FE33_C0_D100_Q421[0][0][0][3];
+  const double J_c1 = coordinate_dofs[0] * FE33_C1_D010_Q421[0][0][0][0] + coordinate_dofs[3] * FE33_C1_D010_Q421[0][0][0][1] + coordinate_dofs[6] * FE33_C1_D010_Q421[0][0][0][2] + coordinate_dofs[9] * FE33_C1_D010_Q421[0][0][0][3];
+  const double J_c6 = coordinate_dofs[2] * FE33_C0_D100_Q421[0][0][0][0] + coordinate_dofs[5] * FE33_C0_D100_Q421[0][0][0][1] + coordinate_dofs[8] * FE33_C0_D100_Q421[0][0][0][2] + coordinate_dofs[11] * FE33_C0_D100_Q421[0][0][0][3];
+  const double J_c3 = coordinate_dofs[1] * FE33_C0_D100_Q421[0][0][0][0] + coordinate_dofs[4] * FE33_C0_D100_Q421[0][0][0][1] + coordinate_dofs[7] * FE33_C0_D100_Q421[0][0][0][2] + coordinate_dofs[10] * FE33_C0_D100_Q421[0][0][0][3];
+  const double J_c2 = coordinate_dofs[0] * FE33_C2_D001_Q421[0][0][0][0] + coordinate_dofs[3] * FE33_C2_D001_Q421[0][0][0][1] + coordinate_dofs[6] * FE33_C2_D001_Q421[0][0][0][2] + coordinate_dofs[9] * FE33_C2_D001_Q421[0][0][0][3];
   double w0_d010_c0 = 0.0;
   double w0_d001_c0 = 0.0;
   double w0_d100_c1 = 0.0;
@@ -407,19 +405,25 @@ void tabulate_tensor_integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623(double* r
   double w0_d100_c2 = 0.0;
   double w0_d010_c2 = 0.0;
   double w0_d001_c2 = 0.0;
+  double w1_c0 = 0.0;
+  double w1_c1 = 0.0;
+  double w1_c2 = 0.0;
   for (int ic = 0; ic < 4; ++ic)
   {
-    w0_d100_c0 += w[ic * 3] * FE27_C0_D100_Q421[0][0][0][ic];
-    w0_d010_c0 += w[ic * 3] * FE27_C1_D010_Q421[0][0][0][ic];
-    w0_d001_c0 += w[ic * 3] * FE27_C2_D001_Q421[0][0][0][ic];
-    w0_d100_c1 += w[ic * 3 + 1] * FE27_C0_D100_Q421[0][0][0][ic];
-    w0_d010_c1 += w[ic * 3 + 1] * FE27_C1_D010_Q421[0][0][0][ic];
-    w0_d001_c1 += w[ic * 3 + 1] * FE27_C2_D001_Q421[0][0][0][ic];
-    w0_d100_c2 += w[ic * 3 + 2] * FE27_C0_D100_Q421[0][0][0][ic];
-    w0_d010_c2 += w[ic * 3 + 2] * FE27_C1_D010_Q421[0][0][0][ic];
-    w0_d001_c2 += w[ic * 3 + 2] * FE27_C2_D001_Q421[0][0][0][ic];
+    w0_d100_c0 += w[ic * 3] * FE33_C0_D100_Q421[0][0][0][ic];
+    w0_d010_c0 += w[ic * 3] * FE33_C1_D010_Q421[0][0][0][ic];
+    w0_d001_c0 += w[ic * 3] * FE33_C2_D001_Q421[0][0][0][ic];
+    w0_d100_c1 += w[ic * 3 + 1] * FE33_C0_D100_Q421[0][0][0][ic];
+    w0_d010_c1 += w[ic * 3 + 1] * FE33_C1_D010_Q421[0][0][0][ic];
+    w0_d001_c1 += w[ic * 3 + 1] * FE33_C2_D001_Q421[0][0][0][ic];
+    w0_d100_c2 += w[ic * 3 + 2] * FE33_C0_D100_Q421[0][0][0][ic];
+    w0_d010_c2 += w[ic * 3 + 2] * FE33_C1_D010_Q421[0][0][0][ic];
+    w0_d001_c2 += w[ic * 3 + 2] * FE33_C2_D001_Q421[0][0][0][ic];
+    w1_c0 += w[12 + ic * 3] * FE33_C0_Q421[0][0][0][ic];
+    w1_c1 += w[12 + (ic * 3 + 1)] * FE33_C0_Q421[0][0][0][ic];
+    w1_c2 += w[12 + (ic * 3 + 2)] * FE33_C0_Q421[0][0][0][ic];
   }
-  double sp_421[351];
+  double sp_421[354];
   sp_421[0] = J_c4 * J_c8;
   sp_421[1] = J_c5 * J_c7;
   sp_421[2] = sp_421[0] + -1 * sp_421[1];
@@ -771,41 +775,175 @@ void tabulate_tensor_integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623(double* r
   sp_421[348] = sp_421[338] * sp_421[341];
   sp_421[349] = sp_421[339] * sp_421[341];
   sp_421[350] = sp_421[340] * sp_421[341];
+  sp_421[351] = (-1 * w1_c0) * sp_421[341];
+  sp_421[352] = (-1 * w1_c1) * sp_421[341];
+  sp_421[353] = (-1 * w1_c2) * sp_421[341];
   for (int iq = 0; iq < 1; ++iq)
   {
-    const double fw0 = sp_421[348] * weights_421[iq];
-    const double fw1 = sp_421[349] * weights_421[iq];
-    const double fw2 = sp_421[350] * weights_421[iq];
-    const double fw3 = sp_421[345] * weights_421[iq];
-    const double fw4 = sp_421[346] * weights_421[iq];
-    const double fw5 = sp_421[347] * weights_421[iq];
-    const double fw6 = sp_421[342] * weights_421[iq];
-    const double fw7 = sp_421[343] * weights_421[iq];
-    const double fw8 = sp_421[344] * weights_421[iq];
+    const double fw0 = sp_421[351] * weights_421[iq];
+    const double fw1 = sp_421[348] * weights_421[iq];
+    const double fw2 = sp_421[349] * weights_421[iq];
+    const double fw3 = sp_421[350] * weights_421[iq];
+    const double fw4 = sp_421[352] * weights_421[iq];
+    const double fw5 = sp_421[345] * weights_421[iq];
+    const double fw6 = sp_421[346] * weights_421[iq];
+    const double fw7 = sp_421[347] * weights_421[iq];
+    const double fw8 = sp_421[353] * weights_421[iq];
+    const double fw9 = sp_421[342] * weights_421[iq];
+    const double fw10 = sp_421[343] * weights_421[iq];
+    const double fw11 = sp_421[344] * weights_421[iq];
     for (int i = 0; i < 4; ++i)
     {
-      A[3 * i] += fw0 * FE27_C0_D100_Q421[0][0][0][i] + fw1 * FE27_C1_D010_Q421[0][0][0][i] + fw2 * FE27_C2_D001_Q421[0][0][0][i];
-      A[3 * i + 1] += fw3 * FE27_C0_D100_Q421[0][0][0][i] + fw4 * FE27_C1_D010_Q421[0][0][0][i] + fw5 * FE27_C2_D001_Q421[0][0][0][i];
-      A[3 * i + 2] += fw6 * FE27_C0_D100_Q421[0][0][0][i] + fw7 * FE27_C1_D010_Q421[0][0][0][i] + fw8 * FE27_C2_D001_Q421[0][0][0][i];
+      A[3 * i] += fw0 * FE33_C0_Q421[0][0][0][i] + fw1 * FE33_C0_D100_Q421[0][0][0][i] + fw2 * FE33_C1_D010_Q421[0][0][0][i] + fw3 * FE33_C2_D001_Q421[0][0][0][i];
+      A[3 * i + 1] += fw4 * FE33_C0_Q421[0][0][0][i] + fw5 * FE33_C0_D100_Q421[0][0][0][i] + fw6 * FE33_C1_D010_Q421[0][0][0][i] + fw7 * FE33_C2_D001_Q421[0][0][0][i];
+      A[3 * i + 2] += fw8 * FE33_C0_Q421[0][0][0][i] + fw9 * FE33_C0_D100_Q421[0][0][0][i] + fw10 * FE33_C1_D010_Q421[0][0][0][i] + fw11 * FE33_C2_D001_Q421[0][0][0][i];
     }
   }
 }
 
-bool enabled_coefficients_integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623[1] = { false };
+bool enabled_coefficients_integral_14686bb76ad4ae9f60f75351d34e791381e0363a[3] = { false, false, false };
 
-ufcx_integral integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623 =
+ufcx_integral integral_14686bb76ad4ae9f60f75351d34e791381e0363a =
 {
-  .enabled_coefficients = enabled_coefficients_integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623,
-  .tabulate_tensor_float64 = tabulate_tensor_integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623,
+  .enabled_coefficients = enabled_coefficients_integral_14686bb76ad4ae9f60f75351d34e791381e0363a,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_14686bb76ad4ae9f60f75351d34e791381e0363a,
   .needs_facet_permutations = false,
   .coordinate_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
 };
 
-// End of code for integral integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623
+// End of code for integral integral_14686bb76ad4ae9f60f75351d34e791381e0363a
 
-// Code for integral integral_22827b1d989cb8498bea793140bdc2d94ebaae4f
+// Code for integral integral_1046b4ab5797ae637d804b0eb83b4ff7528d15c9
 
-void tabulate_tensor_integral_22827b1d989cb8498bea793140bdc2d94ebaae4f(double* restrict A,
+void tabulate_tensor_integral_1046b4ab5797ae637d804b0eb83b4ff7528d15c9(double* restrict A,
+                                    const double* restrict w,
+                                    const double* restrict c,
+                                    const double* restrict coordinate_dofs,
+                                    const int* restrict entity_local_index,
+                                    const uint8_t* restrict quadrature_permutation)
+{
+  // Quadrature rules
+  static const double weights_083[1] = { 0.5 };
+  // Precomputed values of basis functions and precomputations
+  // FE* dimensions: [permutation][entities][points][dofs]
+  static const double FE15_C0_F_Q083[1][4][1][4] =
+    { { { { 0.0, 0.3333333333333334, 0.3333333333333334, 0.3333333333333333 } },
+        { { 0.3333333333333334, 0.0, 0.3333333333333334, 0.3333333333333333 } },
+        { { 0.3333333333333333, 0.3333333333333333, 0.0, 0.3333333333333333 } },
+        { { 0.3333333333333333, 0.3333333333333334, 0.3333333333333334, 0.0 } } } };
+  static const double FE15_C1_D001_F_Q083[1][1][1][4] = { { { { -1.0, 0.0, 0.0, 1.0 } } } };
+  static const double FE15_C1_D010_F_Q083[1][1][1][4] = { { { { -1.0, 0.0, 1.0, 0.0 } } } };
+  static const double FE15_C1_D100_F_Q083[1][1][1][4] = { { { { -1.0, 1.0, 0.0, 0.0 } } } };
+  static const double tetrahedron_reference_facet_jacobian[4][3][2] =
+    { { { -1.0, -1.0 },
+        { 1.0, 0.0 },
+        { 0.0, 1.0 } },
+      { { 0.0, 0.0 },
+        { 1.0, 0.0 },
+        { 0.0, 1.0 } },
+      { { 1.0, 0.0 },
+        { 0.0, 0.0 },
+        { 0.0, 1.0 } },
+      { { 1.0, 0.0 },
+        { 0.0, 1.0 },
+        { 0.0, 0.0 } } };
+  // Quadrature loop independent computations for quadrature rule 083
+  double w2_c0 = 0.0;
+  double w2_c1 = 0.0;
+  double w2_c2 = 0.0;
+  const double J_c3 = coordinate_dofs[1] * FE15_C1_D100_F_Q083[0][0][0][0] + coordinate_dofs[4] * FE15_C1_D100_F_Q083[0][0][0][1] + coordinate_dofs[7] * FE15_C1_D100_F_Q083[0][0][0][2] + coordinate_dofs[10] * FE15_C1_D100_F_Q083[0][0][0][3];
+  const double J_c4 = coordinate_dofs[1] * FE15_C1_D010_F_Q083[0][0][0][0] + coordinate_dofs[4] * FE15_C1_D010_F_Q083[0][0][0][1] + coordinate_dofs[7] * FE15_C1_D010_F_Q083[0][0][0][2] + coordinate_dofs[10] * FE15_C1_D010_F_Q083[0][0][0][3];
+  const double J_c5 = coordinate_dofs[1] * FE15_C1_D001_F_Q083[0][0][0][0] + coordinate_dofs[4] * FE15_C1_D001_F_Q083[0][0][0][1] + coordinate_dofs[7] * FE15_C1_D001_F_Q083[0][0][0][2] + coordinate_dofs[10] * FE15_C1_D001_F_Q083[0][0][0][3];
+  const double J_c6 = coordinate_dofs[2] * FE15_C1_D100_F_Q083[0][0][0][0] + coordinate_dofs[5] * FE15_C1_D100_F_Q083[0][0][0][1] + coordinate_dofs[8] * FE15_C1_D100_F_Q083[0][0][0][2] + coordinate_dofs[11] * FE15_C1_D100_F_Q083[0][0][0][3];
+  const double J_c7 = coordinate_dofs[2] * FE15_C1_D010_F_Q083[0][0][0][0] + coordinate_dofs[5] * FE15_C1_D010_F_Q083[0][0][0][1] + coordinate_dofs[8] * FE15_C1_D010_F_Q083[0][0][0][2] + coordinate_dofs[11] * FE15_C1_D010_F_Q083[0][0][0][3];
+  const double J_c8 = coordinate_dofs[2] * FE15_C1_D001_F_Q083[0][0][0][0] + coordinate_dofs[5] * FE15_C1_D001_F_Q083[0][0][0][1] + coordinate_dofs[8] * FE15_C1_D001_F_Q083[0][0][0][2] + coordinate_dofs[11] * FE15_C1_D001_F_Q083[0][0][0][3];
+  const double J_c0 = coordinate_dofs[0] * FE15_C1_D100_F_Q083[0][0][0][0] + coordinate_dofs[3] * FE15_C1_D100_F_Q083[0][0][0][1] + coordinate_dofs[6] * FE15_C1_D100_F_Q083[0][0][0][2] + coordinate_dofs[9] * FE15_C1_D100_F_Q083[0][0][0][3];
+  const double J_c1 = coordinate_dofs[0] * FE15_C1_D010_F_Q083[0][0][0][0] + coordinate_dofs[3] * FE15_C1_D010_F_Q083[0][0][0][1] + coordinate_dofs[6] * FE15_C1_D010_F_Q083[0][0][0][2] + coordinate_dofs[9] * FE15_C1_D010_F_Q083[0][0][0][3];
+  const double J_c2 = coordinate_dofs[0] * FE15_C1_D001_F_Q083[0][0][0][0] + coordinate_dofs[3] * FE15_C1_D001_F_Q083[0][0][0][1] + coordinate_dofs[6] * FE15_C1_D001_F_Q083[0][0][0][2] + coordinate_dofs[9] * FE15_C1_D001_F_Q083[0][0][0][3];
+  for (int ic = 0; ic < 4; ++ic)
+  {
+    w2_c0 += w[24 + ic * 3] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+    w2_c1 += w[24 + (ic * 3 + 1)] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+    w2_c2 += w[24 + (ic * 3 + 2)] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+  }
+  double sp_083[48];
+  sp_083[0] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][0] * J_c3;
+  sp_083[1] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][0] * J_c4;
+  sp_083[2] = sp_083[0] + sp_083[1];
+  sp_083[3] = J_c5 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][0];
+  sp_083[4] = sp_083[2] + sp_083[3];
+  sp_083[5] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][1] * J_c6;
+  sp_083[6] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][1] * J_c7;
+  sp_083[7] = sp_083[5] + sp_083[6];
+  sp_083[8] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][1] * J_c8;
+  sp_083[9] = sp_083[7] + sp_083[8];
+  sp_083[10] = sp_083[4] * sp_083[9];
+  sp_083[11] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][1] * J_c3;
+  sp_083[12] = J_c4 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][1];
+  sp_083[13] = sp_083[11] + sp_083[12];
+  sp_083[14] = J_c5 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][1];
+  sp_083[15] = sp_083[13] + sp_083[14];
+  sp_083[16] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][0] * J_c6;
+  sp_083[17] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][0] * J_c7;
+  sp_083[18] = sp_083[16] + sp_083[17];
+  sp_083[19] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][0] * J_c8;
+  sp_083[20] = sp_083[18] + sp_083[19];
+  sp_083[21] = sp_083[15] * sp_083[20];
+  sp_083[22] = sp_083[10] + -1 * sp_083[21];
+  sp_083[23] = sp_083[22] * sp_083[22];
+  sp_083[24] = J_c0 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][1];
+  sp_083[25] = J_c1 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][1];
+  sp_083[26] = sp_083[24] + sp_083[25];
+  sp_083[27] = J_c2 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][1];
+  sp_083[28] = sp_083[26] + sp_083[27];
+  sp_083[29] = sp_083[28] * sp_083[20];
+  sp_083[30] = J_c0 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][0];
+  sp_083[31] = J_c1 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][0];
+  sp_083[32] = sp_083[30] + sp_083[31];
+  sp_083[33] = J_c2 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][0];
+  sp_083[34] = sp_083[32] + sp_083[33];
+  sp_083[35] = sp_083[34] * sp_083[9];
+  sp_083[36] = sp_083[29] + -1 * sp_083[35];
+  sp_083[37] = sp_083[36] * sp_083[36];
+  sp_083[38] = sp_083[23] + sp_083[37];
+  sp_083[39] = sp_083[34] * sp_083[15];
+  sp_083[40] = sp_083[4] * sp_083[28];
+  sp_083[41] = sp_083[39] + -1 * sp_083[40];
+  sp_083[42] = sp_083[41] * sp_083[41];
+  sp_083[43] = sp_083[38] + sp_083[42];
+  sp_083[44] = sqrt(sp_083[43]);
+  sp_083[45] = (-1 * w2_c0) * sp_083[44];
+  sp_083[46] = (-1 * w2_c1) * sp_083[44];
+  sp_083[47] = (-1 * w2_c2) * sp_083[44];
+  for (int iq = 0; iq < 1; ++iq)
+  {
+    const double fw0 = sp_083[45] * weights_083[iq];
+    const double fw1 = sp_083[46] * weights_083[iq];
+    const double fw2 = sp_083[47] * weights_083[iq];
+    for (int i = 0; i < 4; ++i)
+    {
+      A[3 * i] += fw0 * FE15_C0_F_Q083[0][entity_local_index[0]][0][i];
+      A[3 * i + 1] += fw1 * FE15_C0_F_Q083[0][entity_local_index[0]][0][i];
+      A[3 * i + 2] += fw2 * FE15_C0_F_Q083[0][entity_local_index[0]][0][i];
+    }
+  }
+}
+
+bool enabled_coefficients_integral_1046b4ab5797ae637d804b0eb83b4ff7528d15c9[3] = { false, false, false };
+
+ufcx_integral integral_1046b4ab5797ae637d804b0eb83b4ff7528d15c9 =
+{
+  .enabled_coefficients = enabled_coefficients_integral_1046b4ab5797ae637d804b0eb83b4ff7528d15c9,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_1046b4ab5797ae637d804b0eb83b4ff7528d15c9,
+  .needs_facet_permutations = false,
+  .coordinate_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
+};
+
+// End of code for integral integral_1046b4ab5797ae637d804b0eb83b4ff7528d15c9
+
+// Code for integral integral_fd11d64685f115e557a4befa30cbae4dff5c108c
+
+void tabulate_tensor_integral_fd11d64685f115e557a4befa30cbae4dff5c108c(double* restrict A,
                                     const double* restrict w,
                                     const double* restrict c,
                                     const double* restrict coordinate_dofs,
@@ -2278,21 +2416,21 @@ void tabulate_tensor_integral_22827b1d989cb8498bea793140bdc2d94ebaae4f(double* r
   }
 }
 
-bool enabled_coefficients_integral_22827b1d989cb8498bea793140bdc2d94ebaae4f[1] = { false };
+bool enabled_coefficients_integral_fd11d64685f115e557a4befa30cbae4dff5c108c[1] = { false };
 
-ufcx_integral integral_22827b1d989cb8498bea793140bdc2d94ebaae4f =
+ufcx_integral integral_fd11d64685f115e557a4befa30cbae4dff5c108c =
 {
-  .enabled_coefficients = enabled_coefficients_integral_22827b1d989cb8498bea793140bdc2d94ebaae4f,
-  .tabulate_tensor_float64 = tabulate_tensor_integral_22827b1d989cb8498bea793140bdc2d94ebaae4f,
+  .enabled_coefficients = enabled_coefficients_integral_fd11d64685f115e557a4befa30cbae4dff5c108c,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_fd11d64685f115e557a4befa30cbae4dff5c108c,
   .needs_facet_permutations = false,
   .coordinate_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
 };
 
-// End of code for integral integral_22827b1d989cb8498bea793140bdc2d94ebaae4f
+// End of code for integral integral_fd11d64685f115e557a4befa30cbae4dff5c108c
 
-// Code for integral integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429
+// Code for integral integral_b243fbe418bdbb45713a0c4e95a9ccc43ab10d81
 
-void tabulate_tensor_integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429(double* restrict A,
+void tabulate_tensor_integral_b243fbe418bdbb45713a0c4e95a9ccc43ab10d81(double* restrict A,
                                     const double* restrict w,
                                     const double* restrict c,
                                     const double* restrict coordinate_dofs,
@@ -2303,20 +2441,21 @@ void tabulate_tensor_integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429(double* r
   static const double weights_421[1] = { 0.1666666666666667 };
   // Precomputed values of basis functions and precomputations
   // FE* dimensions: [permutation][entities][points][dofs]
-  static const double FE18_C0_D100_Q421[1][1][1][4] = { { { { -1.0, 1.0, 0.0, 0.0 } } } };
-  static const double FE18_C1_D010_Q421[1][1][1][4] = { { { { -1.0, 0.0, 1.0, 0.0 } } } };
-  static const double FE18_C2_D001_Q421[1][1][1][4] = { { { { -1.0, 0.0, 0.0, 1.0 } } } };
+  static const double FE24_C0_D100_Q421[1][1][1][4] = { { { { -1.0, 1.0, 0.0, 0.0 } } } };
+  static const double FE24_C0_Q421[1][1][1][4] = { { { { 0.25, 0.25, 0.25, 0.25 } } } };
+  static const double FE24_C1_D010_Q421[1][1][1][4] = { { { { -1.0, 0.0, 1.0, 0.0 } } } };
+  static const double FE24_C2_D001_Q421[1][1][1][4] = { { { { -1.0, 0.0, 0.0, 1.0 } } } };
   // Quadrature loop independent computations for quadrature rule 421
   double w0_d100_c0 = 0.0;
-  const double J_c4 = coordinate_dofs[1] * FE18_C1_D010_Q421[0][0][0][0] + coordinate_dofs[4] * FE18_C1_D010_Q421[0][0][0][1] + coordinate_dofs[7] * FE18_C1_D010_Q421[0][0][0][2] + coordinate_dofs[10] * FE18_C1_D010_Q421[0][0][0][3];
-  const double J_c8 = coordinate_dofs[2] * FE18_C2_D001_Q421[0][0][0][0] + coordinate_dofs[5] * FE18_C2_D001_Q421[0][0][0][1] + coordinate_dofs[8] * FE18_C2_D001_Q421[0][0][0][2] + coordinate_dofs[11] * FE18_C2_D001_Q421[0][0][0][3];
-  const double J_c5 = coordinate_dofs[1] * FE18_C2_D001_Q421[0][0][0][0] + coordinate_dofs[4] * FE18_C2_D001_Q421[0][0][0][1] + coordinate_dofs[7] * FE18_C2_D001_Q421[0][0][0][2] + coordinate_dofs[10] * FE18_C2_D001_Q421[0][0][0][3];
-  const double J_c7 = coordinate_dofs[2] * FE18_C1_D010_Q421[0][0][0][0] + coordinate_dofs[5] * FE18_C1_D010_Q421[0][0][0][1] + coordinate_dofs[8] * FE18_C1_D010_Q421[0][0][0][2] + coordinate_dofs[11] * FE18_C1_D010_Q421[0][0][0][3];
-  const double J_c0 = coordinate_dofs[0] * FE18_C0_D100_Q421[0][0][0][0] + coordinate_dofs[3] * FE18_C0_D100_Q421[0][0][0][1] + coordinate_dofs[6] * FE18_C0_D100_Q421[0][0][0][2] + coordinate_dofs[9] * FE18_C0_D100_Q421[0][0][0][3];
-  const double J_c1 = coordinate_dofs[0] * FE18_C1_D010_Q421[0][0][0][0] + coordinate_dofs[3] * FE18_C1_D010_Q421[0][0][0][1] + coordinate_dofs[6] * FE18_C1_D010_Q421[0][0][0][2] + coordinate_dofs[9] * FE18_C1_D010_Q421[0][0][0][3];
-  const double J_c6 = coordinate_dofs[2] * FE18_C0_D100_Q421[0][0][0][0] + coordinate_dofs[5] * FE18_C0_D100_Q421[0][0][0][1] + coordinate_dofs[8] * FE18_C0_D100_Q421[0][0][0][2] + coordinate_dofs[11] * FE18_C0_D100_Q421[0][0][0][3];
-  const double J_c3 = coordinate_dofs[1] * FE18_C0_D100_Q421[0][0][0][0] + coordinate_dofs[4] * FE18_C0_D100_Q421[0][0][0][1] + coordinate_dofs[7] * FE18_C0_D100_Q421[0][0][0][2] + coordinate_dofs[10] * FE18_C0_D100_Q421[0][0][0][3];
-  const double J_c2 = coordinate_dofs[0] * FE18_C2_D001_Q421[0][0][0][0] + coordinate_dofs[3] * FE18_C2_D001_Q421[0][0][0][1] + coordinate_dofs[6] * FE18_C2_D001_Q421[0][0][0][2] + coordinate_dofs[9] * FE18_C2_D001_Q421[0][0][0][3];
+  const double J_c4 = coordinate_dofs[1] * FE24_C1_D010_Q421[0][0][0][0] + coordinate_dofs[4] * FE24_C1_D010_Q421[0][0][0][1] + coordinate_dofs[7] * FE24_C1_D010_Q421[0][0][0][2] + coordinate_dofs[10] * FE24_C1_D010_Q421[0][0][0][3];
+  const double J_c8 = coordinate_dofs[2] * FE24_C2_D001_Q421[0][0][0][0] + coordinate_dofs[5] * FE24_C2_D001_Q421[0][0][0][1] + coordinate_dofs[8] * FE24_C2_D001_Q421[0][0][0][2] + coordinate_dofs[11] * FE24_C2_D001_Q421[0][0][0][3];
+  const double J_c5 = coordinate_dofs[1] * FE24_C2_D001_Q421[0][0][0][0] + coordinate_dofs[4] * FE24_C2_D001_Q421[0][0][0][1] + coordinate_dofs[7] * FE24_C2_D001_Q421[0][0][0][2] + coordinate_dofs[10] * FE24_C2_D001_Q421[0][0][0][3];
+  const double J_c7 = coordinate_dofs[2] * FE24_C1_D010_Q421[0][0][0][0] + coordinate_dofs[5] * FE24_C1_D010_Q421[0][0][0][1] + coordinate_dofs[8] * FE24_C1_D010_Q421[0][0][0][2] + coordinate_dofs[11] * FE24_C1_D010_Q421[0][0][0][3];
+  const double J_c0 = coordinate_dofs[0] * FE24_C0_D100_Q421[0][0][0][0] + coordinate_dofs[3] * FE24_C0_D100_Q421[0][0][0][1] + coordinate_dofs[6] * FE24_C0_D100_Q421[0][0][0][2] + coordinate_dofs[9] * FE24_C0_D100_Q421[0][0][0][3];
+  const double J_c1 = coordinate_dofs[0] * FE24_C1_D010_Q421[0][0][0][0] + coordinate_dofs[3] * FE24_C1_D010_Q421[0][0][0][1] + coordinate_dofs[6] * FE24_C1_D010_Q421[0][0][0][2] + coordinate_dofs[9] * FE24_C1_D010_Q421[0][0][0][3];
+  const double J_c6 = coordinate_dofs[2] * FE24_C0_D100_Q421[0][0][0][0] + coordinate_dofs[5] * FE24_C0_D100_Q421[0][0][0][1] + coordinate_dofs[8] * FE24_C0_D100_Q421[0][0][0][2] + coordinate_dofs[11] * FE24_C0_D100_Q421[0][0][0][3];
+  const double J_c3 = coordinate_dofs[1] * FE24_C0_D100_Q421[0][0][0][0] + coordinate_dofs[4] * FE24_C0_D100_Q421[0][0][0][1] + coordinate_dofs[7] * FE24_C0_D100_Q421[0][0][0][2] + coordinate_dofs[10] * FE24_C0_D100_Q421[0][0][0][3];
+  const double J_c2 = coordinate_dofs[0] * FE24_C2_D001_Q421[0][0][0][0] + coordinate_dofs[3] * FE24_C2_D001_Q421[0][0][0][1] + coordinate_dofs[6] * FE24_C2_D001_Q421[0][0][0][2] + coordinate_dofs[9] * FE24_C2_D001_Q421[0][0][0][3];
   double w0_d010_c0 = 0.0;
   double w0_d001_c0 = 0.0;
   double w0_d100_c2 = 0.0;
@@ -2325,19 +2464,31 @@ void tabulate_tensor_integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429(double* r
   double w0_d100_c1 = 0.0;
   double w0_d010_c1 = 0.0;
   double w0_d001_c1 = 0.0;
+  double w0_c0 = 0.0;
+  double w1_c0 = 0.0;
+  double w0_c1 = 0.0;
+  double w1_c1 = 0.0;
+  double w0_c2 = 0.0;
+  double w1_c2 = 0.0;
   for (int ic = 0; ic < 4; ++ic)
   {
-    w0_d100_c0 += w[ic * 3] * FE18_C0_D100_Q421[0][0][0][ic];
-    w0_d010_c0 += w[ic * 3] * FE18_C1_D010_Q421[0][0][0][ic];
-    w0_d001_c0 += w[ic * 3] * FE18_C2_D001_Q421[0][0][0][ic];
-    w0_d100_c2 += w[ic * 3 + 2] * FE18_C0_D100_Q421[0][0][0][ic];
-    w0_d010_c2 += w[ic * 3 + 2] * FE18_C1_D010_Q421[0][0][0][ic];
-    w0_d001_c2 += w[ic * 3 + 2] * FE18_C2_D001_Q421[0][0][0][ic];
-    w0_d100_c1 += w[ic * 3 + 1] * FE18_C0_D100_Q421[0][0][0][ic];
-    w0_d010_c1 += w[ic * 3 + 1] * FE18_C1_D010_Q421[0][0][0][ic];
-    w0_d001_c1 += w[ic * 3 + 1] * FE18_C2_D001_Q421[0][0][0][ic];
+    w0_d100_c0 += w[ic * 3] * FE24_C0_D100_Q421[0][0][0][ic];
+    w0_d010_c0 += w[ic * 3] * FE24_C1_D010_Q421[0][0][0][ic];
+    w0_d001_c0 += w[ic * 3] * FE24_C2_D001_Q421[0][0][0][ic];
+    w0_d100_c2 += w[ic * 3 + 2] * FE24_C0_D100_Q421[0][0][0][ic];
+    w0_d010_c2 += w[ic * 3 + 2] * FE24_C1_D010_Q421[0][0][0][ic];
+    w0_d001_c2 += w[ic * 3 + 2] * FE24_C2_D001_Q421[0][0][0][ic];
+    w0_d100_c1 += w[ic * 3 + 1] * FE24_C0_D100_Q421[0][0][0][ic];
+    w0_d010_c1 += w[ic * 3 + 1] * FE24_C1_D010_Q421[0][0][0][ic];
+    w0_d001_c1 += w[ic * 3 + 1] * FE24_C2_D001_Q421[0][0][0][ic];
+    w0_c0 += w[ic * 3] * FE24_C0_Q421[0][0][0][ic];
+    w1_c0 += w[12 + ic * 3] * FE24_C0_Q421[0][0][0][ic];
+    w0_c1 += w[ic * 3 + 1] * FE24_C0_Q421[0][0][0][ic];
+    w1_c1 += w[12 + (ic * 3 + 1)] * FE24_C0_Q421[0][0][0][ic];
+    w0_c2 += w[ic * 3 + 2] * FE24_C0_Q421[0][0][0][ic];
+    w1_c2 += w[12 + (ic * 3 + 2)] * FE24_C0_Q421[0][0][0][ic];
   }
-  double sp_421[131];
+  double sp_421[137];
   sp_421[0] = c[0] / (2 * (1 + c[1]));
   sp_421[1] = J_c4 * J_c8;
   sp_421[2] = J_c5 * J_c7;
@@ -2467,60 +2618,199 @@ void tabulate_tensor_integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429(double* r
   sp_421[126] = sp_421[124] / sp_421[125];
   sp_421[127] = (sp_421[126] / 2) * pow(sp_421[103], 2);
   sp_421[128] = sp_421[123] + sp_421[127];
-  sp_421[129] = fabs(sp_421[14]);
-  sp_421[130] = sp_421[128] * sp_421[129];
+  sp_421[129] = w0_c0 * w1_c0;
+  sp_421[130] = w0_c1 * w1_c1;
+  sp_421[131] = sp_421[129] + sp_421[130];
+  sp_421[132] = w0_c2 * w1_c2;
+  sp_421[133] = sp_421[131] + sp_421[132];
+  sp_421[134] = sp_421[128] + -1 * sp_421[133];
+  sp_421[135] = fabs(sp_421[14]);
+  sp_421[136] = sp_421[134] * sp_421[135];
   for (int iq = 0; iq < 1; ++iq)
   {
-    const double fw0 = sp_421[130] * weights_421[iq];
+    const double fw0 = sp_421[136] * weights_421[iq];
     A[0] += fw0;
   }
 }
 
-bool enabled_coefficients_integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429[1] = { false };
+bool enabled_coefficients_integral_b243fbe418bdbb45713a0c4e95a9ccc43ab10d81[3] = { false, false, false };
 
-ufcx_integral integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429 =
+ufcx_integral integral_b243fbe418bdbb45713a0c4e95a9ccc43ab10d81 =
 {
-  .enabled_coefficients = enabled_coefficients_integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429,
-  .tabulate_tensor_float64 = tabulate_tensor_integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429,
+  .enabled_coefficients = enabled_coefficients_integral_b243fbe418bdbb45713a0c4e95a9ccc43ab10d81,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_b243fbe418bdbb45713a0c4e95a9ccc43ab10d81,
   .needs_facet_permutations = false,
   .coordinate_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
 };
 
-// End of code for integral integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429
+// End of code for integral integral_b243fbe418bdbb45713a0c4e95a9ccc43ab10d81
 
-// Code for form form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe
+// Code for integral integral_bb7774d738b488d501bb35a56e6e5dd92a5e38f1
 
-int original_coefficient_position_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe[1] = { 0 };
-ufcx_dofmap* dofmaps_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe[2] = { &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42 };
-ufcx_finite_element* finite_elements_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe[2] = { &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42 };
+void tabulate_tensor_integral_bb7774d738b488d501bb35a56e6e5dd92a5e38f1(double* restrict A,
+                                    const double* restrict w,
+                                    const double* restrict c,
+                                    const double* restrict coordinate_dofs,
+                                    const int* restrict entity_local_index,
+                                    const uint8_t* restrict quadrature_permutation)
+{
+  // Quadrature rules
+  static const double weights_083[1] = { 0.5 };
+  // Precomputed values of basis functions and precomputations
+  // FE* dimensions: [permutation][entities][points][dofs]
+  static const double FE15_C0_F_Q083[1][4][1][4] =
+    { { { { 0.0, 0.3333333333333334, 0.3333333333333334, 0.3333333333333333 } },
+        { { 0.3333333333333334, 0.0, 0.3333333333333334, 0.3333333333333333 } },
+        { { 0.3333333333333333, 0.3333333333333333, 0.0, 0.3333333333333333 } },
+        { { 0.3333333333333333, 0.3333333333333334, 0.3333333333333334, 0.0 } } } };
+  static const double FE15_C1_D001_F_Q083[1][1][1][4] = { { { { -1.0, 0.0, 0.0, 1.0 } } } };
+  static const double FE15_C1_D010_F_Q083[1][1][1][4] = { { { { -1.0, 0.0, 1.0, 0.0 } } } };
+  static const double FE15_C1_D100_F_Q083[1][1][1][4] = { { { { -1.0, 1.0, 0.0, 0.0 } } } };
+  static const double tetrahedron_reference_facet_jacobian[4][3][2] =
+    { { { -1.0, -1.0 },
+        { 1.0, 0.0 },
+        { 0.0, 1.0 } },
+      { { 0.0, 0.0 },
+        { 1.0, 0.0 },
+        { 0.0, 1.0 } },
+      { { 1.0, 0.0 },
+        { 0.0, 0.0 },
+        { 0.0, 1.0 } },
+      { { 1.0, 0.0 },
+        { 0.0, 1.0 },
+        { 0.0, 0.0 } } };
+  // Quadrature loop independent computations for quadrature rule 083
+  double w0_c0 = 0.0;
+  double w2_c0 = 0.0;
+  double w0_c1 = 0.0;
+  double w2_c1 = 0.0;
+  double w0_c2 = 0.0;
+  double w2_c2 = 0.0;
+  const double J_c3 = coordinate_dofs[1] * FE15_C1_D100_F_Q083[0][0][0][0] + coordinate_dofs[4] * FE15_C1_D100_F_Q083[0][0][0][1] + coordinate_dofs[7] * FE15_C1_D100_F_Q083[0][0][0][2] + coordinate_dofs[10] * FE15_C1_D100_F_Q083[0][0][0][3];
+  const double J_c4 = coordinate_dofs[1] * FE15_C1_D010_F_Q083[0][0][0][0] + coordinate_dofs[4] * FE15_C1_D010_F_Q083[0][0][0][1] + coordinate_dofs[7] * FE15_C1_D010_F_Q083[0][0][0][2] + coordinate_dofs[10] * FE15_C1_D010_F_Q083[0][0][0][3];
+  const double J_c5 = coordinate_dofs[1] * FE15_C1_D001_F_Q083[0][0][0][0] + coordinate_dofs[4] * FE15_C1_D001_F_Q083[0][0][0][1] + coordinate_dofs[7] * FE15_C1_D001_F_Q083[0][0][0][2] + coordinate_dofs[10] * FE15_C1_D001_F_Q083[0][0][0][3];
+  const double J_c6 = coordinate_dofs[2] * FE15_C1_D100_F_Q083[0][0][0][0] + coordinate_dofs[5] * FE15_C1_D100_F_Q083[0][0][0][1] + coordinate_dofs[8] * FE15_C1_D100_F_Q083[0][0][0][2] + coordinate_dofs[11] * FE15_C1_D100_F_Q083[0][0][0][3];
+  const double J_c7 = coordinate_dofs[2] * FE15_C1_D010_F_Q083[0][0][0][0] + coordinate_dofs[5] * FE15_C1_D010_F_Q083[0][0][0][1] + coordinate_dofs[8] * FE15_C1_D010_F_Q083[0][0][0][2] + coordinate_dofs[11] * FE15_C1_D010_F_Q083[0][0][0][3];
+  const double J_c8 = coordinate_dofs[2] * FE15_C1_D001_F_Q083[0][0][0][0] + coordinate_dofs[5] * FE15_C1_D001_F_Q083[0][0][0][1] + coordinate_dofs[8] * FE15_C1_D001_F_Q083[0][0][0][2] + coordinate_dofs[11] * FE15_C1_D001_F_Q083[0][0][0][3];
+  const double J_c0 = coordinate_dofs[0] * FE15_C1_D100_F_Q083[0][0][0][0] + coordinate_dofs[3] * FE15_C1_D100_F_Q083[0][0][0][1] + coordinate_dofs[6] * FE15_C1_D100_F_Q083[0][0][0][2] + coordinate_dofs[9] * FE15_C1_D100_F_Q083[0][0][0][3];
+  const double J_c1 = coordinate_dofs[0] * FE15_C1_D010_F_Q083[0][0][0][0] + coordinate_dofs[3] * FE15_C1_D010_F_Q083[0][0][0][1] + coordinate_dofs[6] * FE15_C1_D010_F_Q083[0][0][0][2] + coordinate_dofs[9] * FE15_C1_D010_F_Q083[0][0][0][3];
+  const double J_c2 = coordinate_dofs[0] * FE15_C1_D001_F_Q083[0][0][0][0] + coordinate_dofs[3] * FE15_C1_D001_F_Q083[0][0][0][1] + coordinate_dofs[6] * FE15_C1_D001_F_Q083[0][0][0][2] + coordinate_dofs[9] * FE15_C1_D001_F_Q083[0][0][0][3];
+  for (int ic = 0; ic < 4; ++ic)
+  {
+    w0_c0 += w[ic * 3] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+    w2_c0 += w[24 + ic * 3] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+    w0_c1 += w[ic * 3 + 1] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+    w2_c1 += w[24 + (ic * 3 + 1)] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+    w0_c2 += w[ic * 3 + 2] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+    w2_c2 += w[24 + (ic * 3 + 2)] * FE15_C0_F_Q083[0][entity_local_index[0]][0][ic];
+  }
+  double sp_083[51];
+  sp_083[0] = w0_c0 * w2_c0;
+  sp_083[1] = w0_c1 * w2_c1;
+  sp_083[2] = sp_083[0] + sp_083[1];
+  sp_083[3] = w0_c2 * w2_c2;
+  sp_083[4] = sp_083[2] + sp_083[3];
+  sp_083[5] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][0] * J_c3;
+  sp_083[6] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][0] * J_c4;
+  sp_083[7] = sp_083[5] + sp_083[6];
+  sp_083[8] = J_c5 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][0];
+  sp_083[9] = sp_083[7] + sp_083[8];
+  sp_083[10] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][1] * J_c6;
+  sp_083[11] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][1] * J_c7;
+  sp_083[12] = sp_083[10] + sp_083[11];
+  sp_083[13] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][1] * J_c8;
+  sp_083[14] = sp_083[12] + sp_083[13];
+  sp_083[15] = sp_083[9] * sp_083[14];
+  sp_083[16] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][1] * J_c3;
+  sp_083[17] = J_c4 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][1];
+  sp_083[18] = sp_083[16] + sp_083[17];
+  sp_083[19] = J_c5 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][1];
+  sp_083[20] = sp_083[18] + sp_083[19];
+  sp_083[21] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][0] * J_c6;
+  sp_083[22] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][0] * J_c7;
+  sp_083[23] = sp_083[21] + sp_083[22];
+  sp_083[24] = tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][0] * J_c8;
+  sp_083[25] = sp_083[23] + sp_083[24];
+  sp_083[26] = sp_083[20] * sp_083[25];
+  sp_083[27] = sp_083[15] + -1 * sp_083[26];
+  sp_083[28] = sp_083[27] * sp_083[27];
+  sp_083[29] = J_c0 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][1];
+  sp_083[30] = J_c1 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][1];
+  sp_083[31] = sp_083[29] + sp_083[30];
+  sp_083[32] = J_c2 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][1];
+  sp_083[33] = sp_083[31] + sp_083[32];
+  sp_083[34] = sp_083[33] * sp_083[25];
+  sp_083[35] = J_c0 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][0][0];
+  sp_083[36] = J_c1 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][1][0];
+  sp_083[37] = sp_083[35] + sp_083[36];
+  sp_083[38] = J_c2 * tetrahedron_reference_facet_jacobian[entity_local_index[0]][2][0];
+  sp_083[39] = sp_083[37] + sp_083[38];
+  sp_083[40] = sp_083[39] * sp_083[14];
+  sp_083[41] = sp_083[34] + -1 * sp_083[40];
+  sp_083[42] = sp_083[41] * sp_083[41];
+  sp_083[43] = sp_083[28] + sp_083[42];
+  sp_083[44] = sp_083[39] * sp_083[20];
+  sp_083[45] = sp_083[9] * sp_083[33];
+  sp_083[46] = sp_083[44] + -1 * sp_083[45];
+  sp_083[47] = sp_083[46] * sp_083[46];
+  sp_083[48] = sp_083[43] + sp_083[47];
+  sp_083[49] = sqrt(sp_083[48]);
+  sp_083[50] = (-1 * sp_083[4]) * sp_083[49];
+  for (int iq = 0; iq < 1; ++iq)
+  {
+    const double fw0 = sp_083[50] * weights_083[iq];
+    A[0] += fw0;
+  }
+}
+
+bool enabled_coefficients_integral_bb7774d738b488d501bb35a56e6e5dd92a5e38f1[3] = { false, false, false };
+
+ufcx_integral integral_bb7774d738b488d501bb35a56e6e5dd92a5e38f1 =
+{
+  .enabled_coefficients = enabled_coefficients_integral_bb7774d738b488d501bb35a56e6e5dd92a5e38f1,
+  .tabulate_tensor_float64 = tabulate_tensor_integral_bb7774d738b488d501bb35a56e6e5dd92a5e38f1,
+  .needs_facet_permutations = false,
+  .coordinate_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
+};
+
+// End of code for integral integral_bb7774d738b488d501bb35a56e6e5dd92a5e38f1
+
+// Code for form form_0cd153591654f37b817c47ca218742006743cad0
+
+int original_coefficient_position_form_0cd153591654f37b817c47ca218742006743cad0[3] = { 0, 1, 2 };
+ufcx_dofmap* dofmaps_form_0cd153591654f37b817c47ca218742006743cad0[4] = { &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42 };
+ufcx_finite_element* finite_elements_form_0cd153591654f37b817c47ca218742006743cad0[4] = { &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42 };
 
 // Return a list of the coefficient names.
-const char** coefficient_name_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe(void)
+const char** coefficient_name_form_0cd153591654f37b817c47ca218742006743cad0(void)
 {
-static const char* names[1] = { "u" };
+static const char* names[3] = { "u", "B", "T" };
 return names;
 }
 
 // Return a list of the constant names.
-const char** constant_name_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe(void)
+const char** constant_name_form_0cd153591654f37b817c47ca218742006743cad0(void)
 {
 static const char* names[2] = { "young", "poisson" };
 return names;
 }
 
-int* integral_ids_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe(ufcx_integral_type integral_type)
+int* integral_ids_form_0cd153591654f37b817c47ca218742006743cad0(ufcx_integral_type integral_type)
 {
-static int integral_ids_cell_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe[1] = { -1 };
+static int integral_ids_cell_form_0cd153591654f37b817c47ca218742006743cad0[1] = { -1 };
+static int integral_ids_exterior_facet_form_0cd153591654f37b817c47ca218742006743cad0[1] = { -1 };
 switch (integral_type)
 {
 case cell:
-  return integral_ids_cell_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe;
+  return integral_ids_cell_form_0cd153591654f37b817c47ca218742006743cad0;
+case exterior_facet:
+  return integral_ids_exterior_facet_form_0cd153591654f37b817c47ca218742006743cad0;
 default:
   return NULL;
 }
 }
 
-int num_integrals_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe(ufcx_integral_type integral_type)
+int num_integrals_form_0cd153591654f37b817c47ca218742006743cad0(ufcx_integral_type integral_type)
 {
 switch (integral_type)
 {
@@ -2529,47 +2819,50 @@ case cell:
 case interior_facet:
   return 0;
 case exterior_facet:
-  return 0;
+  return 1;
 default:
   return 0;
 }
 }
 
-ufcx_integral** integrals_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe(ufcx_integral_type integral_type)
+ufcx_integral** integrals_form_0cd153591654f37b817c47ca218742006743cad0(ufcx_integral_type integral_type)
 {
-static ufcx_integral* integrals_cell_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe[1] = { &integral_6bb0f85a758c3f880720f23ef3253c00c9b9d623 };
+static ufcx_integral* integrals_cell_form_0cd153591654f37b817c47ca218742006743cad0[1] = { &integral_14686bb76ad4ae9f60f75351d34e791381e0363a };
+static ufcx_integral* integrals_exterior_facet_form_0cd153591654f37b817c47ca218742006743cad0[1] = { &integral_1046b4ab5797ae637d804b0eb83b4ff7528d15c9 };
 switch (integral_type)
 {
 case cell:
-  return integrals_cell_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe;
+  return integrals_cell_form_0cd153591654f37b817c47ca218742006743cad0;
+case exterior_facet:
+  return integrals_exterior_facet_form_0cd153591654f37b817c47ca218742006743cad0;
 default:
   return NULL;
 }
 }
 
-ufcx_form form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe =
+ufcx_form form_0cd153591654f37b817c47ca218742006743cad0 =
 {
 
-  .signature = "63eb3d202f849221d0fe12772c3dca32e11c9a716934fd9bd218ccad9d83b8e2dc573b2d5c9de8892547b8d27544f9b3164bbab1d3b7878094d9290111eb510b",
+  .signature = "b69c1b1768cbe99ead1e855aa4e846a700f6fecc7b7aa0bb9a75203ce57b344f06d90837c336d6391a50c74ba4adcbf021295d2e0b9921ab767d9c81a143cf07",
   .rank = 1,
-  .num_coefficients = 1,
+  .num_coefficients = 3,
   .num_constants = 2,
-  .original_coefficient_position = original_coefficient_position_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe,
+  .original_coefficient_position = original_coefficient_position_form_0cd153591654f37b817c47ca218742006743cad0,
 
-  .coefficient_name_map = coefficient_name_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe,
-  .constant_name_map = constant_name_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe,
+  .coefficient_name_map = coefficient_name_form_0cd153591654f37b817c47ca218742006743cad0,
+  .constant_name_map = constant_name_form_0cd153591654f37b817c47ca218742006743cad0,
 
-  .finite_elements = finite_elements_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe,
-  .dofmaps = dofmaps_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe,
+  .finite_elements = finite_elements_form_0cd153591654f37b817c47ca218742006743cad0,
+  .dofmaps = dofmaps_form_0cd153591654f37b817c47ca218742006743cad0,
 
-  .integral_ids = integral_ids_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe,
-  .num_integrals = num_integrals_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe,
+  .integral_ids = integral_ids_form_0cd153591654f37b817c47ca218742006743cad0,
+  .num_integrals = num_integrals_form_0cd153591654f37b817c47ca218742006743cad0,
 
-  .integrals = integrals_form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe
+  .integrals = integrals_form_0cd153591654f37b817c47ca218742006743cad0
 };
 
 // Alias name
-ufcx_form* form_NeoHooke_Tetra_F = &form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe;
+ufcx_form* form_NeoHooke_Tetra_F = &form_0cd153591654f37b817c47ca218742006743cad0;
 
 ufcx_function_space* functionspace_form_NeoHooke_Tetra_F(const char* function_name)
 {
@@ -2591,49 +2884,71 @@ static ufcx_function_space functionspace_u =
 .geometry_basix_cell = 3,
 .geometry_basix_variant = 0
 };
+static ufcx_function_space functionspace_B =
+{
+.finite_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
+.dofmap = &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42,
+.geometry_family = "Lagrange",
+.geometry_degree = 1,
+.geometry_basix_cell = 3,
+.geometry_basix_variant = 0
+};
+static ufcx_function_space functionspace_T =
+{
+.finite_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
+.dofmap = &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42,
+.geometry_family = "Lagrange",
+.geometry_degree = 1,
+.geometry_basix_cell = 3,
+.geometry_basix_variant = 0
+};
 if (strcmp(function_name, "v") == 0)
   return &functionspace_v;
 else if (strcmp(function_name, "u") == 0)
   return &functionspace_u;
+else if (strcmp(function_name, "B") == 0)
+  return &functionspace_B;
+else if (strcmp(function_name, "T") == 0)
+  return &functionspace_T;
 return NULL;
 
 }
 
-// End of code for form form_8d4949211bfbf17d82b2cd90e3d35b1163327bfe
+// End of code for form form_0cd153591654f37b817c47ca218742006743cad0
 
-// Code for form form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d
+// Code for form form_15465d038a09a09c29aafdd0bcf36fdb162b878a
 
-int original_coefficient_position_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d[1] = { 0 };
-ufcx_dofmap* dofmaps_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d[3] = { &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42 };
-ufcx_finite_element* finite_elements_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d[3] = { &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42 };
+int original_coefficient_position_form_15465d038a09a09c29aafdd0bcf36fdb162b878a[1] = { 0 };
+ufcx_dofmap* dofmaps_form_15465d038a09a09c29aafdd0bcf36fdb162b878a[3] = { &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42 };
+ufcx_finite_element* finite_elements_form_15465d038a09a09c29aafdd0bcf36fdb162b878a[3] = { &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42 };
 
 // Return a list of the coefficient names.
-const char** coefficient_name_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d(void)
+const char** coefficient_name_form_15465d038a09a09c29aafdd0bcf36fdb162b878a(void)
 {
 static const char* names[1] = { "u" };
 return names;
 }
 
 // Return a list of the constant names.
-const char** constant_name_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d(void)
+const char** constant_name_form_15465d038a09a09c29aafdd0bcf36fdb162b878a(void)
 {
 static const char* names[2] = { "young", "poisson" };
 return names;
 }
 
-int* integral_ids_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d(ufcx_integral_type integral_type)
+int* integral_ids_form_15465d038a09a09c29aafdd0bcf36fdb162b878a(ufcx_integral_type integral_type)
 {
-static int integral_ids_cell_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d[1] = { -1 };
+static int integral_ids_cell_form_15465d038a09a09c29aafdd0bcf36fdb162b878a[1] = { -1 };
 switch (integral_type)
 {
 case cell:
-  return integral_ids_cell_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d;
+  return integral_ids_cell_form_15465d038a09a09c29aafdd0bcf36fdb162b878a;
 default:
   return NULL;
 }
 }
 
-int num_integrals_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d(ufcx_integral_type integral_type)
+int num_integrals_form_15465d038a09a09c29aafdd0bcf36fdb162b878a(ufcx_integral_type integral_type)
 {
 switch (integral_type)
 {
@@ -2648,41 +2963,41 @@ default:
 }
 }
 
-ufcx_integral** integrals_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d(ufcx_integral_type integral_type)
+ufcx_integral** integrals_form_15465d038a09a09c29aafdd0bcf36fdb162b878a(ufcx_integral_type integral_type)
 {
-static ufcx_integral* integrals_cell_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d[1] = { &integral_22827b1d989cb8498bea793140bdc2d94ebaae4f };
+static ufcx_integral* integrals_cell_form_15465d038a09a09c29aafdd0bcf36fdb162b878a[1] = { &integral_fd11d64685f115e557a4befa30cbae4dff5c108c };
 switch (integral_type)
 {
 case cell:
-  return integrals_cell_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d;
+  return integrals_cell_form_15465d038a09a09c29aafdd0bcf36fdb162b878a;
 default:
   return NULL;
 }
 }
 
-ufcx_form form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d =
+ufcx_form form_15465d038a09a09c29aafdd0bcf36fdb162b878a =
 {
 
-  .signature = "a75d123a16e296277b61b8d495934d5850777c541da19b7761ef1264d131732b7825626e5e373b03ba7394800dc2ed494a84d3287cfabbdd561f671762ae736e",
+  .signature = "5a1d7b7e68e069153bc0c83822ad32b524959ce4e73756f48af82c67fec40578bf610a16ad33d7254c1f43d37129150346ce9addd36a83252f596c17d2ebf781",
   .rank = 2,
   .num_coefficients = 1,
   .num_constants = 2,
-  .original_coefficient_position = original_coefficient_position_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d,
+  .original_coefficient_position = original_coefficient_position_form_15465d038a09a09c29aafdd0bcf36fdb162b878a,
 
-  .coefficient_name_map = coefficient_name_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d,
-  .constant_name_map = constant_name_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d,
+  .coefficient_name_map = coefficient_name_form_15465d038a09a09c29aafdd0bcf36fdb162b878a,
+  .constant_name_map = constant_name_form_15465d038a09a09c29aafdd0bcf36fdb162b878a,
 
-  .finite_elements = finite_elements_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d,
-  .dofmaps = dofmaps_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d,
+  .finite_elements = finite_elements_form_15465d038a09a09c29aafdd0bcf36fdb162b878a,
+  .dofmaps = dofmaps_form_15465d038a09a09c29aafdd0bcf36fdb162b878a,
 
-  .integral_ids = integral_ids_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d,
-  .num_integrals = num_integrals_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d,
+  .integral_ids = integral_ids_form_15465d038a09a09c29aafdd0bcf36fdb162b878a,
+  .num_integrals = num_integrals_form_15465d038a09a09c29aafdd0bcf36fdb162b878a,
 
-  .integrals = integrals_form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d
+  .integrals = integrals_form_15465d038a09a09c29aafdd0bcf36fdb162b878a
 };
 
 // Alias name
-ufcx_form* form_NeoHooke_Tetra_J = &form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d;
+ufcx_form* form_NeoHooke_Tetra_J = &form_15465d038a09a09c29aafdd0bcf36fdb162b878a;
 
 ufcx_function_space* functionspace_form_NeoHooke_Tetra_J(const char* function_name)
 {
@@ -2723,41 +3038,44 @@ return NULL;
 
 }
 
-// End of code for form form_ceed9957af1c7ff25c267fc7b4a6dec9c9e2380d
+// End of code for form form_15465d038a09a09c29aafdd0bcf36fdb162b878a
 
-// Code for form form_7b7374101ab5803a7e6300645377173d5ea20fd3
+// Code for form form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d
 
-int original_coefficient_position_form_7b7374101ab5803a7e6300645377173d5ea20fd3[1] = { 0 };
-ufcx_dofmap* dofmaps_form_7b7374101ab5803a7e6300645377173d5ea20fd3[1] = { &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42 };
-ufcx_finite_element* finite_elements_form_7b7374101ab5803a7e6300645377173d5ea20fd3[1] = { &element_728dbc04d4646a1f37abc835822781e1c9f53e42 };
+int original_coefficient_position_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d[3] = { 0, 1, 2 };
+ufcx_dofmap* dofmaps_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d[3] = { &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42, &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42 };
+ufcx_finite_element* finite_elements_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d[3] = { &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42, &element_728dbc04d4646a1f37abc835822781e1c9f53e42 };
 
 // Return a list of the coefficient names.
-const char** coefficient_name_form_7b7374101ab5803a7e6300645377173d5ea20fd3(void)
+const char** coefficient_name_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d(void)
 {
-static const char* names[1] = { "u" };
+static const char* names[3] = { "u", "B", "T" };
 return names;
 }
 
 // Return a list of the constant names.
-const char** constant_name_form_7b7374101ab5803a7e6300645377173d5ea20fd3(void)
+const char** constant_name_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d(void)
 {
 static const char* names[2] = { "young", "poisson" };
 return names;
 }
 
-int* integral_ids_form_7b7374101ab5803a7e6300645377173d5ea20fd3(ufcx_integral_type integral_type)
+int* integral_ids_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d(ufcx_integral_type integral_type)
 {
-static int integral_ids_cell_form_7b7374101ab5803a7e6300645377173d5ea20fd3[1] = { -1 };
+static int integral_ids_cell_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d[1] = { -1 };
+static int integral_ids_exterior_facet_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d[1] = { -1 };
 switch (integral_type)
 {
 case cell:
-  return integral_ids_cell_form_7b7374101ab5803a7e6300645377173d5ea20fd3;
+  return integral_ids_cell_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d;
+case exterior_facet:
+  return integral_ids_exterior_facet_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d;
 default:
   return NULL;
 }
 }
 
-int num_integrals_form_7b7374101ab5803a7e6300645377173d5ea20fd3(ufcx_integral_type integral_type)
+int num_integrals_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d(ufcx_integral_type integral_type)
 {
 switch (integral_type)
 {
@@ -2766,47 +3084,50 @@ case cell:
 case interior_facet:
   return 0;
 case exterior_facet:
-  return 0;
+  return 1;
 default:
   return 0;
 }
 }
 
-ufcx_integral** integrals_form_7b7374101ab5803a7e6300645377173d5ea20fd3(ufcx_integral_type integral_type)
+ufcx_integral** integrals_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d(ufcx_integral_type integral_type)
 {
-static ufcx_integral* integrals_cell_form_7b7374101ab5803a7e6300645377173d5ea20fd3[1] = { &integral_dd8f7f7f2cd08a8e7ed9a7c3217737c717143429 };
+static ufcx_integral* integrals_cell_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d[1] = { &integral_b243fbe418bdbb45713a0c4e95a9ccc43ab10d81 };
+static ufcx_integral* integrals_exterior_facet_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d[1] = { &integral_bb7774d738b488d501bb35a56e6e5dd92a5e38f1 };
 switch (integral_type)
 {
 case cell:
-  return integrals_cell_form_7b7374101ab5803a7e6300645377173d5ea20fd3;
+  return integrals_cell_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d;
+case exterior_facet:
+  return integrals_exterior_facet_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d;
 default:
   return NULL;
 }
 }
 
-ufcx_form form_7b7374101ab5803a7e6300645377173d5ea20fd3 =
+ufcx_form form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d =
 {
 
-  .signature = "56cc2f5102f537793ab4e4b064f3cd1c172b7544b784debfe197ffb530ea43fe00d87707c8603fd19a2dd8212cac63d04855c36c17b5667e96e2a77f13dbfe53",
+  .signature = "b6692212fb0f3725863aebf4107ee4d5a8cbf7a0dda13043c32e354a549c248bf5fc859c8c28af4b96cb7d77fe46bd4c6058e856bcd166a493bef76ec647a15d",
   .rank = 0,
-  .num_coefficients = 1,
+  .num_coefficients = 3,
   .num_constants = 2,
-  .original_coefficient_position = original_coefficient_position_form_7b7374101ab5803a7e6300645377173d5ea20fd3,
+  .original_coefficient_position = original_coefficient_position_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d,
 
-  .coefficient_name_map = coefficient_name_form_7b7374101ab5803a7e6300645377173d5ea20fd3,
-  .constant_name_map = constant_name_form_7b7374101ab5803a7e6300645377173d5ea20fd3,
+  .coefficient_name_map = coefficient_name_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d,
+  .constant_name_map = constant_name_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d,
 
-  .finite_elements = finite_elements_form_7b7374101ab5803a7e6300645377173d5ea20fd3,
-  .dofmaps = dofmaps_form_7b7374101ab5803a7e6300645377173d5ea20fd3,
+  .finite_elements = finite_elements_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d,
+  .dofmaps = dofmaps_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d,
 
-  .integral_ids = integral_ids_form_7b7374101ab5803a7e6300645377173d5ea20fd3,
-  .num_integrals = num_integrals_form_7b7374101ab5803a7e6300645377173d5ea20fd3,
+  .integral_ids = integral_ids_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d,
+  .num_integrals = num_integrals_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d,
 
-  .integrals = integrals_form_7b7374101ab5803a7e6300645377173d5ea20fd3
+  .integrals = integrals_form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d
 };
 
 // Alias name
-ufcx_form* form_NeoHooke_Tetra_Pi = &form_7b7374101ab5803a7e6300645377173d5ea20fd3;
+ufcx_form* form_NeoHooke_Tetra_Pi = &form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d;
 
 ufcx_function_space* functionspace_form_NeoHooke_Tetra_Pi(const char* function_name)
 {
@@ -2819,10 +3140,32 @@ static ufcx_function_space functionspace_u =
 .geometry_basix_cell = 3,
 .geometry_basix_variant = 0
 };
+static ufcx_function_space functionspace_B =
+{
+.finite_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
+.dofmap = &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42,
+.geometry_family = "Lagrange",
+.geometry_degree = 1,
+.geometry_basix_cell = 3,
+.geometry_basix_variant = 0
+};
+static ufcx_function_space functionspace_T =
+{
+.finite_element = &element_728dbc04d4646a1f37abc835822781e1c9f53e42,
+.dofmap = &dofmap_728dbc04d4646a1f37abc835822781e1c9f53e42,
+.geometry_family = "Lagrange",
+.geometry_degree = 1,
+.geometry_basix_cell = 3,
+.geometry_basix_variant = 0
+};
 if (strcmp(function_name, "u") == 0)
   return &functionspace_u;
+else if (strcmp(function_name, "B") == 0)
+  return &functionspace_B;
+else if (strcmp(function_name, "T") == 0)
+  return &functionspace_T;
 return NULL;
 
 }
 
-// End of code for form form_7b7374101ab5803a7e6300645377173d5ea20fd3
+// End of code for form form_ed9003a3202cfbc2d7d63fb2f8c036a98b36fc4d

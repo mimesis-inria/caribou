@@ -1,1 +1,1 @@
-docker run -ti -v $(pwd):/root/shared dolfinx/dolfinx:latest
+docker run -ti -v $(pwd):/root dolfinx/dolfinx:latest

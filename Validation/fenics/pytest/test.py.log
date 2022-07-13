@@ -1,0 +1,93 @@
+
+--- NEW SESSION: 30/06/2022 13:23:01 ---
+/fenics_node/topology.indices = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+
+--- NEW SESSION: 30/06/2022 16:35:47 ---
+/fenics_node/ConstantForceField.showColor = 0.2 0.898039 0.298039 1
+
+--- NEW SESSION: 30/06/2022 16:38:53 ---
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 30/06/2022 16:39:21 ---
+/fenics_node/mo.position = 0 0 0 1 0 0 1 1 0 0 1 0 8.38693e+263 -8.38693e+263 -1.52544e+249 -8.38693e+263 -8.38693e+263 -4.82043e+249 -8.38693e+263 8.38693e+263 -7.33508e+248 8.38693e+263 8.38693e+263 8.03726e+249 0.5 0 0 1 0.5 0 0.5 1 0 0 0.5 0 -2.95249e+248 3.53671e+249 -6.30888e+248 3.12221e+249 1.47735e+249 -2.67075e+249 2.26375e+249 4.33745e+248 1.80384e+249 7.89942e+248 2.22676e+249 1.42072e+249 4.19346e+263 -4.19346e+263 -2.86179e+248 -4.19346e+263 -4.19346e+263 -2.87498e+249 -4.19346e+263 4.19346e+263 -5.21165e+248 4.19346e+263 4.19346e+263 4.05951e+249
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 30/06/2022 16:40:11 ---
+/sofa_node/mo.showColor = 1 1 1 1
+/fenics_node/mo.position = 0 0 0 1 0 0 1 1 0 0 1 0 8.38693e+263 -8.38693e+263 -1.52544e+249 -8.38693e+263 -8.38693e+263 -4.82043e+249 -8.38693e+263 8.38693e+263 -7.33508e+248 8.38693e+263 8.38693e+263 8.03726e+249 0.5 0 0 1 0.5 0 0.5 1 0 0 0.5 0 -2.95249e+248 3.53671e+249 -6.30888e+248 3.12221e+249 1.47735e+249 -2.67075e+249 2.26375e+249 4.33745e+248 1.80384e+249 7.89942e+248 2.22676e+249 1.42072e+249 4.19346e+263 -4.19346e+263 -2.86179e+248 -4.19346e+263 -4.19346e+263 -2.87498e+249 -4.19346e+263 4.19346e+263 -5.21165e+248 4.19346e+263 4.19346e+263 4.05951e+249
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 30/06/2022 16:42:42 ---
+/fenics_node/mo.position = 0 0 0 1 0 0 1 1 0 0 1 0 8.38693e+263 -8.38693e+263 -1.52544e+249 -8.38693e+263 -8.38693e+263 -4.82043e+249 -8.38693e+263 8.38693e+263 -7.33508e+248 8.38693e+263 8.38693e+263 8.03726e+249 0.5 0 0 1 0.5 0 0.5 1 0 0 0.5 0 -2.95249e+248 3.53671e+249 -6.30888e+248 3.12221e+249 1.47735e+249 -2.67075e+249 2.26375e+249 4.33745e+248 1.80384e+249 7.89942e+248 2.22676e+249 1.42072e+249 4.19346e+263 -4.19346e+263 -2.86179e+248 -4.19346e+263 -4.19346e+263 -2.87498e+249 -4.19346e+263 4.19346e+263 -5.21165e+248 4.19346e+263 4.19346e+263 4.05951e+249
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 30/06/2022 16:46:35 ---
+/sofa_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 30/06/2022 16:47:07 ---
+/sofa_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 30/06/2022 16:50:37 ---
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 30/06/2022 16:51:40 ---
+/sofa_node/ConstantForceField.showColor = 0.2 0.898039 0.298039 1
+
+--- NEW SESSION: 30/06/2022 17:44:26 ---
+/sofa_node/topology.indices = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+
+--- NEW SESSION: 30/06/2022 18:16:44 ---
+/fenics_node/mo.showObject = 1
+/fenics_node/mo.showObjectScale = 10
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 11:46:54 ---
+/fenics_node/mo.showColor = 1 1 1 1
+/fenics_node/topology.indices = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+
+--- NEW SESSION: 06/07/2022 14:47:18 ---
+/fenics_node/mo.showColor = 1 1 1 1
+/fenics_node/mo.showObject = 1
+/fenics_node/mo.showObjectScale = 10
+/sofa_node/mo.showObject = 1
+/sofa_node/mo.showColor = 1 1 1 1
+/sofa_node/mo.showObjectScale = 10
+/sofa_node/mo.showColor = 0 0 1 1
+
+--- NEW SESSION: 06/07/2022 15:00:27 ---
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 19:49:25 ---
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 19:50:12 ---
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 19:52:02 ---
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 19:55:39 ---
+/sofa_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 19:57:02 ---
+/sofa_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 20:01:33 ---
+/fenics_node/mo.showColor = 1 1 1 1
+/sofa_node/mo.showColor = 1 1 1 1
+/sofa_node/mo.showColor = 1 1 1 1
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 20:11:22 ---
+/sofa_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 20:12:03 ---
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 20:16:56 ---
+/fenics_node/topology.indices = 4 5 0 1 7 6 3 2 12 16 15 17 13 8 11 9 14 19 18 10
+/sofa_node/mo.showColor = 1 1 1 1
+/fenics_node/mo.showColor = 1 1 1 1
+
+--- NEW SESSION: 06/07/2022 20:18:25 ---
+/sofa_node/mo.showColor = 1 1 1 1

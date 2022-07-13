@@ -19,11 +19,11 @@ TEST_CASES = [
     # ("Kirchhoff_tetra", "SaintVenantKirchhoff", "Tetrahedron"),
     # ("Kirchhoff_tetra10", "SaintVenantKirchhoff", "Tetrahedron10"),
     # ("Kirchhoff_hexa", "SaintVenantKirchhoff", "Hexahedron"),
-    ("Kirchhoff_hexa20", "SaintVenantKirchhoff", "Hexahedron20"),
+    # ("Kirchhoff_hexa20", "SaintVenantKirchhoff", "Hexahedron20"),
     # ("NeoHooke_tetra", "NeoHookean", "Tetrahedron"),
     # ("NeoHooke_tetra10", "NeoHookean", "Tetrahedron10"),
     # ("NeoHooke_hexa", "NeoHookean", "Hexahedron"),
-    # ("NeoHooke_hexa20", "NeoHookean", "Hexahedron20"),
+    ("NeoHooke_hexa20", "NeoHookean", "Hexahedron20"),
 ]
 
 
@@ -68,14 +68,18 @@ def generate_geometry(element):
              tetra_p_9]), np.arange(10), np.array([0, 1, 2, 3, 9, 8, 5, 7, 6, 4])
     elif element == "Hexahedron":
         return element, element + "_FEniCS", np.array(
-            [hexa_p_0, hexa_p_1, hexa_p_2, hexa_p_3, hexa_p_4, hexa_p_5, hexa_p_6, hexa_p_7]), np.arange(
-            8), np.array([4, 5, 0, 1, 7, 6, 3, 2])
+            [hexa_p_0, hexa_p_1, hexa_p_2, hexa_p_3, hexa_p_4, hexa_p_5, hexa_p_6, hexa_p_7]), np.arange(8), np.array(
+            [0, 1, 3, 2, 4, 5, 7, 6])
+        # return element, element + "_FEniCS", np.array(
+        #     [hexa_p_0, hexa_p_1, hexa_p_2, hexa_p_3, hexa_p_4, hexa_p_5, hexa_p_6, hexa_p_7]), np.arange(8), np.array(
+        #     [4, 5, 0, 1, 7, 6, 3, 2])
     elif element == "Hexahedron20":
         return element, "Hexahedron_FEniCS20", np.array(
             [hexa_p_0, hexa_p_1, hexa_p_2, hexa_p_3, hexa_p_4, hexa_p_5, hexa_p_6, hexa_p_7, hexa_p_8, hexa_p_9,
              hexa_p_10, hexa_p_11, hexa_p_12, hexa_p_13, hexa_p_14, hexa_p_15, hexa_p_16, hexa_p_17, hexa_p_18,
              hexa_p_19]), np.arange(20), np.array(
-            [4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10]
+            # [4, 5, 0, 1, 7, 6, 3, 2, 12, 16, 15, 17, 13, 8, 11, 9, 14, 19, 18, 10]
+            [0, 1, 3, 2, 4, 5, 7, 6, 12, 15, 16, 13, 17, 14, 19, 18, 8, 11, 9, 10]
 
         )
 
@@ -125,9 +129,10 @@ class TestHyperelasticForcefield(unittest.TestCase):
                 K_sofa = csr_matrix(root.sofa_node.ff.K(), copy=True)
                 Psi = csr_matrix(root.fenics_node.ff.Pi(), copy=True)
                 # print("Psi: ", Psi)
-                
-                print(K_fenics - K_sofa)
-                # print(K_fenics)
+
+                # print(K_fenics - K_sofa)
+                print(K_fenics.toarray()[0])
+                # print(K_sofa.toarray()[0])
 
                 print(linalg.norm(K_fenics - K_sofa))
                 # self.assertMatrixQuasiEqual(K_fenics, K_sofa)

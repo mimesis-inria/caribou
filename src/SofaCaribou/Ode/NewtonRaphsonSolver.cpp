@@ -355,7 +355,6 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
             if (linear_solver->is_iterative()) {
                 info << "  # of linear solver iterations = " << linear_solver->squared_residuals().size();
             }
-            info << "\n";
         }
 
         if (std::isnan(R_squared_norm) or std::isnan(dx_squared_norm) or du_squared_norm < EPSILON) {

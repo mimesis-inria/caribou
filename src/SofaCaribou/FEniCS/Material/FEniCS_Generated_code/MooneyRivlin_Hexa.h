@@ -5,17 +5,14 @@
 //
 //  {'assume_aligned': -1,
 //   'epsilon': 1e-14,
-//   'output_directory': '../../FEniCS_Generated_code/',
+//   'output_directory': '../../FEniCS_Generated_code',
 //   'padlen': 1,
 //   'profile': False,
 //   'scalar_type': 'double',
 //   'table_atol': 1e-09,
 //   'table_rtol': 1e-06,
 //   'tabulate_tensor_void': False,
-//   'ufl_file': ['MooneyRivlin_Hexa.py',
-//                'MooneyRivlin_Hexa_Order2.py',
-//                'MooneyRivlin_Tetra.py',
-//                'MooneyRivlin_Tetra_Order2.py'],
+//   'ufl_file': ['MooneyRivlin_Hexa.py'],
 //   'verbosity': 30,
 //   'visualise': False}
 
@@ -44,13 +41,17 @@ extern ufcx_dofmap dofmap_00e1a80bbdf056b4a6b4eb1b391c932e14a1ee65;
 
 extern ufcx_dofmap dofmap_0c4e046a76e54e3829221c3403f9b33c105e203b;
 
-extern ufcx_integral integral_2ac95e85388a70078556da50ce6ef3b7590f7e32;
+extern ufcx_integral integral_e03e0e1d5d0780796917ff968885953c7835d9ab;
 
-extern ufcx_integral integral_8f96590d15774b49a17c276ac3423edef1680aac;
+extern ufcx_integral integral_d7a10964b47f7027af70c830a367cbe868a5bc9e;
 
-extern ufcx_integral integral_6269b9f0375985f321a0515f6b9675d18f448abf;
+extern ufcx_integral integral_7fa321b319eaaac48e0c10e5e92dc7e49e00c324;
 
-extern ufcx_form form_b2d91c507b91412323d26984512c26287f493212;
+extern ufcx_integral integral_70bf1fa386482936b57301d8a5260af76f48f162;
+
+extern ufcx_integral integral_0bcaee68a2fe389fec53a3a0ed33447d2a0b1892;
+
+extern ufcx_form form_95c7706d8a9447571ab3789833912c7debc2bc19;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.
@@ -63,7 +64,7 @@ extern ufcx_form* form_MooneyRivlin_Hexa_F;
 //
 ufcx_function_space* functionspace_form_MooneyRivlin_Hexa_F(const char* function_name);
 
-extern ufcx_form form_4a219084b8a702b21ea6681b69da89eb3b8e04c1;
+extern ufcx_form form_77eeaca65c862af474ffea2e7f6ef6bdbcc44c46;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.
@@ -76,7 +77,7 @@ extern ufcx_form* form_MooneyRivlin_Hexa_J;
 //
 ufcx_function_space* functionspace_form_MooneyRivlin_Hexa_J(const char* function_name);
 
-extern ufcx_form form_5d9041d8603a29c00e402c1879454bc112b35ea8;
+extern ufcx_form form_609e845c3524316007d0dffe3a549c060bb17b8f;
 
 // Helper used to create form using name which was given to the
 // form in the UFL file.

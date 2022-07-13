@@ -104,6 +104,7 @@ void HyperelasticForcefield<Element>::addForce(
     if (sofa_x.size() != sofa_f.size())
         return;
     const auto nb_nodes = sofa_x.size();
+    ReadAccessor<Data<VecCoord>> sofa_x0 = this->mstate->readRestPositions();
     const auto nb_elements = this->number_of_elements();
 
     if (nb_nodes == 0 || nb_elements == 0)
@@ -113,6 +114,8 @@ void HyperelasticForcefield<Element>::addForce(
         return;
 
     Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.ref().data()->data(),  nb_nodes, Dimension);
+    Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X0      (sofa_x0.ref().data()->data(), nb_nodes, Dimension);
+
     Eigen::Map<Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>> forces  (&(sofa_f[0][0]),  nb_nodes, Dimension);
 
     sofa::helper::AdvancedTimer::stepBegin("HyperelasticForcefield::addForce");

@@ -114,6 +114,8 @@ public:
 
     // Retrieve FEniCS F tensor 
     virtual auto FEniCS_F() -> ufcx_integral* {}
+    // Retrieve FEniCS F tensor boundary conditions
+    virtual auto FEniCS_F_bc() -> ufcx_integral* {}
     // Retrieve FEniCS J tensor
     virtual auto FEniCS_J() -> ufcx_integral* {}
     // Retrieve FEniCS Pi tensor

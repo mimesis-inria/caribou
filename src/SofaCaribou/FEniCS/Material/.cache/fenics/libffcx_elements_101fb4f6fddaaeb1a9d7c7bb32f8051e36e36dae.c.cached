@@ -1,0 +1,6 @@
+generating /root/.cache/fenics/libffcx_elements_101fb4f6fddaaeb1a9d7c7bb32f8051e36e36dae.c
+setting the current directory to '/root/.cache/fenics'
+running build_ext
+building 'libffcx_elements_101fb4f6fddaaeb1a9d7c7bb32f8051e36e36dae' extension
+x86_64-linux-gnu-gcc -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O2 -Wall -g -fstack-protector-strong -Wformat -Werror=format-security -g -fwrapv -O2 -g -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -fPIC -I/usr/local/lib/python3.10/dist-packages/ffcx/codegeneration -I/usr/include/python3.10 -c libffcx_elements_101fb4f6fddaaeb1a9d7c7bb32f8051e36e36dae.c -o ./libffcx_elements_101fb4f6fddaaeb1a9d7c7bb32f8051e36e36dae.o -O2 -g0
+x86_64-linux-gnu-gcc -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -g -fwrapv -O2 -Wl,-Bsymbolic-functions -g -fwrapv -O2 -g -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 ./libffcx_elements_101fb4f6fddaaeb1a9d7c7bb32f8051e36e36dae.o -o ./libffcx_elements_101fb4f6fddaaeb1a9d7c7bb32f8051e36e36dae.cpython-310-x86_64-linux-gnu.so

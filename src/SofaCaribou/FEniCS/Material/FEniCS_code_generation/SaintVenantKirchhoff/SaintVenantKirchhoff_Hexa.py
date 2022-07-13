@@ -1,6 +1,6 @@
 from ufl import (Coefficient, Constant, Identity,
-                 TestFunction, TrialFunction,
-                 VectorElement, derivative, dx, grad,
+                 TestFunction, TrialFunction, det, inner, 
+                 VectorElement, derivative, dx, ds, grad,
                  hexahedron, tr, variable)
 
 # Function spaces
@@ -14,6 +14,8 @@ v = TestFunction(element)  # Test function
 
 # Functions
 u = Coefficient(element)  # Displacement from previous iteration
+B = Coefficient(element)  # Body forces
+T = Coefficient(element)  # Traction forces
 
 # Kinematics
 I = Identity(d)  # Identity tensor
@@ -31,7 +33,7 @@ lmbda = young * poisson / ((1 + poisson) * (1 - 2 * poisson))
 psi = (lmbda / 2) * tr(E) ** 2 + mu * tr(E * E)
 
 # Total potential energy
-Pi = psi * dx(degree=2)
+Pi = psi * dx(degree=2) - inner(B, u)*dx(degree=2) - inner(T, u)*ds(degree=2)
 
 # First variation of Pi (directional derivative about u in the direction of v)
 F = derivative(Pi, u, v)
