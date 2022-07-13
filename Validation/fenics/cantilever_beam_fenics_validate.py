@@ -162,9 +162,10 @@ class ControlFrame(Sofa.Core.Controller):
         sonics_node.addObject('CaribouTopology', name='topology', template=element_sonics,
                               indices=indices_sonics.tolist())
         sonics_node.addObject('FixedConstraint', indices=left)
-        sonics_node.addObject("CaribouMass")
+        # sonics_node.addObject("CaribouMass")
         sonics_node.addObject('CaribouTopology', name='surface', template=element_surface,
                               indices=right)
+        # # No need to add the traction forces if already taken into account in the forcefield
         sonics_node.addObject('TractionForcefield', traction=TRACTION, slope=1, topology='@surface',
                               printLog=True)
         sonics_node.addObject('FEniCS_Material', template=element_sonics, young_modulus="3000",
@@ -183,14 +184,12 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixMat3x3d")
         self.sofa_mo = sofa_node.addObject('MechanicalObject', name="mo", position=mesh.points.tolist())
         self.sofa_rest_position = np.array(self.sofa_mo.position.value.copy().tolist())
-
         sofa_node.addObject('CaribouTopology', name='topology', template=element_sofa,
                             indices=indices_sofa.tolist())
         sofa_node.addObject('FixedConstraint', indices=left)
         sofa_node.addObject("CaribouMass")
         sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
                             indices=right)
-        # print(right)
         # sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
                             # indices=[[4, 20, 97, 21, 101, 102]]
                             # indices=[[29, 4, 97, 31, 102, 103], [20, 5, 98, 22, 104, 105], [6, 26, 99, 27, 109, 107],
@@ -210,28 +209,15 @@ class ControlFrame(Sofa.Core.Controller):
                             #          [4, 20, 97, 21, 101, 102]
                             # ]
                             # )
-        #        sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
-        #                            # indices=[4, 40, 12]
-        #                            # indices=[[40, 15, 43], [14, 42, 43], [5, 41, 13], [42, 6, 13], [7, 14, 43]]
-        #                            # indices=[[40, 41, 43], [12, 5, 41], [42, 6, 14], [7, 15, 43], [15, 4, 40]]
-        #                            #  indices =  [[41, 42, 43], [40, 12, 41], [42, 41, 13]]
-        # #                            indices = [[ 4, 12, 40],
-        # # [15,  4, 40],
-        # # [12,  5, 41],
-        # # [ 5, 13 ,41],
-        # # [13 , 6 ,42],
-        # # [ 6 ,14 ,42],
-        # # [14 , 7 ,43],
-        # # [ 7 ,15, 43],
-        # # [40, 12 ,41],
-        # # [41, 13, 42],
-        # # [42, 14 ,43],
-        # # [15 ,40, 43],
-        # # [40 ,41 ,43],
-        # # [41 ,42, 43]]
-        #
-        #                            indices=[[4, 40, 12], [40, 15, 43], [14, 42, 43], [5, 41, 13], [42, 6, 13], [7, 14, 43], [40, 41, 43], [12, 5, 41], [42, 6, 14], [7, 15, 43], [15, 4, 40], [41, 42, 43], [40, 12, 41], [42, 41, 13]]
-        #                            )
+        # sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
+        # indices = [
+        #            [4, 40, 12],
+        #            [40, 15, 43], [14, 42, 43], [5, 41, 13], [13, 6, 42], [7, 14, 43],
+        #            [40, 41, 43], [12, 5, 41], [42, 6, 14], [7, 15, 43], [15, 4, 40],
+        #            [41, 42, 43], [40, 12, 41], [42, 41, 13]
+        #            ]
+        # )
+
         sofa_node.addObject('TractionForcefield', traction=TRACTION, slope=1, topology='@surface',
                             printLog=True)
         sofa_node.addObject(material + "Material", young_modulus="3000", poisson_ratio="0.3")
