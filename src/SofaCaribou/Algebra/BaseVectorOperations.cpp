@@ -5,10 +5,15 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 #include <sofa/defaulttype/BaseVector.h>
+#include <SofaBaseLinearSolver/FullVector.h>
+namespace sofa::linearalgebra {
+template <typename Real>
+using FullVector = sofa::component::linearsolver::FullVector<Real>;
+}
 #else
 #include <sofa/linearalgebra/BaseVector.h>
+#include <sofa/linearalgebra/FullVector.h>
 #endif // #if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
-#include <SofaBaseLinearSolver/FullVector.h>
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
@@ -22,13 +27,13 @@ namespace SofaCaribou::Algebra {
 
 namespace { // Anonymous
 template <typename Real>
-auto to_full_vector(const sofa::defaulttype::BaseVector* v) -> const sofa::component::linearsolver::FullVector<Real> * {
-    return dynamic_cast<const sofa::component::linearsolver::FullVector<Real> *>(v);
+auto to_full_vector(const sofa::defaulttype::BaseVector* v) -> const sofa::linearalgebra::FullVector<Real> * {
+    return dynamic_cast<const sofa::linearalgebra::FullVector<Real> *>(v);
 }
 
 // Dot product between a SOFA full vector and any BaseVector
 template <typename ReturnValue, typename Real>
-ReturnValue dot(const sofa::component::linearsolver::FullVector<Real> * v1, const sofa::defaulttype::BaseVector * v2) {
+ReturnValue dot(const sofa::linearalgebra::FullVector<Real> * v1, const sofa::defaulttype::BaseVector * v2) {
     const auto n = static_cast<sofa::Size>(v1->size());
     auto value = static_cast<ReturnValue>(0);
     for (sofa::Index i = 0; i < n; ++i) {
@@ -40,7 +45,7 @@ ReturnValue dot(const sofa::component::linearsolver::FullVector<Real> * v1, cons
 
 // Dot product between a two SOFA full vectors
 template <typename ReturnValue, typename Real1, typename Real2>
-ReturnValue dot(const sofa::component::linearsolver::FullVector<Real1> * v1, const sofa::component::linearsolver::FullVector<Real2> * v2) {
+ReturnValue dot(const sofa::linearalgebra::FullVector<Real1> * v1, const sofa::linearalgebra::FullVector<Real2> * v2) {
     const auto n = static_cast<sofa::Size>(v1->size());
     auto value = static_cast<ReturnValue>(0);
     for (sofa::Index i = 0; i < n; ++i) {

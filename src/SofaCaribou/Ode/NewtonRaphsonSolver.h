@@ -10,7 +10,14 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/defaulttype/BaseVector.h>
 #include <sofa/core/objectmodel/Link.h>
 #include <sofa/helper/OptionsGroup.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 220600)
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+namespace sofa::core::behavior {
+using DefaultMultiMatrixAccessor = sofa::component::linearsolver::DefaultMultiMatrixAccessor;
+}
+#else
+#include <sofa/core/behavior/DefaultMultiMatrixAccessor.h>
+#endif
 DISABLE_ALL_WARNINGS_END
 
 #include <memory>
@@ -136,7 +143,7 @@ private:
      *       matrix accessor.
      */
     virtual void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
-                                        sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
+                                        sofa::core::behavior::DefaultMultiMatrixAccessor & matrix_accessor,
                                         sofa::defaulttype::BaseMatrix * A) = 0;
 
     /**

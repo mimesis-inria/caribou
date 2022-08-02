@@ -118,7 +118,7 @@ private:
     /** @see NewtonRaphsonSolver::assemble_system_matrix */
     
     void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
-                                sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
+                                sofa::core::behavior::DefaultMultiMatrixAccessor & matrix_accessor,
                                 sofa::defaulttype::BaseMatrix * A) final;
 
     /** @see NewtonRaphsonSolver::propagate_position_increment */

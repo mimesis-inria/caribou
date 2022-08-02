@@ -190,7 +190,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     // accumulate the mechanical objects and mappings. This one will not really
     // compute the mechanical graph (not explicitly at least). Hence the following
     // @todo (jnbrunet2000@gmail.com) Create a CaribouMultiMatrixAccessor for that.
-    sofa::component::linearsolver::DefaultMultiMatrixAccessor accessor;
+    sofa::core::behavior::DefaultMultiMatrixAccessor accessor;
 
     // Step 1   Get dimension of each top level mechanical states using
     //          BaseMechanicalState::getMatrixSize(), and accumulate mechanical
