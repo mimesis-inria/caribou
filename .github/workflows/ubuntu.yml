@@ -22,22 +22,27 @@ jobs:
             SOFA_VERSION_I: 999999
             CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
             PYTHON_VERSION: 3.8
+            PYBIND11_VERSION: 2.6
           - sofa_version: v21.12.00
             SOFA_VERSION_I: 211200
             CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
             PYTHON_VERSION: 3.8
+            PYBIND11_VERSION: 2.4
           - sofa_version: v21.06.03
             SOFA_VERSION_I: 210603
             CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
             PYTHON_VERSION: 3.7
+            PYBIND11_VERSION: 2.4
           - sofa_version: v20.12.03
             SOFA_VERSION_I: 201203
             CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
             PYTHON_VERSION: 3.7
+            PYBIND11_VERSION: 2.4
           - sofa_version: v20.06.01
             SOFA_VERSION_I: 200601
             CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
             PYTHON_VERSION: 3.7
+            PYBIND11_VERSION: 2.4
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -53,6 +58,14 @@ jobs:
           git config --global user.name "Caribou Github"
           git fetch origin
           git rebase origin/master
+
+      - name: Install pybind11
+        if: ${{ matrix.PYBIND11_VERSION != '2.4' }}
+        run: |
+          git clone --depth 1 -b v${{ matrix.PYBIND11_VERSION }}  https://github.com/pybind/pybind11.git /tmp/pybind11
+          cmake -GNinja -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --install /tmp/pybind11/build
+          rm -rf /tmp/pybind11
 
       - name: Download SOFA Release
         run:  |
