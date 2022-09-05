@@ -212,10 +212,10 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 //        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,-10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0, -10,0};
 //        }
-//        entity[0] = {5};
+//        entity[0] = 5;
 
 
-////        P1 elements (not working yet)
+//        P1 elements (not working yet)
 //        if (element_id==1 or element_id==88 or element_id==91){
 //        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,-10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,-10,0};

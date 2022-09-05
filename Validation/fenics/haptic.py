@@ -17,14 +17,14 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject('RequiredPlugin',
                        pluginName="SofaHaptics Geomagic SofaCaribou CImgPlugin SofaMiscCollision SofaGeneralSimpleFem SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine SofaGeneralDeformable SofaMiscFem SofaMeshCollision SofaGeneralLoader")
 
-        root.gravity = [0, -0, 0]
+        root.gravity = [0, -9.81, 0]
         root.dt = 0.005
         root.addObject("DefaultPipeline", verbose=0, depth=6, draw=0)
         root.addObject("BruteForceBroadPhase")
         root.addObject("BVHNarrowPhase")
         root.addObject("DefaultContactManager", name="Response", response="FrictionContact")
         root.addObject("LocalMinDistance", name="Proximity", alarmDistance=0.15, contactDistance=0.05,
-                       angleCone=0)
+                       angleCone=0.5)
         root.addObject("FreeMotionAnimationLoop")
         root.addObject("LCPConstraintSolver", tolerance=0.001, maxIt=1000)
         root.addObject("GeomagicDriver", name="GeomagicDevice", deviceName="Default Device", scale=1,
@@ -136,7 +136,7 @@ class ControlFrame(Sofa.Core.Controller):
         liver.addObject('CaribouTopology', name='topology', template="Tetrahedron", position="@loader.position",
                         indices="@loader.tetrahedra")
         liver.addObject('CaribouMass', name='mass', topology='@topology', density=1, lumped=True)
-        liver.addObject('FEniCS_Material', template="Tetrahedron", young_modulus=800,
+        liver.addObject('FEniCS_Material', template="Tetrahedron", young_modulus=8000,
                         poisson_ratio=0.3, material_name="NeoHookean")
         # liver.addObject('FEniCS_Material', template="Tetrahedron", bulk_modulus=10e5, a=1180, b=8, a_f=18.5 * 10e4,
         #                 b_f=16, a_s=2.5 * 10e4, b_s=11.1, a_fs=2160, b_fs=11.4, material_name="Ogden")

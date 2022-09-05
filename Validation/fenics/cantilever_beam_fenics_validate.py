@@ -166,8 +166,8 @@ class ControlFrame(Sofa.Core.Controller):
         sonics_node.addObject('CaribouTopology', name='surface', template=element_surface,
                               indices=right)
         # # No need to add the traction forces if already taken into account in the forcefield
-        sonics_node.addObject('TractionForcefield', traction=TRACTION, slope=1, topology='@surface',
-                              printLog=True)
+        # sonics_node.addObject('TractionForcefield', traction=TRACTION, slope=1, topology='@surface',
+        #                       printLog=True)
         sonics_node.addObject('FEniCS_Material', template=element_sonics, young_modulus="3000",
                               poisson_ratio="0.3", material_name=material, path="/home/..")
         sonics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
@@ -188,8 +188,8 @@ class ControlFrame(Sofa.Core.Controller):
                             indices=indices_sofa.tolist())
         sofa_node.addObject('FixedConstraint', indices=left)
         sofa_node.addObject("CaribouMass")
-        sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
-                            indices=right)
+        # sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
+        #                     indices=right)
         # sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
                             # indices=[[4, 20, 97, 21, 101, 102]]
                             # indices=[[29, 4, 97, 31, 102, 103], [20, 5, 98, 22, 104, 105], [6, 26, 99, 27, 109, 107],
@@ -209,14 +209,14 @@ class ControlFrame(Sofa.Core.Controller):
                             #          [4, 20, 97, 21, 101, 102]
                             # ]
                             # )
-        # sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
-        # indices = [
-        #            [4, 40, 12],
-        #            [40, 15, 43], [14, 42, 43], [5, 41, 13], [13, 6, 42], [7, 14, 43],
-        #            [40, 41, 43], [12, 5, 41], [42, 6, 14], [7, 15, 43], [15, 4, 40],
-        #            [41, 42, 43], [40, 12, 41], [42, 41, 13]
-        #            ]
-        # )
+        sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
+        indices = [
+                   [4, 40, 12],
+                   # [40, 15, 43], [14, 42, 43], [5, 41, 13], [13, 6, 42], [7, 14, 43],
+                   # [40, 41, 43], [12, 5, 41], [42, 6, 14], [7, 15, 43], [15, 4, 40],
+                   [41, 42, 43], [40, 12, 41], [42, 41, 13]
+                   ]
+        )
 
         sofa_node.addObject('TractionForcefield', traction=TRACTION, slope=1, topology='@surface',
                             printLog=True)

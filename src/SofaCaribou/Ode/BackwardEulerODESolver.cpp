@@ -83,6 +83,7 @@ void BackwardEulerODESolver::assemble_rhs_vector(const MechanicalParams &    mec
                                                  MultiVecDerivId & f_id,
                                                  BaseVector *      f)
 {
+    std::cout << "ttttttttttttttttttttttttt";
 
     const auto h = mechanical_parameters.dt();
 
