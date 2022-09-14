@@ -17,7 +17,7 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject('RequiredPlugin',
                        pluginName="SofaHaptics Geomagic SofaCaribou CImgPlugin SofaMiscCollision SofaGeneralSimpleFem SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine SofaGeneralDeformable SofaMiscFem SofaMeshCollision SofaGeneralLoader")
 
-        root.gravity = [0, -9.81, 0]
+        root.gravity = [0, -0, 0]
         root.dt = 0.005
         root.addObject("DefaultPipeline", verbose=0, depth=6, draw=0)
         root.addObject("BruteForceBroadPhase")
@@ -135,6 +135,9 @@ class ControlFrame(Sofa.Core.Controller):
         liver.addObject('MechanicalObject', name="mo", src="@loader")
         liver.addObject('CaribouTopology', name='topology', template="Tetrahedron", position="@loader.position",
                         indices="@loader.tetrahedra")
+        liver.addObject("MeshObjLoader", name="obj_loader", filename="mesh/liver.obj")
+        liver.addObject("MeshTopology", name="obj_topo", src="@obj_loader", drawEdges=True)
+
         liver.addObject('CaribouMass', name='mass', topology='@topology', density=1, lumped=True)
         liver.addObject('FEniCS_Material', template="Tetrahedron", young_modulus=8000,
                         poisson_ratio=0.3, material_name="NeoHookean")

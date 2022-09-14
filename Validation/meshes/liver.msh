@@ -803,3 +803,9 @@ Physical Volume(1) -= {1};
 Physical Volume(1) -= {1};
 //+
 Physical Volume(1) -= {1};
+//+
+Point(1) = {-0.8, 4.7, -0.7, 1.0};
+//+
+Point(2) = {0.1, 4.6, -0.8, 1.0};
+//+
+Line(1) = {1, 2};
