@@ -143,14 +143,14 @@ public:
     static auto canCreate(Derived* o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
 
 protected:
-    void set_system_matrix(const sofa::defaulttype::BaseMatrix * A) override {
+    void set_system_matrix(const sofa::linearalgebra::BaseMatrix * A) override {
         p_A_ptr = dynamic_cast<const SofaCaribou::Algebra::EigenMatrix<Matrix> *>(A);
     }
 private:
     /**
      * @see SofaCaribou::solver::LinearSolver::create_new_matrix
      */
-    sofa::defaulttype::BaseMatrix * create_new_matrix(sofa::Size rows, sofa::Size cols) const override {
+    sofa::linearalgebra::BaseMatrix * create_new_matrix(sofa::Size rows, sofa::Size cols) const override {
         auto * matrix = new SofaCaribou::Algebra::EigenMatrix<Matrix> (static_cast<Eigen::Index>(rows), static_cast<Eigen::Index>(cols));
         if (symmetric()) {
             matrix->set_symmetric(symmetric());
@@ -161,7 +161,7 @@ private:
     /**
      * @see SofaCaribou::solver::LinearSolver::create_new_vector
      */
-    sofa::defaulttype::BaseVector * create_new_vector(sofa::Size n) const override {
+    sofa::linearalgebra::BaseVector * create_new_vector(sofa::Size n) const override {
         return new SofaCaribou::Algebra::EigenVector<Vector>(n);
     }
 

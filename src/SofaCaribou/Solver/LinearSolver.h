@@ -41,7 +41,7 @@ public:
      *       memory of this newly created matrix.
      */
     [[nodiscard]]
-    virtual sofa::defaulttype::BaseMatrix * create_new_matrix(unsigned int rows, unsigned int cols) const = 0;
+    virtual sofa::linearalgebra::BaseMatrix * create_new_matrix(unsigned int rows, unsigned int cols) const = 0;
 
     /**
      * Creates a new BaseVector of size n.
@@ -58,7 +58,7 @@ public:
      *       memory of this newly created vector.
      */
     [[nodiscard]]
-    virtual sofa::defaulttype::BaseVector * create_new_vector(unsigned int n) const = 0;
+    virtual sofa::linearalgebra::BaseVector * create_new_vector(unsigned int n) const = 0;
 
     /**
      * Solve the linear system A [X] = F
@@ -71,8 +71,8 @@ public:
      * @note The vectors must be of the virtual type SofaCaribou::Algebra::EigenVector<Vector>
      * @note LinearSolver::factorize must have been called before this method.
      */
-    virtual bool solve(const sofa::defaulttype::BaseVector * F,
-                       sofa::defaulttype::BaseVector * X) = 0;
+    virtual bool solve(const sofa::linearalgebra::BaseVector * F,
+                       sofa::linearalgebra::BaseVector * X) = 0;
 
     /**
      * Analyze the pattern of the given matrix.
@@ -101,7 +101,7 @@ public:
      * later on using the analyse_patern(), factorize(), and solve() methods.
      * @param A A pointer to the fully assembled system matrix.
      */
-    virtual void set_system_matrix(const sofa::defaulttype::BaseMatrix * A) = 0;
+    virtual void set_system_matrix(const sofa::linearalgebra::BaseMatrix * A) = 0;
 
     /**
      * Returns true if this solver is an iterative one, false otherwise. In case of iterative solvers,
