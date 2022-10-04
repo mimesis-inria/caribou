@@ -33,6 +33,6 @@ namespace SofaCaribou::Algebra {
  *                                  simply reuse this callback. Hence we avoid the need to do multiple virtual checks
  *                                  each time this function is called
  */
- double dot(const sofa::defaulttype::BaseVector * v1, const sofa::defaulttype::BaseVector * v2);
+ double dot(const sofa::linearalgebra::BaseVector * v1, const sofa::linearalgebra::BaseVector * v2);
 
 } // namespace SofaCaribou::Algebra

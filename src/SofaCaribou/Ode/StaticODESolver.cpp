@@ -35,7 +35,7 @@ using Timer = sofa::helper::AdvancedTimer;
 void StaticODESolver::assemble_rhs_vector(const sofa::core::MechanicalParams &mechanical_parameters,
                                           const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
                                           sofa::core::MultiVecDerivId & f_id,
-                                          sofa::defaulttype::BaseVector *f) {
+                                          sofa::linearalgebra::BaseVector *f) {
     // 1. Clear the force vector (F := 0)
     MechanicalResetForceVisitor(&mechanical_parameters, f_id,
                                 false /* onlyMapped */)
@@ -61,7 +61,7 @@ void StaticODESolver::assemble_rhs_vector(const sofa::core::MechanicalParams &me
 // Assemble A in A [dx] = F
 void StaticODESolver::assemble_system_matrix(const sofa::core::MechanicalParams &mechanical_parameters,
                                              sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
-                                             sofa::defaulttype::BaseMatrix *A) {
+                                             sofa::linearalgebra::BaseMatrix *A) {
     // Step 1. Building stage:
     //         Here we go down on the current context sub-graph and call :
     //           1. ff->addMBKToMatrix(&K) for every force field "ff" found.
@@ -99,7 +99,7 @@ void StaticODESolver::assemble_system_matrix(const sofa::core::MechanicalParams 
 // Propagate Dx that was previously solved in A [dx] = F
 void StaticODESolver::propagate_solution_increment(const sofa::core::MechanicalParams &mechanical_parameters,
                                                    const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
-                                                   const sofa::defaulttype::BaseVector * dx,
+                                                   const sofa::linearalgebra::BaseVector * dx,
                                                    sofa::core::MultiVecCoordId & x_id,
                                                    sofa::core::MultiVecDerivId & /* v_id */,
                                                    sofa::core::MultiVecDerivId & dx_id) {

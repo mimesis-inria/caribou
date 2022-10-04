@@ -4,7 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
-#include <sofa/defaulttype/BaseMatrix.h>
+#include <sofa/linearalgebra/BaseMatrix.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
@@ -88,29 +88,29 @@ public:
 
     // Public methods
 
-    
+
     HexahedronElasticForce();
 
-    
+
     void init() override;
 
-    
+
     void reinit() override;
 
-    
+
     void addForce(
             const MechanicalParams* mparams,
             Data<VecDeriv>& d_f,
             const Data<VecCoord>& d_x,
             const Data<VecDeriv>& d_v) override;
 
-    
+
     void addDForce(
             const MechanicalParams* /*mparams*/,
             Data<VecDeriv>& /*d_df*/,
             const Data<VecDeriv>& /*d_dx*/) override;
 
-    
+
     void draw(const sofa::core::visual::VisualParams* vparams) override;
 
     SReal getPotentialEnergy(
@@ -118,10 +118,10 @@ public:
             const Data<VecCoord>& /* d_x */) const override
     {return 0;}
 
-    
-    void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
-    
+    void addKToMatrix(sofa::linearalgebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
+
+
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;
 
     template <typename T>
@@ -173,15 +173,15 @@ public:
     }
 
     /** Get the complete tangent stiffness matrix */
-    
+
     const Eigen::SparseMatrix<Real> & K();
 
     /** Get the eigen values of the tangent stiffness matrix */
-    
+
     const Vector<Eigen::Dynamic> & eigenvalues();
 
     /** Get the condition number of the tangent stiffness matrix */
-    
+
     Real cond();
 
 private:

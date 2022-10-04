@@ -64,8 +64,8 @@ bool LDLTSolver<EigenSolver_t>::factorize() {
 }
 
 template<class EigenSolver_t>
-bool LDLTSolver<EigenSolver_t>::solve(const sofa::defaulttype::BaseVector * F,
-                                      sofa::defaulttype::BaseVector *X) {
+bool LDLTSolver<EigenSolver_t>::solve(const sofa::linearalgebra::BaseVector * F,
+                                      sofa::linearalgebra::BaseVector *X) {
     auto F_ = dynamic_cast<const SofaCaribou::Algebra::EigenVector<Vector> *>(F);
     auto X_ = dynamic_cast<SofaCaribou::Algebra::EigenVector<Vector> *>(X);
 

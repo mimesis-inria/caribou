@@ -9,7 +9,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
-#include <SofaEigen2Solver/EigenVectorWrapper.h>
+//#include <SofaEigen2Solver/EigenVectorWrapper.h>
 DISABLE_ALL_WARNINGS_END
 
 #ifndef _WIN32

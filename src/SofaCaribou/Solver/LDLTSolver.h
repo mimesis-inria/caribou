@@ -47,7 +47,7 @@ public:
      * @see SofaCaribou::solver::LinearSolver::solve
      */
     
-    bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) override;
+    bool solve(const sofa::linearalgebra::BaseVector * F, sofa::linearalgebra::BaseVector * X) override;
 
     // Get the backend name of the class derived from the EigenSolver template parameter
     

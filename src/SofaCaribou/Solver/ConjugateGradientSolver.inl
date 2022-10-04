@@ -463,7 +463,7 @@ bool ConjugateGradientSolver<EigenMatrix_t>::factorize() {
 }
 
 template <class EigenMatrix_t>
-bool ConjugateGradientSolver<EigenMatrix_t>::solve(const sofa::defaulttype::BaseVector * F_, sofa::defaulttype::BaseVector *X_) {
+bool ConjugateGradientSolver<EigenMatrix_t>::solve(const sofa::linearalgebra::BaseVector * F_, sofa::linearalgebra::BaseVector *X_) {
     const auto & F = dynamic_cast<const SofaCaribou::Algebra::EigenVector<Vector> *>(F_)->vector();
     auto & X = dynamic_cast<SofaCaribou::Algebra::EigenVector<Vector> *>(X_)->vector();
     const PreconditioningMethod preconditioning_method = get_preconditioning_method_from_string(d_preconditioning_method.getValue().getSelectedItem());

@@ -6,7 +6,7 @@
 #include <SofaCaribou/Forcefield/CaribouForcefield.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/defaulttype/BaseMatrix.h>
+#include <sofa/linearalgebra/BaseMatrix.h>
 #include <sofa/core/behavior/MechanicalState.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -73,25 +73,25 @@ public:
 
     // Public methods
 
-    
+
     TractionForcefield();
 
-    
+
     void init() override;
 
-    
+
     void reset() override;
 
-    
+
     void addForce(const sofa::core::MechanicalParams* mparams, Data<VecDeriv>& d_f, const Data<VecCoord>& d_x, const Data<VecDeriv>& d_v) override;
 
-    
+
     void addDForce(const sofa::core::MechanicalParams* /*mparams*/, Data<VecDeriv>& /*d_df*/, const Data<VecDeriv>& /*d_dx*/) override {}
 
-    
-    void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override {}
 
-    
+    void addKToMatrix(sofa::linearalgebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override {}
+
+
     void handleEvent(sofa::core::objectmodel::Event* event) override;
 
     SReal getPotentialEnergy(const sofa::core::MechanicalParams* /*mparams*/, const Data<VecDeriv>&  /* x */) const override

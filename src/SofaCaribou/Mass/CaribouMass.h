@@ -7,7 +7,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/defaulttype/VecTypes.h>
-#include <sofa/defaulttype/BaseMatrix.h>
+#include <sofa/linearalgebra/BaseMatrix.h>
 #include <sofa/core/behavior/Mass.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -101,14 +101,14 @@ public:
     >::type;
 
     // Public methods
-    
+
     CaribouMass();
 
-    
+
     void init() override;
 
     template <typename Derived>
-    
+
     static auto canCreate(Derived * o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
 
     template <typename DerivedElement>
@@ -155,24 +155,24 @@ public:
         return p_topology;
     }
 
-    
+
     void addForce(const sofa::core::MechanicalParams * mparams, DataVecDeriv & f, const DataVecCoord & x, const DataVecDeriv & v) override;
 
-    
-    void addMToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal mFact, unsigned int & offset) override;
 
-    
+    void addMToMatrix(sofa::linearalgebra::BaseMatrix * matrix, SReal mFact, unsigned int & offset) override;
+
+
     void addMToMatrix(const sofa::core::MechanicalParams * mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override {
         Inherit1::addMToMatrix(mparams, matrix);
     }
 
-    
+
     void addGravityToV(const sofa::core::MechanicalParams * /* mparams */, DataVecDeriv& /* d_v */) override;
 
-    
+
     void accFromF(const sofa::core::MechanicalParams * mparams, DataVecDeriv & d_a, const DataVecDeriv & d_f) override;
 
-    
+
     void addMDx(const sofa::core::MechanicalParams * mparams, DataVecDeriv & d_f, const DataVecDeriv & d_dx, SReal factor) override;
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
@@ -180,14 +180,14 @@ public:
      * @return True if the mass matrix is lumped, false otherwise. The lumping is done by placing integration point
      * directly onto the nodes of each elements.
      */
-    
+
     bool isDiagonal() override {return d_lumped.getValue();}
 #else
     /**
      * @return True if the mass matrix is lumped, false otherwise. The lumping is done by placing integration point
      * directly onto the nodes of each elements.
      */
-    
+
     bool isDiagonal() const override {return d_lumped.getValue();}
 #endif
     /**
@@ -198,7 +198,7 @@ public:
      * changes. By default, it will use the mechanical state vector "restPosition". If another state vector
      * should be used as the x, use instead the assemble_mass_matrix(x) method.
      */
-    
+
     void assemble_mass_matrix();
 
     /**
@@ -210,7 +210,7 @@ public:
      * A reference to the assembled consistent mass matrix M as a column major sparse matrix can be later
      *  obtained using the method M().
      */
-    
+
     void assemble_mass_matrix(const sofa::core::objectmodel::Data<VecCoord> & x0);
 
     /**
@@ -223,11 +223,11 @@ public:
      *  obtained using the method M().
      */
     template <typename Derived>
-    
+
     void assemble_mass_matrix(const Eigen::MatrixBase<Derived> & x0);
 
     /** Get the set of Gauss integration nodes of an element */
-    
+
     inline auto gauss_nodes_of(std::size_t element_id) const -> const auto & {
         return p_elements_quadrature_nodes[element_id];
     }
