@@ -28,6 +28,14 @@ public:
     virtual void
     before_update() {}
 
+
+    /**
+     * This is called just before the material is updated on each gauss node
+     * It can be used to set some orientation matrix (eg. fibers direction) on gauss nodes
+     */
+    virtual void set_basis(Eigen::Matrix<Real, Dimension, Dimension>) { }
+
+
     /**
      * Get the strain energy density Psi from the right Cauchy-Green strain tensor C.
      */
