@@ -4,8 +4,17 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
-#include <sofa/linearalgebra/FullVector.h>
 #include <SofaCaribou/Algebra/BaseVectorOperations.h>
+
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
+#include <SofaBaseLinearSolver/FullVector.h>
+using namespace sofa::component::linearsolver;
+#else
+#include <sofa/linearalgebra/FullVector.h>
+using namespace sofa::linearalgebra;
+#endif // (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
+
+
 DISABLE_ALL_WARNINGS_END
 
 #include <Eigen/Dense>
@@ -19,8 +28,8 @@ TEST(Algebra, SofaFullDFullDDotProduct) {
     const Eigen::VectorXd v1 = Eigen::VectorXd::Random(n);
     const Eigen::VectorXd v2 = Eigen::VectorXd::Random(n);
 
-    sofa::linearalgebra::FullVector<double> sofa_v1 (n);
-    sofa::linearalgebra::FullVector<double> sofa_v2 (n);
+    FullVector<double> sofa_v1 (n);
+    FullVector<double> sofa_v2 (n);
 
     for (sofa::Index i = 0; i < n; ++i) {
         sofa_v1[i] = v1[static_cast<Eigen::Index>(i)];
@@ -35,8 +44,8 @@ TEST(Algebra, SofaFullDFullFDotProduct) {
     const Eigen::VectorXd v1 = Eigen::VectorXd::Random(n);
     const Eigen::VectorXf v2 = Eigen::VectorXf::Random(n);
 
-    sofa::linearalgebra::FullVector<double> sofa_v1 (n);
-    sofa::linearalgebra::FullVector<float> sofa_v2 (n);
+    FullVector<double> sofa_v1 (n);
+    FullVector<float> sofa_v2 (n);
 
     for (sofa::Index i = 0; i < n; ++i) {
         sofa_v1[i] = v1[static_cast<Eigen::Index>(i)];
@@ -51,8 +60,8 @@ TEST(Algebra, SofaFullFFullDDotProduct) {
     const Eigen::VectorXf v1 = Eigen::VectorXf::Random(n);
     const Eigen::VectorXd v2 = Eigen::VectorXd::Random(n);
 
-    sofa::linearalgebra::FullVector<float> sofa_v1 (n);
-    sofa::linearalgebra::FullVector<double> sofa_v2 (n);
+    FullVector<float> sofa_v1 (n);
+    FullVector<double> sofa_v2 (n);
 
     for (sofa::Index i = 0; i < n; ++i) {
         sofa_v1[i] = v1[static_cast<Eigen::Index>(i)];
