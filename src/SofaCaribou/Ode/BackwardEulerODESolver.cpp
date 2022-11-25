@@ -36,8 +36,6 @@ using sofa::core::MechanicalParams;
 using sofa::core::MultiVecCoordId;
 using sofa::core::MultiVecDerivId;
 using sofa::component::linearsolver::DefaultMultiMatrixAccessor;
-using sofa::linearalgebra::BaseMatrix;
-using sofa::linearalgebra::BaseVector;
 using Timer = sofa::helper::AdvancedTimer;
 
 // Constructor
@@ -81,7 +79,7 @@ void BackwardEulerODESolver::solve(const sofa::core::ExecParams *params, SReal d
 void BackwardEulerODESolver::assemble_rhs_vector(const MechanicalParams &    mechanical_parameters,
                                                  const MultiMatrixAccessor & matrix_accessor,
                                                  MultiVecDerivId & f_id,
-                                                 BaseVector *      f)
+                                                 SofaCaribou::Algebra::BaseVector *      f)
 {
 
     const auto h = mechanical_parameters.dt();
@@ -160,7 +158,7 @@ void BackwardEulerODESolver::assemble_rhs_vector(const MechanicalParams &    mec
 //          A = (1 + h*r_m) M   +   h C  +  [h * (h + r_k)] K
 void BackwardEulerODESolver::assemble_system_matrix(const MechanicalParams & mechanical_parameters,
                                                     DefaultMultiMatrixAccessor & matrix_accessor,
-                                                    BaseMatrix * A)
+                                                    SofaCaribou::Algebra::BaseMatrix * A)
 {
     const auto h = mechanical_parameters.dt();
 
@@ -202,7 +200,7 @@ void BackwardEulerODESolver::assemble_system_matrix(const MechanicalParams & mec
 // Propagate dv that was previously solved in A [dv] = F
 void BackwardEulerODESolver::propagate_solution_increment(const MechanicalParams & mechanical_parameters,
                                                           const MultiMatrixAccessor & matrix_accessor,
-                                                          const BaseVector * dx,
+                                                          const SofaCaribou::Algebra::BaseVector * dx,
                                                           MultiVecCoordId & x_id, MultiVecDerivId & v_id,
                                                           MultiVecDerivId & dx_id) {
     // 1. Prepare everything need to solve constraints later on

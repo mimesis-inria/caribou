@@ -6,7 +6,7 @@
 #include <SofaCaribou/Forcefield/CaribouForcefield.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/linearalgebra/BaseMatrix.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 #include <sofa/core/behavior/MechanicalState.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -89,7 +89,7 @@ public:
     void addDForce(const sofa::core::MechanicalParams* /*mparams*/, Data<VecDeriv>& /*d_df*/, const Data<VecDeriv>& /*d_dx*/) override {}
 
 
-    void addKToMatrix(sofa::linearalgebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override {}
+    void addKToMatrix(SofaCaribou::Algebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override {}
 
 
     void handleEvent(sofa::core::objectmodel::Event* event) override;

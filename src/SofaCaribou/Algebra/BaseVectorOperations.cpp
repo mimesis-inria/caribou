@@ -14,8 +14,8 @@ DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
 namespace sofa {
-using Size = sofa::linearalgebra::BaseVector::Index;
-using Index = sofa::linearalgebra::BaseVector::Index;
+using Size = sofa::defaulttype::BaseVector::Index;
+using Index = sofa::defaulttype::BaseVector::Index;
 }
 #endif
 

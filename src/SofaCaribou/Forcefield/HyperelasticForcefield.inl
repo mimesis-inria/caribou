@@ -6,7 +6,7 @@
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/linearalgebra/BaseMatrix.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/core/MechanicalParams.h>
 DISABLE_ALL_WARNINGS_END
@@ -215,7 +215,7 @@ void HyperelasticForcefield<Element>::addDForce(
 
 template <typename Element>
 void HyperelasticForcefield<Element>::addKToMatrix(
-    sofa::linearalgebra::BaseMatrix * matrix,
+    SofaCaribou::Algebra::BaseMatrix * matrix,
     SReal kFact, unsigned int & offset)
 {
     if (not K_is_up_to_date) {

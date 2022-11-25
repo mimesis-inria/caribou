@@ -17,7 +17,7 @@
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/linearalgebra/BaseMatrix.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)

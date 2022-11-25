@@ -7,7 +7,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/defaulttype/VecTypes.h>
-#include <sofa/linearalgebra/BaseMatrix.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 #include <sofa/core/behavior/Mass.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -159,7 +159,7 @@ public:
     void addForce(const sofa::core::MechanicalParams * mparams, DataVecDeriv & f, const DataVecCoord & x, const DataVecDeriv & v) override;
 
 
-    void addMToMatrix(sofa::linearalgebra::BaseMatrix * matrix, SReal mFact, unsigned int & offset) override;
+    void addMToMatrix(SofaCaribou::Algebra::BaseMatrix * matrix, SReal mFact, unsigned int & offset) override;
 
 
     void addMToMatrix(const sofa::core::MechanicalParams * mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override {

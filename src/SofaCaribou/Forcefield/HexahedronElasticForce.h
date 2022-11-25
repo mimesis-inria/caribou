@@ -4,7 +4,10 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
-#include <sofa/linearalgebra/BaseMatrix.h>
+
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
+
+
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/behavior/MechanicalState.h>
@@ -119,7 +122,7 @@ public:
     {return 0;}
 
 
-    void addKToMatrix(sofa::linearalgebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
+    void addKToMatrix(SofaCaribou::Algebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
 
     void computeBBox(const sofa::core::ExecParams* params, bool onlyVisible) override;

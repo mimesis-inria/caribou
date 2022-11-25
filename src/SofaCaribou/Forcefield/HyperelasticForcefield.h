@@ -17,7 +17,7 @@
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/linearalgebra/BaseMatrix.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
@@ -101,7 +101,7 @@ public:
         const sofa::core::objectmodel::Data<VecCoord>& /* d_x */) const override;
 
 
-    void addKToMatrix(sofa::linearalgebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
+    void addKToMatrix(SofaCaribou::Algebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
     /** Get the set of Gauss integration nodes of an element */
     inline auto gauss_nodes_of(std::size_t element_id) const -> const auto & {

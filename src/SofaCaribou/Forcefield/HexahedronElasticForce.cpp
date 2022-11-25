@@ -344,7 +344,7 @@ void HexahedronElasticForce::addDForce(
     sofa::helper::AdvancedTimer::stepEnd("HexahedronElasticForce::addDForce");
 }
 
-void HexahedronElasticForce::addKToMatrix(sofa::linearalgebra::BaseMatrix * matrix, SReal kFact, unsigned int & offset)
+void HexahedronElasticForce::addKToMatrix(SofaCaribou::Algebra::BaseMatrix * matrix, SReal kFact, unsigned int & offset)
 {
     auto * topology = d_topology_container.get();
 

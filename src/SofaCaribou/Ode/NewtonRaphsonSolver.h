@@ -6,8 +6,8 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/core/behavior/LinearSolver.h>
 #include <sofa/core/objectmodel/Data.h>
-#include <sofa/linearalgebra/BaseMatrix.h>
-#include <sofa/linearalgebra/BaseVector.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
+#include <SofaCaribou/Algebra/BaseVectorOperations.h>
 #include <sofa/core/objectmodel/Link.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
@@ -114,7 +114,7 @@ private:
     virtual void assemble_rhs_vector(const sofa::core::MechanicalParams & mechanical_parameters,
                                      const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
                                      sofa::core::MultiVecDerivId & f_id,
-                                     sofa::linearalgebra::BaseVector * f) = 0;
+                                     SofaCaribou::Algebra::BaseVector * f) = 0;
 
     /**
      * Assemble the left-hand side (LHS) system matrix of the equation to be solved. This will be done at the beginning
@@ -137,7 +137,7 @@ private:
      */
     virtual void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
                                         sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
-                                        sofa::linearalgebra::BaseMatrix * A) = 0;
+                                        SofaCaribou::Algebra::BaseMatrix * A) = 0;
 
     /**
      * Propagate the newly solved increment vector.
@@ -159,7 +159,7 @@ private:
      */
     virtual void propagate_solution_increment(const sofa::core::MechanicalParams & mechanical_parameters,
                                               const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
-                                              const sofa::linearalgebra::BaseVector * dx,
+                                              const SofaCaribou::Algebra::BaseVector * dx,
                                               sofa::core::MultiVecCoordId & x_id,
                                               sofa::core::MultiVecDerivId & v_id,
                                               sofa::core::MultiVecDerivId & dx_id) = 0;
@@ -185,13 +185,13 @@ protected:
     /// Private members
 
     /// Global system matrix A = mM + bB + kK
-    std::unique_ptr<sofa::linearalgebra::BaseMatrix> p_A;
+    std::unique_ptr<SofaCaribou::Algebra::BaseMatrix> p_A;
 
     /// Global system LHS vector (the solution)
-    std::unique_ptr<sofa::linearalgebra::BaseVector> p_DX;
+    std::unique_ptr<SofaCaribou::Algebra::BaseVector> p_DX;
 
     /// Global system RHS vector (the forces)
-    std::unique_ptr<sofa::linearalgebra::BaseVector> p_F;
+    std::unique_ptr<SofaCaribou::Algebra::BaseVector> p_F;
 
     /// Total displacement since the beginning of the step
     sofa::core::MultiVecDerivId p_U_id;

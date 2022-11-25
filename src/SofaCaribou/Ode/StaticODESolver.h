@@ -50,17 +50,17 @@ protected:
     void assemble_rhs_vector(const sofa::core::MechanicalParams & mechanical_parameters,
                              const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
                              sofa::core::MultiVecDerivId & f_id,
-                             sofa::linearalgebra::BaseVector * f) final;
+                             SofaCaribou::Algebra::BaseVector * f) final;
 
     /** @see NewtonRaphsonSolver::assemble_system_matrix */
     void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
                                 sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
-                                sofa::linearalgebra::BaseMatrix * A) final;
+                                SofaCaribou::Algebra::BaseMatrix * A) final;
 
     /** @see NewtonRaphsonSolver::propagate_solution_increment */
     void propagate_solution_increment(const sofa::core::MechanicalParams & mechanical_parameters,
                                       const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
-                                      const sofa::linearalgebra::BaseVector * dx,
+                                      const SofaCaribou::Algebra::BaseVector * dx,
                                       sofa::core::MultiVecCoordId & x_id,
                                       sofa::core::MultiVecDerivId & v_id,
                                       sofa::core::MultiVecDerivId & dx_id) final;

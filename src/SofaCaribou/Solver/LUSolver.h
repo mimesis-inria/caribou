@@ -36,7 +36,7 @@ public:
      * @see SofaCaribou::solver::LinearSolver::solve
      */
     
-    bool solve(const sofa::linearalgebra::BaseVector * F, sofa::linearalgebra::BaseVector * X) override;
+    bool solve(const SofaCaribou::Algebra::BaseVector * F, SofaCaribou::Algebra::BaseVector * X) override;
 
     /**
      * States if the system matrix is symmetric. Note that this value isn't set automatically, the user must

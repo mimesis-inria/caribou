@@ -5,7 +5,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
-#include <sofa/linearalgebra/BaseMatrix.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
@@ -68,7 +68,7 @@ namespace SofaCaribou::Algebra {
  * \endcode
  */
 template <typename Derived, typename Enable = void>
-class EigenMatrix : public sofa::linearalgebra::BaseMatrix
+class EigenMatrix : public BaseMatrix
 {
     static_assert(
         std::is_base_of_v<Eigen::EigenBase<std::decay_t<Derived> >, std::decay_t<Derived> >,
@@ -77,7 +77,7 @@ class EigenMatrix : public sofa::linearalgebra::BaseMatrix
 
 public:
     using EigenType = std::remove_cv_t<std::remove_reference_t<Derived>>;
-    using Base = sofa::linearalgebra::BaseMatrix;
+    using Base = BaseMatrix;
     using Index = Base::Index;
     using Real = SReal;
     using Scalar = typename EigenType::Scalar;
@@ -168,12 +168,12 @@ private:
 /// SparseMatrix specialization ///
 ///////////////////////////////////
 template <typename Derived>
-class EigenMatrix<Derived, CLASS_REQUIRES(std::is_base_of_v<Eigen::SparseMatrixBase<std::decay_t<Derived>>, std::decay_t<Derived>>)> : public sofa::linearalgebra::BaseMatrix
+class EigenMatrix<Derived, CLASS_REQUIRES(std::is_base_of_v<Eigen::SparseMatrixBase<std::decay_t<Derived>>, std::decay_t<Derived>>)> : public BaseMatrix
 {
 
 public:
     using EigenType = std::remove_cv_t<std::remove_reference_t<Derived>>;
-    using Base = sofa::linearalgebra::BaseMatrix;
+    using Base = BaseMatrix;
     using Index = Base::Index;
     using Real = SReal;
     using Scalar = typename EigenType::Scalar;

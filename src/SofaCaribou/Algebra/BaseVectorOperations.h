@@ -17,9 +17,6 @@ namespace sofa::defaulttype {
 namespace sofa::linearalgebra {
     class BaseVector;
 }
-namespace sofa::defaulttype {
-    using BaseVector = sofa::linearalgebra::BaseVector;
-}
 #endif // (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 
 namespace SofaCaribou::Algebra {

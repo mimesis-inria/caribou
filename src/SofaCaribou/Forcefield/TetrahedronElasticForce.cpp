@@ -282,7 +282,7 @@ void TetrahedronElasticForce::addDForce(
 }
 
 void TetrahedronElasticForce::addKToMatrix(
-        sofa::linearalgebra::BaseMatrix * matrix,
+        SofaCaribou::Algebra::BaseMatrix * matrix,
         SReal kFact,
         unsigned int & offset)
 {
