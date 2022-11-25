@@ -10,13 +10,9 @@ DISABLE_ALL_WARNINGS_BEGIN
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-namespace sofa::defaulttype {
-    class BaseVector;
-}
+#include <sofa/defaulttype/BaseVector.h>
 #else
-namespace sofa::linearalgebra {
-    class BaseVector;
-}
+#include <sofa/linearalgebra/BaseVector.h>
 #endif // (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 
 namespace SofaCaribou::Algebra {
