@@ -25,6 +25,7 @@ namespace { // Anonymous
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 using namespace sofa::defaulttype;
+using namespace component::linearsolver;
 #else
 using namespace sofa::linearalgebra;
 #endif
