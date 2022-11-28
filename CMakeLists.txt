@@ -94,7 +94,7 @@ else()
 endif()
 
 # Python 3 option
-find_package(SofaPython3 QUIET)
+sofa_find_package(SofaPython3 QUIET)
 set(CMAKE_CXX_STANDARD 17)
 set(PYBIND11_FINDPYTHON ON)
 set(PYBIND11_PYTHON_VERSION 3)
