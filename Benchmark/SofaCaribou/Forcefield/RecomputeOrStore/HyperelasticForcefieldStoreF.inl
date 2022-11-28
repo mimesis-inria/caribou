@@ -215,7 +215,7 @@ void HyperelasticForcefieldStoreF<Element>::addDForce(
 
 template <typename Element>
 void HyperelasticForcefieldStoreF<Element>::addKToMatrix(
-    sofa::linearalgebra::BaseMatrix * matrix,
+    SofaCaribou::Algebra::BaseMatrix * matrix,
     SReal kFact, unsigned int & offset)
 {
     if (not K_is_up_to_date) {
