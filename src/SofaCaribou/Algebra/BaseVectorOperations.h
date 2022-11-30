@@ -10,20 +10,18 @@ DISABLE_ALL_WARNINGS_BEGIN
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-namespace sofa::defaulttype {
-    class BaseVector;
-}
+#include <sofa/defaulttype/BaseVector.h>
 #else
-namespace sofa::linearalgebra {
-    class BaseVector;
-}
-namespace sofa::defaulttype {
-    using BaseVector = sofa::linearalgebra::BaseVector;
-}
+#include <sofa/linearalgebra/BaseVector.h>
 #endif // (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 
 namespace SofaCaribou::Algebra {
 
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
+using BaseVector = sofa::defaulttype::BaseVector;
+#else
+using BaseVector = sofa::linearalgebra::BaseVector;
+#endif
 
 /**
  * Compute the dot product between two BaseVector, i.e. scalar = v1.dot(v2) *
@@ -33,6 +31,6 @@ namespace SofaCaribou::Algebra {
  *                                  simply reuse this callback. Hence we avoid the need to do multiple virtual checks
  *                                  each time this function is called
  */
- double dot(const sofa::defaulttype::BaseVector * v1, const sofa::defaulttype::BaseVector * v2);
+ double dot(const BaseVector * v1, const BaseVector * v2);
 
 } // namespace SofaCaribou::Algebra

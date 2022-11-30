@@ -18,7 +18,7 @@ namespace SofaCaribou::topology {
 // Tetrahedron Quadratic specialization
 template<>
 auto
-CaribouTopology<Tetrahedron10>::templateName(const CaribouTopology<Tetrahedron10> *) -> std::string {
+CaribouTopology<Tetrahedron10>::GetCustomTemplateName() -> std::string {
     return "Tetrahedron10";
 }
 

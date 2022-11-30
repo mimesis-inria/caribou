@@ -57,9 +57,9 @@ public:
      void applyJT (const sofa::core::ConstraintParams* cparams, DataMapMapSparseMatrix & output_jacobian, const MappedDataMapMapSparseMatrix & input_jacobian) override;
      void draw    (const sofa::core::visual::VisualParams* vparams) override;
 
-    [[nodiscard]]  auto
-    getTemplateName() const -> std::string override {
-        return templateName(this);
+    static auto
+    GetCustomTemplateName() -> std::string {
+        return templateName();
     }
 
     static auto templateName(const CaribouBarycentricMapping<Element, MappedDataTypes>* = nullptr) -> std::string {

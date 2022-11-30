@@ -7,8 +7,7 @@ namespace SofaCaribou::topology {
 
 // Quad 2D quadratic specialization
 template<>
-auto CaribouTopology<caribou::geometry::Quad8<caribou::_2D>>::templateName(
-        const CaribouTopology<caribou::geometry::Quad8<caribou::_2D>> *) -> std::string;
+auto CaribouTopology<caribou::geometry::Quad8<caribou::_2D>>::GetCustomTemplateName() -> std::string;
 
 template <> auto CaribouTopology<caribou::geometry::Quad8<caribou::_2D>>::mesh_is_compatible(
         const sofa::core::topology::BaseMeshTopology * topology) -> bool;
@@ -18,8 +17,7 @@ class CaribouTopology<caribou::geometry::Quad8<caribou::_2D>>;
 
 // Quad 3D quadratic specialization
 template<>
-auto CaribouTopology<caribou::geometry::Quad8<caribou::_3D>>::templateName(
-        const CaribouTopology<caribou::geometry::Quad8<caribou::_3D>> *) -> std::string;
+auto CaribouTopology<caribou::geometry::Quad8<caribou::_3D>>::GetCustomTemplateName() -> std::string;
 
 template <> auto CaribouTopology<caribou::geometry::Quad8<caribou::_3D>>::mesh_is_compatible(
         const sofa::core::topology::BaseMeshTopology * topology) -> bool;

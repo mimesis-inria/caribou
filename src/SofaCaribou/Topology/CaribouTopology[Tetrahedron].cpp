@@ -17,7 +17,7 @@ namespace SofaCaribou::topology {
 
 // Tetrahedron linear specialization
 template<>
-auto CaribouTopology<Tetrahedron>::templateName(const CaribouTopology<Tetrahedron> *) -> std::string {
+auto CaribouTopology<Tetrahedron>::GetCustomTemplateName() -> std::string {
     return "Tetrahedron";
 }
 

@@ -4,6 +4,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 set(HEADER_FILES
     config.h.in
+    Algebra/BaseMatrixOperations.h
     Algebra/BaseVectorOperations.h
     Algebra/EigenMatrix.h
     Algebra/EigenVector.h

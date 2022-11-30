@@ -15,7 +15,7 @@ set(SOURCE_FILES
 
 enable_testing()
 
-find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver SofaMiscForceField QUIET REQUIRED)
+find_package(SOFA COMPONENTS SofaFramework Sofa.Simulation.Graph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver SofaMiscForceField QUIET REQUIRED)
 find_package(Caribou COMPONENTS Topology REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -31,10 +31,15 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC gtest)
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCaribou)
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaSimulationCommon SofaBaseLinearSolver SofaMiscForceField)
+target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver SofaMiscForceField)
 target_link_libraries(${PROJECT_NAME} PUBLIC
                       $<$<AND:$<PLATFORM_ID:Linux>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,8.0>>:stdc++fs>
                       $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:c++fs>)
+if (${SofaFramework_VERSION} VERSION_LESS "22.06.99")
+    target_link_libraries(${PROJECT_NAME} PUBLIC SofaSimulationGraph)
+else()
+    target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Simulation.Graph)
+endif()
 target_compile_definitions(${PROJECT_NAME} PUBLIC
                            $<$<AND:$<PLATFORM_ID:Linux>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,8.0>>:LEGACY_CXX>
                            $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:LEGACY_CXX>)

@@ -145,11 +145,17 @@ jobs:
         run:  |
           if [ "$SOFA_VERSION" = "master" ]; then
               curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_BRANCH=master,CI_SCOPE=standard/lastSuccessfulBuild/artifact/MacOS/*zip*/MacOS.zip"
+              unzip sofa.zip -d temp
+              mv temp/MacOS/`ls temp/MacOS` sofa.zip
+              rm -rf temp
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
           else
               curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_MacOS.zip"
+              unzip sofa.zip -d temp
+              sudo mv temp/`ls temp` $SOFA_ROOT
           fi
-          unzip sofa.zip -d temp
-          sudo mv temp/`ls temp` $SOFA_ROOT
+
 
 
 #     CCACHE

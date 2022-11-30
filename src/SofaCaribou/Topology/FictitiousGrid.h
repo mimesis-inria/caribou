@@ -277,8 +277,8 @@ public:
         }
     }
 
-    std::string getTemplateName() const override {
-        return templateName(this);
+    static std::string GetCustomTemplateName() {
+        return templateName();
     }
 
     static std::string templateName(const FictitiousGrid<DataTypes>* = nullptr) {

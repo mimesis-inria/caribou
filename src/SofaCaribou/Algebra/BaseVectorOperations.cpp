@@ -4,11 +4,10 @@
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
-#include <sofa/defaulttype/BaseVector.h>
-#else
-#include <sofa/linearalgebra/BaseVector.h>
-#endif // #if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 #include <SofaBaseLinearSolver/FullVector.h>
+#else
+#include <sofa/linearalgebra/FullVector.h>
+#endif // #if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
@@ -21,14 +20,20 @@ using Index = sofa::defaulttype::BaseVector::Index;
 namespace SofaCaribou::Algebra {
 
 namespace { // Anonymous
+#if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
+using namespace sofa::component::linearsolver;
+#else
+using namespace sofa::linearalgebra;
+#endif
+
 template <typename Real>
-auto to_full_vector(const sofa::defaulttype::BaseVector* v) -> const sofa::component::linearsolver::FullVector<Real> * {
-    return dynamic_cast<const sofa::component::linearsolver::FullVector<Real> *>(v);
+auto to_full_vector(const BaseVector* v) -> const FullVector<Real> * {
+    return dynamic_cast<const FullVector<Real> *>(v);
 }
 
 // Dot product between a SOFA full vector and any BaseVector
 template <typename ReturnValue, typename Real>
-ReturnValue dot(const sofa::component::linearsolver::FullVector<Real> * v1, const sofa::defaulttype::BaseVector * v2) {
+ReturnValue dot(const FullVector<Real> * v1, const BaseVector * v2) {
     const auto n = static_cast<sofa::Size>(v1->size());
     auto value = static_cast<ReturnValue>(0);
     for (sofa::Index i = 0; i < n; ++i) {
@@ -40,7 +45,7 @@ ReturnValue dot(const sofa::component::linearsolver::FullVector<Real> * v1, cons
 
 // Dot product between a two SOFA full vectors
 template <typename ReturnValue, typename Real1, typename Real2>
-ReturnValue dot(const sofa::component::linearsolver::FullVector<Real1> * v1, const sofa::component::linearsolver::FullVector<Real2> * v2) {
+ReturnValue dot(const FullVector<Real1> * v1, const FullVector<Real2> * v2) {
     const auto n = static_cast<sofa::Size>(v1->size());
     auto value = static_cast<ReturnValue>(0);
     for (sofa::Index i = 0; i < n; ++i) {
@@ -52,7 +57,7 @@ ReturnValue dot(const sofa::component::linearsolver::FullVector<Real1> * v1, con
 }
 
 /** Compute the dot product between two BaseVector, i.e. scalar = v1.dot(v2) */
- double dot(const sofa::defaulttype::BaseVector * v1, const sofa::defaulttype::BaseVector * v2) {
+ double dot(const BaseVector * v1, const BaseVector * v2) {
     caribou_assert(v1->size() == v2->size());
 
     // todo(jnbrunet2000@gmail.com): This function is awful. I'm sure there is a much much cleaner and faster way

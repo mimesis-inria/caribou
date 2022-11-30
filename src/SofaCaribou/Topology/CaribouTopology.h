@@ -80,12 +80,12 @@ public:
     CaribouTopology();
     void init() override;
 
-    [[nodiscard]] auto
-    getTemplateName() const -> std::string override {
-        return templateName(this);
-    }
-    static auto templateName(const CaribouTopology<Element>* = nullptr) -> std::string {
+    static auto GetCustomTemplateName() -> std::string {
         return "Unknown";
+    }
+
+    static auto templateName(const CaribouTopology<Element>* = nullptr) -> std::string {
+        return GetCustomTemplateName();
     }
 
     /**

@@ -65,6 +65,9 @@ endif()
 # Compatibility layer
 set(SOFA_VERSION ${SofaFramework_VERSION})
 foreach(component ${SOFA_FIND_COMPONENTS})
+    if (SOFA_VERSION VERSION_LESS "22.06.99")
+        string(REGEX REPLACE "Sofa.Simulation.*" "SofaSimulation" component ${component})
+    endif()
     if (SOFA_VERSION VERSION_LESS "20.12.99")
         string(REGEX REPLACE "SofaSimpleFem|SofaRigid|SofaDeformable|SofaObjectInteraction|SofaMeshCollision|SofaEngine|SofaExplicitOdeSolver|SofaImplicitOdeSolver|SofaLoader" "SofaCommon" component ${component})
 

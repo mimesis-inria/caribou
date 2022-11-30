@@ -7,8 +7,7 @@ namespace SofaCaribou::topology {
 
 // Hexahedron linear specialization
 template<>
-auto CaribouTopology<caribou::geometry::Hexahedron>::templateName(
-        const CaribouTopology<caribou::geometry::Hexahedron> *) -> std::string;
+auto CaribouTopology<caribou::geometry::Hexahedron>::GetCustomTemplateName() -> std::string;
 
 template <> auto CaribouTopology<caribou::geometry::Hexahedron>::mesh_is_compatible(
         const sofa::core::topology::BaseMeshTopology * topology) -> bool;
