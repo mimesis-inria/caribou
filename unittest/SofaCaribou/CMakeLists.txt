@@ -15,7 +15,7 @@ set(SOURCE_FILES
 
 enable_testing()
 
-find_package(SOFA COMPONENTS SofaFramework SofaSimulationGraph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver SofaMiscForceField QUIET REQUIRED)
+find_package(SOFA COMPONENTS SofaFramework Sofa.Simulation.Graph SofaBaseMechanics SofaBaseUtils SofaBaseLinearSolver SofaMiscForceField QUIET REQUIRED)
 find_package(Caribou COMPONENTS Topology REQUIRED)
 find_package(Threads REQUIRED)
 
