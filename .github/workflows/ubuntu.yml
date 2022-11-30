@@ -230,6 +230,8 @@ jobs:
         if: ${{ always() }}
         run: |
             [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+            export LD_LIBRARY_PATH="$SOFA_ROOT/collections/SofaBaseMechanics/lib:$LD_LIBRARY_PATH"
+            export LD_LIBRARY_PATH="$SOFA_ROOT/collections/SofaBaseUtils/lib:$LD_LIBRARY_PATH"
             $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
 
       - name: SofaCaribou.PyTest
