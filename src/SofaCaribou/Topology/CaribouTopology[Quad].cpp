@@ -17,7 +17,7 @@ namespace SofaCaribou::topology {
 
 // Quad 2D linear specialization
 template<>
-auto CaribouTopology<Quad<_2D>>::templateName(const CaribouTopology<Quad<_2D>> *) -> std::string {
+auto CaribouTopology<Quad<_2D>>::GetCustomTemplateName() -> std::string {
     return "Quad_2D";
 }
 
@@ -36,7 +36,7 @@ auto CaribouTopology<Quad<_2D>>::get_indices_data_from(const BaseMeshTopology * 
 // Quad 3D linear specialization
 template<>
 auto
-CaribouTopology<Quad<_3D>>::templateName(const CaribouTopology<Quad<_3D>> *) -> std::string {
+CaribouTopology<Quad<_3D>>::GetCustomTemplateName() -> std::string {
     return "Quad";
 }
 

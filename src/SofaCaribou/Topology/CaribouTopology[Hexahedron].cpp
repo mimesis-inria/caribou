@@ -18,7 +18,8 @@ namespace SofaCaribou::topology {
 
 // Hexahedron linear specialization
 template<>
-auto CaribouTopology<Hexahedron>::templateName(const CaribouTopology<Hexahedron> *) -> std::string {
+auto
+CaribouTopology<Hexahedron>::GetCustomTemplateName() -> std::string {
     return "Hexahedron";
 }
 

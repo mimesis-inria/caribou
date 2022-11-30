@@ -69,9 +69,9 @@ public:
     
     static auto canCreate(Derived * o, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg) -> bool;
 
-    [[nodiscard]] auto
-    getTemplateName() const -> std::string override {
-        return templateName(this);
+    static auto
+    GetCustomTemplateName() -> std::string {
+        return templateName();
     }
 
     static auto templateName(const CaribouForcefield<Element>* = nullptr) -> std::string;

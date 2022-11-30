@@ -12,7 +12,11 @@ namespace fs = ::std::filesystem;
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
+#if (defined(SOFA_VERSION) && SOFA_VERSION >= 220600)
+#include <sofa/simulation/graph/init.h>
+#else
 #include <SofaSimulationGraph/init.h>
+#endif
 #if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
 #include <SofaBaseMechanics/initSofaBaseMechanics.h>
 #include <SofaBaseUtils/initSofaBaseUtils.h>
