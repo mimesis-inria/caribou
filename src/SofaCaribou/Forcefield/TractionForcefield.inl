@@ -175,12 +175,10 @@ void TractionForcefield<Element>::increment_load(Deriv traction_increment_per_un
             // Tractive forces w.r.t the gauss node applied on each nodes
             for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
                 nodal_forces[node_indices[i]] += F*N[i];
-                load += F*N[i];
+                load += F*N[i];            
             }
         }
     }
-
-    current_load += load.norm();
 }
 
 template <typename Element>

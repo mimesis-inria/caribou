@@ -183,23 +183,23 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 
         //  For body forces
         for (std::size_t i = NumberOfNodesPerElement; i < 2*NumberOfNodesPerElement; ++i) {
-            coefficients.row(i).noalias() = Matrix<1, Dimension>{0,-0.,0};
+            coefficients.row(i).noalias() = Matrix<1, Dimension>{0, 0.,0};
         }
 
         int entity[1] = {};
 
-////        Q2 elements
-//        if (element_id==11 or element_id==23 or element_id==35 or element_id==47){
-//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,20,0};
-//        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,20,0};
-//        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,20,0};
-//        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0, 20,0};
-//        }
-//        entity[0] = 1;
+//        Q2 elements
+        if (element_id==11 or element_id==23 or element_id==35 or element_id==47){
+        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,0,0};
+        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,0,0};
+        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,0,0};
+        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,0,0};
+        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,-20,0};
+        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,-20,0};
+        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,-20,0};
+        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0, -20,0};
+        }
+        entity[0] = 1;
 
 ////        Q1 elements
 //        if (element_id==11 or element_id==23 or element_id==35 or element_id==47){
@@ -207,70 +207,67 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 //        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,0,0};
 //        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,0,0};
 //        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0, -10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0, 10,0};
 //        }
 //        entity[0] = 5;
 
 
-//        P1 elements (not working yet)
+////        P1 elements
 //        if (element_id==1 or element_id==88 or element_id==91){
-//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0, 10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0, 10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0, 10,0};
 //        entity[0] = {2};
 //        }
 //        if (element_id==7 or element_id==98 or element_id==102 or element_id==108 or element_id==113){
 //        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,10,0};
 //        entity[0] = {0};
 //        }
 //        if (element_id==97 or element_id==103 or element_id==109 or element_id==85 or element_id==86){
-//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,10,0};
 //        entity[0] = {1};
 //        }
 //        if (element_id==112){
-//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0, 10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0, 10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0, 10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,0,0};
 //        entity[0] = {3};
 //        }
-//        else{
-//            entity[0] = {0};
-//        }
 
-////        P2 elements (not working yet)
+//////        P2 elements
 //        if (element_id==1 or element_id==88 or element_id==91){
-//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+8).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+9).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+9).noalias() = Matrix<1, Dimension>{0,10,0};
 //        entity[0] = {2};
 //        }
 //        // blue
 //        if (element_id==7 or element_id==98 or element_id==102 or element_id==108 or element_id==113){
 //        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0,0,0};
 //        coefficients.row(2*NumberOfNodesPerElement+8).noalias() = Matrix<1, Dimension>{0,0,0};
 //        coefficients.row(2*NumberOfNodesPerElement+9).noalias() = Matrix<1, Dimension>{0,0,0};
@@ -278,40 +275,36 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 //        }
 ////       orange
 //        if (element_id==97 or element_id==103 or element_id==109 or element_id==85 or element_id==86){
-//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,0,0};
 //        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+8).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+8).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+9).noalias() = Matrix<1, Dimension>{0,0,0};
 //        entity[0] = {1};
 //        }
 //        if (element_id==112){
-//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,0,0};
 //        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,0,0};
 //        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,10,0};
 //        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0,0,0};
-//        coefficients.row(2*NumberOfNodesPerElement+8).noalias() = Matrix<1, Dimension>{0,-10,0};
-//        coefficients.row(2*NumberOfNodesPerElement+9).noalias() = Matrix<1, Dimension>{0,-10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+8).noalias() = Matrix<1, Dimension>{0,10,0};
+//        coefficients.row(2*NumberOfNodesPerElement+9).noalias() = Matrix<1, Dimension>{0,10,0};
 //        entity[0] = {3};
 //        }
-//        else{
-//            entity[0] = {0};
-//        }
 
 
-////        std::cout << entity[0] << "\n";
+//        std::cout << entity[0] << "\n";
 //        std::cout << element_id << "\n";
 //        std::cout << current_nodes_position << "\n";
-
 
 
         // Compute the nodal forces
@@ -326,7 +319,7 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         integral_bc->tabulate_tensor_float64(nodal_forces_bc.data(), coefficients.data(), constants, current_nodes_position.data(), entity, nullptr);
         for (size_t i = 0; i < NumberOfNodesPerElement; ++i) {
             for (size_t j = 0; j < Dimension; ++j) {
-                sofa_f[node_indices[i]][j] -= (nodal_forces(i,j) + nodal_forces_bc(i,j));
+                sofa_f[node_indices[i]][j] -= (nodal_forces(i,j) - nodal_forces_bc(i,j));
             }
         }
     }
