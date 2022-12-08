@@ -15,6 +15,7 @@
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 #include <SofaCaribou/Topology/CaribouTopology.h>
+#include <sofa/core/behavior/BaseMass.h>
 
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
@@ -198,6 +199,15 @@ private:
     bool K_is_up_to_date = false;
     mutable bool Psi_is_up_to_date = false;
     bool eigenvalues_are_up_to_date = false;
+
+
+    static inline double computeTotalMass(const int nb_elements, const sofa::core::behavior::BaseMass *mass) {
+            double result = 0.0;
+            for (int i = 0; i < nb_elements; i++) {
+                result += mass->getElementMass(i);
+            }
+            return result;
+        }
 };
 
 } // namespace SofaCaribou::forcefield

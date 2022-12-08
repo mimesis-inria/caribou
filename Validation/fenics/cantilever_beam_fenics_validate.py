@@ -3,8 +3,8 @@ import SofaCaribou
 import meshio
 import numpy as np
 
-# ELEMENT_TYPE = "Tetrahedron"
-ELEMENT_TYPE = "Hexahedron"
+ELEMENT_TYPE = "Tetrahedron"
+# ELEMENT_TYPE = "Hexahedron"
 ELEMENT_APPROXIMATION_DEGREE = 2
 MATERIAL_MODEL = "NeoHookean"
 # MATERIAL_MODEL = "SaintVenantKirchhoff"
@@ -146,7 +146,7 @@ class ControlFrame(Sofa.Core.Controller):
         root.addObject('VisualStyle', displayFlags="showForceFields showBehaviorModels")
         root.addObject('RequiredPlugin',
                        pluginName="SofaExporter SofaOpenglVisual SofaBaseMechanics SofaBaseTopology SofaSparseSolver SofaImplicitOdeSolver SofaTopologyMapping SofaBoundaryCondition SofaEngine")
-        root.gravity = [0, 0, 0]
+        root.gravity = [0, -0.1, 0]
 
         sonics_node = root.addChild("sonics_node")
         sonics_node.addObject('StaticSolver', newton_iterations="25", relative_correction_tolerance_threshold="1e-30",
@@ -162,7 +162,7 @@ class ControlFrame(Sofa.Core.Controller):
         sonics_node.addObject('CaribouTopology', name='topology', template=element_sonics,
                               indices=indices_sonics.tolist())
         sonics_node.addObject('FixedConstraint', indices=left.tolist())
-        sonics_node.addObject("CaribouMass")
+        sonics_node.addObject("UniformMass", totalMass=3, separateGravity=True)
         sonics_node.addObject('FEniCS_Material', template=element_sonics, young_modulus="3000",
                               poisson_ratio="0.3", material_name=material, path="/home/..")
         sonics_node.addObject('HyperelasticForcefield_FEniCS', printLog=True)
@@ -182,7 +182,7 @@ class ControlFrame(Sofa.Core.Controller):
         sofa_node.addObject('CaribouTopology', name='topology', template=element_sofa,
                             indices=indices_sofa.tolist())
         sofa_node.addObject('FixedConstraint', indices=left.tolist())
-        sofa_node.addObject("CaribouMass")
+        sofa_node.addObject("CaribouMass", density=3)
         sofa_node.addObject('CaribouTopology', name='surface', template=element_surface,
                             indices=right.tolist())
         ## For P2 (debug purpose)
@@ -204,8 +204,8 @@ class ControlFrame(Sofa.Core.Controller):
         #            ]
         # )
 
-        sofa_node.addObject('TractionForcefield', traction=TRACTION, slope=0, topology='@surface',
-                            printLog=True)
+        # sofa_node.addObject('TractionForcefield', traction=TRACTION, slope=0, topology='@surface',
+        #                     printLog=True)
         sofa_node.addObject(material + "Material", young_modulus="3000", poisson_ratio="0.3")
         sofa_node.addObject('HyperelasticForcefield', printLog=True)
 

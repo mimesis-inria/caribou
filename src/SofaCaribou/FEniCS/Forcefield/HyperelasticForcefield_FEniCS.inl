@@ -103,6 +103,7 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         return;
     }
 
+
     //material->before_update();
 
     ReadAccessor<Data<VecCoord>> sofa_x = d_x;
@@ -113,6 +114,16 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
         return;
     const auto nb_nodes = sofa_x.size();
     const auto nb_elements = this->number_of_elements();
+    const auto g_sofa = this->getContext()->getGravity();
+    Eigen::Map<const Eigen::Matrix<Real, 3, 1>> gravity (g_sofa.data());
+
+    const sofa::core::behavior::BaseMass *mass = this->getContext()->getMass();
+    auto totalMass = 0.0;
+
+    if(mass != nullptr){
+        totalMass = computeTotalMass(nb_nodes, mass);
+    }
+
 
     if (nb_nodes == 0 || nb_elements == 0)
         return;
@@ -183,23 +194,23 @@ void HyperelasticForcefield_FEniCS<Element>::addForce(
 
         //  For body forces
         for (std::size_t i = NumberOfNodesPerElement; i < 2*NumberOfNodesPerElement; ++i) {
-            coefficients.row(i).noalias() = Matrix<1, Dimension>{0, 0.,0};
+            coefficients.row(i).noalias() = gravity*totalMass;
         }
 
         int entity[1] = {};
 
-//        Q2 elements
-        if (element_id==11 or element_id==23 or element_id==35 or element_id==47){
-        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,0,0};
-        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,0,0};
-        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,0,0};
-        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,0,0};
-        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,-20,0};
-        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,-20,0};
-        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,-20,0};
-        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0, -20,0};
-        }
-        entity[0] = 1;
+////        Q2 elements
+//        if (element_id==11 or element_id==23 or element_id==35 or element_id==47){
+//        coefficients.row(2*NumberOfNodesPerElement).noalias() = Matrix<1, Dimension>{0,0,0};
+//        coefficients.row(2*NumberOfNodesPerElement+1).noalias() = Matrix<1, Dimension>{0,0,0};
+//        coefficients.row(2*NumberOfNodesPerElement+2).noalias() = Matrix<1, Dimension>{0,0,0};
+//        coefficients.row(2*NumberOfNodesPerElement+3).noalias() = Matrix<1, Dimension>{0,0,0};
+//        coefficients.row(2*NumberOfNodesPerElement+4).noalias() = Matrix<1, Dimension>{0,-20,0};
+//        coefficients.row(2*NumberOfNodesPerElement+5).noalias() = Matrix<1, Dimension>{0,-20,0};
+//        coefficients.row(2*NumberOfNodesPerElement+6).noalias() = Matrix<1, Dimension>{0,-20,0};
+//        coefficients.row(2*NumberOfNodesPerElement+7).noalias() = Matrix<1, Dimension>{0, -20,0};
+//        }
+//        entity[0] = 1;
 
 ////        Q1 elements
 //        if (element_id==11 or element_id==23 or element_id==35 or element_id==47){
