@@ -1,0 +1,1 @@
+docker run --rm -v $(pwd):/root dolfinx/dolfinx:v0.5.1 python3 fenics_validation.py
