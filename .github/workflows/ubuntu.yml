@@ -308,7 +308,5 @@ jobs:
           port: ${{ secrets.ARTIFACT_PORT }}
           envs: ARTIFACT_TARGET,ARTIFACT_LATEST
           script: |
-            mv $ARTIFACT_TARGET/SofaCaribou.tar.gz $ARTIFACT_TARGET.tar.gz
+            mv $ARTIFACT_TARGET/SofaCaribou.tar.gz $ARTIFACT_LATEST
             rm -rf $ARTIFACT_TARGET
-            rm -f $ARTIFACT_LATEST
-            ln -s $ARTIFACT_TARGET.tar.gz $ARTIFACT_LATEST
