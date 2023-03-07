@@ -1,12 +1,9 @@
 name: MacOS
 
 on:
-  pull_request:
+  push:
     branches:
-      - master
-  schedule:
-    # Runs every day at 23:15
-      - cron:  '15 23 * * *'
+      - 'v22.06'
 
 jobs:
   build:
@@ -15,43 +12,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ v20.06.01, v20.12.03, v21.06.03, v21.12.00, master ]
+        sofa_version: [ v22.06.00 ]
         include:
-          - sofa_version: master
-            SOFA_VERSION_I: 999999
-            PYTHON_VERSION: 3.9
+          - sofa_version: v22.06.00
+            SOFA_VERSION_I: 220600
+            PYTHON_VERSION: 3.8
             PYBIND11_VERSION: 2.6
             BOOST_VERSION: 1.76.0
             BOOST_LINK: https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz
-            QT_VERSION: 5.12.6
-          - sofa_version: v21.12.00
-            SOFA_VERSION_I: 211200
-            PYTHON_VERSION: 3.9
-            PYBIND11_VERSION: 2.6
-            BOOST_VERSION: 1.76.0
-            BOOST_LINK: https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz
-            QT_VERSION: 5.12.6
-          - sofa_version: v21.06.03
-            SOFA_VERSION_I: 210603
-            PYTHON_VERSION: 3.9
-            PYBIND11_VERSION: 2.6
-            BOOST_VERSION: 1.76.0
-            BOOST_LINK: https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz
-            QT_VERSION: 5.12.6
-          - sofa_version: v20.12.03
-            SOFA_VERSION_I: 201203
-            PYTHON_VERSION: 3.7
-            PYBIND11_VERSION: 2.6
-            BOOST_VERSION: 1.67.0
-            BOOST_LINK: https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz
-            QT_VERSION: 5.12.6
-          - sofa_version: v20.06.01
-            SOFA_VERSION_I: 200601
-            PYTHON_VERSION: 2.7
-            PYBIND11_VERSION: 2.6
-            BOOST_VERSION: 1.67.0
-            BOOST_LINK: https://boostorg.jfrog.io/artifactory/main/release/1.67.0/source/boost_1_67_0.tar.gz
-            QT_VERSION: 5.11.1
+            QT_VERSION: 5.12.8
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -156,6 +125,10 @@ jobs:
               sudo mv temp/`ls temp` $SOFA_ROOT
           fi
 
+      - name: Patch SOFA Release
+        run: |
+          sed -i "s|\${_IMPORT_PREFIX}/bin/runSofa-22.06.00|$SOFA_ROOT/bin/runSofa-22.06.00|" "$SOFA_ROOT/collections/SofaGui/lib/cmake/SofaGui/SofaGuiTargets-minsizerel.cmake"
+          sed -i "s|\${_IMPORT_PREFIX}/bin/runSofaGLFW-22.06.00|$SOFA_ROOT/bin/runSofa-22.06.00|" "$SOFA_ROOT/collections/SofaGui/lib/cmake/SofaGui/SofaGuiTargets-minsizerel.cmake"
 
 
 #     CCACHE

@@ -65,7 +65,7 @@ endif()
 # Compatibility layer
 set(SOFA_VERSION ${SofaFramework_VERSION})
 foreach(component ${SOFA_FIND_COMPONENTS})
-    if (SOFA_VERSION VERSION_LESS "22.06.99")
+    if (SOFA_VERSION VERSION_LESS "22.06.00")
         string(REGEX REPLACE "Sofa.Simulation.*" "SofaSimulation" component ${component})
     endif()
     if (SOFA_VERSION VERSION_LESS "20.12.99")
