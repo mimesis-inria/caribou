@@ -11,19 +11,9 @@ namespace fs = ::std::filesystem;
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/version.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 220600)
 #include <sofa/simulation/graph/init.h>
-#else
-#include <SofaSimulationGraph/init.h>
-#endif
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
-#include <SofaBaseMechanics/initSofaBaseMechanics.h>
-#include <SofaBaseUtils/initSofaBaseUtils.h>
-#else
-#include <SofaBaseMechanics/initBaseMechanics.h>
-#include <SofaBaseUtils/initBaseUtils.h>
-#endif
+#include <sofa/component/mass/init.h>
+#include <sofa/component/statecontainer/init.h>
 DISABLE_ALL_WARNINGS_END
 
 #include "sofacaribou_test.h"
@@ -42,8 +32,8 @@ int main(int argc, char **argv) {
     sofa::component::initSofaBaseMechanics();
     sofa::component::initSofaBaseUtils();
 #else
-    sofa::component::initBaseMechanics();
-    sofa::component::initBaseUtils();
+    sofa::component::mass::init();
+    sofa::component::statecontainer::init();
 #endif
 
     int ret = RUN_ALL_TESTS();

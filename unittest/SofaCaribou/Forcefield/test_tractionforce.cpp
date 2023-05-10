@@ -3,14 +3,10 @@
 #include <SofaCaribou/Forcefield/TractionForcefield[Triangle].h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-#include <sofa/helper/testing/BaseTest.h>
-#else
 #include <sofa/testing/BaseTest.h>
-#endif
 #include <sofa/simulation/Node.h>
-#include <SofaSimulationGraph/DAGSimulation.h>
-#include <SofaSimulationGraph/SimpleApi.h>
+#include <sofa/simulation/graph/DAGSimulation.h>
+#include <sofa/simulation/graph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -19,12 +15,7 @@ using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace caribou;
 using namespace caribou::geometry;
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
-using namespace sofa::helper::testing;
-#else
 using namespace sofa::testing;
-#endif
 
 class TractionForcefield : public BaseTest {
     void SetUp() override {

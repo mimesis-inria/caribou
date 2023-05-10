@@ -4,13 +4,14 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <SofaBaseTopology/QuadSetTopologyContainer.h>
+#include <sofa/component/topology/container/dynamic/QuadSetTopologyContainer.h>
 DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
 using namespace caribou::geometry;
 using namespace sofa::component::topology;
 using namespace sofa::core::topology;
+using namespace sofa::component::topology::container::dynamic;
 using namespace caribou;
 
 namespace SofaCaribou::topology {

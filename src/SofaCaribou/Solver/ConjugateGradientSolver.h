@@ -15,7 +15,6 @@ DISABLE_ALL_WARNINGS_END
 namespace SofaCaribou::solver {
 
 using sofa::core::objectmodel::Data;
-using namespace sofa::component::linearsolver;
 using namespace sofa::core::behavior;
 
 /**

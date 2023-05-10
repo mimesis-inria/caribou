@@ -6,9 +6,7 @@
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/helper/AdvancedTimer.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 210600)
 #include <sofa/helper/ScopedAdvancedTimer.h>
-#endif
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/simulation/VectorOperations.h>
@@ -16,10 +14,6 @@ DISABLE_ALL_WARNINGS_BEGIN
 
 #include <SofaCaribou/Solver/LinearSolver.h>
 #include <SofaCaribou/Algebra/BaseVectorOperations.h>
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
-namespace sofa { using Size = int; }
-#endif
 
 namespace SofaCaribou::ode {
 
@@ -190,7 +184,7 @@ void NewtonRaphsonSolver::solve(const ExecParams *params, SReal dt, MultiVecCoor
     // accumulate the mechanical objects and mappings. This one will not really
     // compute the mechanical graph (not explicitly at least). Hence the following
     // @todo (jnbrunet2000@gmail.com) Create a CaribouMultiMatrixAccessor for that.
-    sofa::component::linearsolver::DefaultMultiMatrixAccessor accessor;
+    sofa::core::behavior::DefaultMultiMatrixAccessor accessor;
 
     // Step 1   Get dimension of each top level mechanical states using
     //          BaseMechanicalState::getMatrixSize(), and accumulate mechanical

@@ -616,7 +616,7 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
 
     const VecCoord& x = this->mstate->read(sofa::core::ConstVecCoordId::position())->getValue();
 
-    std::vector< sofa::type::Vector3 > points[6];
+    std::vector< sofa::type::Vec3 > points[6];
     const auto number_of_elements = topology->getNbHexahedra();
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(static_cast<sofa::Index>(hexa_id));
@@ -695,7 +695,7 @@ void HexahedronElasticForce::draw(const sofa::core::visual::VisualParams* vparam
     vparams->drawTool()->drawTriangles(points[5], sofa::type::RGBAColor(0.7f,0.1f,0.7f,1.0f));
 
 
-    std::vector< sofa::type::Vector3 > ignored_points[6];
+    std::vector< sofa::type::Vec3 > ignored_points[6];
     for (std::size_t hexa_id = 0; hexa_id < number_of_elements; ++hexa_id) {
         const auto & node_indices = topology->getHexahedron(static_cast<sofa::Index>(hexa_id));
 

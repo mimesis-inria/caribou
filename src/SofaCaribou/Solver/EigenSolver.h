@@ -9,15 +9,8 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/core/behavior/LinearSolver.h>
-#include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+#include <sofa/core/behavior/DefaultMultiMatrixAccessor.h>
 DISABLE_ALL_WARNINGS_END
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
-namespace sofa {
-using Size = unsigned int;
-using Index = unsigned int;
-}
-#endif
 
 namespace SofaCaribou::solver {
 
@@ -47,7 +40,7 @@ public:
      * @return The matrix accessor containing the lists of top level mechanical objects, a pointer for
      * their matrix and a vector of mappings for mapped mechanical objects.
      */
-    auto assemble (const sofa::core::MechanicalParams* mparams) -> sofa::component::linearsolver::DefaultMultiMatrixAccessor;
+    auto assemble (const sofa::core::MechanicalParams* mparams) -> sofa::core::behavior::DefaultMultiMatrixAccessor;
 
     /**
      * Reset the complete system (A, x and b are cleared).
@@ -104,7 +97,7 @@ public:
      *
      * Use the EigenSparseSolver::matrix() method to get a reference to the global system matrix.
      */
-    auto matrix_accessor() const -> const sofa::component::linearsolver::DefaultMultiMatrixAccessor & { return p_accessor; }
+    auto matrix_accessor() const -> const sofa::core::behavior::DefaultMultiMatrixAccessor & { return p_accessor; }
 
     /** Get a readonly reference to the global assembled system matrix. */
     auto A() const -> const SofaCaribou::Algebra::EigenMatrix<Matrix> * { return p_A_ptr; }
@@ -172,7 +165,7 @@ private:
     sofa::core::MechanicalParams p_mechanical_params;
 
     /// Accessor used to determine the index of each mechanical object matrix and vector in the global system.
-    sofa::component::linearsolver::DefaultMultiMatrixAccessor p_accessor;
+    sofa::core::behavior::DefaultMultiMatrixAccessor p_accessor;
 
     /// The identifier of the b vector
     sofa::core::MultiVecDerivId p_b_id;

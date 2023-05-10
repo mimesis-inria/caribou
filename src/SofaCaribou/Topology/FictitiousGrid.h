@@ -370,16 +370,16 @@ private:
     std::vector<UNSIGNED_INTEGER_TYPE> p_cell_index_in_grid;
 
     ///< Contains the grid's nodes to be draw
-    std::vector<sofa::type::Vector3> p_drawing_nodes_vector;
+    std::vector<sofa::type::Vec3> p_drawing_nodes_vector;
 
     ///< Contains the grid's edges to be draw
-    std::vector<sofa::type::Vector3> p_drawing_edges_vector;
+    std::vector<sofa::type::Vec3> p_drawing_edges_vector;
 
     ///< Contains the edges of subdivided cells for each region to be draw
-    std::vector<std::vector<sofa::type::Vector3>> p_drawing_subdivided_edges_vector;
+    std::vector<std::vector<sofa::type::Vec3>> p_drawing_subdivided_edges_vector;
 
     ///< Contains the cells for each region to be draw
-    std::vector<std::vector<sofa::type::Vector3>> p_drawing_cells_vector;
+    std::vector<std::vector<sofa::type::Vec3>> p_drawing_cells_vector;
 
     // ----------------------
     // Private static members

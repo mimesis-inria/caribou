@@ -4,7 +4,7 @@
 #include <SofaCaribou/Ode/NewtonRaphsonSolver.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+#include <sofa/core/behavior/DefaultMultiMatrixAccessor.h>
 #include <sofa/core/objectmodel/Data.h>
 DISABLE_ALL_WARNINGS_BEGIN
 
@@ -54,7 +54,7 @@ protected:
 
     /** @see NewtonRaphsonSolver::assemble_system_matrix */
     void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
-                                sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
+                                sofa::core::behavior::DefaultMultiMatrixAccessor & matrix_accessor,
                                 SofaCaribou::Algebra::BaseMatrix * A) final;
 
     /** @see NewtonRaphsonSolver::propagate_solution_increment */

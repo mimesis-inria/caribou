@@ -4,27 +4,17 @@
 #include <SofaCaribou/Ode/StaticODESolver.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/version.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-#include <sofa/helper/testing/BaseTest.h>
-#else
 #include <sofa/testing/BaseTest.h>
-#endif
 #include <sofa/simulation/Node.h>
-#include <SofaSimulationGraph/DAGSimulation.h>
-#include <SofaSimulationGraph/SimpleApi.h>
-#include <SofaBaseMechanics/MechanicalObject.h>
+#include <sofa/simulation/graph/DAGSimulation.h>
+#include <sofa/simulation/graph/SimpleApi.h>
+#include <sofa/component/statecontainer/MechanicalObject.h>
 DISABLE_ALL_WARNINGS_END
 
 using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace sofa::helper::logging;
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
-using namespace sofa::helper::testing;
-#else
 using namespace sofa::testing;
-#endif
 
 /** Initialization without any linear solver (expecting an error) */
 TEST(StaticODESolver, InitWithoutSolver) {
@@ -47,9 +37,7 @@ TEST(StaticODESolver, InitSofaSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaBaseLinearSolver"}});
-#endif
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
@@ -67,9 +55,7 @@ TEST(StaticODESolver, InitCaribouSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaBaseLinearSolver"}});
-#endif
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
@@ -105,14 +91,8 @@ TEST(StaticODESolver, Beam) {
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
-#else
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
-#endif
-#if (defined(SOFA_VERSION) && SOFA_VERSION > 201299)
     createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
-#endif
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto meca = createChild(root, "meca");
@@ -121,7 +101,7 @@ TEST(StaticODESolver, Beam) {
             createObject(meca, "StaticODESolver", {{"newton_iterations", "10"}, {"correction_tolerance_threshold", "1e-5"}, {"residual_tolerance_threshold", "1e-5"}}).get()
     );
     createObject(meca, "LDLTSolver");
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(meca, "MechanicalObject", {{"name", "mo"}, {"src", "@../grid"}}).get()
     );
 

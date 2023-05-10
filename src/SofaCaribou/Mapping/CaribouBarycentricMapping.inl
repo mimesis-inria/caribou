@@ -285,7 +285,7 @@ void CaribouBarycentricMapping<Element, MappedDataTypes>::draw(const sofa::core:
     if (not p_barycentric_container->outside_nodes().empty()) {
         const auto mapped_rest_positions = this->getToModel()->readRestPositions();
         const auto & outside_nodes = p_barycentric_container->outside_nodes();
-        std::vector<sofa::type::Vector3> outside_nodes_positions (outside_nodes.size());
+        std::vector<sofa::type::Vec3> outside_nodes_positions (outside_nodes.size());
         for (std::size_t i = 0; i < outside_nodes.size(); ++i) {
             const auto & node_index = outside_nodes[i];
             for (std::size_t j = 0; j < MappedDimension; ++j) {

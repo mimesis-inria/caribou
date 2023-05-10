@@ -35,7 +35,7 @@ using sofa::core::behavior::MultiMatrixAccessor;
 using sofa::core::MechanicalParams;
 using sofa::core::MultiVecCoordId;
 using sofa::core::MultiVecDerivId;
-using sofa::component::linearsolver::DefaultMultiMatrixAccessor;
+using sofa::core::behavior::DefaultMultiMatrixAccessor;
 using Timer = sofa::helper::AdvancedTimer;
 
 // Constructor

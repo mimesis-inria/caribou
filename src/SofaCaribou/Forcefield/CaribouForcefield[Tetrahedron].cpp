@@ -21,7 +21,7 @@ auto CaribouForcefield<Tetrahedron>::templateName(const CaribouForcefield<Tetrah
 }
 
 template<>
-void CaribouForcefield<Tetrahedron>::triangulate_face(const Tetrahedron &e, const std::size_t &face_id, std::vector<sofa::type::Vector3> &triangles_nodes) {
+void CaribouForcefield<Tetrahedron>::triangulate_face(const Tetrahedron &e, const std::size_t &face_id, std::vector<sofa::type::Vec3> &triangles_nodes) {
     const auto face_indices = e.boundary_elements_node_indices();
     auto triangle_1 = std::array{e.node(face_indices[face_id][0]), e.node(face_indices[face_id][1]), e.node(face_indices[face_id][2])};
     for (const auto &n : triangle_1) {
