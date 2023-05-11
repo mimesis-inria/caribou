@@ -18,7 +18,12 @@ mx = ((circle_corner + 2*circle_corner) - radius)*s + eps
 
 def createScene(root):
     root.bbox = " ".join([str(a) for a in [-radius, -radius, -1, radius, radius, 1]])
-    root.addObject('APIVersion', level='21.06')
+    root.addObject('RequiredPlugin', pluginName=[
+        'Sofa.Component.SceneUtility', # APIVersion
+        'Sofa.Component.Visual', # InteractiveCamera
+    ])
+    root.addObject('APIVersion', level='23.06.99')
+    root.addObject('DefaultAnimationLoop')
     root.addObject('InteractiveCamera', position=[0, 0, 1], lookAt=[0, 0, 0], projectionType=1, printLog=True)
 
     root.addObject('CircleIsoSurface', radius=radius, center=[0, 0])

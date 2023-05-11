@@ -31,7 +31,8 @@ TEST(CaribouMass, LinearTetrahedron) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine SofaTopologyMapping"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Mapping"}});
 
     // Some component to avoid warnings
     createObject(root, "DefaultAnimationLoop");
@@ -138,7 +139,8 @@ TEST(CaribouMass, LinearHexahedron) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine SofaTopologyMapping"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Mapping"}});
 
     // Some component to avoid warnings
     createObject(root, "DefaultAnimationLoop");

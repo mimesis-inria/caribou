@@ -20,7 +20,7 @@ class FictitiousGrid : public BaseTest {
     void SetUp() override {
         setSimulation(new sofa::simulation::graph::DAGSimulation()) ;
         root = getSimulation()->createNewNode("root");
-        createObject(root, "RequiredPlugin", {{"pluginName", "SofaGeneralLoader"}});
+        createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.IO.Mesh"}});
         createObject(root, "DefaultAnimationLoop");
         createObject(root, "DefaultVisualManagerLoop");
     }

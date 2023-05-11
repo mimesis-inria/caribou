@@ -7,9 +7,17 @@ def createScene(root):
     root.dt = 1
 
     root.addObject('RequiredPlugin', pluginName=[
-        'SofaSparseSolver', 'SofaTopologyMapping', 'SofaBoundaryCondition', 'SofaEngine', 'SofaImplicitOdeSolver'
+        'Sofa.Component.SceneUtility', # APIVersion
+        'Sofa.Component.StateContainer', # MechanicalObject
+        'Sofa.Component.Constraint.Projective', # FixedConstraint
+        'Sofa.Component.Engine.Select', # BoxROI
+        'Sofa.Component.Topology.Container.Dynamic', # HexahedronSetGeometryAlgorithms, HexahedronSetTopologyContainer
+        'Sofa.Component.Mass', # DiagonalMass
+        'Sofa.Component.Topology.Container.Grid', # RegularGridTopology
+        'Sofa.Component.Visual' # VisualStyle
     ])
-
+    root.addObject('APIVersion', level='23.06.99')
+    root.addObject('DefaultAnimationLoop')
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showForceFields')
 
     root.addObject('RegularGridTopology', name='grid', min=[-7.5, -7.5, 0], max=[7.5, 7.5, 80], n=[3, 3, 9])

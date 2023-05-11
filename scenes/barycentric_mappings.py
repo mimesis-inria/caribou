@@ -32,12 +32,20 @@ poisson_ratio = 0.49
 
 
 def createScene(root):
-    root.addObject('APIVersion', level='21.06')
-    root.addObject('RequiredPlugin', pluginName='SofaBoundaryCondition SofaEngine SofaOpenglVisual SofaGeneralVisual')
+
+    root.addObject('RequiredPlugin', pluginName=[
+        'Sofa.Component.SceneUtility', # APIVersion
+        'Sofa.Component.Constraint.Projective', # FixedConstraint
+        'Sofa.Component.Engine.Select', # BoxROI
+        'Sofa.Component.StateContainer', # MechanicalObject
+        'Sofa.Component.Visual' # Visual3DText, VisualStyle
+        # 'Sofa.GL.Component.Rendering3D' # OglModel
+    ])
+    root.addObject('APIVersion', level='23.06.99')
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels')
 
     root.addObject('StaticODESolver', newton_iterations=10, residual_tolerance_threshold=1e-5, pattern_analysis_strategy="BEGINNING_OF_THE_TIME_STEP")
-    root.addObject('LDLTSolver', backend="Pardiso")
+    root.addObject('LDLTSolver', backend="Eigen") # Change to backend="Pardiso" if using Caribou with pardiso
 
     for name, mesh, p, caribou_type, meshio_type in meshes:
         n = root.addChild(name)

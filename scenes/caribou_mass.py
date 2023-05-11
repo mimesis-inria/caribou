@@ -13,9 +13,19 @@ eps = cell_size / 10
 
 def createScene(root):
     root.dt = 0.001
+    root.addObject('RequiredPlugin', pluginName=[
+        'Sofa.Component.SceneUtility', # APIVersion
+        'Sofa.Component.Constraint.Projective', # FixedConstraint
+        'Sofa.Component.Engine.Select', # BoxROI
+        'Sofa.Component.ODESolver.Forward', # CentralDifferenceSolver
+        'Sofa.Component.StateContainer', # MechanicalObject
+        'Sofa.Component.Topology.Container.Grid', # RegularGridTopology
+        'Sofa.Component.Visual' # VisualStyle
+    ])
+    root.addObject('APIVersion', level='23.06.99')
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showForceFields')
-    root.addObject('RequiredPlugin', pluginName=['SofaBaseMechanics', 'SofaEngine', 'SofaTopologyMapping', 'SofaBoundaryCondition', 'SofaGeneralExplicitOdeSolver'])
     root.addObject('RegularGridTopology', name='grid', min=[-length/2, -radius, -radius], max=[length/2, radius, radius], n=[nz, nx, nx])
+    root.addObject('DefaultAnimationLoop')
 
     # Caribou lumped mass
     root.addChild('caribou_lumped')

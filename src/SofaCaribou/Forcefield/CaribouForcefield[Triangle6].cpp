@@ -25,7 +25,7 @@ auto CaribouForcefield<Triangle6<_2D>>::templateName(const CaribouForcefield<Tri
 }
 
 template <>
-void CaribouForcefield<Triangle6<_2D>>::triangulate_face(const Triangle6<_2D> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vector3> & triangles_nodes) {
+void CaribouForcefield<Triangle6<_2D>>::triangulate_face(const Triangle6<_2D> & e, const std::size_t & /*face_id*/, std::vector<sofa::type::Vec3> & triangles_nodes) {
     auto triangle = std::vector {e.node(0), e.node(1), e.node(2)};
     for (const auto &n : triangle) {
         triangles_nodes.emplace_back(n[0], n[1], 0);

@@ -37,7 +37,7 @@ TEST(StaticODESolver, InitSofaSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBaseLinearSolver"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.LinearSolver.Iterative"}});
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
@@ -55,7 +55,7 @@ TEST(StaticODESolver, InitCaribouSolver) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBaseLinearSolver"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.LinearSolver.Iterative"}});
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
@@ -91,8 +91,7 @@ TEST(StaticODESolver, Beam) {
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto meca = createChild(root, "meca");

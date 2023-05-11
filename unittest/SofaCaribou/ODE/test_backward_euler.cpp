@@ -23,8 +23,8 @@ TEST(BackwardEulerODESolver, Beam) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Constraint.Projective"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
 
     // Some component to avoid warnings
     createObject(root, "DefaultAnimationLoop");

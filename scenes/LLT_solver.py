@@ -8,12 +8,17 @@ poissonRatio = 0
 youngModulus = 3000
 
 def createScene(root):
-    root.addObject('APIVersion', level='21.06')
-
-    root.addObject('RequiredPlugin', name='SofaComponentAll')
-    root.addObject('RequiredPlugin', name='SofaOpenglVisual')
-    root.addObject('RequiredPlugin', name='SofaSparseSolver')
-
+    root.addObject('RequiredPlugin', pluginName=[
+        'Sofa.Component.SceneUtility', # APIVersion
+        'Sofa.Component.Constraint.Projective', # FixedConstraint
+        'Sofa.Component.Engine.Select', # BoxROI
+        'Sofa.Component.StateContainer', # MechanicalObject
+        'Sofa.Component.Topology.Container.Dynamic', # HexahedronSetTopologyContainer, QuadSetTopologyContainer
+        'Sofa.Component.Topology.Container.Grid', # RegularGridTopology
+        'Sofa.Component.Visual', # VisualStyle
+    ])
+    root.addObject('APIVersion', level='23.06.99')
+    root.addObject('DefaultAnimationLoop')
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showCollisionModels hideMappings showForceFields')
 
     root.addObject('RegularGridTopology', name='mesh', min=[-7.5, -7.5, 0], max=[7.5, 7.5, 80], n=[9, 9, 21])
