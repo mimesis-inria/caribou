@@ -3,25 +3,14 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/version.h>
 #include <SofaCaribou/Algebra/BaseVectorOperations.h>
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
-#include <SofaBaseLinearSolver/FullVector.h>
-using namespace sofa::component::linearsolver;
-#else
 #include <sofa/linearalgebra/FullVector.h>
 using namespace sofa::linearalgebra;
-#endif // (defined(SOFA_VERSION) && SOFA_VERSION < 211299)
 
 
 DISABLE_ALL_WARNINGS_END
 
 #include <Eigen/Dense>
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
-namespace sofa { using Index = unsigned int; }
-#endif
 
 TEST(Algebra, SofaFullDFullDDotProduct) {
     const auto n = 100;

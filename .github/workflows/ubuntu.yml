@@ -16,33 +16,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ v20.06.01, v20.12.03, v21.06.03, v21.12.00, master ]
+        sofa_version: [ master ]
         include:
           - sofa_version: master
             SOFA_VERSION_I: 999999
             CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
             PYTHON_VERSION: 3.8
             PYBIND11_VERSION: 2.6
-          - sofa_version: v21.12.00
-            SOFA_VERSION_I: 211200
-            CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
-            PYTHON_VERSION: 3.8
-            PYBIND11_VERSION: 2.4
-          - sofa_version: v21.06.03
-            SOFA_VERSION_I: 210603
-            CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
-            PYTHON_VERSION: 3.7
-            PYBIND11_VERSION: 2.4
-          - sofa_version: v20.12.03
-            SOFA_VERSION_I: 201203
-            CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
-            PYTHON_VERSION: 3.7
-            PYBIND11_VERSION: 2.4
-          - sofa_version: v20.06.01
-            SOFA_VERSION_I: 200601
-            CONTAINER: jnbrunet/caribou-ubuntu-1804-builder:latest
-            PYTHON_VERSION: 3.7
-            PYBIND11_VERSION: 2.4
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -136,23 +116,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ v20.06.01, v20.12.03, v21.06.03, v21.12.00, master ]
+        sofa_version: [ master ]
         include:
           - sofa_version: master
             PYTHON_VERSION: 3.8
             sofa_version_int: 211200
-          - sofa_version: v21.12.00
-            PYTHON_VERSION: 3.8
-            sofa_version_int: 211200
-          - sofa_version: v21.06.03
-            PYTHON_VERSION: 3.7
-            sofa_version_int: 210603
-          - sofa_version: v20.12.03
-            PYTHON_VERSION: 3.7
-            sofa_version_int: 201203
-          - sofa_version: v20.06.01
-            PYTHON_VERSION: 3.7
-            sofa_version_int: 200601
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: /opt/sofa
@@ -249,7 +217,7 @@ jobs:
     if: github.event_name == 'schedule'
     strategy:
       matrix:
-        sofa_version: [ v20.06.01, v20.12.03, v21.06.03, v21.12.00, master ]
+        sofa_version: [ master ]
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
 

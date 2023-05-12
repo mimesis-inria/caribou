@@ -12,8 +12,11 @@ mz = (radius / ((n[2])*pow(2, subdivisions)))/2
 
 
 def createScene(root):
-    root.addObject('APIVersion', level='21.06')
-
+    root.addObject('RequiredPlugin', pluginName=[
+        'Sofa.Component.SceneUtility', # APIVersion
+    ])
+    root.addObject('APIVersion', level='23.06.99')
+    root.addObject('DefaultAnimationLoop')
     root.addObject('SphereIsoSurface', radius=radius, center=[0, 0, 0])
 
     root.addObject('FictitiousGrid',

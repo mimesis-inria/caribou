@@ -10,7 +10,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <SofaCaribou/Algebra/BaseVectorOperations.h>
 #include <sofa/core/objectmodel/Link.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+#include <sofa/core/behavior/DefaultMultiMatrixAccessor.h>
 DISABLE_ALL_WARNINGS_END
 
 #include <memory>
@@ -136,7 +136,7 @@ private:
      *       matrix accessor.
      */
     virtual void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
-                                        sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
+                                        sofa::core::behavior::DefaultMultiMatrixAccessor & matrix_accessor,
                                         SofaCaribou::Algebra::BaseMatrix * A) = 0;
 
     /**

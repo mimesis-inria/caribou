@@ -4,7 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/visual/VisualParams.h>
-#include <SofaBaseTopology/MeshTopology.h>
+#include <sofa/component/topology/container/constant/MeshTopology.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/core/behavior/MechanicalState.h>
 DISABLE_ALL_WARNINGS_END
@@ -204,7 +204,7 @@ void FictitiousGrid<DataTypes>::init() {
                                 << "', but this one does not contain any positions.";
                     return;
                 } else {
-                    auto mesh_topology = (topology) ? dynamic_cast<sofa::component::topology::MeshTopology*>(topology) : nullptr;
+                    auto mesh_topology = (topology) ? dynamic_cast<sofa::component::topology::container::constant::MeshTopology*>(topology) : nullptr;
                     if (mesh_topology) {
                         d_surface_positions.setParent(&(mesh_topology->seqPoints));
                         msg_info() << "Automatically found the positions vector at '"

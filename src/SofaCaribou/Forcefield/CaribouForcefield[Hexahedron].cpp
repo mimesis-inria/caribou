@@ -22,7 +22,7 @@ auto CaribouForcefield<Hexahedron>::templateName(const CaribouForcefield<Hexahed
 }
 
 template <>
-void CaribouForcefield<Hexahedron>::triangulate_face(const Hexahedron & e, const std::size_t & face_id, std::vector<sofa::type::Vector3> & triangles_nodes) {
+void CaribouForcefield<Hexahedron>::triangulate_face(const Hexahedron & e, const std::size_t & face_id, std::vector<sofa::type::Vec3> & triangles_nodes) {
     const auto face_indices = e.boundary_elements_node_indices();
     auto triangle_1 = std::vector {e.node(face_indices[face_id][0]), e.node(face_indices[face_id][1]), e.node(face_indices[face_id][2])};
     auto triangle_2 = std::vector {e.node(face_indices[face_id][2]), e.node(face_indices[face_id][3]), e.node(face_indices[face_id][0])};

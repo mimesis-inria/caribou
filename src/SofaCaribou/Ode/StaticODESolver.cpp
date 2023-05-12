@@ -60,7 +60,7 @@ void StaticODESolver::assemble_rhs_vector(const sofa::core::MechanicalParams &me
 
 // Assemble A in A [dx] = F
 void StaticODESolver::assemble_system_matrix(const sofa::core::MechanicalParams &mechanical_parameters,
-                                             sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
+                                             sofa::core::behavior::DefaultMultiMatrixAccessor & matrix_accessor,
                                              SofaCaribou::Algebra::BaseMatrix *A) {
     // Step 1. Building stage:
     //         Here we go down on the current context sub-graph and call :

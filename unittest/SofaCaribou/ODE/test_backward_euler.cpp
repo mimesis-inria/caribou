@@ -4,41 +4,17 @@
 #include <SofaCaribou/Ode/BackwardEulerODESolver.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/version.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-#include <sofa/helper/testing/BaseTest.h>
-#else
 #include <sofa/testing/BaseTest.h>
-#endif
 #include <sofa/simulation/Node.h>
-#include <SofaSimulationGraph/DAGSimulation.h>
-#include <SofaSimulationGraph/SimpleApi.h>
-#include <SofaBaseMechanics/MechanicalObject.h>
+#include <sofa/simulation/graph/DAGSimulation.h>
+#include <sofa/simulation/graph/SimpleApi.h>
+#include <sofa/component/statecontainer/MechanicalObject.h>
 DISABLE_ALL_WARNINGS_END
 
 using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace sofa::helper::logging;
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
-using namespace sofa::helper::testing;
-#else
 using namespace sofa::testing;
-#endif
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
-namespace sofa { using Size = unsigned int; }
-#endif
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
-namespace sofa::type {
-using Vec3 = ::sofa::defaulttype::Vec3;
-template <sofa::Size N, sofa::Size M, typename Real>
-using Mat = ::sofa::defaulttype::Mat<N, M, Real>;
-template <sofa::Size N, typename Real>
-using Vec = ::sofa::defaulttype::Vec<N, Real>;
-}
-#endif
 
 /** Make sure residual norms at each newton steps remains the same */
 TEST(BackwardEulerODESolver, Beam) {
@@ -47,14 +23,8 @@ TEST(BackwardEulerODESolver, Beam) {
 
     setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
-#else
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
-#endif
-#if (defined(SOFA_VERSION) && SOFA_VERSION > 201299)
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
-#endif
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Constraint.Projective"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
 
     // Some component to avoid warnings
     createObject(root, "DefaultAnimationLoop");
@@ -69,7 +39,7 @@ TEST(BackwardEulerODESolver, Beam) {
     );
     SOFA_UNUSED(solver);
     createObject(meca, "LLTSolver", {{"Backend", "Pardiso"}});
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(meca, "MechanicalObject", {{"name", "mo"}, {"src", "@../grid"}}).get()
     );
 
