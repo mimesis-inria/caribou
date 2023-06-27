@@ -4,7 +4,7 @@
 #include <SofaCaribou/Ode/NewtonRaphsonSolver.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+#include <sofa/core/behavior/DefaultMultiMatrixAccessor.h>
 #include <sofa/core/objectmodel/Data.h>
 DISABLE_ALL_WARNINGS_BEGIN
 
@@ -50,17 +50,17 @@ protected:
     void assemble_rhs_vector(const sofa::core::MechanicalParams & mechanical_parameters,
                              const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
                              sofa::core::MultiVecDerivId & f_id,
-                             sofa::defaulttype::BaseVector * f) final;
+                             SofaCaribou::Algebra::BaseVector * f) final;
 
     /** @see NewtonRaphsonSolver::assemble_system_matrix */
     void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
-                                sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
-                                sofa::defaulttype::BaseMatrix * A) final;
+                                sofa::core::behavior::DefaultMultiMatrixAccessor & matrix_accessor,
+                                SofaCaribou::Algebra::BaseMatrix * A) final;
 
     /** @see NewtonRaphsonSolver::propagate_solution_increment */
     void propagate_solution_increment(const sofa::core::MechanicalParams & mechanical_parameters,
                                       const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
-                                      const sofa::defaulttype::BaseVector * dx,
+                                      const SofaCaribou::Algebra::BaseVector * dx,
                                       sofa::core::MultiVecCoordId & x_id,
                                       sofa::core::MultiVecDerivId & v_id,
                                       sofa::core::MultiVecDerivId & dx_id) final;

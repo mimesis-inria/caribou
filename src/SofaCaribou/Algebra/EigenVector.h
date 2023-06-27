@@ -5,17 +5,8 @@
 #include <Caribou/traits.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-#include <sofa/defaulttype/BaseMatrix.h>
-#include <sofa/defaulttype/BaseVector.h>
-namespace sofa::linearalgebra {
-    using BaseVector = sofa::defaulttype::BaseVector;
-    using BaseMatrix = sofa::defaulttype::BaseMatrix;
-}
-#else
-#include <sofa/linearalgebra/BaseMatrix.h>
-#include <sofa/linearalgebra/BaseVector.h>
-#endif
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
+#include <SofaCaribou/Algebra/BaseVectorOperations.h>
 DISABLE_ALL_WARNINGS_END
 
 #include <Eigen/Dense>
@@ -32,7 +23,7 @@ namespace SofaCaribou::Algebra {
  * @tparam Enable
  */
 template <typename Derived, typename Enable = void>
-class EigenVector : public sofa::linearalgebra::BaseVector
+class EigenVector : public BaseVector
 {
     static_assert(
             std::is_base_of_v<Eigen::EigenBase<std::decay_t<Derived> >, std::decay_t<Derived> >,
@@ -47,7 +38,7 @@ class EigenVector : public sofa::linearalgebra::BaseVector
 
 public:
     using EigenType = std::remove_cv_t<std::remove_reference_t<Derived>>;
-    using Base = sofa::linearalgebra::BaseVector;
+    using Base = BaseVector;
     using Index = Base::Index;
     using Real = typename EigenType::Scalar;
 

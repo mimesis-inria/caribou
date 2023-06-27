@@ -4,20 +4,21 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <SofaBaseTopology/TetrahedronSetTopologyContainer.h>
+#include <sofa/component/topology/container/dynamic/TetrahedronSetTopologyContainer.h>
 DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
 using namespace caribou::geometry;
 using namespace sofa::component::topology;
 using namespace sofa::core::topology;
+using namespace sofa::component::topology::container::dynamic;
 using namespace caribou;
 
 namespace SofaCaribou::topology {
 
 // Tetrahedron linear specialization
 template<>
-auto CaribouTopology<Tetrahedron>::templateName(const CaribouTopology<Tetrahedron> *) -> std::string {
+auto CaribouTopology<Tetrahedron>::GetCustomTemplateName() -> std::string {
     return "Tetrahedron";
 }
 

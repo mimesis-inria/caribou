@@ -4,7 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <SofaBaseTopology/TriangleSetTopologyContainer.h>
+#include <sofa/component/topology/container/dynamic/TriangleSetTopologyContainer.h>
 DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
@@ -17,7 +17,7 @@ namespace SofaCaribou::topology {
 
 // Triangle 2D quadratic specialization
 template<>
-auto CaribouTopology<Triangle6<_2D>>::templateName(const CaribouTopology<Triangle6<_2D>> *) -> std::string {
+auto CaribouTopology<Triangle6<_2D>>::GetCustomTemplateName() -> std::string {
     return "Triangle6_2D";
 }
 
@@ -30,7 +30,7 @@ auto CaribouTopology<Triangle6<_2D>>::mesh_is_compatible(const BaseMeshTopology 
 // Triangle 3D quadratic specialization
 template<>
 auto
-CaribouTopology<Triangle6<_3D>>::templateName(const CaribouTopology<Triangle6<_3D>> *) -> std::string {
+CaribouTopology<Triangle6<_3D>>::GetCustomTemplateName() -> std::string {
     return "Triangle6";
 }
 

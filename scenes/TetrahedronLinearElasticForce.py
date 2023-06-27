@@ -20,10 +20,19 @@ mu = youngModulus / (2.0 * (1.0 + poissonRatio))
 l = youngModulus * poissonRatio / ((1.0 + poissonRatio) * (1.0 - 2.0 * poissonRatio))
 
 def createScene(root):
-    root.addObject('APIVersion', level='21.06')
-
-    root.addObject('RequiredPlugin', name='SofaComponentAll')
-    root.addObject('RequiredPlugin', name='SofaOpenglVisual')
+    root.addObject('RequiredPlugin', pluginName=[
+        'Sofa.Component.SceneUtility', # APIVersion
+        'Sofa.Component.Constraint.Projective', # FixedConstraint
+        'Sofa.Component.Engine.Select', # BoxROI
+        'Sofa.Component.SolidMechanics.FEM.Elastic', # TetrahedronFEMForceField
+        'Sofa.Component.StateContainer', # MechanicalObject
+        'Sofa.Component.Topology.Container.Dynamic', # TetrahedronSetTopologyContainer, TetrahedronSetTopologyModifier, TriangleSetTopologyContainer
+        'Sofa.Component.Topology.Container.Grid', # RegularGridTopology
+        'Sofa.Component.Topology.Mapping', # Hexa2TetraTopologicalMapping
+        'Sofa.Component.Visual', # VisualStyle
+    ])
+    root.addObject('APIVersion', level='23.06.99')
+    root.addObject('DefaultAnimationLoop')
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showCollisionModels hideMappings showForceFields')
 
     root.addObject('RegularGridTopology', name='mesh', min=[-7.5, -7.5, 0], max=[7.5, 7.5, 80], n=[9, 9, 21])

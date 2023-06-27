@@ -17,8 +17,16 @@ mass_density  = 2.5
 
 
 def createScene(root):
-    root.addObject('APIVersion', level='21.06')
-    root.addObject('RequiredPlugin', pluginName='SofaBoundaryCondition SofaEngine')
+    root.addObject('RequiredPlugin', pluginName=[
+        'Sofa.Component.SceneUtility', # APIVersion
+        'Sofa.Component.Constraint.Projective', # FixedConstraint
+        'Sofa.Component.Engine.Select', # BoxROI
+        'Sofa.Component.Mass', # UniformMass
+        'Sofa.Component.StateContainer', # MechanicalObject
+        'Sofa.Component.Visual', # VisualStyle
+    ])
+    root.addObject('APIVersion', level='23.06.99')
+    root.addObject('DefaultAnimationLoop')
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showCollisionModels hideMappings showForceFields')
 
     root.addObject('BackwardEulerODESolver', newton_iterations=10, rayleigh_stiffness=0, rayleigh_mass=0, residual_tolerance_threshold=1e-5, pattern_analysis_strategy="ALWAYS", printLog=True)

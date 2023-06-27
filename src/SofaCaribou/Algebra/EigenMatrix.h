@@ -5,14 +5,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-#include <sofa/defaulttype/BaseMatrix.h>
-namespace sofa::linearalgebra {
-    using BaseMatrix = sofa::defaulttype::BaseMatrix;
-}
-#else
-#include <sofa/linearalgebra/BaseMatrix.h>
-#endif
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)

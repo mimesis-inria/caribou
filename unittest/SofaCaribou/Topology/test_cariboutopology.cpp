@@ -1,15 +1,10 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/version.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-#include <sofa/helper/testing/BaseTest.h>
-#else
 #include <sofa/testing/BaseTest.h>
-#endif
-#include <SofaBaseMechanics/MechanicalObject.h>
-#include <SofaSimulationGraph/DAGSimulation.h>
-#include <SofaSimulationGraph/SimpleApi.h>
+#include <sofa/component/statecontainer/MechanicalObject.h>
+#include <sofa/simulation/graph/DAGSimulation.h>
+#include <sofa/simulation/graph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
 #include <sofa/simulation/Node.h>
 DISABLE_ALL_WARNINGS_BEGIN
@@ -31,12 +26,7 @@ using sofa::helper::system::PluginManager ;
 using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace sofa::helper::logging;
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
-using namespace sofa::helper::testing;
-#else
 using namespace sofa::testing;
-#endif
 
 TEST(CaribouTopology, QuadLinear2DAttachDomain) {
     using namespace caribou;
@@ -117,7 +107,7 @@ TEST(CaribouTopology, QuadLinear2DFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}, {"template", "Vec2d"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -244,7 +234,7 @@ TEST(CaribouTopology, QuadQuadratic2DFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}, {"template", "Vec2d"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -371,7 +361,7 @@ TEST(CaribouTopology, QuadLinear3DFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}, {"template", "Vec3d"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -499,7 +489,7 @@ TEST(CaribouTopology, QuadQuadratic3DFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}, {"template", "Vec3d"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -627,7 +617,7 @@ TEST(CaribouTopology, TriangleLinear2DFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}, {"template", "Vec2d"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -754,7 +744,7 @@ TEST(CaribouTopology, TriangleQuadratic2DFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec2Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}, {"template", "Vec2d"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -881,7 +871,7 @@ TEST(CaribouTopology, TriangleLinear3DFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -1009,7 +999,7 @@ TEST(CaribouTopology, TriangleQuadratic3DFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -1137,7 +1127,7 @@ TEST(CaribouTopology, TetrahedronLinearFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -1268,7 +1258,7 @@ TEST(CaribouTopology, TetrahedronQuadraticFromIndices) {
     auto root = getSimulation()->createNewNode("root");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -1403,7 +1393,7 @@ TEST(CaribouTopology, HexahedronLinearFromIndices) {
     createObject(root, "DefaultVisualManagerLoop");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}}).get()
     );
     mo->resize(mesh.number_of_nodes());
@@ -1536,7 +1526,7 @@ TEST(CaribouTopology, HexahedronQuadraticFromIndices) {
     createObject(root, "DefaultVisualManagerLoop");
 
     // Add a mechanical object required for the creation of an internal mesh
-    auto mo = dynamic_cast<sofa::component::container::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
+    auto mo = dynamic_cast<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types> *>(
             createObject(root, "MechanicalObject", {{"name", "mo"}}).get()
     );
     mo->resize(mesh.number_of_nodes());

@@ -415,7 +415,7 @@ void CaribouMass<Element>::addForce(const sofa::core::MechanicalParams * /*mpara
 }
 
 template<typename Element>
-void CaribouMass<Element>::addMToMatrix(sofa::defaulttype::BaseMatrix * matrix, SReal mFact, unsigned int & offset) {
+void CaribouMass<Element>::addMToMatrix(SofaCaribou::Algebra::BaseMatrix * matrix, SReal mFact, unsigned int & offset) {
     // Start the timer
     sofa::helper::ScopedAdvancedTimer _t_ ("CaribouMass::addMToMatrix");
 

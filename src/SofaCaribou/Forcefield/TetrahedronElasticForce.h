@@ -4,7 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/version.h>
-#include <sofa/defaulttype/BaseMatrix.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <sofa/core/topology/BaseTopology.h>
@@ -93,7 +93,7 @@ public:
             const Data<VecDeriv>& /*d_dx*/) override;
 
     void addKToMatrix(
-            sofa::defaulttype::BaseMatrix * /*matrix*/,
+            SofaCaribou::Algebra::BaseMatrix * /*matrix*/,
             SReal /*kFact*/,
             unsigned int & /*offset*/) override;
 

@@ -4,20 +4,21 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <SofaBaseTopology/TriangleSetTopologyContainer.h>
+#include <sofa/component/topology/container/dynamic/TriangleSetTopologyContainer.h>
 DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
 using namespace caribou::geometry;
 using namespace sofa::component::topology;
 using namespace sofa::core::topology;
+using namespace sofa::component::topology::container::dynamic;
 using namespace caribou;
 
 namespace SofaCaribou::topology {
 
 // Triangle 2D linear specialization
 template<>
-auto CaribouTopology<Triangle<_2D>>::templateName(const CaribouTopology<Triangle<_2D>> *) -> std::string {
+auto CaribouTopology<Triangle<_2D>>::GetCustomTemplateName() -> std::string {
     return "Triangle_2D";
 }
 
@@ -36,7 +37,7 @@ auto CaribouTopology<Triangle<_2D>>::get_indices_data_from(const BaseMeshTopolog
 // Triangle 3D linear specialization
 template<>
 auto
-CaribouTopology<Triangle<_3D>>::templateName(const CaribouTopology<Triangle<_3D>> *) -> std::string {
+CaribouTopology<Triangle<_3D>>::GetCustomTemplateName() -> std::string {
     return "Triangle";
 }
 

@@ -4,7 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <SofaBaseTopology/HexahedronSetTopologyContainer.h>
+#include <sofa/component/topology/container/dynamic/HexahedronSetTopologyContainer.h>
 DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
@@ -12,13 +12,15 @@ using namespace caribou::geometry;
 using namespace sofa::component::topology;
 using namespace sofa::core::objectmodel;
 using namespace sofa::core::topology;
+using namespace sofa::component::topology::container::dynamic;
 using namespace caribou;
 
 namespace SofaCaribou::topology {
 
 // Hexahedron linear specialization
 template<>
-auto CaribouTopology<Hexahedron>::templateName(const CaribouTopology<Hexahedron> *) -> std::string {
+auto
+CaribouTopology<Hexahedron>::GetCustomTemplateName() -> std::string {
     return "Hexahedron";
 }
 

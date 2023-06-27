@@ -1,0 +1,282 @@
+name: Linux
+
+on:
+  pull_request:
+    branches:
+      - master
+  schedule:
+    # Runs every day at 23:15
+    - cron:  '15 23 * * *'
+
+jobs:
+  build:
+    name: Building with ${{ matrix.sofa_version }}
+    runs-on: ubuntu-20.04
+    container: ${{ matrix.CONTAINER }}
+    strategy:
+      fail-fast: false
+      matrix:
+        sofa_version: [ master ]
+        include:
+          - sofa_version: master
+            SOFA_VERSION_I: 999999
+            CONTAINER: jnbrunet/caribou-ubuntu-2004-builder:latest
+            PYTHON_VERSION: 3.8
+            PYBIND11_VERSION: 2.6
+    env:
+      SOFA_VERSION: ${{ matrix.sofa_version }}
+      SOFA_ROOT: /opt/sofa
+      PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - run: |
+          git config --global user.email "caribou@github.com"
+          git config --global user.name "Caribou Github"
+          git fetch origin
+          git rebase origin/master
+
+      - name: Install pybind11
+        if: ${{ matrix.PYBIND11_VERSION != '2.4' }}
+        run: |
+          git clone --depth 1 -b v${{ matrix.PYBIND11_VERSION }}  https://github.com/pybind/pybind11.git /tmp/pybind11
+          cmake -GNinja -S/tmp/pybind11 -B/tmp/pybind11/build -DPYBIND11_TEST=OFF -DCMAKE_BUILD_TYPE=Release
+          cmake --install /tmp/pybind11/build
+          rm -rf /tmp/pybind11
+
+      - name: Download SOFA Release
+        run:  |
+          if [ "$SOFA_VERSION" = "master" ]; then
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_BRANCH=master,CI_SCOPE=standard/artifact/Linux/*zip*/Linux.zip"
+              unzip sofa.zip -d temp
+              mv temp/Linux/`ls temp/Linux` sofa.zip 
+              rm -rf temp
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
+          else
+              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
+          fi
+
+      - name: Get Time
+        id: time
+        uses: nanzm/get-time-action@v1.0
+        with:
+          timeZone: 8
+          format: 'YYYY-MM-DD-HH-mm-ss'
+
+      - name: ccache cache files
+        uses: actions/cache@v2
+        if: ${{ always() }}
+        with:
+          path: .ccache
+          key: ubuntu-ccache-${{ steps.time.outputs.time }}
+          restore-keys: |
+            ubuntu-ccache-
+
+      - name: Build caribou
+        env:
+          CCACHE_COMPRESS: true
+          CCACHE_COMPRESSLEVEL: 6
+          CCACHE_MAXSIZE: "500M"
+          PYTHONEXE: ${{ format('/usr/bin/python{0}', matrix.PYTHON_VERSION) }}
+        run:
+          export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
+          export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
+          ccache -z &&
+          cmake
+          -GNinja
+          -DPYTHON_EXECUTABLE=$PYTHONEXE
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          -DCARIBOU_BUILD_TESTS=ON
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_INSTALL_PREFIX=SofaCaribou
+          .
+          && cmake --build . && cmake --install .
+          && tar czvf SofaCaribou.tar.gz SofaCaribou
+          && echo ${CCACHE_BASEDIR}
+          && ccache -s
+
+      - name: Archive production
+        uses: actions/upload-artifact@v2
+        with:
+          name: caribou_${{ matrix.sofa_version }}
+          path: SofaCaribou.tar.gz
+
+  test:
+    name: Testing with ${{ matrix.sofa_version }}
+    needs: [build]
+    runs-on: ubuntu-20.04
+    container: ubuntu:20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        sofa_version: [ master ]
+        include:
+          - sofa_version: master
+            PYTHON_VERSION: 3.8
+            sofa_version_int: 211200
+    env:
+      SOFA_VERSION: ${{ matrix.sofa_version }}
+      SOFA_ROOT: /opt/sofa
+      CARIBOU_ROOT: /opt/sofa/plugins/SofaCaribou
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+               apt-get update
+               apt-get -qq --no-install-recommends install \
+                  libgl1-mesa-glx libglib2.0-0 libglx0 libopengl0 libharfbuzz0b libgomp1 curl ca-certificates unzip
+               python -m pip install numpy meshio scipy
+
+      - name: Install SOFA
+        run: |
+          if [ "$SOFA_VERSION" = "master" ]; then
+              curl --output sofa.zip -L "https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/lastStableBuild/CI_BRANCH=master,CI_SCOPE=standard/artifact/Linux/*zip*/Linux.zip"
+              unzip sofa.zip -d temp
+              mv temp/Linux/`ls temp/Linux` sofa.zip 
+              rm -rf temp
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
+          else
+              curl --output sofa.zip -L "https://github.com/sofa-framework/sofa/releases/download/$SOFA_VERSION/SOFA_"$SOFA_VERSION"_Linux.zip"
+              unzip sofa.zip -d temp
+              mv temp/`ls temp` $SOFA_ROOT
+          fi
+
+      - name: Download caribou
+        uses: actions/download-artifact@v2
+        with:
+          name: caribou_${{ matrix.sofa_version }}
+          path: /tmp
+
+      - name: Unpack caribou
+        run: tar xzf /tmp/SofaCaribou.tar.gz -C /opt/sofa/plugins
+
+      - name: Caribou.unittests.Geometry
+        if: ${{ always() }}
+        run: |
+          export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+          $CARIBOU_ROOT/bin/Caribou.unittests.Geometry
+
+      - name: Caribou.Geometry.PyTest
+        if: ${{ always() }}
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
+          python $CARIBOU_ROOT/bin/pytest/Caribou_Geometry_Test.py
+
+
+      - name: Caribou.unittests.Topology
+        if: ${{ always() }}
+        run: |
+          [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+          $CARIBOU_ROOT/bin/Caribou.unittests.Topology
+
+      - name: Caribou.Topology.PyTest
+        if: ${{ always() }}
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages
+          python $CARIBOU_ROOT/bin/pytest/Caribou_Topology_Test.py
+
+      - name: Caribou.unittests.Mechanics
+        if: ${{ always() }}
+        run: |
+          export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+          $CARIBOU_ROOT/bin/Caribou.unittests.Mechanics
+
+      - name: Caribou.unittests.SofaCaribou
+        if: ${{ always() }}
+        run: |
+            [ "$SOFA_VERSION" = "v20.06.01" ] && export LD_LIBRARY_PATH="$SOFA_ROOT/lib:$LD_LIBRARY_PATH"
+            export LD_LIBRARY_PATH="$SOFA_ROOT/collections/SofaBaseMechanics/lib:$LD_LIBRARY_PATH"
+            export LD_LIBRARY_PATH="$SOFA_ROOT/collections/SofaBaseUtils/lib:$LD_LIBRARY_PATH"
+            $CARIBOU_ROOT/bin/Caribou.unittests.SofaCaribou
+
+      - name: SofaCaribou.PyTest
+        if: ${{ matrix.sofa_version_int >= '201200' }}
+        run: |
+            export PYTHONPATH=$PYTHONPATH:$CARIBOU_ROOT/lib/python3/site-packages:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
+            python $CARIBOU_ROOT/bin/pytest/SofaCaribou_Forcefield_HyperelasticForcefield.py
+
+
+
+  deploy:
+    name: Deploy ${{ matrix.sofa_version }}
+    needs: [test]
+    runs-on: ubuntu-20.04
+    if: github.event_name == 'schedule'
+    strategy:
+      matrix:
+        sofa_version: [ master ]
+    env:
+      SOFA_VERSION: ${{ matrix.sofa_version }}
+
+    steps:
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: caribou_${{ matrix.sofa_version }}
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y_%m_%d')"
+
+      - name: Get SOFA major/minor
+        id: sofa_version
+        run: |
+          if [ "$SOFA_VERSION" = "master" ]; then
+              echo "::set-output name=value::master"
+          else
+              echo "::set-output name=value::${SOFA_VERSION%.*}"
+          fi
+
+      - name: Create artifact directory
+        uses: appleboy/ssh-action@master
+        env:
+          ARTIFACT_TARGET: ${{ format('{0}/linux/{1}', secrets.ARTIFACT_TARGET, steps.sofa_version.outputs.value) }}
+        with:
+          host: ${{ secrets.ARTIFACT_HOST }}
+          username: ${{ secrets.ARTIFACT_USERNAME }}
+          key: ${{ secrets.ARTIFACT_KEY }}
+          port: ${{ secrets.ARTIFACT_PORT }}
+          envs: ARTIFACT_TARGET
+          script: mkdir -p $ARTIFACT_TARGET
+
+      - name: Deploy artifact
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.ARTIFACT_HOST }}
+          username: ${{ secrets.ARTIFACT_USERNAME }}
+          port: ${{ secrets.ARTIFACT_PORT }}
+          key: ${{ secrets.ARTIFACT_KEY }}
+          source: "SofaCaribou.tar.gz"
+          target: ${{ format('{0}/linux/{1}/SofaCaribou_{2}', secrets.ARTIFACT_TARGET, steps.sofa_version.outputs.value, steps.date.outputs.date) }}
+          debug: true
+
+      - name: Tag as latest
+        uses: appleboy/ssh-action@master
+        env:
+          ARTIFACT_TARGET: ${{ format('{0}/linux/{1}/SofaCaribou_{2}', secrets.ARTIFACT_TARGET, steps.sofa_version.outputs.value, steps.date.outputs.date) }}
+          ARTIFACT_LATEST: ${{ format('{0}/linux/{1}/SofaCaribou_latest.tar.gz', secrets.ARTIFACT_TARGET, steps.sofa_version.outputs.value) }}
+        with:
+          host: ${{ secrets.ARTIFACT_HOST }}
+          username: ${{ secrets.ARTIFACT_USERNAME }}
+          key: ${{ secrets.ARTIFACT_KEY }}
+          port: ${{ secrets.ARTIFACT_PORT }}
+          envs: ARTIFACT_TARGET,ARTIFACT_LATEST
+          script: |
+            mv $ARTIFACT_TARGET/SofaCaribou.tar.gz $ARTIFACT_TARGET.tar.gz
+            rm -rf $ARTIFACT_TARGET
+            rm -f $ARTIFACT_LATEST
+            ln -s $ARTIFACT_TARGET.tar.gz $ARTIFACT_LATEST

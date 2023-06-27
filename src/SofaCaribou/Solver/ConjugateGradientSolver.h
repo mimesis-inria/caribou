@@ -15,7 +15,6 @@ DISABLE_ALL_WARNINGS_END
 namespace SofaCaribou::solver {
 
 using sofa::core::objectmodel::Data;
-using namespace sofa::component::linearsolver;
 using namespace sofa::core::behavior;
 
 /**
@@ -160,7 +159,7 @@ protected:
 
     /** @see SofaCaribou::solver::LinearSolver::solve */
     
-    bool solve(const sofa::defaulttype::BaseVector * F, sofa::defaulttype::BaseVector * X) override;
+    bool solve(const SofaCaribou::Algebra::BaseVector * F, SofaCaribou::Algebra::BaseVector * X) override;
 
     /**
      * Solve the linear system Ax = b using a preconditioner.

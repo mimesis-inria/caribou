@@ -7,8 +7,7 @@ namespace SofaCaribou::topology {
 
 // Tetrahedron quadratic specialization
 template<>
-auto CaribouTopology<caribou::geometry::Tetrahedron10>::templateName(
-        const CaribouTopology<caribou::geometry::Tetrahedron10> *) -> std::string;
+auto CaribouTopology<caribou::geometry::Tetrahedron10>::GetCustomTemplateName() -> std::string;
 
 template <> auto CaribouTopology<caribou::geometry::Tetrahedron10>::mesh_is_compatible(
         const sofa::core::topology::BaseMeshTopology * topology) -> bool;

@@ -6,11 +6,11 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/behavior/OdeSolver.h>
 #include <sofa/core/behavior/LinearSolver.h>
 #include <sofa/core/objectmodel/Data.h>
-#include <sofa/defaulttype/BaseMatrix.h>
-#include <sofa/defaulttype/BaseVector.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
+#include <SofaCaribou/Algebra/BaseVectorOperations.h>
 #include <sofa/core/objectmodel/Link.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
+#include <sofa/core/behavior/DefaultMultiMatrixAccessor.h>
 DISABLE_ALL_WARNINGS_END
 
 #include <memory>
@@ -63,16 +63,16 @@ public:
         ALWAYS
     };
 
-    
+
     NewtonRaphsonSolver();
 
-    
+
     void init() override;
 
-    
+
     void reset() override;
 
-    
+
     void solve (const sofa::core::ExecParams* params, SReal dt, sofa::core::MultiVecCoordId x_id, sofa::core::MultiVecDerivId v_id) override;
 
     /** List of times (in nanoseconds) that each Newton-Raphson iteration took to compute in the last call to Solve(). */
@@ -85,11 +85,11 @@ public:
     auto squared_initial_residual() const -> const FLOATING_POINT_TYPE & { return p_squared_initial_residual; }
 
     /** Get the current strategy that determine when the pattern of the system matrix should be analyzed. */
-    
+
     auto pattern_analysis_strategy() const -> PatternAnalysisStrategy;
 
     /** Set the current strategy that determine when the pattern of the system matrix should be analyzed. */
-    
+
     void set_pattern_analysis_strategy(const PatternAnalysisStrategy & strategy);
 
 private:
@@ -114,7 +114,7 @@ private:
     virtual void assemble_rhs_vector(const sofa::core::MechanicalParams & mechanical_parameters,
                                      const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
                                      sofa::core::MultiVecDerivId & f_id,
-                                     sofa::defaulttype::BaseVector * f) = 0;
+                                     SofaCaribou::Algebra::BaseVector * f) = 0;
 
     /**
      * Assemble the left-hand side (LHS) system matrix of the equation to be solved. This will be done at the beginning
@@ -136,8 +136,8 @@ private:
      *       matrix accessor.
      */
     virtual void assemble_system_matrix(const sofa::core::MechanicalParams & mechanical_parameters,
-                                        sofa::component::linearsolver::DefaultMultiMatrixAccessor & matrix_accessor,
-                                        sofa::defaulttype::BaseMatrix * A) = 0;
+                                        sofa::core::behavior::DefaultMultiMatrixAccessor & matrix_accessor,
+                                        SofaCaribou::Algebra::BaseMatrix * A) = 0;
 
     /**
      * Propagate the newly solved increment vector.
@@ -159,14 +159,14 @@ private:
      */
     virtual void propagate_solution_increment(const sofa::core::MechanicalParams & mechanical_parameters,
                                               const sofa::core::behavior::MultiMatrixAccessor & matrix_accessor,
-                                              const sofa::defaulttype::BaseVector * dx,
+                                              const SofaCaribou::Algebra::BaseVector * dx,
                                               sofa::core::MultiVecCoordId & x_id,
                                               sofa::core::MultiVecDerivId & v_id,
                                               sofa::core::MultiVecDerivId & dx_id) = 0;
 
 protected:
     /** Check that the linked linear solver is not null and that it implements the SofaCaribou::solver::LinearSolver interface */
-    
+
     bool has_valid_linear_solver () const;
 
     /// INPUTS
@@ -185,13 +185,13 @@ protected:
     /// Private members
 
     /// Global system matrix A = mM + bB + kK
-    std::unique_ptr<sofa::defaulttype::BaseMatrix> p_A;
+    std::unique_ptr<SofaCaribou::Algebra::BaseMatrix> p_A;
 
     /// Global system LHS vector (the solution)
-    std::unique_ptr<sofa::defaulttype::BaseVector> p_DX;
+    std::unique_ptr<SofaCaribou::Algebra::BaseVector> p_DX;
 
     /// Global system RHS vector (the forces)
-    std::unique_ptr<sofa::defaulttype::BaseVector> p_F;
+    std::unique_ptr<SofaCaribou::Algebra::BaseVector> p_F;
 
     /// Total displacement since the beginning of the step
     sofa::core::MultiVecDerivId p_U_id;

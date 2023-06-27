@@ -9,7 +9,6 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
-#include <SofaEigen2Solver/EigenVectorWrapper.h>
 DISABLE_ALL_WARNINGS_END
 
 #ifndef _WIN32
@@ -28,10 +27,10 @@ void EigenSolver<EigenMatrix_t>::resetSystem() {
 }
 
 template <class EigenMatrix_t>
-auto EigenSolver<EigenMatrix_t>::assemble (const sofa::core::MechanicalParams* mparams) -> sofa::component::linearsolver::DefaultMultiMatrixAccessor
+auto EigenSolver<EigenMatrix_t>::assemble (const sofa::core::MechanicalParams* mparams) -> sofa::core::behavior::DefaultMultiMatrixAccessor
 {
     using Timer = sofa::helper::AdvancedTimer;
-    sofa::component::linearsolver::DefaultMultiMatrixAccessor accessor;
+    sofa::core::behavior::DefaultMultiMatrixAccessor accessor;
 
     // Step 1. Preparation stage
     //         This stage go down on the sub-graph and gather the top-level mechanical objects (mechanical objects that
@@ -189,7 +188,6 @@ void EigenSolver<EigenMatrix_t>::setSystemLHVector(sofa::core::MultiVecDerivId x
 template <class EigenMatrix_t>
 void EigenSolver<EigenMatrix_t>::solveSystem() {
     using Timer = sofa::helper::AdvancedTimer;
-    using namespace sofa::component::linearsolver;
     using namespace sofa::core::behavior;
 
     sofa::simulation::common::MechanicalOperations mop( &p_mechanical_params, this->getContext() );

@@ -1,16 +1,11 @@
 #include <SofaCaribou/config.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/version.h>
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 211200)
-#include <sofa/helper/testing/BaseTest.h>
-#else
 #include <sofa/testing/BaseTest.h>
-#endif
 #include <sofa/simulation/Node.h>
-#include <SofaBaseMechanics/MechanicalObject.h>
-#include <SofaSimulationGraph/DAGSimulation.h>
-#include <SofaSimulationGraph/SimpleApi.h>
+#include <sofa/component/statecontainer/MechanicalObject.h>
+#include <sofa/simulation/graph/DAGSimulation.h>
+#include <sofa/simulation/graph/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -21,12 +16,7 @@ using sofa::helper::system::PluginManager ;
 using namespace sofa::simulation;
 using namespace sofa::simpleapi;
 using namespace sofa::helper::logging;
-
-#if (defined(SOFA_VERSION) && SOFA_VERSION < 210600)
-using namespace sofa::helper::testing;
-#else
 using namespace sofa::testing;
-#endif
 
 TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
@@ -36,14 +26,9 @@ TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
-#if (defined(SOFA_VERSION) && SOFA_VERSION >= 201200)
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaBoundaryCondition SofaEngine"}});
-#else
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaComponentAll"}});
-#endif
-#if (defined(SOFA_VERSION) && SOFA_VERSION > 201299)
-    createObject(root, "RequiredPlugin", {{"pluginName", "SofaTopologyMapping"}});
-#endif
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Constraint.Projective"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Grid"}});
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto meca = createChild(root, "meca");

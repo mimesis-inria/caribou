@@ -17,7 +17,7 @@
 #include <SofaCaribou/Topology/CaribouTopology.h>
 
 DISABLE_ALL_WARNINGS_BEGIN
-#include <sofa/defaulttype/BaseMatrix.h>
+#include <SofaCaribou/Algebra/BaseMatrixOperations.h>
 DISABLE_ALL_WARNINGS_END
 
 #if (defined(SOFA_VERSION) && SOFA_VERSION < 201200)
@@ -73,35 +73,35 @@ public:
 
     // Public methods
 
-    
+
     HyperelasticForcefield();
 
-    
+
     void init() override;
 
-    
+
     void addForce(const sofa::core::MechanicalParams* mparams, sofa::core::MultiVecDerivId fId ) override;
 
-    
+
     void addForce(
         const sofa::core::MechanicalParams* mparams,
         sofa::core::objectmodel::Data<VecDeriv>& d_f,
         const sofa::core::objectmodel::Data<VecCoord>& d_x,
         const sofa::core::objectmodel::Data<VecDeriv>& d_v) override;
 
-    
+
     void addDForce(
         const sofa::core::MechanicalParams* /*mparams*/,
         sofa::core::objectmodel::Data<VecDeriv>& /*d_df*/,
         const sofa::core::objectmodel::Data<VecDeriv>& /*d_dx*/) override;
 
-    
+
     SReal getPotentialEnergy(
         const sofa::core::MechanicalParams* /* mparams */,
         const sofa::core::objectmodel::Data<VecCoord>& /* d_x */) const override;
 
-    
-    void addKToMatrix(sofa::defaulttype::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
+
+    void addKToMatrix(SofaCaribou::Algebra::BaseMatrix * /*matrix*/, SReal /*kFact*/, unsigned int & /*offset*/) override;
 
     /** Get the set of Gauss integration nodes of an element */
     inline auto gauss_nodes_of(std::size_t element_id) const -> const auto & {
@@ -152,11 +152,11 @@ public:
     }
 
     /** Get the eigen values of the tangent stiffness matrix */
-    
+
     auto eigenvalues() -> const Vector<Eigen::Dynamic> &;
 
     /** Get the condition number of the tangent stiffness matrix */
-    
+
     auto cond() -> Real;
 
     /**

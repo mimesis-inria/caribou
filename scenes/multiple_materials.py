@@ -4,14 +4,14 @@ import Sofa
 
 
 def createScene(root):
-    root.addObject('APIVersion', level='17.06')
-
-    root.addObject('RequiredPlugin', name='SofaOpenglVisual')
-    root.addObject('RequiredPlugin', name='SofaSparseSolver')
-    root.addObject('RequiredPlugin', name='SofaBoundaryCondition')
-    root.addObject('RequiredPlugin', name='SofaEngine')
-
+    root.addObject('RequiredPlugin', pluginName=[
+        'Sofa.Component.SceneUtility', # APIVersion
+        'Sofa.Component.Topology.Container.Grid', # RegularGridTopology
+        'Sofa.Component.Visual', # VisualStyle
+    ])
+    root.addObject('APIVersion', level='23.06.99')
     root.addObject('VisualStyle', displayFlags='showVisualModels showBehaviorModels showForceFields')
+    root.addObject('DefaultAnimationLoop')
 
     root.addObject('RegularGridTopology', name='grid', min=[-7.5, -7.5, 0], max=[7.5, 7.5, 80], n=[9, 9, 21])
 

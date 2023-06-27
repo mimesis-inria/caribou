@@ -242,7 +242,7 @@ void CaribouForcefield<Element>::draw(const sofa::core::visual::VisualParams *vp
     const Eigen::Map<const Eigen::Matrix<Real, Eigen::Dynamic, Dimension, Eigen::RowMajor>>    X       (sofa_x.data()->data(),  sofa_x.size(), Dimension);
 
     // For 1D, we draw edges.
-    std::vector<sofa::type::Vector3> edges;
+    std::vector<sofa::type::Vec3> edges;
     if constexpr(CanonicalDimension == 1) {
         std::size_t nnodes = (NumberOfNodesPerElement==caribou::Dynamic ? 1 : NumberOfNodesPerElement);
         edges.reserve(nb_elements * nnodes);
@@ -252,7 +252,7 @@ void CaribouForcefield<Element>::draw(const sofa::core::visual::VisualParams *vp
     // We create groups of faces to draw. Each group will be assigned with a color.
     // For 2D, there is only one group (one "visible" face per element...).
     // For 3D, each face of an element is assigned to a group, hence will have a different color.
-    std::vector<std::vector<sofa::type::Vector3>> triangle_groups;
+    std::vector<std::vector<sofa::type::Vec3>> triangle_groups;
     if constexpr(CanonicalDimension == 2) {
         triangle_groups.resize(1);
         auto nnodes = (NumberOfNodesPerElement==caribou::Dynamic ? 1 : NumberOfNodesPerElement);

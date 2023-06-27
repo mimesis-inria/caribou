@@ -4,7 +4,7 @@
 
 DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/ObjectFactory.h>
-#include <SofaBaseTopology/TetrahedronSetTopologyContainer.h>
+#include <sofa/component/topology/container/dynamic/TetrahedronSetTopologyContainer.h>
 DISABLE_ALL_WARNINGS_END
 
 using sofa::core::RegisterObject;
@@ -18,7 +18,7 @@ namespace SofaCaribou::topology {
 // Tetrahedron Quadratic specialization
 template<>
 auto
-CaribouTopology<Tetrahedron10>::templateName(const CaribouTopology<Tetrahedron10> *) -> std::string {
+CaribouTopology<Tetrahedron10>::GetCustomTemplateName() -> std::string {
     return "Tetrahedron10";
 }
 
