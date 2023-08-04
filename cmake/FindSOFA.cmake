@@ -19,7 +19,7 @@
 STRING(REPLACE "\"" "" SOFA_ROOT_ENV $ENV{SOFA_ROOT})
 
 # Try to find SOFA's cmake module directory
-find_package(SofaFramework CONFIG QUIET) # This defines SOFA_ROOT if SofaFrameworkConfig.cmake is found
+find_package(Sofa.Framework CONFIG QUIET) # This defines SOFA_ROOT if SofaFrameworkConfig.cmake is found
 find_path (
     SOFA_MODULE_DIR SofaFramework/SofaFrameworkConfig.cmake
     PATHS
@@ -66,7 +66,7 @@ if (NOT SOFA_FIND_COMPONENTS)
 endif()
 
 # Compatibility layer
-set(SOFA_VERSION ${SofaFramework_VERSION})
+set(SOFA_VERSION ${Sofa.Framework_VERSION})
 foreach(component ${SOFA_FIND_COMPONENTS})
     if (SOFA_VERSION VERSION_LESS "22.06.99")
         string(REGEX REPLACE "Sofa.Simulation.*" "SofaSimulation" component ${component})
