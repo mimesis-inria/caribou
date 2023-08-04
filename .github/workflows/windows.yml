@@ -45,7 +45,7 @@ jobs:
           git config --global user.email "caribou@github.com"
           git config --global user.name "Caribou Github"
           git fetch origin
-          git rebase origin/master
+          git merge origin/master
 
 #     Python
       - name: Set up Python
