@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ v21.12.00 ]
+        sofa_version: [ master ]
         include:
           - sofa_version: master
             PYTHON_VERSION: 3.8
@@ -175,7 +175,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sofa_version: [ v21.12.00 ]
+        sofa_version: [ master ]
         include:
           - sofa_version: master
             PYTHON_VERSION: 3.8.10
