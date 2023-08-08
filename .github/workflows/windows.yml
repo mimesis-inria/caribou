@@ -219,7 +219,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: caribou_win64_${{ matrix.sofa_version }}
-          path: SofaCaribou.zip
       - name: Install caribou
         run: Expand-Archive -Path SofaCaribou.zip -DestinationPath "${$env:SOFA_ROOT}\plugins"
 
