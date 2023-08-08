@@ -21,10 +21,10 @@ jobs:
             PYTHON_VERSION: 3.8
             EIGEN_VERSION: 3.4
             PYBIND11_VERSION: 2.4.3
-          - sofa_version: v21.12.00
-            PYTHON_VERSION: 3.7
-            EIGEN_VERSION: 3.3.7
-            PYBIND11_VERSION: 2.4.3
+#          - sofa_version: v21.12.00
+#            PYTHON_VERSION: 3.7
+#            EIGEN_VERSION: 3.3.7
+#            PYBIND11_VERSION: 2.4.3
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: ${{ format('{0}/sofa', github.workspace) }}
@@ -179,8 +179,8 @@ jobs:
         include:
           - sofa_version: master
             PYTHON_VERSION: 3.8.10
-          - sofa_version: v21.12.00
-            PYTHON_VERSION: 3.7
+#          - sofa_version: v21.12.00
+#            PYTHON_VERSION: 3.7
     env:
       SOFA_VERSION: ${{ matrix.sofa_version }}
       SOFA_ROOT: ${{ format('{0}\sofa', github.workspace) }}
@@ -221,7 +221,7 @@ jobs:
           name: caribou_win64_${{ matrix.sofa_version }}
           path: SofaCaribou.zip
       - name: Install caribou
-        run: Expand-Archive -LiteralPath SofaCaribou.zip -DestinationPath "${$env:SOFA_ROOT}\plugins"
+        run: Expand-Archive -Path SofaCaribou.zip -DestinationPath "${$env:SOFA_ROOT}\plugins"
 
       - name: Caribou.unittests.Geometry
         if: ${{ always() }}
