@@ -6,6 +6,11 @@
 #include <Caribou/Geometry/Hexahedron.h>
 #include <Caribou/Geometry/Hexahedron20.h>
 
+#include <SofaCaribou/Forcefield/CaribouForcefield[Hexahedron].h>
+#include <SofaCaribou/Forcefield/CaribouForcefield[Hexahedron20].h>
+#include <SofaCaribou/Forcefield/CaribouForcefield[Tetrahedron10].h>
+#include <SofaCaribou/Forcefield/CaribouForcefield[Tetrahedron].h>
+
 #include <pybind11/eigen.h>
 
 namespace SofaCaribou::forcefield::python {
