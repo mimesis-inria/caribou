@@ -112,7 +112,7 @@ void StaticODESolver::propagate_solution_increment(const sofa::core::MechanicalP
 
     // 3. Calls "solveConstraint" method of every ConstraintSolver objects found in the current context tree.
     sofa::core::ConstraintParams constraint_parameters = mechanical_parameters;
-    constraint_parameters.setOrder(sofa::core::ConstraintParams::POS);
+    constraint_parameters.setOrder(sofa::core::ConstraintOrder::POS);
 
     using Direction = sofa::core::objectmodel::BaseContext::SearchDirection;
     auto constraint_solvers = this->getContext()->getObjects<sofa::core::behavior::ConstraintSolver>(Direction::Local);

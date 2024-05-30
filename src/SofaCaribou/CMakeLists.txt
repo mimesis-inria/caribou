@@ -146,7 +146,7 @@ if (NOT TARGET Caribou::Algebra)
 endif()
 
 # Sofa's packages
-find_package(SOFA COMPONENTS SofaFramework Sofa.Component.LinearSolver.Iterative Sofa.Component.Topology.Container.Grid Sofa.Component.Topology.Container.Constant Sofa.Component.Topology.Container.Dynamic Sofa.LinearAlgebra QUIET REQUIRED)
+find_package(SOFA COMPONENTS Sofa.Config Sofa.Component.LinearSolver.Iterative Sofa.Component.Topology.Container.Grid Sofa.Component.Topology.Container.Constant Sofa.Component.Topology.Container.Dynamic Sofa.LinearAlgebra QUIET REQUIRED)
 
 # Optional packages
 find_package(Eigen3 QUIET REQUIRED)
@@ -159,7 +159,7 @@ endif()
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${TEMPLATE_FILES} ${HEADER_FILES})
 add_library(Caribou::Plugin ALIAS ${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore Sofa.Component.Topology.Container.Grid Sofa.Component.Topology.Container.Constant Sofa.Component.Topology.Container.Dynamic Sofa.Component.LinearSolver.Iterative Sofa.LinearAlgebra)
+target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Core Sofa.Component.Topology.Container.Grid Sofa.Component.Topology.Container.Constant Sofa.Component.Topology.Container.Dynamic Sofa.Component.LinearSolver.Iterative Sofa.LinearAlgebra)
 target_link_libraries(${PROJECT_NAME} PUBLIC Caribou::Algebra Caribou::Geometry Caribou::Topology Caribou::Mechanics)
 target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
