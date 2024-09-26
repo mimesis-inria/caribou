@@ -50,16 +50,19 @@ CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 
 # OPTIONS
 option(CARIBOU_USE_FLOAT "Use float precision for floating point values." OFF)
+option(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" OFF)
 CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to allow msse support" ON "COMPILER_SUPPORTS_MARCH_NATIVE" OFF)
 
 # SOFA option
 find_package(Threads QUIET)
-find_package(SOFA COMPONENTS SofaFramework QUIET)
+find_package(SOFA COMPONENTS Sofa.Framework QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
 if (CARIBOU_WITH_SOFA)
     list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
     list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
-    find_package(SofaPython3 QUIET) # We need to do this first to setup the exact python version required
+    if (CARIBOU_WITH_PYTHON_3)
+        find_package(SofaPython3 QUIET) # We need to do this first to setup the exact python version required
+    endif()
 endif()
 
 # Tests
@@ -94,21 +97,27 @@ else()
 endif()
 
 # Python 3 option
-if (CARIBOU_WITH_SOFA)
+if (CARIBOU_WITH_SOFA AND CARIBOU_WITH_PYTHON_3)
     sofa_find_package(SofaPython3 QUIET)
 endif()
 set(CMAKE_CXX_STANDARD 17)
 set(PYBIND11_FINDPYTHON ON)
 set(PYBIND11_PYTHON_VERSION 3)
 set(Python_FIND_FRAMEWORK LAST)
-find_package(SofaPython3 QUIET)
+if (CARIBOU_WITH_SOFA AND CARIBOU_WITH_PYTHON_3)
+    find_package(SofaPython3 QUIET)
+endif()
 if (SofaPython3_FOUND)
     set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE})
     set(PYBIND11_PYTHON_VERSION ${PYTHON_VERSION})
 endif()
 find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Interpreter Development QUIET)
 find_package(pybind11 CONFIG QUIET)
-CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_PYTHON_3 "Compile the plugin with python 3 support" ON "Python_FOUND;pybind11_FOUND" OFF)
+if (CARIBOU_WITH_PYTHON_3 AND (NOT Python_FOUND OR NOT pybind11_FOUND))
+    SET(CARIBOU_WITH_PYTHON_3 OFF)
+    message(ERROR "Caribou is set to be compiled with python support, but pybind11 cannot be resolved.")
+endif()
+
 if (CARIBOU_WITH_PYTHON_3)
     message(STATUS "Caribou with Python support:
     Version: ${Python_VERSION}
@@ -122,10 +131,10 @@ endif()
 
 # SOFA Python 3
 if (CARIBOU_WITH_SOFA)
-    get_filename_component(SOFA_ROOT_DIR "${SofaFramework_DIR}/../../.." ABSOLUTE)
+    get_filename_component(SOFA_ROOT_DIR "${Sofa.Framework_DIR}/../../.." ABSOLUTE)
     message(STATUS
             "Caribou with SOFA support\n"
-            "    SOFA version: ${SofaFramework_VERSION}\n"
+            "    SOFA version: ${Sofa.Framework_VERSION}\n"
             "    SOFA location: ${SOFA_ROOT_DIR}"
             )
     if (CARIBOU_WITH_PYTHON_3)
