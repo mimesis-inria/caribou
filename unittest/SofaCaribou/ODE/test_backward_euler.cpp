@@ -7,7 +7,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/testing/BaseTest.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/simulation/graph/DAGSimulation.h>
-#include <sofa/simulation/graph/SimpleApi.h>
+#include <sofa/simpleapi/SimpleApi.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -21,7 +21,6 @@ TEST(BackwardEulerODESolver, Beam) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_NOEMIT(Error);
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Constraint.Projective"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
@@ -124,10 +123,10 @@ TEST(BackwardEulerODESolver, Beam) {
         {1.647607571061131E-15, -2.710271984455126E+01, 7.464181417401340E+01}
     }};
 
-    getSimulation()->init(root.get());
+    sofa::simulation::node::init(root.get());
 
     for (unsigned int step_id = 0; step_id < force_residuals.size(); ++step_id) {
-        getSimulation()->animate(root.get(), 1);
+        sofa::simulation::node::animate(root.get(), 1);
 // @todo uncomment the following when we have time to debug why fenics converges faster...
 
 //        EXPECT_EQ(solver->squared_residuals().size(), force_residuals[step_id].size()) << "Time step # "<< step_id;
@@ -151,5 +150,5 @@ TEST(BackwardEulerODESolver, Beam) {
         EXPECT_LE(rel_err, 0.005);
     }
 
-    getSimulation()->unload(root);
+    sofa::simulation::node::unload(root);
 }

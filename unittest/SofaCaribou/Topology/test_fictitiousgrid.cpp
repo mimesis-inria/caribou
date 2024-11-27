@@ -5,7 +5,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/testing/BaseTest.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/simulation/graph/DAGSimulation.h>
-#include <sofa/simulation/graph/SimpleApi.h>
+#include <sofa/simpleapi/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -18,7 +18,6 @@ using namespace sofa::testing;
 
 class FictitiousGrid : public BaseTest {
     void SetUp() override {
-        setSimulation(new sofa::simulation::graph::DAGSimulation()) ;
         root = getSimulation()->createNewNode("root");
         createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.IO.Mesh"}});
         createObject(root, "DefaultAnimationLoop");
@@ -26,7 +25,6 @@ class FictitiousGrid : public BaseTest {
     }
     void TearDown() override {
         root.reset();
-        setSimulation(nullptr);
     }
 
 protected:
@@ -44,7 +42,7 @@ TEST_F(FictitiousGrid, Liver) {
         {"surface_triangles", "@./loader.triangles"}
     }).get());
 
-    getSimulation()->init(root.get());
+    sofa::simulation::node::init(root.get());
 
     // Get the volume
     FLOATING_POINT_TYPE volume = 0.;

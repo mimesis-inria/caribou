@@ -97,7 +97,7 @@ void BackwardEulerODESolver::assemble_rhs_vector(const MechanicalParams &    mec
     //    NOTE: This correspond to the force terms dependant on the displacement, i.e. :
     //                             - f_0 = (-Ku + F)
     MechanicalComputeForceVisitor(&mechanical_parameters, f_id,
-                                  true /* accumulate (to mapped node) */, true /*neglectingCompliance*/)
+                                  true /* accumulate (to mapped node) */)
     .execute(this->getContext());
 
     // 3. Go down in the current context tree calling `addMBKdx` on every force field components,

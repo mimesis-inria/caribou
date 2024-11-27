@@ -15,7 +15,10 @@ set(SOURCE_FILES
 
 enable_testing()
 
-find_package(SOFA COMPONENTS SofaFramework Sofa.Simulation.Graph Sofa.Component.StateContainer Sofa.Component.Mass Sofa.Component.SceneUtility Sofa.Component.LinearSolver.Iterative Sofa.Component.Mass Sofa.Component.SolidMechanics.FEM.Elastic QUIET REQUIRED)
+find_package(Sofa.Config REQUIRED)
+find_package(Sofa.Component REQUIRED)
+find_package(Sofa.Testing REQUIRED)
+find_package(Sofa.SimpleApi REQUIRED)
 find_package(Caribou COMPONENTS Topology REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -31,11 +34,12 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC gtest)
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCaribou)
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper Sofa.Component.StateContainer Sofa.Component.Mass Sofa.Component.SceneUtility Sofa.Component.LinearSolver.Iterative Sofa.Component.SolidMechanics.FEM.Elastic)
+target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Helper Sofa.Component.StateContainer Sofa.Component.Mass Sofa.Component.SceneUtility Sofa.Component.LinearSolver.Iterative Sofa.Component.SolidMechanics.FEM.Elastic )
+target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Testing Sofa.SimpleApi)
 target_link_libraries(${PROJECT_NAME} PUBLIC
                       $<$<AND:$<PLATFORM_ID:Linux>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,8.0>>:stdc++fs>
                       $<$<AND:$<PLATFORM_ID:Darwin>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:c++fs>)
-if (${SofaFramework_VERSION} VERSION_LESS "22.06.99")
+if (${Sofa.Config_VERSION} VERSION_LESS "22.06.99")
     target_link_libraries(${PROJECT_NAME} PUBLIC SofaSimulationGraph)
 else()
     target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Simulation.Graph)

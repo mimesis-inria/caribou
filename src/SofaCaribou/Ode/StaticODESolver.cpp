@@ -44,7 +44,7 @@ void StaticODESolver::assemble_rhs_vector(const sofa::core::MechanicalParams &me
     // 2. Go down in the current context tree calling `addForce` on every force field components,
     //    then go up from the leaves calling `applyJT` on every mechanical mappings
     MechanicalComputeForceVisitor(&mechanical_parameters, f_id,
-                                  true /* accumulate (to mapped node) */, true /*neglectingCompliance*/)
+                                  true /* accumulate (to mapped node) */)
     .execute(this->getContext());
 
     // 3. Calls the "projectResponse" method of every `BaseProjectiveConstraintSet` objects found in the current

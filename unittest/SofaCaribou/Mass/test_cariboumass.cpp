@@ -6,7 +6,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/core/behavior/DefaultMultiMatrixAccessor.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
 #include <sofa/simulation/graph/DAGSimulation.h>
-#include <sofa/simulation/graph/SimpleApi.h>
+#include <sofa/simpleapi/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
 #include <sofa/component/mass/MeshMatrixMass.inl>
 DISABLE_ALL_WARNINGS_END
@@ -29,7 +29,6 @@ TEST(CaribouMass, LinearTetrahedron) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_NOEMIT(Error);
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Mapping"}});
@@ -57,7 +56,7 @@ TEST(CaribouMass, LinearTetrahedron) {
     auto sofa_mass_diagonal = dynamic_cast<sofa::component::mass::MeshMatrixMass<sofa::defaulttype::Vec3Types> *> (
             createObject(root, "MeshMatrixMass", {{"name", "sofa_mass_diagonal"}, {"topology", "@topology"}, {"massDensity", "2"}, {"lumping", "true"}}).get()
     );
-    getSimulation()->init(root.get());
+    sofa::simulation::node::init(root.get());
 
     // Get M from caribou
     const Eigen::SparseMatrix<double> M = caribou_mass->M();
@@ -137,7 +136,6 @@ TEST(CaribouMass, LinearHexahedron) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_NOEMIT(Error);
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Mapping"}});
@@ -161,7 +159,7 @@ TEST(CaribouMass, LinearHexahedron) {
             createObject(root, "MeshMatrixMass", {{"name", "sofa_mass"}, {"topology", "@topology"}, {"massDensity", "2"}}).get()
     );
 
-    getSimulation()->init(root.get());
+    sofa::simulation::node::init(root.get());
 
     // Get M from caribou
     const Eigen::SparseMatrix<double> M = caribou_mass->M();

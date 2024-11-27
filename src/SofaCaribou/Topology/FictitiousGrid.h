@@ -273,7 +273,7 @@ public:
             this->f_bbox.setValue(sofa::type::TBoundingBox<Float>(min, max));
         } else {
             this->f_bbox.setValue(sofa::type::TBoundingBox<Float>(
-                d_min.getValue().array(),d_max.getValue().array()));
+                d_min.getValue().data() ,d_max.getValue().data()));
         }
     }
 

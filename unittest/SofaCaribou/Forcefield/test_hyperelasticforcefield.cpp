@@ -5,7 +5,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/simulation/Node.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
 #include <sofa/simulation/graph/DAGSimulation.h>
-#include <sofa/simulation/graph/SimpleApi.h>
+#include <sofa/simpleapi/SimpleApi.h>
 #include <sofa/helper/system/PluginManager.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -22,7 +22,6 @@ TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_NOEMIT(Error);
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
@@ -55,7 +54,7 @@ TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
     createObject(meca, "QuadSetTopologyContainer", {{"name", "traction_container"}, {"quads", "@top_roi.quadInROI"}});
     createObject(meca, "TractionForcefield", {{"traction", "0 -30 0"}, {"slope", "0.2"}, {"topology", "@traction_container"}});
 
-    getSimulation()->init(root.get());
+    sofa::simulation::node::init(root.get());
 
     EXPECT_EQ(ff->number_of_elements(), 32);
 }

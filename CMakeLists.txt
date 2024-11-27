@@ -54,8 +54,8 @@ CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to 
 
 # SOFA option
 find_package(Threads QUIET)
-find_package(SOFA COMPONENTS SofaFramework QUIET)
-CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
+find_package(SOFA COMPONENTS Sofa.Config QUIET)
+CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "Sofa.Config_FOUND" OFF)
 if (CARIBOU_WITH_SOFA)
     list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
     list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
@@ -122,10 +122,10 @@ endif()
 
 # SOFA Python 3
 if (CARIBOU_WITH_SOFA)
-    get_filename_component(SOFA_ROOT_DIR "${SofaFramework_DIR}/../../.." ABSOLUTE)
+    get_filename_component(SOFA_ROOT_DIR "${Sofa.Framework_DIR}/../../.." ABSOLUTE)
     message(STATUS
             "Caribou with SOFA support\n"
-            "    SOFA version: ${SofaFramework_VERSION}\n"
+            "    SOFA version: ${Sofa.Config_VERSION}\n"
             "    SOFA location: ${SOFA_ROOT_DIR}"
             )
     if (CARIBOU_WITH_PYTHON_3)

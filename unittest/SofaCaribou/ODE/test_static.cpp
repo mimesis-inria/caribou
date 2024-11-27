@@ -7,7 +7,7 @@ DISABLE_ALL_WARNINGS_BEGIN
 #include <sofa/testing/BaseTest.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/simulation/graph/DAGSimulation.h>
-#include <sofa/simulation/graph/SimpleApi.h>
+#include <sofa/simpleapi/SimpleApi.h>
 #include <sofa/component/statecontainer/MechanicalObject.h>
 DISABLE_ALL_WARNINGS_END
 
@@ -21,13 +21,12 @@ TEST(StaticODESolver, InitWithoutSolver) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_EMIT(Error) ;
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
-    getSimulation()->init(root.get());
-    getSimulation()->unload(root);
+    sofa::simulation::node::init(root.get());
+    sofa::simulation::node::unload(root);
 }
 
 /** Initialization without any compatible linear solver (expecting an error) */
@@ -35,7 +34,6 @@ TEST(StaticODESolver, InitSofaSolver) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_EMIT(Error) ;
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.LinearSolver.Iterative"}});
     createObject(root, "DefaultAnimationLoop");
@@ -43,8 +41,8 @@ TEST(StaticODESolver, InitSofaSolver) {
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
     createObject(root, "CGLinearSolver", {{"iterations", "25"}, {"tolerance", "1e-05"}, {"threshold", "1e-05"}});
     createObject(root, "CGLinearSolver", {{"iterations", "25"}, {"tolerance", "1e-05"}, {"threshold", "1e-05"}});
-    getSimulation()->init(root.get());
-    getSimulation()->unload(root);
+    sofa::simulation::node::init(root.get());
+    sofa::simulation::node::unload(root);
 }
 
 /** Initialization with both a Caribou linear solver and a SOFA solver (should inform the user of the choice made) */
@@ -53,7 +51,6 @@ TEST(StaticODESolver, InitCaribouSolver) {
     EXPECT_MSG_NOEMIT(Warning, Error);
     EXPECT_MSG_EMIT(Info) ;
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.LinearSolver.Iterative"}});
     createObject(root, "DefaultAnimationLoop");
@@ -61,8 +58,8 @@ TEST(StaticODESolver, InitCaribouSolver) {
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
     createObject(root, "CGLinearSolver", {{"iterations", "25"}, {"tolerance", "1e-05"}, {"threshold", "1e-05"}});
     createObject(root, "LDLTSolver");
-    getSimulation()->init(root.get());
-    getSimulation()->unload(root);
+    sofa::simulation::node::init(root.get());
+    sofa::simulation::node::unload(root);
 }
 
 /** Initialization with two Caribou linear solvers (should warn the user of the choice made) */
@@ -71,15 +68,14 @@ TEST(StaticODESolver, InitMultipleCaribouSolver) {
     EXPECT_MSG_NOEMIT(Info, Error);
     EXPECT_MSG_EMIT(Warning);
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "StaticODESolver", {{"printLog", "true"}});
     createObject(root, "LDLTSolver", {{"name", "first_solver"}});
     createObject(root, "LDLTSolver", {{"name", "second_solver"}});
-    getSimulation()->init(root.get());
-    getSimulation()->unload(root);
+    sofa::simulation::node::init(root.get());
+    sofa::simulation::node::unload(root);
 }
 
 /** Make sure residual norms at each newton steps remains the same */
@@ -87,7 +83,6 @@ TEST(StaticODESolver, Beam) {
     MessageDispatcher::addHandler( MainGtestMessageHandler::getInstance() ) ;
     EXPECT_MSG_NOEMIT(Error);
 
-    setSimulation(new sofa::simulation::graph::DAGSimulation());
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
@@ -130,10 +125,10 @@ TEST(StaticODESolver, Beam) {
             {1.000000000000000e+00, 3.526942203674829e-03, 8.307813177405512e-04, 4.667215114394798e-05, 1.646730071539153e-07}  // Step 5
     }};
 
-    getSimulation()->init(root.get());
+    sofa::simulation::node::init(root.get());
 
     for (unsigned int step_id = 0; step_id < force_residuals.size(); ++step_id) {
-        getSimulation()->animate(root.get(), 1);
+        sofa::simulation::node::animate(root.get(), 1);
         EXPECT_EQ(solver->squared_residuals().size(), force_residuals[step_id].size());
         for (unsigned int newton_step_id = 0; newton_step_id < solver->squared_residuals().size(); ++newton_step_id) {
             double residual = solver->squared_residuals()[newton_step_id] / solver->squared_residuals()[0];
@@ -148,5 +143,5 @@ TEST(StaticODESolver, Beam) {
     EXPECT_NEAR(middle_point[1], -21.016, 1e-3); // y
     EXPECT_NEAR(middle_point[2],  76.190, 1e-3); // z
 
-    getSimulation()->unload(root);
+    sofa::simulation::node::unload(root);
 }
