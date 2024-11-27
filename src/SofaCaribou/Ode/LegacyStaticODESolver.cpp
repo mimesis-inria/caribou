@@ -208,7 +208,7 @@ void LegacyStaticODESolver::solve(const sofa::core::ExecParams* params, double /
         // Solving constraints
         // Calls "solveConstraint" method of every ConstraintSolver objects found in the current context tree.
         // todo(jnbrunet): Shouldn't this be done AFTER the position propagation of the mapped nodes?
-        mop.solveConstraint(x, sofa::core::ConstraintParams::POS);
+        mop.solveConstraint(x, sofa::core::ConstraintOrder::POS);
 
         // Propagate positions to mapped mechanical objects, for example, identity mappings, barycentric mappings, ...
         // This will call the methods apply and applyJ on every mechanical mappings.

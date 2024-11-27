@@ -220,7 +220,7 @@ void BackwardEulerODESolver::propagate_solution_increment(const MechanicalParams
     MechanicalVOpVisitor(&mechanical_parameters, v_id, p_previous_v_id, p_a_id, h).execute(this->getContext());
 
     // 5. Solve velocity constraints
-    constraint_parameters.setOrder(sofa::core::ConstraintParams::VEL);
+    constraint_parameters.setOrder(sofa::core::ConstraintOrder::VEL);
     for (auto * solver : constraint_solvers) {
         solver->solveConstraint(&constraint_parameters, v_id);
     }
@@ -229,7 +229,7 @@ void BackwardEulerODESolver::propagate_solution_increment(const MechanicalParams
     MechanicalVOpVisitor(&mechanical_parameters, x_id, p_previous_x_id, v_id, h).execute(this->getContext());
 
     // 7. Solve position constraints
-    constraint_parameters.setOrder(sofa::core::ConstraintParams::POS);
+    constraint_parameters.setOrder(sofa::core::ConstraintOrder::POS);
     for (auto * solver : constraint_solvers) {
         solver->solveConstraint(&constraint_parameters, x_id);
     }

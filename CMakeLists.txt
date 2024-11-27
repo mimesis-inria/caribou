@@ -54,7 +54,7 @@ CMAKE_DEPENDENT_OPTION(CARIBOU_OPTIMIZE_FOR_NATIVE "Build with -march=native to 
 
 # SOFA option
 find_package(Threads QUIET)
-find_package(SOFA COMPONENTS SofaFramework QUIET)
+find_package(SOFA COMPONENTS Sofa.Config QUIET)
 CMAKE_DEPENDENT_OPTION(CARIBOU_WITH_SOFA "Compile the SofaCaribou library" ON "SOFA_FOUND" OFF)
 if (CARIBOU_WITH_SOFA)
     list(APPEND CMAKE_PREFIX_PATH ${SOFA_MODULE_DIR})
