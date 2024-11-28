@@ -86,13 +86,9 @@ jobs:
           PYTHONEXE: ${{ format('/usr/bin/python{0}', matrix.PYTHON_VERSION) }}
         run:
           export CCACHE_BASEDIR=$GITHUB_WORKSPACE &&
-          export CCACHE_DIR=$GITHUB_WORKSPACE/.ccache &&
-          ccache -z &&
           cmake
           -GNinja
           -DPYTHON_EXECUTABLE=$PYTHONEXE
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCARIBOU_BUILD_TESTS=ON
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_INSTALL_PREFIX=SofaCaribou
@@ -100,8 +96,6 @@ jobs:
           .
           && cmake --build . && cmake --install .
           && tar czvf SofaCaribou.tar.gz SofaCaribou
-          && echo ${CCACHE_BASEDIR}
-          && ccache -s
 
       - name: Archive production
         uses: actions/upload-artifact@v4.4.0
