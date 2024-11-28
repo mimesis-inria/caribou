@@ -16,7 +16,12 @@ set(SOURCE_FILES
 enable_testing()
 
 find_package(Sofa.Config REQUIRED)
-find_package(Sofa.Component REQUIRED)
+find_package(Sofa.Helper REQUIRED)
+find_package(Sofa.Component.StateContainer REQUIRED)
+find_package(Sofa.Component.Mass REQUIRED)
+find_package(Sofa.Component.SceneUtility REQUIRED)
+find_package(Sofa.Component.LinearSolver.Iterative REQUIRED)
+find_package(Sofa.Component.SolidMechanics.FEM.Elastic REQUIRED)
 find_package(Sofa.Testing REQUIRED)
 find_package(Sofa.SimpleApi REQUIRED)
 find_package(Caribou COMPONENTS Topology REQUIRED)

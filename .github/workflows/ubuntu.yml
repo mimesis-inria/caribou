@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     name: Building with ${{ matrix.sofa_version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     container: ${{ matrix.CONTAINER }}
     strategy:
       fail-fast: false
@@ -37,7 +37,7 @@ jobs:
           git config --global user.email "caribou@github.com"
           git config --global user.name "Caribou Github"
           git fetch origin
-          git rebase origin/master
+          git merge origin/master
 
       - name: Install pybind11
         if: ${{ matrix.PYBIND11_VERSION != '2.4' }}
@@ -96,6 +96,7 @@ jobs:
           -DCARIBOU_BUILD_TESTS=ON
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_INSTALL_PREFIX=SofaCaribou
+          -DCMAKE_PREFIX_PATH=$SOFA_ROOT/lib/cmake
           .
           && cmake --build . && cmake --install .
           && tar czvf SofaCaribou.tar.gz SofaCaribou
@@ -103,7 +104,7 @@ jobs:
           && ccache -s
 
       - name: Archive production
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4.4.0
         with:
           name: caribou_${{ matrix.sofa_version }}
           path: SofaCaribou.tar.gz
