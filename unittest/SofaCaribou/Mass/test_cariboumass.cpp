@@ -71,7 +71,7 @@ TEST(CaribouMass, LinearTetrahedron) {
     accessor.setupMatrices();
     sofa::core::MechanicalParams mechanical_parameters;
     mechanical_parameters.setMFactor(1);
-    caribou_mass->addMToMatrix(&mechanical_parameters, &accessor);
+    caribou_mass->Mass::addMToMatrix(&mechanical_parameters, &accessor);
     M2.compress();
 
     EXPECT_DOUBLE_EQ(M.sum(), M2.matrix().sum());
@@ -90,7 +90,7 @@ TEST(CaribouMass, LinearTetrahedron) {
     SofaCaribou::Algebra::EigenMatrix<Eigen::SparseMatrix<double>> SofaM;
     SofaM.resize((signed) mo->getSize()*3, (signed) mo->getSize()*3);
     accessor.setGlobalMatrix(&SofaM);
-    sofa_mass->addMToMatrix(&mechanical_parameters, &accessor);
+    sofa_mass->Mass::addMToMatrix(&mechanical_parameters, &accessor);
     SofaM.compress();
 
     EXPECT_DOUBLE_EQ(M.sum(), SofaM.matrix().sum());
@@ -99,7 +99,7 @@ TEST(CaribouMass, LinearTetrahedron) {
     SofaCaribou::Algebra::EigenMatrix<Eigen::SparseMatrix<double>> SofaM_diagonal;
     SofaM_diagonal.resize((signed) mo->getSize()*3, (signed) mo->getSize()*3);
     accessor.setGlobalMatrix(&SofaM_diagonal);
-    sofa_mass_diagonal->addMToMatrix(&mechanical_parameters, &accessor);
+    sofa_mass_diagonal->Mass::addMToMatrix(&mechanical_parameters, &accessor);
     SofaM_diagonal.compress();
 
     EXPECT_DOUBLE_EQ(M_diag.diagonal().sum(), SofaM_diagonal.matrix().sum());
@@ -173,7 +173,7 @@ TEST(CaribouMass, LinearHexahedron) {
     accessor.setupMatrices();
     sofa::core::MechanicalParams mechanical_parameters;
     mechanical_parameters.setMFactor(1);
-    sofa_mass->addMToMatrix(&mechanical_parameters, &accessor);
+    sofa_mass->Mass::addMToMatrix(&mechanical_parameters, &accessor);
     SofaM.compress();
 
     EXPECT_DOUBLE_EQ(M.sum(), SofaM.matrix().sum());
