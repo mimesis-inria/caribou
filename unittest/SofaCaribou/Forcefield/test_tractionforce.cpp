@@ -31,6 +31,8 @@ protected:
 
 TEST_F(TractionForcefield, Triangle) {
     EXPECT_MSG_NOEMIT(Error, Warning) ;
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.StateContainer"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Dynamic"}});
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "MechanicalObject", {{"position", "-1 0 1  1 0 1  -1 0 -1  1 0 -1  0 0 1  0 0 -1  -1 0 0  1 0 0  0 0 0"}});
@@ -51,6 +53,8 @@ TEST_F(TractionForcefield, Triangle) {
 
 TEST_F(TractionForcefield, Quad) {
     EXPECT_MSG_NOEMIT(Error, Warning) ;
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.StateContainer"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Dynamic"}});
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "MechanicalObject", {{"position", "-1 0 1  1 0 1  -1 0 -1  1 0 -1  0 0 1  0 0 -1  -1 0 0  1 0 0  0 0 0"}});

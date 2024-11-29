@@ -87,6 +87,10 @@ TEST(StaticODESolver, Beam) {
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Grid"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Dynamic"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.StateContainer"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Constraint.Projective"}});
     createObject(root, "RegularGridTopology", {{"name", "grid"}, {"min", "-7.5 -7.5 0"}, {"max", "7.5 7.5 80"}, {"n", "3 3 9"}});
 
     auto meca = createChild(root, "meca");
@@ -108,7 +112,7 @@ TEST(StaticODESolver, Beam) {
 
     // Fix the left side of the beam
     createObject(meca, "BoxROI", {{"name", "fixed_roi"}, {"quad", "@surface_topology.quad"}, {"box", "-7.5 -7.5 -0.9 7.5 7.5 0.1"}});
-    createObject(meca, "FixedConstraint", {{"indices", "@fixed_roi.indices"}});
+    createObject(meca, "FixedProjectiveConstraint", {{"indices", "@fixed_roi.indices"}});
 
     // Apply traction on the right side of the beam
     createObject(meca, "BoxROI", {{"name", "top_roi"}, {"quad", "@surface_topology.quad"}, {"box", "-7.5 -7.5 79.9 7.5 7.5 80.1"}});

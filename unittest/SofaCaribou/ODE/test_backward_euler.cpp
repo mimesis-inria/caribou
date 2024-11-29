@@ -24,6 +24,10 @@ TEST(BackwardEulerODESolver, Beam) {
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Constraint.Projective"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Mass"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.StateContainer"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Dynamic"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Grid"}});
 
     // Some component to avoid warnings
     createObject(root, "DefaultAnimationLoop");
