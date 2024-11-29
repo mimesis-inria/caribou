@@ -30,7 +30,9 @@ TEST(CaribouMass, LinearTetrahedron) {
     EXPECT_MSG_NOEMIT(Error);
 
     auto root = getSimulation()->createNewNode("root");
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Mass"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Grid"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Mapping"}});
 
     // Some component to avoid warnings

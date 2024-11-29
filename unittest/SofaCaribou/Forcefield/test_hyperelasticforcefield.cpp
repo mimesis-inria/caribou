@@ -25,6 +25,7 @@ TEST(HyperelasticForcefield, Hexahedron_from_SOFA) {
     auto root = getSimulation()->createNewNode("root");
     createObject(root, "DefaultAnimationLoop");
     createObject(root, "DefaultVisualManagerLoop");
+    createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.StateContainer"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Constraint.Projective"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Engine.Select"}});
     createObject(root, "RequiredPlugin", {{"pluginName", "Sofa.Component.Topology.Container.Grid"}});
